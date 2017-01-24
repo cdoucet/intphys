@@ -253,18 +253,16 @@ function SetCurrentIteration()
 
    -- create subdirectories for this iteration
    paths.mkdir(iterationPath)
-   paths.mkdir(iterationPath .. 'mask')
-   if not config.IsVisibilityCheck(iterationBlock, iterationType) then
-      paths.mkdir(iterationPath .. 'scene')
-      paths.mkdir(iterationPath .. 'depth')
+   if not dry_run then
+      paths.mkdir(iterationPath .. 'mask')
+      if not config.IsVisibilityCheck(iterationBlock, iterationType) then
+         paths.mkdir(iterationPath .. 'scene')
+         paths.mkdir(iterationPath .. 'depth')
+      end
    end
 
    -- prepare the block for either train or test
-   -- if iterationType == -1 then -- train
-   --    block = require('blockC1_train')
-   -- else
    block = require(iterationBlock)
-   -- end
    block.SetBlock(currentIteration)
 
    -- RunBlock will be called from blueprint
@@ -276,17 +274,18 @@ function SetCurrentIteration()
    -- resolution
    utils.AddTickHook(SetResolution)
 
-
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
       utils.AddTickHook(CheckVisibility)
+      utils.AddTickHook(SaveStatusToTable)
+      utils.AddEndTickHook(SaveData)
    else
       -- save screen, depth and mask
       if not dry_run then
          utils.AddTickHook(SaveScreen)
+         utils.AddTickHook(SaveStatusToTable)
+         utils.AddEndTickHook(SaveData)
       end
    end
-   utils.AddTickHook(SaveStatusToTable)
-   utils.AddEndTickHook(SaveData)
 
    if iterationType == -1 then  -- train
       utils.AddEndTickHook(

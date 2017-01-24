@@ -19,12 +19,6 @@ local json = require 'dkjson'
 local config = {}
 
 
--- Return true or false randmly
-function RandomBool()
-   return 1 == math.random(0, 1)
-end
-
-
 -- Pad a number `int` with `n` beginning zeros, return it as a string
 --
 -- PadZeros(0, 3)  -> '000'
@@ -88,7 +82,6 @@ conf = {
    },
    blocks = ReadJson(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }
-
 
 
 function SetIterationsCounter()
