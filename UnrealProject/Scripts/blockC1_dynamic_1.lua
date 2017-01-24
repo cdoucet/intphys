@@ -28,9 +28,8 @@ local sphere = uetorch.GetActor("Sphere_1")
 local sphere2 = uetorch.GetActor("Sphere_2")
 local sphere3 = uetorch.GetActor("Sphere_3")
 local spheres = {sphere, sphere2, sphere3}
-local wall = uetorch.GetActor("Occluder_1")
-local wall_boxY
-block.actors = {wall=wall}
+
+block.actors = {}
 
 local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
@@ -40,56 +39,6 @@ local visible1 = true
 local visible2 = true
 local possible = true
 local trick = false
-
-local t_rotation = 0
-local t_rotation_change = 0
-
-local function WallRotationDown(dt)
-   local angle = (t_rotation - t_rotation_change) * 20 * 0.125
-   uetorch.SetActorRotation(wall, 0, 0, angle)
-   uetorch.SetActorLocation(
-      wall, 100 - 200 * params.scaleW, -250,
-      20 + math.sin(angle * math.pi / 180) * wall_boxY)
-
-   if angle >= 90 then
-      utils.RemoveTickHook(WallRotationDown)
-      t_rotation_change = t_rotation
-   end
-
-   t_rotation = t_rotation + dt
-end
-
-local function RemainUp(dt)
-   params.framesRemainUp = params.framesRemainUp - 1
-   if params.framesRemainUp == 0 then
-      utils.RemoveTickHook(RemainUp)
-      utils.AddTickHook(WallRotationDown)
-   end
-end
-
-local function WallRotationUp(dt)
-   local angle = (t_rotation - t_rotation_change) * 20 * 0.125
-   uetorch.SetActorRotation(wall, 0, 0, 90 - angle)
-   uetorch.SetActorLocation(
-      wall, 100 - 200 * params.scaleW, -250,
-      20 + math.sin((90 - angle) * math.pi / 180) * wall_boxY)
-
-   if angle >= 90 then
-      utils.RemoveTickHook(WallRotationUp)
-      utils.AddTickHook(RemainUp)
-      t_rotation_change = t_rotation
-   end
-
-   t_rotation = t_rotation + dt
-end
-
-local function StartDown(dt)
-   params.framesStartDown = params.framesStartDown - 1
-   if params.framesStartDown == 0 then
-      utils.RemoveTickHook(StartDown)
-      utils.AddTickHook(WallRotationUp)
-   end
-end
 
 local tCheck, tLastCheck = 0, 0
 local step = 0
@@ -207,16 +156,26 @@ local function GetRandomParams()
          math.random(0,1)
       },
 
-      framesStartDown = math.random(5),
-      framesRemainUp = math.random(5),
-      scaleW = 0.5,  --0 - 0.5 * math.random(),
-      scaleH = 1 - 0.5 * math.random(),
+      occluder = {
+         material = occluder.random_material(),
+         movement = 1,
+         scale = {
+            x = 0.5,
+            y = 1,
+            z = 1 - 0.5 * math.random()},
+         location = {
+            x = 50,
+            y = -250},
+         rotation = 0,
+         start_position = 'down',
+         pause = {math.random(5), math.random(5)}
+      },
       n = math.random(1,3),
    }
    params.index = math.random(1, params.n)
 
    -- Background wall with 50% chance
-   params.isBackwall = (1 == math.random(0, 1)) -- TODO this should be a separate function (in utils)
+   params.isBackwall = (1 == math.random(0, 1))
    if params.isBackwall then
       params.backwall = backwall.random()
    end
@@ -274,6 +233,7 @@ function block.SetBlock(currentIteration)
    end
 
    mainActor = spheres[params.index]
+   block.actors.occluder = occluder.get_occluder(1)
    for i = 1,params.n do
       block.actors['sphere' .. i] = spheres[i]
    end
@@ -294,12 +254,8 @@ function block.RunBlock()
    end
 
    -- occluder
-   material.SetActorMaterial(wall, material.wall_materials[params.wall])
-   utils.AddTickHook(StartDown)
-   uetorch.SetActorScale3D(wall, params.scaleW, 1, params.scaleH)
-   wall_boxY = uetorch.GetActorBounds(wall).boxY
-   uetorch.SetActorLocation(wall, 100 - 200 * params.scaleW, -250, 20 + wall_boxY)
-   uetorch.SetActorRotation(wall, 0, 0, 90)
+   occluder.setup(1, params.occluder)
+   utils.AddTickHook(occluder.tick)
 
    -- spheres
    uetorch.SetActorVisible(spheres[params.index], visible1)

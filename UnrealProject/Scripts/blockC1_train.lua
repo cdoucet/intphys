@@ -28,10 +28,8 @@ local sphere = uetorch.GetActor("Sphere_1")
 local sphere2 = uetorch.GetActor("Sphere_2")
 local sphere3 = uetorch.GetActor("Sphere_3")
 local spheres = {sphere, sphere2, sphere3}
-local occluder1 = uetorch.GetActor("Occluder_1")
-local occluder2 = uetorch.GetActor("Occluder_2")
-local occluder1_boxY, occluder2_boxY
-block.actors = {occluder1=occluder1, occluder2=occluder2}
+
+block.actors = {}
 
 local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
@@ -55,12 +53,12 @@ function block.MaskingActors()
    end
 
    if params.nOccluders >=1 then
-      table.insert(active, occluder1)
+      table.insert(active, occluder.get_occluder(1))
       table.insert(text, "occluder1")
    end
 
    if params.nOccluders >= 2 then
-      table.insert(active, occluder2)
+      table.insert(active, occluder.get_occluder(2))
       table.insert(text, "occluder2")
    end
 
@@ -157,7 +155,7 @@ local function GetRandomParams()
    -- Pick random attributes for each occluder
    params.occluder = {}
    for i=1, params.nOccluders do
-      table.insert(params.occluder, occluder.random())
+      table.insert(params.occluder, occluder.random(i))
    end
 
    return params
@@ -177,6 +175,10 @@ function block.SetBlock(currentIteration)
 
    params = GetRandomParams()
    WriteJson(params, iterationPath .. 'params.json')
+
+   for i = 1, params.nOccluders do
+      block.actors['occluder' .. i] = occluder.get_occluder(i)
+   end
 
    for i = 1, params.n do
       block.actors['sphere' .. i] = spheres[i]
@@ -201,7 +203,7 @@ function block.RunBlock()
    -- occluders
    for i = 1,2 do
       if params.occluder[i] == nil then
-         occluder.hide(i)
+         occluder.destroy(i)
       else
          occluder.setup(i, params.occluder[i])
       end
@@ -210,7 +212,6 @@ function block.RunBlock()
 
    -- spheres
    uetorch.SetActorVisible(sphere, true)
-
    material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
    material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
