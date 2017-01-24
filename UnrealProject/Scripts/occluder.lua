@@ -1,22 +1,49 @@
+-- Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
+--
+-- You can redistribute this file and/or modify it under the terms of
+-- the GNU General Public License as published by the Free Software
+-- Foundation, either version 3 of the License, or (at your option) any
+-- later version.
+--
+-- This program is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
 -- This module defines the occluders behavior.
--- TODO more variable init location
+--
+-- Generation of random parameters, setup of up to 2 occluders, a tick
+-- method handling the occluders movements.
 
 local uetorch = require 'uetorch'
 local material = require 'material'
 local occluder = {}
 
 
--- the 2 occluders meshes defined in the scene, and their bounding
--- boxes
+-- the occluder's actors defined in the scene
 local occluder1 = uetorch.GetActor('Occluder_1')
 local occluder2 = uetorch.GetActor('Occluder_2')
 
-local occluder1_boxY = uetorch.GetActorBounds(occluder1).boxY
-local occluder2_boxY = uetorch.GetActorBounds(occluder2).boxY
+
+-- Return an occluder actor
+--
+-- `id` must be 1 or 2 for occluder1 or occluder2 respectively
+function occluder.get_occluder(id)
+   assert(id == 1 or id == 2)
+   if id == 1 then
+      return occluder1
+   else
+      return occluder2
+   end
+end
 
 
--- Pick a random wall texture for an occluder
-function occluder.randomMaterial()
+-- Return a random wall texture for an occluder
+function occluder.random_material()
    return math.random(#material.wall_materials)
 end
 
@@ -24,120 +51,130 @@ end
 -- Select a random round trip for the occluder (0 -> no motion, 0.5 ->
 -- single one way, 1 -> one round trip, 1.5 -> one round trip and one
 -- more single, 2 -> 2 round trips)
-function occluder.randomMovement()
+function occluder.random_movement()
    return math.random(0, 4) / 2
 end
 
 
--- A brief pause (in number of frames) between each motion steps
-function occluder.randomPause()
-   return math.random(50)
+-- Return a brief pause between each movement steps
+--
+-- `movement` is as returned by occluder.movement()
+function occluder.random_pause(movement)
+   local p = {}
+   for i=1, movement*2 do
+      table.insert(p, math.random(50))
+   end
+   return p
 end
 
 
--- Random rotation on the Z axis
-function occluder.randomRotation()
+-- Return a random position on the X and Y axes
+--
+-- TODO actually nothing random here...
+-- `id` must be 1 or 2 for occluder1 or occluder2 respectively
+function occluder.random_location(id)
+   local shift = 0
+   if id == 2 then
+      shift = 500
+   end
+
+   return {x = shift - 300, y = -150 - shift}
+end
+
+
+-- Return a random rotation on the Z axis in degree
+function occluder.random_rotation()
    return math.random(-45, 45)
 end
 
 
+-- Return the occluder start position
+--
 -- Start position is randomly 'up' or 'down'
-function occluder.randomStartPosition()
-   if math.random(0, 1) == 1 then
-      return 'up'
-   else
-      return 'down'
-   end
+function occluder.random_start_position()
+   return (math.random(0, 1) == 1 and 'up' or 'down')
 end
 
 
--- Pick a random scale for wall dimensions
-function occluder.randomScale()
+-- Return a random scale for occluder dimensions
+function occluder.random_scale()
    return {
-      math.random() + 0.5,
-      1,
-      1.5 - 0.3 * math.random()
+      x = math.random() + 0.5,
+      y = 1,
+      z = 1.5 - 0.3 * math.random()
    }
 end
 
 
--- Generate a random set of attributes for an occluder
-function occluder.random()
+-- Return a random set of parameters to setup an occluder
+function occluder.random(id)
    local params = {
-      material = occluder.randomMaterial(),
-      movement = occluder.randomMovement(),
-      scale = occluder.randomScale(),
-      rotation = occluder.randomRotation(),
-      startPosition = occluder.randomStartPosition()
+      material = occluder.random_material(),
+      movement = occluder.random_movement(),
+      scale = occluder.random_scale(),
+      location = occluder.random_location(id),
+      rotation = occluder.random_rotation(),
+      start_position = occluder.random_start_position()
    }
-
-   params.pause = {}
-   for i=1, params.movement*2 do
-      table.insert(params.pause, occluder.randomPause())
-   end
+   params.pause = occluder.random_pause(params.movement)
 
    return params
 end
 
 
--- Remove an occluder from the scene, id must be 1 or 2
-function occluder.hide(id)
-   assert(id == 1 or id == 2)
-   if id == 1 then
-      uetorch.DestroyActor(occluder1)
-   else
-      uetorch.DestroyActor(occluder2)
-   end
+-- Remove an occluder from the scene
+--
+-- `id` must be 1 or 2 for occluder1 or occluder2 respectively
+function occluder.destroy(id)
+   uetorch.DestroyActor(occluder.get_occluder(id))
 end
 
 
+-- This table registers the parametrized occluders. It is built in
+-- occluder.setup() and used in occluder.tick()
 local occluder_register = {}
 
--- Initialize an occluder with its parameters. Id must be 1 or
--- 2. Params must be a table structured as the one returned by
--- occluder.random().
-function occluder.setup(id, params)
-   assert(id == 1 or id == 2)
-   params = params or occluder.random()
 
-   local mesh = occluder1
-   local box = occluder1_boxY
-   local shift = 0
-   if id == 2 then
-      mesh = occluder2
-      box = occluder2_boxY
-      shift = 500
-   end
+-- Initialize an occluder with its parameters.
+--
+-- `id` must be 1 or 2 for occluder1 or occluder2 respectively
+-- `params` must be a table structured as the one returned by
+--     occluder.random().
+function occluder.setup(id, params)
+   local mesh = occluder.get_occluder(id)
+   local box = uetorch.GetActorBounds(mesh).boxY
 
    material.SetActorMaterial(mesh, material.wall_materials[params.material])
-   uetorch.SetActorScale3D(mesh, params.scale[1], params.scale[2], params.scale[3])
+   uetorch.SetActorScale3D(mesh, params.scale.x, params.scale.y, params.scale.z)
 
-   if params.startPosition == 'up' then
+   if params.start_position == 'up' then
       uetorch.SetActorRotation(mesh, 0, params.rotation, 0)
-      uetorch.SetActorLocation(mesh, shift - 300, -150 - shift, 20)
+      uetorch.SetActorLocation(mesh, params.location.x, params.location.y, 20)
    else -- down
       uetorch.SetActorRotation(mesh, 0, params.rotation, 90)
-      uetorch.SetActorLocation(mesh, shift - 300, -150 - shift, 20 + box)
+      uetorch.SetActorLocation(mesh, params.location.x, params.location.y, 20 + box)
    end
 
    -- register the occluder for motion (through the occluder.tick
-   -- method)
+   -- method). If movement==0, the occluder remains static and do
+   -- nothing on ticks.
    if params.movement > 0 then
-      table.insert(occluder_register, {
-                      id=id,
-                      mesh=mesh,
-                      box=box,
-                      rotation=params.rotation,
-                      movement=params.movement,
-                      pause=params.pause,
-                      status='pause',
-                      t_rotation=0,
-                      t_rotation_change=0})
+      table.insert(
+         occluder_register, {
+            id=id,
+            mesh=mesh,
+            box=box,
+            rotation=params.rotation,
+            movement=params.movement,
+            pause=params.pause,
+            status='pause',
+            t_rotation=0,
+            t_rotation_change=0})
    end
 end
 
 
-function _occluder_pause(occ)
+local function _occluder_pause(occ)
    occ.pause[1] = occ.pause[1] - 1
    if occ.pause[1] == 0 then
       -- go to the next movement: if down, go up, if up, go down
