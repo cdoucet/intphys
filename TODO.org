@@ -17,11 +17,6 @@ TODO list for the NaivePhysics project
 ** detect superposition of the 2 occluders
 ** detect occluder or sphere in the backwall
 * Improvements
-** more textures
-   integrate the downloaded materials to the project
-** scene variability
-   - random cloud position/orientaion/speed
-   - random light position/number -> variable shadows
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
 ** refactor status.txt and params.json
