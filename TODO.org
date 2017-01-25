@@ -12,6 +12,10 @@ TODO list for the NaivePhysics project
     - An evaluation on the server (with registration)
 *** release of a NaivePhysics-1.0 version as well
 
+* Bugs
+** detect any collision with the camera
+** detect superposition of the 2 occluders
+** detect occluder or sphere in the backwall
 * Improvements
 ** more textures
    integrate the downloaded materials to the project
@@ -20,7 +24,11 @@ TODO list for the NaivePhysics project
    - random light position/number -> variable shadows
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
-** refactor status.txt
+** refactor status.txt and params.json
+   Ensure the status is correct (nb of agents, visibles or not)
+** optimize checks in C1_dynamic_1
+   - detect failures right after iterationType 5, not after the whole run!!
+   - as done in C1_dynamic_2 block
 ** run on a headless cluster
 *** The problem is remote openGl rendering
 - with DISPLAY=:0 that works remotely but corrupt the host's X server!
@@ -30,6 +38,3 @@ TODO list for the NaivePhysics project
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
   servers (EGL is enough).
-** optimize checks in C1_dynamic_1
-   - detect failures right after iterationType 5, not after the whole run!!
-   - as done in C1_dynamic_2 block

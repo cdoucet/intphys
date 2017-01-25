@@ -133,8 +133,6 @@ end
 local function GetRandomParams()
    local params = {
       ground = math.random(#material.ground_materials),
-      -- wall1 = math.random(#material.wall_materials),
-      -- wall2 = math.random(#material.wall_materials),
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
@@ -142,12 +140,6 @@ local function GetRandomParams()
          70 + math.random(200),
          70 + math.random(200),
          70 + math.random(200)
-      },
-
-      sphereScale = {
-         math.random() + 0.5,
-         math.random() + 0.5,
-         math.random() + 0.5
       },
 
       forceX = {
@@ -181,15 +173,8 @@ local function GetRandomParams()
    table.insert(params.occluder, {
                    material = occluder.random_material(),
                    movement = 1,
-                   scale = {
-                      x = 0.5,
-                      y = 1,
-                      z = 1 - 0.4 * math.random()
-                   },
-                   location = {
-                      x = -100,
-                      y = -350
-                   },
+                   scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()},
+                   location = {x = -100, y = -350},
                    rotation = 0,
                    start_position = 'down',
                    pause = {math.random(5), math.random(5)}})
@@ -199,10 +184,7 @@ local function GetRandomParams()
                    material = occluder.random_material(),
                    movement = 1,
                    scale = params.occluder[1].scale,
-                   location = {
-                      x = 200,
-                      y = -350
-                   },
+                   location = {x = 200, y = -350},
                    rotation = 0,
                    start_position = 'down',
                    pause = {table.unpack(params.occluder[1].pause)}})
@@ -267,6 +249,14 @@ function block.SetBlock(currentIteration)
       end
    end
 
+   if iterationType == 5 or iterationType == 6 then
+      for i = 1,params.n do
+         if i ~= params.index then
+            uetorch.DestroyActor(spheres[i])
+         end
+      end
+   end
+
    mainActor = spheres[params.index]
    block.actors['occluder1'] = occluder.get_occluder(1)
    block.actors['occluder2'] = occluder.get_occluder(2)
@@ -296,7 +286,7 @@ function block.RunBlock()
    utils.AddTickHook(occluder.tick)
 
    -- spheres
-   uetorch.SetActorVisible(sphere, visible1)
+   uetorch.SetActorVisible(mainActor, visible1)
    material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
    material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
    material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
