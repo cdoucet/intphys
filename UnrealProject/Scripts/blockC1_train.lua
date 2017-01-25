@@ -20,6 +20,7 @@ local utils = require 'utils'
 local material = require 'material'
 local backwall = require 'backwall'
 local occluder = require 'occluder'
+local light = require 'light'
 local camera = require 'camera'
 local block = {}
 
@@ -103,9 +104,9 @@ local function GetRandomParams()
 
       -- scale in [1/2, 3/2], keep it a sphere -> scaling in all axes
       sphereScale = {
-         math.random() + 1,
-         math.random() + 1,
-         math.random() + 1
+         math.random() + 1.5,
+         math.random() + 1.5,
+         math.random() + 1.5
       },
 
       -- 25% chance the sphere don't move (no force applied)
@@ -152,6 +153,9 @@ local function GetRandomParams()
    -- Pick random coordinates for the camera
    params.camera = camera.random()
 
+   -- Lighting
+   params.light = light.random()
+
    -- Pick random attributes for each occluder
    params.occluder = {}
    for i=1, params.nOccluders do
@@ -192,6 +196,9 @@ function block.RunBlock()
 
    -- floor
    material.SetActorMaterial(floor, material.ground_materials[params.ground])
+
+   -- light
+   light.setup(params.light)
 
    -- background wall
    if params.isBackwall then
