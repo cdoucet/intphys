@@ -77,5 +77,5 @@ source $NAIVEPHYSICS_ROOT/activate-naivephysics
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
 
 echo "Successful installation of the Unreal Engine with UETorch,
-please package the NaivePhysics project (refer to the 'Instalaltion
+please package the NaivePhysics project (refer to the 'Installation
 details' section of the README)"
