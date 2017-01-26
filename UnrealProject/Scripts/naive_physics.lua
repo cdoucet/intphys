@@ -89,10 +89,11 @@ local function SaveScreen(dt)
 
       -- save the depth field
       if i2 then
-         -- normalize the depth field in [0, 1]. TODO max depth is the
-         -- horizon line, which is assumed to be visible at the first
-         -- tick. If this is not the case, the following normalization
-         -- isn't correct as the max_depth varies accross ticks.
+         -- normalize the depth field in [0, 1]. The max depth is the
+         -- horizon line (or the background wall), which is assumed to
+         -- be visible at the first tick. If this is not the case, the
+         -- following normalization isn't correct as the max_depth
+         -- varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
          i2:apply(function(x) return x / max_depth end)
          image.save(depth_file, i2)

@@ -22,8 +22,8 @@ local light = {}
 
 local sky_sphere = uetorch.GetActor('SkySphere')
 local directional_lights = {
-   uetorch.GetActor('LightSource'),
-   uetorch.GetActor('LightSource2')
+   uetorch.GetActor('LightSource_1'),
+   uetorch.GetActor('LightSource_2')
 }
 
 
