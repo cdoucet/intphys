@@ -2,6 +2,7 @@ TODO list for the NaivePhysics project
 
 * Deadlines
 ** For 2017-02-15
+*** implement non-occluded test blocks
 *** release of another block (block 1 dynamic or block 2 -> shape consistency)
     - a new train set, a new validation set
 *** release of test set for the 2 blocks
@@ -16,11 +17,14 @@ TODO list for the NaivePhysics project
 ** detect any collision with the camera
 ** detect superposition of the 2 occluders
 ** detect occluder or sphere in the backwall
+** in blockCA_dynamic_1/static
+   make sure the 2nd occluder is destroyed (avoid undesirable shadows)
 * Improvements
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
-** refactor status.txt and params.json
-   Ensure the status is correct (nb of agents, visibles or not)
+** write a spheres.lua
+** from occluder.lua to occluders.lua
+** factorize code for the test blocks
 ** optimize checks in C1_dynamic_1
    - detect failures right after iterationType 5, not after the whole run!!
    - as done in C1_dynamic_2 block
