@@ -17,14 +17,16 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+
 local material = require 'material'
 local backwall = require 'backwall'
 local occluder = require 'occluder'
+local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
+
 local block = {}
 
-local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_1")
 local sphere2 = uetorch.GetActor("Sphere_2")
 local sphere3 = uetorch.GetActor("Sphere_3")
@@ -36,8 +38,8 @@ local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
 
 
+-- Return true as train blocks are always physically possible
 function block.IsPossible()
-   -- train blocks are always physically possible
    return true
 end
 
@@ -46,26 +48,26 @@ function block.MaskingActors()
    -- on train, we don't have any inactive actor
    local active, inactive, text = {}, {}, {}
 
-   table.insert(active, floor)
+   table.insert(active, floor.actor)
    table.insert(text, "floor")
 
-   if params.isBackwall then
-      backwall.tableInsert(active, text)
+   if params.backwall.is_active then
+      backwall.insert_masks(active, text)
    end
 
    if params.nOccluders >=1 then
       table.insert(active, occluder.get_occluder(1))
-      table.insert(text, "occluder1")
+      table.insert(text, "occluder_1")
    end
 
    if params.nOccluders >= 2 then
       table.insert(active, occluder.get_occluder(2))
-      table.insert(text, "occluder2")
+      table.insert(text, "occluder_2")
    end
 
    for i = 1, params.n do
       table.insert(active, spheres[i])
-      table.insert(text, 'sphere' .. i)
+      table.insert(text, 'sphere_' .. i)
    end
 
    return active, inactive, text
@@ -73,10 +75,10 @@ end
 
 
 function block.MaxActors()
-   -- spheres + occluders + floor + backwall*3
+   -- spheres + occluders + floor + backwall
    local max = 1 -- floor
-   if params.isBackwall then
-      max = max + 3
+   if params.backwall.is_active then
+      max = max + 1
    end
    return max + params.n + params.nOccluders
 end
@@ -85,9 +87,6 @@ end
 -- Return random parameters for the C1 block, training configuration
 local function GetRandomParams()
    local params = {
-      -- floor
-      ground = math.random(#material.ground_materials),
-
       -- occluders
       nOccluders = math.random(0, 2),
 
@@ -102,7 +101,7 @@ local function GetRandomParams()
          70 + math.random(200)
       },
 
-      -- scale in [1/2, 3/2], keep it a sphere -> scaling in all axes
+      -- scale in [3/2, 5/2], keep it a sphere -> scaling in all axes
       sphereScale = {
          math.random() + 1.5,
          math.random() + 1.5,
@@ -144,16 +143,11 @@ local function GetRandomParams()
    }
    params.index = math.random(1, params.n)
 
-   -- Background wall with 50% chance
-   params.isBackwall = (1 == math.random(0, 1))
-   if params.isBackwall then
-      params.backwall = backwall.random()
-   end
-
-   -- Pick random coordinates for the camera
+   -- Random configuration for floor material, background wall, camera
+   -- and lighting
+   params.floor = floor.random()
+   params.backwall = backwall.random()
    params.camera = camera.random()
-
-   -- Lighting
    params.light = light.random()
 
    -- Pick random attributes for each occluder
@@ -181,31 +175,21 @@ function block.SetBlock(currentIteration)
    WriteJson(params, iterationPath .. 'params.json')
 
    for i = 1, params.nOccluders do
-      block.actors['occluder' .. i] = occluder.get_occluder(i)
+      block.actors['occluder_' .. i] = occluder.get_occluder(i)
    end
 
    for i = 1, params.n do
-      block.actors['sphere' .. i] = spheres[i]
+      block.actors['sphere_' .. i] = spheres[i]
    end
 end
 
 
 function block.RunBlock()
-   -- camera
+   -- camera, floor, lights and background wall
    camera.setup(iterationType, 150, params.camera)
-
-   -- floor
-   material.SetActorMaterial(floor, material.ground_materials[params.ground])
-
-   -- light
+   floor.setup(params.floor)
    light.setup(params.light)
-
-   -- background wall
-   if params.isBackwall then
-      backwall.setup(params.backwall)
-   else
-      backwall.hide()
-   end
+   backwall.setup(params.backwall)
 
    -- occluders
    for i = 1,2 do
@@ -239,6 +223,28 @@ function block.RunBlock()
             spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
       end
    end
+end
+
+
+function block.get_status()
+   local max_actors = block.MaxActors()
+   local _, _, actors = block.MaskingActors()
+   actors = backwall.get_updated_actors(actors)
+
+   local masks = {}
+   masks[0] = "sky"
+   for n, m in pairs(actors) do
+      masks[math.floor(255 * n/ max_actors)] = m
+   end
+
+   local status = {}
+   status['possible'] = block.IsPossible()
+   status['floor'] = floor.get_status()
+   status['camera'] = camera.get_status()
+   status['lights'] = light.get_status()
+   status['masks_grayscale'] = masks
+
+   return status
 end
 
 

@@ -43,10 +43,41 @@ end
 
 
 -- Write a table as a JSon file
-function WriteJson(t, file)
+--
+-- `keyorder` is an optional array to specify the ordering of keys in
+-- the encoded output. If an object has keys which are not in this
+-- array they are written after the sorted keys.
+function WriteJson(t, file, keyorder)
    local f = assert(io.open(file, "wb"))
-   f:write(json.encode(t, {indent = true}))
+   if keyorder then
+      f:write(json.encode(t, {indent = true, level = 1, keyorder = keyorder}))
+   else
+      f:write(json.encode(t, {indent = true, level = 1}))
+   end
    f:close()
+end
+
+
+-- Return the location and rotation of an actor in a string
+--
+-- The returned string is formatted as:
+--   'x y z pitch yaw roll'
+function coordinates_to_string(actor)
+   local l = uetorch.GetActorLocation(actor)
+   local r = uetorch.GetActorRotation(actor)
+
+   return (l.x .. ' ' .. l.y .. ' ' .. l.z .. ' ' ..
+              r.pitch .. ' ' .. r.yaw .. ' ' .. r.roll)
+end
+
+
+-- Return unique elements of `t` (equivalent to set(t) in
+-- Python). From https://stackoverflow.com/questions/20066835
+function Unique(t)
+   local hash, res = {}, {}
+   t:apply(
+      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
+   return res
 end
 
 

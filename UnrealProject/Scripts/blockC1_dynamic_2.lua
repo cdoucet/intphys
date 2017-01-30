@@ -17,13 +17,16 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+
 local material = require 'material'
 local backwall = require 'backwall'
 local occluder = require 'occluder'
+local floor = require 'floor'
+local light = require 'light'
 local camera = require 'camera'
+
 local block = {}
 
-local floor = uetorch.GetActor('Floor')
 local sphere = uetorch.GetActor("Sphere_1")
 local sphere2 = uetorch.GetActor("Sphere_2")
 local sphere3 = uetorch.GetActor("Sphere_3")
@@ -84,22 +87,22 @@ end
 function block.MaskingActors()
    local active, inactive, text = {}, {}, {}
 
-   table.insert(active, floor)
+   table.insert(active, floor.actor)
    table.insert(text, "floor")
 
-   if params.isBackwall then
-      backwall.tableInsert(active, text)
+   if params.backwall.is_active then
+      backwall.insert_masks(active, text)
    end
 
    table.insert(active, occluder.get_occluder(1))
-   table.insert(text, "occluder1")
+   table.insert(text, "occluder_1")
 
    table.insert(active, occluder.get_occluder(2))
-   table.insert(text, "occluder2")
+   table.insert(text, "occluder_2")
 
    -- on test, the main actor only can be inactive (when hidden)
    for i = 1, params.n do
-      table.insert(text, 'sphere' .. i)
+      table.insert(text, 'sphere_' .. i)
       if i ~= params.index then
          table.insert(active, spheres[i])
       end
@@ -122,8 +125,8 @@ end
 
 function block.MaxActors()
    local max = 3 -- floor + 2 occluders
-   if params.isBackwall then
-      max = max + 3
+   if params.backwall.is_active then
+      max = max + 1
    end
    return max + params.n
 end
@@ -132,7 +135,6 @@ end
 -- Return random parameters for the C1 dynamic_2 block
 local function GetRandomParams()
    local params = {
-      ground = math.random(#material.ground_materials),
       sphere1 = math.random(#material.sphere_materials),
       sphere2 = math.random(#material.sphere_materials),
       sphere3 = math.random(#material.sphere_materials),
@@ -189,11 +191,9 @@ local function GetRandomParams()
                    start_position = 'down',
                    pause = {table.unpack(params.occluder[1].pause)}})
 
-   -- Background wall with 50% chance
-   params.isBackwall = (1 == math.random(0, 1))
-   if params.isBackwall then
-      params.backwall = backwall.random()
-   end
+   params.floor = floor.random()
+   params.light = light.random()
+   params.backwall = backwall.random()
 
    return params
 end
@@ -258,26 +258,19 @@ function block.SetBlock(currentIteration)
    end
 
    mainActor = spheres[params.index]
-   block.actors['occluder1'] = occluder.get_occluder(1)
-   block.actors['occluder2'] = occluder.get_occluder(2)
+   block.actors['occluder_1'] = occluder.get_occluder(1)
+   block.actors['occluder_2'] = occluder.get_occluder(2)
    for i = 1,params.n do
-      block.actors['sphere' .. i] = spheres[i]
+      block.actors['sphere_' .. i] = spheres[i]
    end
 end
 
 function block.RunBlock()
-   -- camera
+   -- camera, floor, lights and background wall
    camera.setup(iterationType, 150)
-
-   -- floor
-   material.SetActorMaterial(floor, material.ground_materials[params.ground])
-
-   -- background wall
-   if params.isBackwall then
-      backwall.setup(params.backwall)
-   else
-      backwall.hide()
-   end
+   floor.setup(params.floor)
+   light.setup(params.light)
+   backwall.setup(params.backwall)
 
    -- occluders
    for i = 1,2 do
@@ -399,5 +392,28 @@ end
 function block.IsPossible()
    return possible
 end
+
+
+function block.get_status()
+   local max_actors = block.MaxActors()
+   local _, _, actors = block.MaskingActors()
+   actors = backwall.get_updated_actors(actors)
+
+   local masks = {}
+   masks[0] = "sky"
+   for n, m in pairs(actors) do
+      masks[math.floor(255 * n/ max_actors)] = m
+   end
+
+   local status = {}
+   status['possible'] = block.IsPossible()
+   status['floor'] = floor.get_status()
+   status['camera'] = camera.get_status()
+   status['lights'] = light.get_status()
+   status['masks_grayscale'] = masks
+
+   return status
+end
+
 
 return block

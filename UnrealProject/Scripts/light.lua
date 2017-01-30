@@ -18,17 +18,17 @@
 -- lights and the presence/absence of clouds.
 
 local uetorch = require 'uetorch'
-local light = {}
+local M = {}
 
 local sky_sphere = uetorch.GetActor('SkySphere')
 local directional_lights = {
-   uetorch.GetActor('LightSource_1'),
-   uetorch.GetActor('LightSource_2')
+   uetorch.GetActor('LightSource'),
+   uetorch.GetActor('LightSource2')
 }
 
 
 -- Return a random rotation vector for a directional light orientation
-function light.random_directional()
+function M.random_directional()
    return {
       x = -90 * math.random(),
       y = 190 + 160 * math.random(), -- in [190, 350]
@@ -38,7 +38,7 @@ end
 
 
 -- Return a random rotation vector for the sky sphere
-function light.random_sky()
+function M.random_sky()
    return {
       x = 360 * math.random(),
       y = 360 * math.random(),
@@ -51,26 +51,28 @@ end
 --
 -- Choose 1 or 2 directional light with random orientation, and the
 -- presence/absence of the sky sphere (with clouds)
-function light.random()
+function M.random()
    local params = {}
 
    params.nlights = (math.random() >= 0.5 and 2 or 1)
    params.directional = {}
    for i = 1, params.nlights do
-      table.insert(params.directional, light.random_directional())
+      table.insert(params.directional, M.random_directional())
    end
 
    params.is_sky = (math.random() >= 0.5)
    if params.is_sky then
-      params.sky = light.random_sky()
+      params.sky = M.random_sky()
    end
 
    return params
 end
 
 
---- Setup the scene illumination with the given parameters
-function light.setup(params)
+--- Setup the scene illumination with the given parameters, store the
+--- parameters locally
+local _params = nil
+function M.setup(params)
    -- setup the lights
    for i = 1, params.nlights do
       local d = params.directional[i]
@@ -89,6 +91,19 @@ function light.setup(params)
    else
       uetorch.DestroyActor(sky_sphere)
    end
+
+   _params = params
 end
 
-return light
+
+function M.get_status()
+   local status = {}
+   for i = 1, _params.nlights do
+      status['light_' .. i] = coordinates_to_string(directional_lights[i])
+   end
+
+   return status
+end
+
+
+return M

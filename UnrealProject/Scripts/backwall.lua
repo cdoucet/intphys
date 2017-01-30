@@ -21,53 +21,85 @@
 
 local uetorch = require 'uetorch'
 local material = require 'material'
-local backwall = {}
+local M = {}
 
 
--- those are the componants of the background wall in the Unreal scene
-local wallBack = uetorch.GetActor("WallBack")
-local wallRight = uetorch.GetActor("WallRight")
-local wallLeft = uetorch.GetActor("WallLeft")
+-- Componants of the background wall in the Unreal scene
+local wall = {
+   back = assert(uetorch.GetActor("WallBack")),
+   left = assert(uetorch.GetActor("WallLeft")),
+   right = assert(uetorch.GetActor("WallRight"))
+}
 
 
--- Pick a random wall texture for the background wall
-function backwall.randomMaterial()
+-- Return true or false with the probability `p` for true, default to 0.5
+function M.random_active(p)
+   p = p or 0.5
+   return (math.random() < p)
+end
+
+
+-- Return a random wall texture for the background wall
+function M.random_material()
    return math.random(#material.wall_materials)
 end
 
--- Pick a random height for the background wall
-function backwall.randomHeight()
+
+-- Return a random height for the background wall
+function M.random_height()
    return math.random(1, 10) * 0.5
 end
 
--- Pick a random distance from the camera for the background wall
-function backwall.randomDepth()
+
+-- Return a random location on the Y axis
+function M.random_depth()
    return math.random(-1500, -900)
 end
 
--- Pick a random width of the U-shaped wall (i.e. lenght of the U bottom)
-function backwall.randomWidth()
+
+-- Pick a random width (length of wall.back)
+function M.random_width()
    return math.random(1500, 4000)
 end
 
+
 -- Generate a random set of attributes for the background wall
-function backwall.random()
-   return {
-      material = backwall.randomMaterial(),
-      height = backwall.randomHeight(),
-      depth = backwall.randomDepth(),
-      width = backwall.randomWidth()
-   }
+function M.random()
+   local params = {}
+   params.is_active = M.random_active()
+
+   if params.is_active then
+      params.material = M.random_material()
+      params.height = M.random_height()
+      params.depth = M.random_depth()
+      params.width = M.random_width()
+   end
+
+   return params
 end
+
+
+-- Destroy the background wall
+function M.destroy()
+   for _, w in pairs(wall) do
+      uetorch.DestroyActor(w)
+   end
+end
+
 
 -- Setup a background wall configuration from precomputed attributes
 --
 -- The params must be table structured as the one returned by
--- backwall.random()
-function backwall.setup(params)
-   params = params or backwall.random()
+-- M.random()
+function M.setup(params)
+   params = params or M.random()
 
-   for _, w in ipairs({wallBack, wallLeft, wallRight}) do
+   if not params.is_active then
+      M.destroy()
+      return
+   end
+
+   for _, w in pairs(wall) do
       -- material
       material.SetActorMaterial(w, material.wall_materials[params.material])
 
@@ -81,32 +113,76 @@ function backwall.setup(params)
    end
 
    -- width
-   local location = uetorch.GetActorLocation(wallLeft)
-   uetorch.SetActorLocation(wallLeft, -params.width / 2, location.y, location.z)
+   local location = uetorch.GetActorLocation(wall.left)
+   uetorch.SetActorLocation(wall.left, -params.width / 2, location.y, location.z)
 
-   local location = uetorch.GetActorLocation(wallRight)
-   uetorch.SetActorLocation(wallRight, params.width / 2, location.y, location.z)
+   local location = uetorch.GetActorLocation(wall.right)
+   uetorch.SetActorLocation(wall.right, params.width / 2, location.y, location.z)
 end
 
 
--- Make the background wall invisible
-function backwall.hide()
-   uetorch.DestroyActor(wallBack)
-   uetorch.DestroyActor(wallRight)
-   uetorch.DestroyActor(wallLeft)
+-- Insert the background wall componants in the masks table
+function M.insert_masks(tActor, tText)
+   table.insert(tActor, wall.back)
+   table.insert(tActor, wall.left)
+   table.insert(tActor, wall.right)
+
+   table.insert(tText, "back_wall")
+   table.insert(tText, "left_wall")
+   table.insert(tText, "right_wall")
 end
 
--- Insert the background wall componants in a table (this is usefull
--- for masks computation). TODO here each subwall will have a distinct
--- mask ID, wheras a single id would be better.
-function backwall.tableInsert(tActor, tText)
-   table.insert(tActor, wallBack)
-   table.insert(tActor, wallLeft)
-   table.insert(tActor, wallRight)
 
-   table.insert(tText, "wallBack")
-   table.insert(tText, "wallLeft")
-   table.insert(tText, "wallRight")
+function M.group_masks(img, actors, names)
+   -- get the indices of the backwall actors in the image (should be 2, 3, 4)
+   local idx, min_idx, max_idx = {}, 10e9, 0
+   for k, v in ipairs(actors) do
+      if v == wall.back or v == wall.left or v == wall.right then
+         idx[k] = true
+
+         if min_idx > k then
+            min_idx = k
+         end
+
+         if max_idx < k then
+            max_idx = k
+         end
+      end
+   end
+
+   -- if no actor found, the backwall is not active
+   if #idx == 0 then
+      return
+   end
+
+   -- filter the image to merge backwall actors in a single mask value
+   img:apply(function(x)
+         if idx[x] then -- pixel from backwall
+            return min_idx
+         elseif x > max_idx then
+            return x - 2
+         else
+            return x
+         end
+   end)
 end
 
-return backwall
+
+function M.get_updated_actors(names)
+   local new_names = {}
+   local __done = false
+   for _, v in ipairs(names) do
+      if string.match(v, 'wall') then
+         if not __done then
+            __done = true
+            table.insert(new_names, 'wall')
+         end
+      else
+         table.insert(new_names, v)
+      end
+   end
+   return new_names
+end
+
+
+return M

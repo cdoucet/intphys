@@ -20,16 +20,11 @@ local image = require 'image'
 local posix = require 'posix'
 local config = require 'config'
 local utils = require 'utils'
-local block
 
--- Return unique elements of `t` (equivalent to set(t) in
--- Python). From https://stackoverflow.com/questions/20066835
-function Unique(t)
-   local hash, res = {}, {}
-   t:apply(
-      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
-   return res
-end
+local backwall = require 'backwall'
+local camera = require 'camera'
+
+local block
 
 
 -- Force the rendered image to be 288x288
@@ -55,7 +50,6 @@ Tick = utils.Tick
 uetorch.SetTickDeltaBounds(1/8, 1/8)
 
 
-local camera = assert(uetorch.GetActor("Camera"))
 local iterationId, iterationType, iterationBlock, iterationPath
 local screenTable, depthTable = {}, {}
 local tLastSaveScreen = 0
@@ -79,21 +73,20 @@ local function SaveScreen(dt)
 
       -- active and inactive actors in the scene are required for
       -- depth and mask
-      local active_actors, inactive_actors, _ = block.MaskingActors()
+      local active_actors, inactive_actors, active_names = block.MaskingActors()
 
       -- compute the depth field and objects segmentation masks
       local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
       local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
       local i2, i3 = uetorch.CaptureDepthAndMasks(
-         camera, active_actors, inactive_actors)
+         camera.actor, active_actors, inactive_actors)
 
       -- save the depth field
       if i2 then
-         -- normalize the depth field in [0, 1]. The max depth is the
-         -- horizon line (or the background wall), which is assumed to
-         -- be visible at the first tick. If this is not the case, the
-         -- following normalization isn't correct as the max_depth
-         -- varies accross ticks.
+         -- normalize the depth field in [0, 1]. TODO max depth is the
+         -- horizon line, which is assumed to be visible at the first
+         -- tick. If this is not the case, the following normalization
+         -- isn't correct as the max_depth varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
          i2:apply(function(x) return x / max_depth end)
          image.save(depth_file, i2)
@@ -101,6 +94,10 @@ local function SaveScreen(dt)
 
       -- save the objects segmentation masks
       if i3 then
+         -- cluster the backwall componants in a single mask. This
+         -- modifies i3 in place.
+         backwall.group_masks(i3, active_actors, active_names)
+
          i3 = i3:float()  -- cast from int to float for normalization
          i3:apply(function(x) return x / block.MaxActors() end)
          image.save(mask_file, i3)
@@ -117,13 +114,10 @@ local tSaveText = 0
 local tLastSaveText = 0
 
 local function SaveStatusToTable(dt)
-   local aux = {t = tSaveText}
+   local aux = {}
    if tSaveText - tLastSaveText >= config.GetBlockCaptureInterval(iterationBlock) then
       for k, v in pairs(block.actors) do
-         aux[k] = {
-            location = uetorch.GetActorLocation(v),
-            rotation = uetorch.GetActorRotation(v)
-         }
+         aux[k] = coordinates_to_string(v)
       end
       table.insert(data, aux)
 
@@ -183,63 +177,14 @@ local function SaveData()
 
       torch.save(iterationPath .. '../hidden_' .. iterationType .. '.t7', isHidden)
    else
-      -- TODO need to be refactored, better if we have a json
-      -- structure as well
-      local filename = iterationPath .. 'status.txt'
-      local file = assert(io.open(filename, "w"))
-      file:write("block = " .. iterationBlock .. "\n")
+      local status = block.get_status()
+      status["block"] = iterationBlock
+      status['steps'] = data
 
-      if block.IsPossible() then
-         file:write("possible = true\n")
-      else
-         file:write("possible = false\n")
-      end
-
-      local floor = uetorch.GetActor('Floor')
-      local bounds = uetorch.GetActorBounds(floor)
-      local minx = bounds["x"] - bounds["boxX"]
-      local maxx = bounds["x"] + bounds["boxX"]
-      local miny = bounds["y"] - bounds["boxY"]
-      local maxy = bounds["y"] + bounds["boxY"]
-      file:write("minX = " .. minx .. " maxX = " .. maxx ..
-                    " minY = " .. miny .. " maxY = " .. maxy .. "\n")
-
-      file:write("camera:\n")
-      local cam_loc = uetorch.GetActorLocation(camera)
-      local cam_rot = uetorch.GetActorRotation(camera)
-      file:write("x = " .. cam_loc.x .. " y = " .. cam_loc.y .. " z = " .. cam_loc.z .. "\n")
-      file:write("pitch = " .. cam_rot.pitch .. " roll = " .. cam_rot.roll ..
-                    " yaw = " .. cam_rot.yaw .. "\n")
-
-      file:write("masks grayscale:\n0 = sky ")
-      local _, _, masks = block.MaskingActors()
-      local max_actors = block.MaxActors()
-      for n, m in pairs(masks) do
-         file:write(math.floor(255 * n/ max_actors) .. ' = ' .. m .. ' ')
-      end
-      file:write('\n')
-
-      local nactors = 0
-      for k,v in pairs(block.actors) do
-         nactors = nactors + 1
-      end
-      file:write("number of actors = " .. nactors .. "\n")
-
-      for k, v in ipairs(data) do
-         file:write("step = " .. k .. "\n")
-         file:write("t = " .. v["t"] .. "\n")
-
-         for k2,v2 in pairs(block.actors) do
-            file:write("actor = " .. k2 .. "\n")
-            local loc = v[k2]["location"]
-            file:write("x = " .. loc["x"] .. " y = " .. loc["y"] .. " z = " .. loc["z"] .. "\n")
-            local rot = v[k2]["rotation"]
-            file:write("pitch = " .. rot["pitch"] ..
-                          " roll = " .. rot["roll"] ..
-                          " yaw = " .. rot["yaw"] .. "\n")
-         end
-      end
-      file:close()
+      -- write the status.json with ordered keys
+      local keyorder = {
+         'block', 'possible', 'floor', 'camera', 'lights', 'masks_grayscale', 'steps'}
+      WriteJson(status, iterationPath .. 'status.json', keyorder)
    end
 end
 
