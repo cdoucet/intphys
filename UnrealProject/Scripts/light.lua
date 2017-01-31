@@ -30,18 +30,8 @@ local directional_lights = {
 -- Return a random rotation vector for a directional light orientation
 function M.random_directional()
    return {
-      x = -90 * math.random(),
-      y = 190 + 160 * math.random(), -- in [190, 350]
-      z = 360 * math.random()
-   }
-end
-
-
--- Return a random rotation vector for the sky sphere
-function M.random_sky()
-   return {
-      x = 360 * math.random(),
-      y = 360 * math.random(),
+      x = -25 - 40 * math.random(),
+      y = 150 + 120 * math.random(),
       z = 360 * math.random()
    }
 end
@@ -61,9 +51,6 @@ function M.random()
    end
 
    params.is_sky = (math.random() >= 0.5)
-   if params.is_sky then
-      params.sky = M.random_sky()
-   end
 
    return params
 end
@@ -85,10 +72,7 @@ function M.setup(params)
    end
 
    -- setup the sky sphere
-   if params.is_sky then
-      local s = params.sky
-      uetorch.SetActorRotation(sky_sphere, s.x, s.y, s.z)
-   else
+   if not params.is_sky then
       uetorch.DestroyActor(sky_sphere)
    end
 
