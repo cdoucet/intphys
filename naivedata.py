@@ -454,8 +454,8 @@ def FindDuplicates(directory):
         print('WARNING: Found {} duplicated scenes.'.format(len(duplicate)))
         print('The following scenes are the same:')
         for (n1, n2) in sorted(duplicate):
-            print('{}  ==  {}'.format(os.path.dirname(n1), os.path.dirname(n2)))
-
+            print('{}  ==  {}'.format(
+                os.path.dirname(n1), os.path.dirname(n2)))
 
 
 def Main():
@@ -492,8 +492,8 @@ def Main():
                   seed=args.seed, dry=args.dry, verbose=args.verbose)
 
     # check for duplicated scenes
-    #if not args.dry:
-    FindDuplicates(output_dir)
+    if not args.dry:
+        FindDuplicates(output_dir)
 
 
 if __name__ == '__main__':
