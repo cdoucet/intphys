@@ -32,6 +32,13 @@ function M.random()
 end
 
 
+-- Insert actor and name in the masking tables
+function M.insert_masks(actors, text)
+   table.insert(actors, M.actor)
+   table.insert(text, "floor")
+end
+
+
 -- Setup the floor with a random material
 function M.setup(floor_material)
    floor_material = floor_material or M.random()

@@ -20,30 +20,30 @@
 -- method handling the occluders movements.
 
 local uetorch = require 'uetorch'
+local utils = require 'utils'
 local material = require 'material'
-local occluder = {}
+
+local M = {}
 
 
 -- the occluder's actors defined in the scene
-local occluder1 = uetorch.GetActor('Occluder_1')
-local occluder2 = uetorch.GetActor('Occluder_2')
+local occluder_actors = {
+   assert(uetorch.GetActor('Occluder_1')),
+   assert(uetorch.GetActor('Occluder_2'))
+}
 
 
 -- Return an occluder actor
 --
--- `id` must be 1 or 2 for occluder1 or occluder2 respectively
-function occluder.get_occluder(id)
-   assert(id == 1 or id == 2)
-   if id == 1 then
-      return occluder1
-   else
-      return occluder2
-   end
+-- `i` must be 1 or 2 for occluder1 or occluder2 respectively
+function M.get_occluder(i)
+   assert(i == 1 or i == 2)
+   return occluder_actors[i]
 end
 
 
 -- Return a random wall texture for an occluder
-function occluder.random_material()
+function M.random_material()
    return math.random(#material.wall_materials)
 end
 
@@ -51,7 +51,7 @@ end
 -- Select a random round trip for the occluder (0 -> no motion, 0.5 ->
 -- single one way, 1 -> one round trip, 1.5 -> one round trip and one
 -- more single, 2 -> 2 round trips)
-function occluder.random_movement()
+function M.random_movement()
    return math.random(0, 4) / 2
 end
 
@@ -59,7 +59,7 @@ end
 -- Return a brief pause between each movement steps
 --
 -- `movement` is as returned by occluder.movement()
-function occluder.random_pause(movement)
+function M.random_pause(movement)
    local p = {}
    for i=1, movement*2 do
       table.insert(p, math.random(50))
@@ -72,7 +72,7 @@ end
 --
 -- TODO actually nothing random here...
 -- `id` must be 1 or 2 for occluder1 or occluder2 respectively
-function occluder.random_location(id)
+function M.random_location(id)
    local shift = 0
    if id == 2 then
       shift = 500
@@ -83,7 +83,7 @@ end
 
 
 -- Return a random rotation on the Z axis in degree
-function occluder.random_rotation()
+function M.random_rotation()
    return math.random(-45, 45)
 end
 
@@ -91,13 +91,13 @@ end
 -- Return the occluder start position
 --
 -- Start position is randomly 'up' or 'down'
-function occluder.random_start_position()
+function M.random_start_position()
    return (math.random(0, 1) == 1 and 'up' or 'down')
 end
 
 
 -- Return a random scale for occluder dimensions
-function occluder.random_scale()
+function M.random_scale()
    return {
       x = math.random() + 0.5,
       y = 1,
@@ -107,26 +107,33 @@ end
 
 
 -- Return a random set of parameters to setup an occluder
-function occluder.random(id)
-   local params = {
-      material = occluder.random_material(),
-      movement = occluder.random_movement(),
-      scale = occluder.random_scale(),
-      location = occluder.random_location(id),
-      rotation = occluder.random_rotation(),
-      start_position = occluder.random_start_position()
-   }
-   params.pause = occluder.random_pause(params.movement)
+function M.random()
+   local params = {}
+
+   params.n_occluders = math.random(1, 2)
+   for i = 1, params.n_occluders do
+        local p = {
+           material = M.random_material(),
+           movement = M.random_movement(),
+           scale = M.random_scale(),
+           location = M.random_location(i),
+           rotation = M.random_rotation(),
+           start_position = M.random_start_position()
+        }
+        p.pause = M.random_pause(p.movement)
+
+        params['occluder_' .. i] = p
+   end
 
    return params
 end
 
 
--- Remove an occluder from the scene
---
--- `id` must be 1 or 2 for occluder1 or occluder2 respectively
-function occluder.destroy(id)
-   uetorch.DestroyActor(occluder.get_occluder(id))
+function M.insert_masks(actors, text, params)
+   for i = 1, params.n_occluders do
+      table.insert(actors, M.get_occluder(i))
+      table.insert(text, 'occluder_' .. i)
+   end
 end
 
 
@@ -135,42 +142,50 @@ end
 local occluder_register = {}
 
 
--- Initialize an occluder with its parameters.
+-- Initialize the occluders with given parameters.
 --
--- `id` must be 1 or 2 for occluder1 or occluder2 respectively
 -- `params` must be a table structured as the one returned by
 --     occluder.random().
-function occluder.setup(id, params)
-   local mesh = occluder.get_occluder(id)
-   local box = uetorch.GetActorBounds(mesh).boxY
+function M.setup(params)
+   for i = 1, params.n_occluders do
+      local mesh = M.get_occluder(i)
+      local box = uetorch.GetActorBounds(mesh).boxY
+      local p = params['occluder_' .. i]
 
-   material.SetActorMaterial(mesh, material.wall_materials[params.material])
-   uetorch.SetActorScale3D(mesh, params.scale.x, params.scale.y, params.scale.z)
+      material.SetActorMaterial(mesh, material.wall_materials[p.material])
+      uetorch.SetActorScale3D(mesh, p.scale.x, p.scale.y, p.scale.z)
 
-   if params.start_position == 'up' then
-      uetorch.SetActorRotation(mesh, 0, params.rotation, 0)
-      uetorch.SetActorLocation(mesh, params.location.x, params.location.y, 20)
-   else -- down
-      uetorch.SetActorRotation(mesh, 0, params.rotation, 90)
-      uetorch.SetActorLocation(mesh, params.location.x, params.location.y, 20 + box)
+      if p.start_position == 'up' then
+         uetorch.SetActorRotation(mesh, 0, p.rotation, 0)
+         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20)
+      else -- down
+         uetorch.SetActorRotation(mesh, 0, p.rotation, 90)
+         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20 + box)
+      end
+
+      -- register the occluder for motion (through the occluder.tick
+      -- method). If movement==0, the occluder remains static and do
+      -- nothing on ticks.
+      if p.movement > 0 then
+         table.insert(
+            occluder_register, {
+               id=i,
+               mesh=mesh,
+               box=box,
+               rotation=p.rotation,
+               movement=p.movement,
+               pause=p.pause,
+               status='pause',
+               t_rotation=0,
+               t_rotation_change=0})
+      end
    end
 
-   -- register the occluder for motion (through the occluder.tick
-   -- method). If movement==0, the occluder remains static and do
-   -- nothing on ticks.
-   if params.movement > 0 then
-      table.insert(
-         occluder_register, {
-            id=id,
-            mesh=mesh,
-            box=box,
-            rotation=params.rotation,
-            movement=params.movement,
-            pause=params.pause,
-            status='pause',
-            t_rotation=0,
-            t_rotation_change=0})
+   for i = params.n_occluders+1, 2 do
+      uetorch.DestroyActor(M.get_occluder(i))
    end
+
+   utils.AddTickHook(M.tick)
 end
 
 
@@ -211,7 +226,7 @@ local function _occluder_move(occ, dir, dt)
 end
 
 
-function occluder.tick(dt)
+function M.tick(dt)
    for n, occ in pairs(occluder_register) do
       if occ.movement > 0 then
          if occ.status == 'pause' then
@@ -226,4 +241,4 @@ function occluder.tick(dt)
 end
 
 
-return occluder
+return M

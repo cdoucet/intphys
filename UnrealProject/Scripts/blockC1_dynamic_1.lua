@@ -20,24 +20,19 @@ local utils = require 'utils'
 
 local material = require 'material'
 local backwall = require 'backwall'
-local occluder = require 'occluder'
+local occluders = require 'occluders'
+local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
 local block = {}
-
-local sphere = uetorch.GetActor("Sphere_1")
-local sphere2 = uetorch.GetActor("Sphere_2")
-local sphere3 = uetorch.GetActor("Sphere_3")
-local spheres = {sphere, sphere2, sphere3}
-
 block.actors = {}
 
 local iterationId, iterationType, iterationBlock, iterationPath
 local params = {}
-local isHidden
 
+local isHidden
 local visible1 = true
 local visible2 = true
 local possible = true
@@ -45,14 +40,13 @@ local trick = false
 
 local tCheck, tLastCheck = 0, 0
 local step = 0
-
 local function Trick(dt)
    if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
       step = step + 1
 
       if not trick and isHidden[step] then
          trick = true
-         uetorch.SetActorVisible(spheres[params.index], visible2)
+         uetorch.SetActorVisible(spheres.get_sphere(params.index), visible2)
       end
 
       tLastCheck = tCheck
@@ -67,27 +61,18 @@ function block.MainActor()
 end
 
 
--- Return 2 tables of currently active and inactive actors for masking
--- computation. Inactive actor is the main sphere when twicked (not
--- rendered)
 function block.MaskingActors()
    local active, inactive, text = {}, {}, {}
 
-   table.insert(active, floor.actor)
-   table.insert(text, "floor")
-
-   if params.backwall.is_active then
-      backwall.insert_masks(active, text)
-   end
-
-   table.insert(active, wall)
-   table.insert(text, "occluder")
+   floor.insert_masks(active, text)
+   backwall.insert_masks(active, text, params.backwall)
+   occluders.insert_masks(active, text, params.occluders)
 
    -- on test, the main actor only can be inactive (when hidden)
-   for i = 1, params.n do
+   for i = 1, params.spheres.n_spheres do
       table.insert(text, 'sphere_' .. i)
       if i ~= params.index then
-         table.insert(active, spheres[i])
+         table.insert(active, spheres.get_sphere(i))
       end
    end
 
@@ -110,64 +95,60 @@ function block.MaxActors()
    if params.backwall.is_active then
       max = max + 1
    end
-   return max + params.n
+   return max + params.spheres.n_spheres
 end
 
 
 -- Return random parameters for the C1 dynamic_1 block
 local function GetRandomParams()
-   local params = {
-      sphere1 = math.random(#material.sphere_materials),
-      sphere2 = math.random(#material.sphere_materials),
-      sphere3 = math.random(#material.sphere_materials),
+   local params = {}
 
-      sphereZ = {
-         70 + math.random(200),
-         70 + math.random(200),
-         70 + math.random(200)
-      },
+   -- occluder
+   params.occluders = {}
+   params.occluders.n_occluders = 1
+   params.occluders.occluder_1 = {
+      material = occluders.random_material(),
+      movement = 1,
+      scale = {
+         x = 0.5,
+         y = 1,
+         z = 1 - 0.5 * math.random()},
+      location = {
+         x = 50,
+         y = -250},
+      rotation = 0,
+      start_position = 'down',
+      pause = {math.random(5), math.random(5)}}
 
-      forceX = {
-         math.random(800000, 1100000),
-         math.random(800000, 1100000),
-         math.random(800000, 1100000)
-      },
-      forceY = {0, 0, 0}, ---1000000, -1000000, -1000000},
-      forceZ = {
-         math.random(800000, 1000000),
-         math.random(800000, 1000000),
-         math.random(800000, 1000000)
-      },
+   -- spheres
+   params.spheres = {}
+   params.spheres.n_spheres = spheres.random_n_spheres()
+   for i = 1, params.spheres.n_spheres do
+      local p = {}
 
-      signZ = {
-         2 * math.random(2) - 3,
-         2 * math.random(2) - 3,
-         2 * math.random(2) - 3
-      },
-      left = {
-         math.random(0,1),
-         math.random(0,1),
-         math.random(0,1)
-      },
+      p.material = spheres.random_material()
+      p.scale = 0.9
+      p.is_static = false
+      p.location = {
+         x = -400,
+         y = -350 - 150 * (i - 1),
+         z = 70 + math.random(200)}
+      p.force = {
+         x = math.random(800000, 1100000),
+         y = 0,
+         z = math.random(800000, 1000000) * (2 * math.random(2) - 3)}
 
-      occluder = {
-         material = occluder.random_material(),
-         movement = 1,
-         scale = {
-            x = 0.5,
-            y = 1,
-            z = 1 - 0.5 * math.random()},
-         location = {
-            x = 50,
-            y = -250},
-         rotation = 0,
-         start_position = 'down',
-         pause = {math.random(5), math.random(5)}
-      },
-      n = math.random(1,3),
-   }
-   params.index = math.random(1, params.n)
+      if spheres.random_side() == 'right' then
+         p.location.x = 500
+         p.force.x = -1 * p.force.x
+      end
 
+      params.spheres['sphere_' .. i] = p
+   end
+
+   params.index = math.random(1, params.spheres.n_spheres)
+
+   -- others
    params.floor = floor.random()
    params.light = light.random()
    params.backwall = backwall.random()
@@ -180,13 +161,6 @@ function block.SetBlock(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath
       = config.GetIterationInfo(currentIteration)
 
-   local file = io.open (config.GetDataPath() .. 'output.txt', "a")
-   file:write(currentIteration .. ", " ..
-                 iterationId .. ", " ..
-                 iterationType .. ", " ..
-                 iterationBlock .. "\n")
-   file:close()
-
    if iterationType == 5 then
       if config.GetLoadParams() then
          params = ReadJson(iterationPath .. '../params.json')
@@ -197,7 +171,7 @@ function block.SetBlock(currentIteration)
 
       for i = 1,3 do
          if i ~= params.index then
-            uetorch.DestroyActor(spheres[i])
+            uetorch.DestroyActor(spheres.get_sphere(i))
          end
       end
    else
@@ -224,44 +198,22 @@ function block.SetBlock(currentIteration)
       end
    end
 
-   mainActor = spheres[params.index]
-   block.actors.occluder = occluder.get_occluder(1)
-   for i = 1,params.n do
-      block.actors['sphere_' .. i] = spheres[i]
+   mainActor = spheres.get_sphere(params.index)
+   block.actors.occluder = occluders.get_occluder(1)
+   for i = 1, params.spheres.n_spheres do
+      block.actors['sphere_' .. i] = spheres.get_sphere(i)
    end
 end
 
 function block.RunBlock()
-   -- camera, floor, lights and background wall
    camera.setup(iterationType, 150)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)
+   occluders.setup(params.occluders)
+   spheres.setup(params.spheres)
 
-   -- occluder
-   occluder.setup(1, params.occluder)
-   utils.AddTickHook(occluder.tick)
-
-   -- spheres
-   uetorch.SetActorVisible(spheres[params.index], visible1)
-   material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
-   material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
-   material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
-
-   for i = 1,params.n do
-      uetorch.SetActorScale3D(spheres[i], 0.9, 0.9, 0.9)
-      if params.left[i] == 1 then
-         uetorch.SetActorLocation(
-            spheres[i], -400, -350 - 150 * (i - 1), params.sphereZ[i])
-      else
-         uetorch.SetActorLocation(
-            spheres[i], 500, -350 - 150 * (i - 1), params.sphereZ[i])
-         params.forceX[i] = -params.forceX[i]
-      end
-
-      uetorch.AddForce(
-         spheres[i], params.forceX[i], params.forceY[i], params.signZ[i] * params.forceZ[i])
-   end
+   uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
 end
 
 local checkData = {}

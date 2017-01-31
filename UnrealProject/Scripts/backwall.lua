@@ -122,14 +122,16 @@ end
 
 
 -- Insert the background wall componants in the masks table
-function M.insert_masks(tActor, tText)
-   table.insert(tActor, wall.back)
-   table.insert(tActor, wall.left)
-   table.insert(tActor, wall.right)
+function M.insert_masks(tActor, tText, params)
+   if params.is_active then
+     table.insert(tActor, wall.back)
+     table.insert(tActor, wall.left)
+     table.insert(tActor, wall.right)
 
-   table.insert(tText, "back_wall")
-   table.insert(tText, "left_wall")
-   table.insert(tText, "right_wall")
+     table.insert(tText, "back_wall")
+     table.insert(tText, "left_wall")
+     table.insert(tText, "right_wall")
+   end
 end
 
 

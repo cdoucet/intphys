@@ -22,8 +22,6 @@ TODO list for the NaivePhysics project
 * Improvements
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
-** write a spheres.lua
-** from occluder.lua to occluders.lua
 ** factorize code for the test blocks
 ** optimize checks in C1_dynamic_1
    - detect failures right after iterationType 5, not after the whole run!!
