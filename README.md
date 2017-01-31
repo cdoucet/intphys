@@ -32,7 +32,7 @@ not been tested.
 
 * The final step is to package the
   `NaivePhysics/NaivePhysics.uproject` project into a standalone
-  binary. We provide the `build_package.sh` for doing that, but the
+  binary. We provide the `tools/build_package.sh` for doing that, but the
   first time (i.e. right after a compilation from scratch) it seems
   not to work.
 
@@ -60,7 +60,7 @@ If the 3D scene generated seems to be frozen (the spheres are moving
 but the wall remains in the 'down' position for a while), there is a
 problem with the packaged binary.
 
-Try to repackage it with the `build_package.sh` script or within the
+Try to repackage it with the `tools/build_package.sh` script or within the
 UnrealEngine editor.
 
 If the problem persists, launch the editor (with the *--editor* option
@@ -153,10 +153,14 @@ Each block script independently sets the scenario for the simulation and should 
 
 ## Additional utils
 
+In the `tools` directory are stored few utility scripts:
+
+* **build_package.sh** : builds the NaivePhysics project as a
+  standalone binary program.
 * **images2video.sh** : converts a sequence of generated images into a
   video or a gif file.
 * **clean.sh** : deletes directories which aren't necessary to rebuild
-  the game.
+  the package.
 
 
 ## License

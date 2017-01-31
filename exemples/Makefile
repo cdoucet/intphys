@@ -1,14 +1,11 @@
-NAIVEPHYSICS=/home/mbernard/dev/NaivePhysics-4.8
-
 # building an html page from gif files
 html: data
 	./build_html.sh $< $@
 
 # generate data in gif and avi from config file
 data: config.json
-	$(NAIVEPHYSICS)/naivedata.py $< $@ -f
-	$(NAIVEPHYSICS)/images2video.sh $@ -gif
-	$(NAIVEPHYSICS)/images2video.sh $@
+	$(NAIVEPHYSICS_ROOT)/naivedata.py $< $@ -f
+	$(NAIVEPHYSICS_ROOT)/tools/images2video.sh $@ gif
 
 clean:
-	rm -rf html
+	rm -rf html data

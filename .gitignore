@@ -69,3 +69,5 @@ data*/*
 !exemple.json
 !/exemples/config.json
 /core
+/exemples/data
+exemples/html/

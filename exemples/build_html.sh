@@ -25,7 +25,7 @@ width=256
 find $data_dir -type f -name *.gif -exec readlink -f {} \; > gifs
 
 
-# select train exemples (scene only, 8 random videos)
+# select train exemples (scene only, 12 random videos)
 cat gifs | grep scene | grep train | sort -R | head -12 > train
 
 
@@ -62,7 +62,7 @@ done
 ##
 
 mkdir -p $html_dir/gif
-mkdir -p $html_dir/avi
+#mkdir -p $html_dir/avi
 
 cp template.md md
 
@@ -74,7 +74,7 @@ do
     i=$(($i + 1))
     target=$html_dir/gif/train_$i.gif
     cp $source $target
-    cp ${source//gif/avi} ${target//gif/avi}
+    #cp ${source//gif/avi} ${target//gif/avi}
 
     [ $(( $i % 4 )) == 1 ] && train_file="$train_file\n"
     train_file="$train_file <img src=\"$target\" width=\"$width\">\n"
@@ -89,7 +89,7 @@ do
     i=$(($i + 1))
     target=$html_dir/gif/test_$i.gif
     cp $source $target
-    cp ${source//gif/avi} ${target//gif/avi}
+    #cp ${source//gif/avi} ${target//gif/avi}
 
     [ $(( $i % 4 )) == 1 ] && test_file="$test_file\n"
     test_file="$test_file <img src=\"$target\" width=\"$width\">\n"
@@ -104,7 +104,7 @@ do
     i=$(($i + 1))
     target=$html_dir/gif/meta_$i.gif
     cp $source $target
-    cp ${source//gif/avi} ${target//gif/avi}
+    #cp ${source//gif/avi} ${target//gif/avi}
 
     [ $(( $i % 3 )) == 1 ] && meta_file="$meta_file\n"
     meta_file="$meta_file <img src=\"$target\" width=\"$width\">\n"
