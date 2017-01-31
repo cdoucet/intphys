@@ -140,7 +140,7 @@ end
 -- Insert actor and name in the masking tables
 function M.insert_masks(actors, text, params)
    for i = 1, params.n_spheres do
-      table.insert(actors, spheres.get_sphere(i))
+      table.insert(actors, M.get_sphere(i))
       table.insert(text, 'sphere_' .. i)
    end
 end
