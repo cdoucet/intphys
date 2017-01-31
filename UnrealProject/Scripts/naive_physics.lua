@@ -14,6 +14,11 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module is entry point of the program from the Unreal Engine
+-- blueprints. It configures the current iteration block and run it,
+-- manages the random seed, takes sceen captures and metadata (masking
+-- and depth).
+
 local uetorch = require 'uetorch'
 local paths = require 'paths'
 local image = require 'image'
@@ -83,10 +88,10 @@ local function SaveScreen(dt)
 
       -- save the depth field
       if i2 then
-         -- normalize the depth field in [0, 1]. TODO max depth is the
-         -- horizon line, which is assumed to be visible at the first
-         -- tick. If this is not the case, the following normalization
-         -- isn't correct as the max_depth varies accross ticks.
+         -- normalize the depth field in [0, 1]. TODO max depth is
+         -- assumed to be visible at the first tick. If this is not
+         -- the case, the following normalization isn't correct as the
+         -- max_depth varies accross ticks.
          max_depth = math.max(i2:max(), max_depth)
          i2:apply(function(x) return x / max_depth end)
          image.save(depth_file, i2)

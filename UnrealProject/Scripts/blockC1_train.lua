@@ -14,6 +14,8 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module defines the training configuration for the block C1.
+
 local uetorch = require 'uetorch'
 local config = require 'config'
 

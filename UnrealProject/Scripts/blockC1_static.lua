@@ -14,6 +14,9 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module defines a test configuration for the block C1: a single
+-- change and a single occluder, with static spheres.
+
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
@@ -155,13 +158,6 @@ function block.SetBlock(currentIteration)
    iterationId, iterationType, iterationBlock, iterationPath =
       config.GetIterationInfo(currentIteration)
 
-   -- local file = io.open(config.GetDataPath() .. 'output.txt', "a")
-   -- file:write(currentIteration .. ", " ..
-   --               iterationId .. ", " ..
-   --               iterationType .. ", " ..
-   --               iterationBlock .. "\n")
-   -- file:close()
-
    if iterationType == 5 then
       if config.GetLoadParams() then
          params = ReadJson(iterationPath .. '../params.json')
@@ -216,19 +212,6 @@ function block.RunBlock()
    spheres.setup(params.spheres)
 
    uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
-   -- -- spheres
-   -- uetorch.SetActorLocation(sphere, 150, -550, 70)
-
-   -- material.SetActorMaterial(spheres[1], material.sphere_materials[params.sphere1])
-   -- material.SetActorMaterial(spheres[2], material.sphere_materials[params.sphere2])
-   -- material.SetActorMaterial(spheres[3], material.sphere_materials[params.sphere3])
-
-   -- if params.n >= 2 then
-   --    uetorch.SetActorLocation(sphere2, 40,-550, 70)
-   -- end
-   -- if params.n >= 3 then
-   --    uetorch.SetActorLocation(sphere3, 260,-550, 70)
-   -- end
 end
 
 local checkData = {}

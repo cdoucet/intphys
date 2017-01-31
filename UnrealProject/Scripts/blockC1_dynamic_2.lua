@@ -14,6 +14,9 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module defines a test configuration for the block C1: two
+-- changes and two occluders, with moving spheres.
+
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
