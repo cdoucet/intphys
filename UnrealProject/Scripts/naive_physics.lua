@@ -23,17 +23,19 @@ local uetorch = require 'uetorch'
 local paths = require 'paths'
 local image = require 'image'
 local posix = require 'posix'
+
 local config = require 'config'
 local utils = require 'utils'
-
+local tick = require 'tick'
 local backwall = require 'backwall'
 local camera = require 'camera'
+
 
 local block
 
 
 -- Force the rendered image to be 288x288
-function SetResolution(dt)
+function set_resolution(dt)
    uetorch.SetResolution(288, 288)
 end
 
@@ -50,9 +52,10 @@ local dry_run = os.getenv('NAIVEPHYSICS_DRY') or false
 GetCurrentIteration = utils.GetCurrentIteration
 RunBlock = nil
 
--- replace uetorch's Tick function
-Tick = utils.Tick
-uetorch.SetTickDeltaBounds(1/8, 1/8)
+-- replace uetorch's Tick function and set the tick rate at 8 Hz
+Tick = tick.tick
+tick.set_tick_delta(1/8)
+
 
 
 local iterationId, iterationType, iterationBlock, iterationPath
@@ -219,30 +222,30 @@ function SetCurrentIteration()
    -- RunBlock will be called from blueprint
    RunBlock = function() return block.RunBlock() end
 
-   utils.SetTicksRemaining(config.GetBlockTicks(iterationBlock))
+   tick.set_ticks_remaining(config.GetBlockTicks(iterationBlock))
 
    -- BUGFIX tweak to force the first iteration to be at the required
    -- resolution
-   utils.AddTickHook(SetResolution)
+   tick.add_tick_hook(set_resolution)
 
    if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      utils.AddTickHook(CheckVisibility)
-      utils.AddTickHook(SaveStatusToTable)
-      utils.AddEndTickHook(SaveData)
+      tick.add_tick_hook(CheckVisibility)
+      tick.add_tick_hook(SaveStatusToTable)
+      tick.add_end_tick_hook(SaveData)
    else
       -- save screen, depth and mask
       if not dry_run then
-         utils.AddTickHook(SaveScreen)
-         utils.AddTickHook(SaveStatusToTable)
-         utils.AddEndTickHook(SaveData)
+         tick.add_tick_hook(SaveScreen)
+         tick.add_tick_hook(SaveStatusToTable)
+         tick.add_end_tick_hook(SaveData)
       end
    end
 
    if iterationType == -1 then  -- train
-      utils.AddEndTickHook(
+      tick.add_end_tick_hook(
          function(dt) return utils.UpdateIterationsCounter(true) end)
    else  -- test
-      utils.AddTickHook(block.SaveCheckInfo)
-      utils.AddEndTickHook(block.Check)
+      tick.add_tick_hook(block.SaveCheckInfo)
+      tick.add_end_tick_hook(block.Check)
    end
 end

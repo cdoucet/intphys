@@ -73,7 +73,7 @@ end
 
 -- Return unique elements of `t` (equivalent to set(t) in
 -- Python). From https://stackoverflow.com/questions/20066835
-function Unique(t)
+function unique(t)
    local hash, res = {}, {}
    t:apply(
       function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
@@ -100,16 +100,12 @@ conf = {
       blockC1_static = 1,
       blockC1_dynamic_1 = 1,
       blockC1_dynamic_2 = 2,
-      block1c = 1,
-      block5a = 1
    },
    tupleSize = {
       blockC1_train = 1,
       blockC1_static = 4,
       blockC1_dynamic_1 = 4,
       blockC1_dynamic_2 = 4,
-      block1c = 4,
-      block5a = 2
    },
    blocks = ReadJson(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }

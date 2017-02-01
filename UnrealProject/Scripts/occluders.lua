@@ -20,7 +20,7 @@
 -- method handling the occluders movements.
 
 local uetorch = require 'uetorch'
-local utils = require 'utils'
+local tick = require 'tick'
 local material = require 'material'
 
 local M = {}
@@ -185,7 +185,7 @@ function M.setup(params)
       uetorch.DestroyActor(M.get_occluder(i))
    end
 
-   utils.AddTickHook(M.tick)
+   tick.add_tick_hook(M.tick)
 end
 
 

@@ -20,6 +20,7 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+local tick = require 'tick'
 
 local material = require 'material'
 local backwall = require 'backwall'
@@ -205,7 +206,7 @@ function block.SetBlock(currentIteration)
       else
          isHidden1 = torch.load(iterationPath .. '../hidden_6.t7')
          isHidden2 = torch.load(iterationPath .. '../hidden_5.t7')
-         utils.AddTickHook(Trick)
+         tick.add_tick_hook(Trick)
 
          if iterationType == 1 then
             visible1 = false
