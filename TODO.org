@@ -39,4 +39,3 @@ TODO list for the NaivePhysics project
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
   servers (EGL is enough).
-** increase ambiant lighting to avoid dark scenes
