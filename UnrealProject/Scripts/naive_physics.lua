@@ -33,9 +33,9 @@ local camera = require 'camera'
 local block
 
 
--- Force the rendered image to be 288x288
 function set_resolution(dt)
-   uetorch.SetResolution(288, 288)
+   local r = config.get_resolution()
+   uetorch.SetResolution(r.x, r.y)
 end
 
 
@@ -61,8 +61,7 @@ tick.set_tick_delta(1/8)
 
 local iteration = nil
 local screen_table, depth_table = {}, {}
-local t_last_save_screen = 0
-local t_save_screen = 0
+local t_save_screen, t_last_save_screen = 0, 0
 local step = 0
 local max_depth = 0
 
@@ -119,12 +118,11 @@ end
 
 
 local data = {}
-local t_save_text = 0
-local t_last_save_text = 0
+local t_save_text, t_last_save_text = 0, 0
 
 local function save_status_to_table(dt)
-   local aux = {}
    if t_save_text - t_last_save_text >= config.get_capture_interval() then
+      local aux = {}
       for k, v in pairs(block.actors) do
          aux[k] = utils.coordinates_to_string(v)
       end
@@ -136,23 +134,17 @@ local function save_status_to_table(dt)
 end
 
 
-local visibility_table = {}
-local t_check, t_last_check = 0, 0
-local step_visibility = 0
-local hidden = false
 local is_hidden = {}
+local t_check, t_last_check = 0, 0
 
 local function check_visibility(dt)
    if t_check - t_last_check >= config.get_capture_interval() then
-      step = step + 1
-      local stepStr = utils.pad_zeros(step, 3)
-
       local i2 = uetorch.ObjectSegmentation({block.main_actor()})
+
+      local hidden = false
       if i2 then
          if torch.max(i2) == 0 then
             hidden = true
-         else
-            hidden = false
          end
       end
 

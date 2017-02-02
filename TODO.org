@@ -17,8 +17,9 @@ TODO list for the NaivePhysics project
 ** detect any collision with the camera
 ** detect superposition of the 2 occluders
 ** detect occluder or sphere in the backwall
-** in blockCA_dynamic_1/static
-   make sure the 2nd occluder is destroyed (avoid undesirable shadows)
+** in blockC1_dynamic_1/static
+   make sure the 2nd occluder and unused spheres are destroyed (avoid
+   undesirable shadows)
 ** in status.json for tests
    do we need to specify when an actor is hidden (ie after a trick)?
    For now its coordinates are still registered even if it is no more

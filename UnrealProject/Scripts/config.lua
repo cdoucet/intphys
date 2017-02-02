@@ -40,6 +40,7 @@ max_iteration = nil
 
 conf = {
    data_path = assert(os.getenv('NAIVEPHYSICS_DATA')),
+   resolution = {x = 288, y = 288}, -- rendered image resolution (in pixels)
    load_params = false,
    capture_interval = 2,
    scene_ticks = 201,  -- to have 100 images per video
@@ -60,6 +61,10 @@ conf = {
 
 function M.get_scene_ticks()
    return conf.scene_ticks
+end
+
+function M.get_resolution()
+   return conf.resolution
 end
 
 function M.get_load_params()
