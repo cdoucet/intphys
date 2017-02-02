@@ -25,9 +25,9 @@ local M = {}
 
 -- Reference to the sphere actors defined in the scene
 local sphere_actors = {
-   uetorch.GetActor('Sphere_1'),
-   uetorch.GetActor('Sphere_2'),
-   uetorch.GetActor('Sphere_3')
+   assert(uetorch.GetActor('Sphere_1')),
+   assert(uetorch.GetActor('Sphere_2')),
+   assert(uetorch.GetActor('Sphere_3'))
 }
 
 
@@ -157,7 +157,7 @@ function M.setup(params)
       local p = params['sphere_' .. i]
 
       -- setup material, scale and location
-      material.SetActorMaterial(s, material.sphere_materials[p.material])
+      material.set_actor_material(s, material.sphere_materials[p.material])
       uetorch.SetActorScale3D(s, p.scale, p.scale, p.scale)
       uetorch.SetActorLocation(s, p.location.x, p.location.y, p.location.z)
 

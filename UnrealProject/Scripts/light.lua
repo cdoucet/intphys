@@ -18,12 +18,14 @@
 -- lights and the presence/absence of clouds.
 
 local uetorch = require 'uetorch'
+local utils = require 'utils'
+
 local M = {}
 
-local sky_sphere = uetorch.GetActor('SkySphere')
+local sky_sphere = assert(uetorch.GetActor('SkySphere'))
 local directional_lights = {
-   uetorch.GetActor('LightSource'),
-   uetorch.GetActor('LightSource2')
+   assert(uetorch.GetActor('LightSource_1')),
+   assert(uetorch.GetActor('LightSource_2'))
 }
 
 
@@ -83,7 +85,7 @@ end
 function M.get_status()
    local status = {}
    for i = 1, _params.nlights do
-      status['light_' .. i] = coordinates_to_string(directional_lights[i])
+      status['light_' .. i] = utils.coordinates_to_string(directional_lights[i])
    end
 
    return status

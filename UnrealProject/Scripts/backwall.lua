@@ -101,7 +101,7 @@ function M.setup(params)
 
    for _, w in pairs(wall) do
       -- material
-      material.SetActorMaterial(w, material.wall_materials[params.material])
+      material.set_actor_material(w, material.wall_materials[params.material])
 
       -- height
       local scale = uetorch.GetActorScale3D(w)

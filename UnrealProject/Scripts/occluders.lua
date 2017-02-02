@@ -152,7 +152,7 @@ function M.setup(params)
       local box = uetorch.GetActorBounds(mesh).boxY
       local p = params['occluder_' .. i]
 
-      material.SetActorMaterial(mesh, material.wall_materials[p.material])
+      material.set_actor_material(mesh, material.wall_materials[p.material])
       uetorch.SetActorScale3D(mesh, p.scale.x, p.scale.y, p.scale.z)
 
       if p.start_position == 'up' then

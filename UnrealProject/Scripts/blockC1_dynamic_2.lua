@@ -30,61 +30,61 @@ local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
-local block = {}
-block.actors = {}
+local M = {}
+M.actors = {}
 
-local iterationId, iterationType, iterationBlock, iterationPath
+local iteration
 local params = {}
-local isHidden1,isHidden2
 
+local is_hidden1, is_hidden2
 local visible1 = true
 local visible2 = true
 local possible = true
 local trick1 = false
 local trick2 = false
 
-local tCheck, tLastCheck = 0, 0
+local t_check, t_last_check = 0, 0
 local step = 0
 
-local function Trick(dt)
-   if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
+local function trick(dt)
+   if t_check - t_last_check >= config.get_capture_interval(iteration) then
       step = step + 1
 
       if params.spheres['sphere_' .. params.index].side == 'left' then
-         if not trick1 and isHidden1[step] then
+         if not trick1 and is_hidden1[step] then
             trick1 = true
             uetorch.SetActorVisible(spheres.get_sphere(params.index), visible2)
          end
 
-         if trick1 and not trick2 and isHidden2[step] then
+         if trick1 and not trick2 and is_hidden2[step] then
             trick2 = true
             uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
          end
       else
-         if not trick1 and isHidden2[step] then
+         if not trick1 and is_hidden2[step] then
             trick1 = true
             uetorch.SetActorVisible(spheres.get_sphere(params.index), visible2)
          end
 
-         if trick1 and not trick2 and isHidden1[step] then
+         if trick1 and not trick2 and is_hidden1[step] then
             trick2 = true
             uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
          end
       end
 
-      tLastCheck = tCheck
+      t_last_check = t_check
    end
-   tCheck = tCheck + dt
+   t_check = t_check + dt
 end
 
 
-local mainActor
-function block.MainActor()
-   return mainActor
+local main_actor
+function M.main_actor()
+   return main_actor
 end
 
 
-function block.MaskingActors()
+function M.get_masks()
    local active, inactive, text = {}, {}, {}
 
    floor.insert_masks(active, text)
@@ -114,7 +114,7 @@ function block.MaskingActors()
 end
 
 
-function block.MaxActors()
+function M.nactors()
    local max = 3 -- floor + 2 occluders
    if params.backwall.is_active then
       max = max + 1
@@ -124,7 +124,7 @@ end
 
 
 -- Return random parameters for the C1 dynamic_2 block
-local function GetRandomParams()
+local function get_random_parameters()
    local params = {}
 
    -- spheres
@@ -185,42 +185,39 @@ local function GetRandomParams()
 end
 
 
-function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock, iterationPath =
-      config.GetIterationInfo(currentIteration)
-
-   if iterationType == 6 then
-      if config.GetLoadParams() then
-         params = ReadJson(iterationPath .. '../params.json')
+function M.set_block(iteration)
+   if iteration.type == 6 then
+      if config.get_load_params() then
+         params = utils.read_json(iteration.path .. '../params.json')
       else
-         params = GetRandomParams()
-         WriteJson(params, iterationPath .. '../params.json')
+         params = get_random_parameters()
+         utils.write_json(params, iteration.path .. '../params.json')
       end
 
       uetorch.DestroyActor(occluders.get_occluder(2))
    else
-      params = ReadJson(iterationPath .. '../params.json')
+      params = utils.read_json(iteration.path .. '../params.json')
 
-      if iterationType == 5 then
+      if iteration.type == 5 then
          uetorch.DestroyActor(occluders.get_occluder(1))
       else
-         isHidden1 = torch.load(iterationPath .. '../hidden_6.t7')
-         isHidden2 = torch.load(iterationPath .. '../hidden_5.t7')
-         tick.add_tick_hook(Trick)
+         is_hidden1 = torch.load(iteration.path .. '../hidden_6.t7')
+         is_hidden2 = torch.load(iteration.path .. '../hidden_5.t7')
+         tick.add_tick_hook(trick)
 
-         if iterationType == 1 then
+         if iteration.type == 1 then
             visible1 = false
             visible2 = false
             possible = true
-         elseif iterationType == 2 then
+         elseif iteration.type == 2 then
             visible1 = true
             visible2 = true
             possible = true
-         elseif iterationType == 3 then
+         elseif iteration.type == 3 then
             visible1 = false
             visible2 = true
             possible = false
-         elseif iterationType == 4 then
+         elseif iteration.type == 4 then
             visible1 = true
             visible2 = false
             possible = false
@@ -228,7 +225,7 @@ function block.SetBlock(currentIteration)
       end
    end
 
-   if iterationType == 5 or iterationType == 6 then
+   if iteration.type == 5 or iteration.type == 6 then
       for i = 1, params.spheres.n_spheres do
          if i ~= params.index then
             uetorch.DestroyActor(spheres.get_sphere(i))
@@ -236,15 +233,15 @@ function block.SetBlock(currentIteration)
       end
    end
 
-   mainActor = spheres.get_sphere(params.index)
-   block.actors['occluder_1'] = occluders.get_occluder(1)
-   block.actors['occluder_2'] = occluders.get_occluder(2)
+   main_actor = spheres.get_sphere(params.index)
+   M.actors['occluder_1'] = occluders.get_occluder(1)
+   M.actors['occluder_2'] = occluders.get_occluder(2)
    for i = 1,params.spheres.n_spheres do
-      block.actors['sphere_' .. i] = spheres.get_sphere(i)
+      M.actors['sphere_' .. i] = spheres.get_sphere(i)
    end
 end
 
-function block.RunBlock()
+function M.run_block()
    -- camera, floor, lights and background wall
    camera.setup(iterationType, 150)
    floor.setup(params.floor)
@@ -253,118 +250,95 @@ function block.RunBlock()
    occluders.setup(params.occluders)
    spheres.setup(params.spheres)
 
-   uetorch.SetActorVisible(mainActor, visible1)
+   uetorch.SetActorVisible(main_actor, visible1)
 end
 
-local checkData = {}
-local saveTick = 1
+local check_data = {}
+local save_tick = 1
 
-function block.SaveCheckInfo(dt)
+function M.save_check_info(dt)
    local aux = {}
-   aux.location = uetorch.GetActorLocation(mainActor)
-   aux.rotation = uetorch.GetActorRotation(mainActor)
-   table.insert(checkData, aux)
-   saveTick = saveTick + 1
+   aux.location = uetorch.GetActorLocation(main_actor)
+   aux.rotation = uetorch.GetActorRotation(main_actor)
+   table.insert(check_data, aux)
+   save_tick = save_tick + 1
 end
 
-local maxDiff = 1e-6
 
-function block.Check()
+function M.check()
+   local iteration = config.get_current_iteration()
    local status = true
-   torch.save(iterationPath .. '../check_' .. iterationType .. '.t7', checkData)
-   local file = io.open(config.GetDataPath() .. 'output.txt', "a")
 
-   if iterationType == 6 then
-      local isHidden1 = torch.load(iterationPath .. '../hidden_6.t7')
-      local foundHidden = false
-      for i = 1,#isHidden1 do
-         if isHidden1[i] then
-            foundHidden = true
+   torch.save(iteration.path .. '../check_' .. iteration.type .. '.t7', check_data)
+
+   if iteration.type == 6 then
+      local is_hidden1 = torch.load(iteration.path .. '../hidden_6.t7')
+      local found_hidden = false
+      for i = 1,#is_hidden1 do
+         if is_hidden1[i] then
+            found_hidden = true
          end
       end
 
-      if not foundHidden then
-         file:write("Iteration check failed on condition 1: not hidden in visibility check 1\n")
+      if not found_hidden then
+         -- file:write("Iteration check failed on condition 1: not hidden in visibility check 1\n")
          status = false
       end
    end
 
-   if iterationType == 5 then
-      local isHidden2 = torch.load(iterationPath .. '../hidden_5.t7')
-      local foundHidden = false
-      for i = 1,#isHidden2 do
-         if isHidden2[i] then
-            foundHidden = true
+   if iteration.type == 5 then
+      local is_hidden2 = torch.load(iteration.path .. '../hidden_5.t7')
+      local found_hidden = false
+      for i = 1,#is_hidden2 do
+         if is_hidden2[i] then
+            found_hidden = true
          end
       end
 
-      if not foundHidden then
-         file:write("Iteration check failed on condition 1: not hidden in visibility check 2\n")
+      if not found_hidden then
          status = false
       end
    end
 
-   if iterationType < 6 and status then
-      local iteration = utils.GetCurrentIteration()
-      local ticks = config.GetBlockTicks(iterationBlock)
-      local prevData = torch.load(iterationPath .. '../check_' .. (iterationType + 1) .. '.t7')
+   if iteration.type < 6 and status then
+      local ticks = config.get_scene_ticks()
+      local prev_data = torch.load(iteration.path .. '../check_' .. (iteration.type + 1) .. '.t7')
 
+      local max_diff = 1e-6
       for t = 1, ticks do
          -- check location values
-         if(math.abs(checkData[t].location.x - prevData[t].location.x) > maxDiff) then
-            status = false
-         end
-         if(math.abs(checkData[t].location.y - prevData[t].location.y) > maxDiff) then
-            status = false
-         end
-         if(math.abs(checkData[t].location.z - prevData[t].location.z) > maxDiff) then
-            status = false
-         end
-         -- check rotation values
-         if(math.abs(checkData[t].rotation.pitch - prevData[t].rotation.pitch) > maxDiff) then
-            status = false
-         end
-         if(math.abs(checkData[t].rotation.yaw - prevData[t].rotation.yaw) > maxDiff) then
-            status = false
-         end
-         if(math.abs(checkData[t].rotation.roll - prevData[t].rotation.roll) > maxDiff) then
+         if((math.abs(check_data[t].location.x - prev_data[t].location.x) > max_diff) or
+               (math.abs(check_data[t].location.y - prev_data[t].location.y) > max_diff) or
+               (math.abs(check_data[t].location.z - prev_data[t].location.z) > max_diff) or
+               (math.abs(check_data[t].rotation.pitch - prev_data[t].rotation.pitch) > max_diff) or
+               (math.abs(check_data[t].rotation.yaw - prev_data[t].rotation.yaw) > max_diff) or
+            (math.abs(check_data[t].rotation.roll - prev_data[t].rotation.roll) > max_diff)) then
             status = false
          end
       end
-
-      if not status then
-         file:write("Iteration check failed on condition 2\n")
-      end
    end
 
-   if not status then
-      file:write("Iteration check failed\n")
-   elseif iterationType == 1 then
-      file:write("Iteration check succeeded\n")
-   end
-
-   file:close()
-   utils.UpdateIterationsCounter(status)
+   config.update_iterations_counter(status)
 end
 
-function block.IsPossible()
+function M.is_possible()
    return possible
 end
 
 
-function block.get_status()
-   local max_actors = block.MaxActors()
-   local _, _, actors = block.MaskingActors()
+function M.get_status()
+   local nactors = M.nactors()
+   local _, _, actors = M.get_masks()
    actors = backwall.get_updated_actors(actors)
 
    local masks = {}
    masks[0] = "sky"
    for n, m in pairs(actors) do
-      masks[math.floor(255 * n/ max_actors)] = m
+      masks[math.floor(255 * n/ nactors)] = m
    end
 
    local status = {}
-   status['possible'] = block.IsPossible()
+   status['possible'] = M.is_possible()
    status['floor'] = floor.get_status()
    status['camera'] = camera.get_status()
    status['lights'] = light.get_status()
@@ -374,4 +348,4 @@ function block.get_status()
 end
 
 
-return block
+return M

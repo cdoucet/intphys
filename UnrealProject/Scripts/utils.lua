@@ -14,43 +14,76 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module defines some various utility functions
+
 local uetorch = require 'uetorch'
-local config = require 'config'
-local utils = {}
+local json = require 'dkjson'
 
 
-function utils.GetCurrentIteration()
-   local iteration = torch.load(conf.dataPath .. 'iterations.t7')
-   return iteration
+local M = {}
+
+-- Pad a number `int` with `n` beginning zeros, return it as a string
+--
+-- pad_zeros(0, 3)  -> '000'
+-- pad_zeros(12, 3) -> '012'
+-- pad_zeros(12, 1) -> '12'
+function M.pad_zeros(int, n)
+   s = tostring(int)
+   for _ = 1, n - #s do
+      s = '0' .. s
+   end
+   return s
 end
 
 
-local function GetFirstIterationInBlock(iteration)
-   local iterationId, iterationType, block = config.GetIterationInfo(iteration)
-   return iteration - config.GetBlockSize(block) + iterationType
+-- Load a JSon file as a table
+function M.read_json(file)
+   local f = assert(io.open(file, "rb"))
+   local content = f:read("*all")
+   f:close()
+   return json.decode(content)
 end
 
 
-function utils.UpdateIterationsCounter(check)
-   local iteration = utils.GetCurrentIteration()
-   local iterationId, iterationType, iterationBlock, iterationPath
-      = config.GetIterationInfo(iteration)
-
-   if check then
-      iteration = iteration + 1
+-- Write a table as a JSon file
+--
+-- `keyorder` is an optional array to specify the ordering of keys in
+-- the encoded output. If an object has keys which are not in this
+-- array they are written after the sorted keys.
+function M.write_json(t, file, keyorder)
+   local f = assert(io.open(file, "wb"))
+   if keyorder then
+      f:write(json.encode(t, {indent = true, level = 1, keyorder = keyorder}))
    else
-      print('check failed, trying new parameters')
-      iteration = GetFirstIterationInBlock(iteration)
+      f:write(json.encode(t, {indent = true, level = 1}))
    end
-
-   -- ensure the iteration exists in iterationsTable
-   if not iterationsTable[tonumber(iteration)] then
-      print('no more iteration, exiting')
-      uetorch.ExecuteConsoleCommand('Exit')
-   end
-
-   torch.save(conf.dataPath .. 'iterations.t7', iteration)
+   f:close()
 end
 
 
-return utils
+-- Return the location and rotation of an actor in a string
+--
+-- The returned string is formatted as:
+--   'x y z pitch yaw roll'
+function M.coordinates_to_string(actor)
+   local l = uetorch.GetActorLocation(actor)
+   local r = uetorch.GetActorRotation(actor)
+
+   return (l.x .. ' ' .. l.y .. ' ' .. l.z .. ' ' ..
+              r.pitch .. ' ' .. r.yaw .. ' ' .. r.roll)
+end
+
+
+-- Return unique elements of a tensor `t` in a table
+--
+-- Equivalent to set(t) in Python. From
+-- https://stackoverflow.com/questions/20066835
+function M.unique(t)
+   local hash, res = {}, {}
+   t:apply(
+      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
+   return res
+end
+
+
+return M

@@ -30,43 +30,43 @@ local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
-local block = {}
-block.actors = {}
+local M = {}
+M.actors = {}
 
-local iterationId, iterationType, iterationBlock, iterationPath
+local iteration
 local params = {}
 
-local isHidden
+local is_hidden
 local visible1 = true
 local visible2 = true
 local possible = true
 local trick1 = false
 local trick2 = false
-local canDoTrick2 = false
+local can_do_trick2 = false
 
-local tCheck, tLastCheck = 0, 0
+local t_check, t_last_check = 0, 0
 local step = 0
-local function Trick(dt)
-   if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
+local function trick(dt)
+   if t_check - t_last_check >= config.get_capture_interval() then
       step = step + 1
 
-      if not trick1 and isHidden[step] then
+      if not trick1 and is_hidden[step] then
          trick1 = true
          uetorch.SetActorVisible(spheres.get_sphere(params.index), visible2)
       end
 
-      if trick1 and canDoTrick2 and not trick2 and isHidden[step] then
+      if trick1 and can_do_trick2 and not trick2 and is_hidden[step] then
          trick2 = true
          uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
       end
-      tLastCheck = tCheck
+      t_last_check = t_check
    end
-   tCheck = tCheck + dt
+   t_check = t_check + dt
 end
 
 
 -- Return random parameters for the C1 block, static test
-local function GetRandomParams()
+local function get_random_parameters()
    local params = {}
 
    -- occluder
@@ -111,13 +111,13 @@ local function GetRandomParams()
 end
 
 
-local mainActor
+local main_actor
 
-function block.MainActor()
-   return mainActor
+function M.main_actor()
+   return main_actor
 end
 
-function block.MaskingActors()
+function M.get_masks()
    local active, inactive, text = {}, {}, {}
 
    floor.insert_masks(active, text)
@@ -146,7 +146,7 @@ function block.MaskingActors()
 end
 
 
-function block.MaxActors()
+function M.nactors()
    local max = 2 -- floor + occluder
    if params.backwall.is_active then
       max = max + 1
@@ -155,16 +155,13 @@ function block.MaxActors()
 end
 
 
-function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock, iterationPath =
-      config.GetIterationInfo(currentIteration)
-
-   if iterationType == 5 then
-      if config.GetLoadParams() then
-         params = ReadJson(iterationPath .. '../params.json')
+function M.set_block(iteration)
+   if iteration.type == 5 then
+      if config.get_load_params() then
+         params = utils.read_json(iterationPath .. '../params.json')
       else
-         params = GetRandomParams()
-         WriteJson(params, iterationPath .. '../params.json')
+         params = get_random_parameters()
+         utils.write_json(params, iteration.path .. '../params.json')
       end
 
       for i = 1,3 do
@@ -173,37 +170,37 @@ function block.SetBlock(currentIteration)
          end
       end
    else
-      isHidden = torch.load(iterationPath .. '../hidden_5.t7')
-      params = ReadJson(iterationPath .. '../params.json')
-      tick.add_tick_hook(Trick)
+      is_hidden = torch.load(iteration.path .. '../hidden_5.t7')
+      params = utils.read_json(iteration.path .. '../params.json')
+      tick.add_tick_hook(trick)
 
-      if iterationType == 1 then
+      if iteration.type == 1 then
          visible1 = false
          visible2 = false
          possible = true
-      elseif iterationType == 2 then
+      elseif iteration.type == 2 then
          visible1 = true
          visible2 = true
          possible = true
-      elseif iterationType == 3 then
+      elseif iteration.type == 3 then
          visible1 = false
          visible2 = true
          possible = false
-      elseif iterationType == 4 then
+      elseif iteration.type == 4 then
          visible1 = true
          visible2 = false
          possible = false
       end
    end
 
-   mainActor = spheres.get_sphere(params.index)
-   block.actors['occluder'] = occluders.get_occluder(1)
+   main_actor = spheres.get_sphere(params.index)
+   M.actors['occluder'] = occluders.get_occluder(1)
    for i = 1, params.spheres.n_spheres do
-      block.actors['sphere_' .. i] = spheres.get_sphere(i)
+      M.actors['sphere_' .. i] = spheres.get_sphere(i)
    end
 end
 
-function block.RunBlock()
+function M.run_block()
    -- camera, floor, occluder, lights and background wall
    camera.setup(iterationType, 150)
    floor.setup(params.floor)
@@ -215,108 +212,96 @@ function block.RunBlock()
    uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
 end
 
-local checkData = {}
-local saveTick = 1
+local check_data = {}
+local save_tick = 1
 
-function block.SaveCheckInfo(dt)
+function M.save_check_info(dt)
    local aux = {}
-   aux.location = uetorch.GetActorLocation(mainActor)
-   aux.rotation = uetorch.GetActorRotation(mainActor)
-   table.insert(checkData, aux)
-   saveTick = saveTick + 1
+   aux.location = uetorch.GetActorLocation(main_actor)
+   aux.rotation = uetorch.GetActorRotation(main_actor)
+   table.insert(check_data, aux)
+   save_tick = save_tick + 1
 end
 
-local maxDiff = 1e-6
 
-function block.Check()
+function M.check()
+   local iteration = config.get_current_iteration()
    local status = true
-   torch.save(iterationPath .. '../check_' .. iterationType .. '.t7', checkData)
 
-   if iterationType == 1 then
-      local file = io.open(config.GetDataPath() .. 'output.txt', "a")
+   torch.save(iteration.path .. '../check_' .. iteration.type .. '.t7', check_data)
 
-      local foundHidden = false
-      for i = 1,#isHidden do
-         if isHidden[i] then
-            foundHidden = true
+   if iteration.type == 1 then
+      local found_hidden = false
+      for i = 1,#is_hidden do
+         if is_hidden[i] then
+            found_hidden = true
          end
       end
 
-      if not foundHidden then
-         file:write("Iteration check failed on condition 1\n")
+      if not found_hidden then
+         -- print("Iteration check failed on condition 1\n")
          status = false
       end
 
       if status then
-         local iteration = utils.GetCurrentIteration()
-         local size = config.GetBlockSize(iterationBlock)
-         local ticks = config.GetBlockTicks(iterationBlock)
-         local allData = {}
+         local size = config.get_block_size(iteration)
+         local ticks = config.get_scene_ticks()
+         local all_data = {}
 
          for i = 1,size do
-            local aux = torch.load(iterationPath .. '../check_' .. i .. '.t7')
-            allData[i] = aux
+            local aux = torch.load(iteration.path .. '../check_' .. i .. '.t7')
+            all_data[i] = aux
          end
 
-         for t = 1,ticks do
-            for i = 2,size do
-               -- check location values
-               if(math.abs(allData[i][t].location.x - allData[1][t].location.x) > maxDiff) then
-                  status = false
-               end
-               if(math.abs(allData[i][t].location.y - allData[1][t].location.y) > maxDiff) then
-                  status = false
-               end
-               if(math.abs(allData[i][t].location.z - allData[1][t].location.z) > maxDiff) then
-                  status = false
-               end
-               -- check rotation values
-               if(math.abs(allData[i][t].rotation.pitch - allData[1][t].rotation.pitch) > maxDiff) then
-                  status = false
-               end
-               if(math.abs(allData[i][t].rotation.yaw - allData[1][t].rotation.yaw) > maxDiff) then
-                  status = false
-               end
-               if(math.abs(allData[i][t].rotation.roll - allData[1][t].rotation.roll) > maxDiff) then
+         local max_diff = 1e-6
+         for t = 1, ticks do
+            for i = 2, size do
+               -- check location and rotation values
+               if((math.abs(all_data[i][t].location.x - all_data[1][t].location.x) > max_diff) or
+                     (math.abs(all_data[i][t].location.y - all_data[1][t].location.y) > max_diff) or
+                     (math.abs(all_data[i][t].location.z - all_data[1][t].location.z) > max_diff) or
+                     (math.abs(all_data[i][t].rotation.pitch - all_data[1][t].rotation.pitch) > max_diff) or
+                     (math.abs(all_data[i][t].rotation.yaw - all_data[1][t].rotation.yaw) > max_diff) or
+                     (math.abs(all_data[i][t].rotation.roll - all_data[1][t].rotation.roll) > max_diff)) then
                   status = false
                end
             end
          end
 
-         if not status then
-            file:write("Iteration check failed on condition 2\n")
-         end
+         -- if not status then
+         --    file:write("Iteration check failed on condition 2\n")
+         -- end
       end
 
-      if status then
-         file:write("Iteration check succeeded\n")
-      else
-         file:write("Iteration check failed\n")
-      end
-      file:close()
+      -- if status then
+      --    file:write("Iteration check succeeded\n")
+      -- else
+      --    file:write("Iteration check failed\n")
+      -- end
+      -- file:close()
    end
 
-   utils.UpdateIterationsCounter(status)
+   config.update_iterations_counter(status)
 end
 
-function block.IsPossible()
+function M.is_possible()
    return possible
 end
 
 
-function block.get_status()
-   local max_actors = block.MaxActors()
-   local _, _, actors = block.MaskingActors()
+function M.get_status()
+   local nactors = M.nactors()
+   local _, _, actors = M.get_masks()
    actors = backwall.get_updated_actors(actors)
 
    local masks = {}
    masks[0] = "sky"
    for n, m in pairs(actors) do
-      masks[math.floor(255 * n/ max_actors)] = m
+      masks[math.floor(255 * n/ nactors)] = m
    end
 
    local status = {}
-   status['possible'] = block.IsPossible()
+   status['possible'] = M.is_possible()
    status['floor'] = floor.get_status()
    status['camera'] = camera.get_status()
    status['lights'] = light.get_status()
@@ -326,4 +311,4 @@ function block.get_status()
 end
 
 
-return block
+return M

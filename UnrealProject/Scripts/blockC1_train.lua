@@ -18,6 +18,7 @@
 
 local uetorch = require 'uetorch'
 local config = require 'config'
+local utils = require 'utils'
 
 local material = require 'material'
 local backwall = require 'backwall'
@@ -27,21 +28,20 @@ local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
-local block = {}
-block.actors = {}
+local M = {}
+M.actors = {}
 
-
-local iterationId, iterationType, iterationBlock, iterationPath
+local iteration
 local params = {}
 
 
 -- Return true as train blocks are always physically possible
-function block.IsPossible()
+function M.is_possible()
    return true
 end
 
 
-function block.MaskingActors()
+function M.get_masks()
    local active, text = {}, {}
 
    floor.insert_masks(active, text)
@@ -54,7 +54,7 @@ function block.MaskingActors()
 end
 
 
-function block.MaxActors()
+function M.nactors()
    -- spheres + occluders + floor + backwall
    local max = 1 -- floor
    if params.backwall.is_active then
@@ -66,7 +66,7 @@ end
 
 
 -- Return random parameters for the C1 block, training configuration
-local function GetRandomParams()
+local function get_random_parameters()
    local params = {}
 
    params.spheres = spheres.random()
@@ -80,24 +80,21 @@ local function GetRandomParams()
 end
 
 
-function block.SetBlock(currentIteration)
-   iterationId, iterationType, iterationBlock, iterationPath =
-      config.GetIterationInfo(currentIteration)
-
-   params = GetRandomParams()
-   WriteJson(params, iterationPath .. 'params.json')
+function M.set_block(iteration)
+   params = get_random_parameters()
+   utils.write_json(params, iteration.path .. 'params.json')
 
    for i = 1, params.occluders.n_occluders do
-      block.actors['occluder_' .. i] = occluders.get_occluder(i)
+      M.actors['occluder_' .. i] = occluders.get_occluder(i)
    end
 
    for i = 1, params.spheres.n_spheres do
-      block.actors['sphere_' .. i] = spheres.get_sphere(i)
+      M.actors['sphere_' .. i] = spheres.get_sphere(i)
    end
 end
 
 
-function block.RunBlock()
+function M.run_block()
    camera.setup(iterationType, 150, params.camera)
    spheres.setup(params.spheres)
    floor.setup(params.floor)
@@ -107,19 +104,19 @@ function block.RunBlock()
 end
 
 
-function block.get_status()
-   local max_actors = block.MaxActors()
-   local _, _, actors = block.MaskingActors()
+function M.get_status()
+   local nactors = M.nactors()
+   local _, _, actors = M.get_masks()
    actors = backwall.get_updated_actors(actors)
 
    local masks = {}
    masks[0] = "sky"
    for n, m in pairs(actors) do
-      masks[math.floor(255 * n/ max_actors)] = m
+      masks[math.floor(255 * n/ nactors)] = m
    end
 
    local status = {}
-   status['possible'] = block.IsPossible()
+   status['possible'] = M.is_possible()
    status['floor'] = floor.get_status()
    status['camera'] = camera.get_status()
    status['lights'] = light.get_status()
@@ -129,4 +126,4 @@ function block.get_status()
 end
 
 
-return block
+return M

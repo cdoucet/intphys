@@ -42,7 +42,7 @@ end
 -- Setup the floor with a random material
 function M.setup(floor_material)
    floor_material = floor_material or M.random()
-   material.SetActorMaterial(M.actor, material.ground_materials[floor_material])
+   material.set_actor_material(M.actor, material.ground_materials[floor_material])
 end
 
 

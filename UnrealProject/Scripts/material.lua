@@ -18,10 +18,11 @@
 -- and the spheres. It also defines a function setup a given actor
 -- with a given material.
 local uetorch = require 'uetorch'
-local material = {}
+
+local M = {}
 
 
-material.ground_materials = {
+M.ground_materials = {
    "M_Basic_Floor",
    "M_Brick_Clay_Beveled",
    "M_Brick_Clay_New",
@@ -45,7 +46,7 @@ material.ground_materials = {
 }
 
 
-material.sphere_materials = {
+M.sphere_materials = {
    "BlackMaterial",
    "GreenMaterial",
    "M_ColorGrid_LowSpec",
@@ -63,7 +64,7 @@ material.sphere_materials = {
 }
 
 
-material.wall_materials = {
+M.wall_materials = {
    "M_Basic_Wall",
    "M_Brick_Clay_Beveled",
    "M_Brick_Clay_New",
@@ -81,11 +82,11 @@ material.wall_materials = {
 }
 
 
-function material.SetActorMaterial(actor, id)
-   local materialId = "Material'/Game/Materials/" .. id .. "." .. id .. "'"
-   local material = UE.LoadObject(Material.Class(), nil, materialId)
+function M.set_actor_material(actor, id)
+   local material_id = "Material'/Game/Materials/" .. id .. "." .. id .. "'"
+   local material = UE.LoadObject(Material.Class(), nil, material_id)
    uetorch.SetMaterial(actor, material)
 end
 
 
-return material
+return M

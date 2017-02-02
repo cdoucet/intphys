@@ -45,11 +45,13 @@ local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
 math.randomseed(seed)
 posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
+
 -- Setup the dry mode: if active, do not capture any screenshot
 local dry_run = os.getenv('NAIVEPHYSICS_DRY') or false
 
+
 -- functions called from MainMap_CameraActor_Blueprint
-GetCurrentIteration = utils.GetCurrentIteration
+GetCurrentIteration = config.get_current_index
 RunBlock = nil
 
 -- replace uetorch's Tick function and set the tick rate at 8 Hz
@@ -58,22 +60,22 @@ tick.set_tick_delta(1/8)
 
 
 
-local iterationId, iterationType, iterationBlock, iterationPath
-local screenTable, depthTable = {}, {}
-local tLastSaveScreen = 0
-local tSaveScreen = 0
+local iteration = nil
+local screen_table, depth_table = {}, {}
+local t_last_save_screen = 0
+local t_save_screen = 0
 local step = 0
 local max_depth = 0
 
 
 -- Save screenshot, object masks and depth field into png images
-local function SaveScreen(dt)
-   if tSaveScreen - tLastSaveScreen >= config.GetBlockCaptureInterval(iterationBlock) then
+local function save_screen(dt)
+   if t_save_screen - t_last_save_screen >= config.get_capture_interval() then
       step = step + 1
-      local stepStr = PadZeros(step, 3)
+      local step_str = utils.pad_zeros(step, 3)
 
       -- save the screen
-      local file = iterationPath .. 'scene/scene_' .. stepStr .. '.png'
+      local file = iteration.path .. 'scene/scene_' .. step_str .. '.png'
       local i1 = uetorch.Screen()
       if i1 then
          image.save(file, i1)
@@ -81,11 +83,11 @@ local function SaveScreen(dt)
 
       -- active and inactive actors in the scene are required for
       -- depth and mask
-      local active_actors, inactive_actors, active_names = block.MaskingActors()
+      local active_actors, inactive_actors, active_names = block.get_masks()
 
       -- compute the depth field and objects segmentation masks
-      local depth_file = iterationPath .. 'depth/depth_' .. stepStr .. '.png'
-      local mask_file = iterationPath .. 'mask/mask_' .. stepStr .. '.png'
+      local depth_file = iteration.path .. 'depth/depth_' .. step_str .. '.png'
+      local mask_file = iteration.path .. 'mask/mask_' .. step_str .. '.png'
       local i2, i3 = uetorch.CaptureDepthAndMasks(
          camera.actor, active_actors, inactive_actors)
 
@@ -107,48 +109,46 @@ local function SaveScreen(dt)
          backwall.group_masks(i3, active_actors, active_names)
 
          i3 = i3:float()  -- cast from int to float for normalization
-         i3:apply(function(x) return x / block.MaxActors() end)
+         i3:apply(function(x) return x / block.nactors() end)
          image.save(mask_file, i3)
       end
 
-      tLastSaveScreen = tSaveScreen
+      t_last_save_screen = t_save_screen
    end
-   tSaveScreen = tSaveScreen + dt
+   t_save_screen = t_save_screen + dt
 end
 
 
 local data = {}
-local tSaveText = 0
-local tLastSaveText = 0
+local t_save_text = 0
+local t_last_save_text = 0
 
-local function SaveStatusToTable(dt)
+local function save_status_to_table(dt)
    local aux = {}
-   if tSaveText - tLastSaveText >= config.GetBlockCaptureInterval(iterationBlock) then
+   if t_save_text - t_last_save_text >= config.get_capture_interval() then
       for k, v in pairs(block.actors) do
-         aux[k] = coordinates_to_string(v)
+         aux[k] = utils.coordinates_to_string(v)
       end
       table.insert(data, aux)
 
-      tLastSaveText = tSaveText
+      t_last_save_text = t_save_text
    end
-   tSaveText = tSaveText + dt
+   t_save_text = t_save_text + dt
 end
 
 
-local visibilityTable = {}
-local tCheck, tLastCheck = 0, 0
-local step = 0
+local visibility_table = {}
+local t_check, t_last_check = 0, 0
+local step_visibility = 0
 local hidden = false
-local isHidden = {}
+local is_hidden = {}
 
-local function CheckVisibility(dt)
-   if tCheck - tLastCheck >= config.GetBlockCaptureInterval(iterationBlock) then
+local function check_visibility(dt)
+   if t_check - t_last_check >= config.get_capture_interval() then
       step = step + 1
-      local stepStr = PadZeros(step, 3)
+      local stepStr = utils.pad_zeros(step, 3)
 
-      local actors = {block.MainActor()}
-      local i2 = uetorch.ObjectSegmentation(actors)
-
+      local i2 = uetorch.ObjectSegmentation({block.main_actor()})
       if i2 then
          if torch.max(i2) == 0 then
             hidden = true
@@ -157,95 +157,94 @@ local function CheckVisibility(dt)
          end
       end
 
-      table.insert(isHidden, hidden)
-      tLastCheck = tCheck
+      table.insert(is_hidden, hidden)
+      t_last_check = t_check
    end
-   tCheck = tCheck + dt
+   t_check = t_check + dt
 end
 
-local function SaveData()
-   if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      local nHidden = #isHidden
 
-      for k = 1,nHidden do
-         if not isHidden[k] then
+local function save_data()
+   if config.is_visibility_check(iteration) then
+      local n_hidden = #is_hidden
+
+      for k = 1, n_hidden do
+         if not is_hidden[k] then
             break
          else
-            isHidden[k] = false
+            is_hidden[k] = false
          end
       end
 
-      for k = nHidden,1,-1 do
-         if not isHidden[k] then
+      for k = n_hidden, 1, -1 do
+         if not is_hidden[k] then
             break
          else
-            isHidden[k] = false
+            is_hidden[k] = false
          end
       end
 
-      torch.save(iterationPath .. '../hidden_' .. iterationType .. '.t7', isHidden)
+      torch.save(iteration.path .. '../hidden_' .. iteration.type .. '.t7', is_hidden)
    else
       local status = block.get_status()
-      status["block"] = iterationBlock
+      status["block"] = iteration.block
       status['steps'] = data
 
       -- write the status.json with ordered keys
       local keyorder = {
          'block', 'possible', 'floor', 'camera', 'lights', 'masks_grayscale', 'steps'}
-      WriteJson(status, iterationPath .. 'status.json', keyorder)
+      utils.write_json(status, iteration.path .. 'status.json', keyorder)
    end
 end
 
 
 function SetCurrentIteration()
-   local currentIteration = utils.GetCurrentIteration()
-   iterationId, iterationType, iterationBlock, iterationPath =
-      config.GetIterationInfo(currentIteration)
+   iteration = config.get_current_iteration()
 
-   local descr = 'running ' .. config.IterationDescription(iterationBlock, iterationId, iterationType)
-   print(descr)
+   local description = 'running ' .. config.get_description(iteration)
+   print(description)
 
    -- create subdirectories for this iteration
-   paths.mkdir(iterationPath)
+   paths.mkdir(iteration.path)
    if not dry_run then
-      paths.mkdir(iterationPath .. 'mask')
-      if not config.IsVisibilityCheck(iterationBlock, iterationType) then
-         paths.mkdir(iterationPath .. 'scene')
-         paths.mkdir(iterationPath .. 'depth')
+      paths.mkdir(iteration.path .. 'mask')
+      if not config.is_visibility_check(iteration) then
+         paths.mkdir(iteration.path .. 'scene')
+         paths.mkdir(iteration.path .. 'depth')
       end
    end
 
    -- prepare the block for either train or test
-   block = require(iterationBlock)
-   block.SetBlock(currentIteration)
+   block = require(iteration.block)
+   block.set_block(iteration)
 
    -- RunBlock will be called from blueprint
-   RunBlock = function() return block.RunBlock() end
+   RunBlock = function() return block.run_block() end
 
-   tick.set_ticks_remaining(config.GetBlockTicks(iterationBlock))
+   tick.set_ticks_remaining(config.get_scene_ticks())
 
    -- BUGFIX tweak to force the first iteration to be at the required
    -- resolution
    tick.add_tick_hook(set_resolution)
 
-   if config.IsVisibilityCheck(iterationBlock, iterationType) then
-      tick.add_tick_hook(CheckVisibility)
-      tick.add_tick_hook(SaveStatusToTable)
-      tick.add_end_tick_hook(SaveData)
+   if config.is_visibility_check(iteration) then
+      tick.add_tick_hook(check_visibility)
+      tick.add_tick_hook(save_status_to_table)
+      tick.add_end_tick_hook(save_data)
    else
       -- save screen, depth and mask
       if not dry_run then
-         tick.add_tick_hook(SaveScreen)
-         tick.add_tick_hook(SaveStatusToTable)
-         tick.add_end_tick_hook(SaveData)
+         tick.add_tick_hook(save_screen)
+         tick.add_tick_hook(save_status_to_table)
+         tick.add_end_tick_hook(save_data)
       end
    end
 
-   if iterationType == -1 then  -- train
+   if iteration.type == -1 then  -- train
       tick.add_end_tick_hook(
-         function(dt) return utils.UpdateIterationsCounter(true) end)
+         function(dt) return config.update_iterations_counter(true) end)
    else  -- test
-      tick.add_tick_hook(block.SaveCheckInfo)
-      tick.add_end_tick_hook(block.Check)
+      tick.add_tick_hook(block.save_check_info)
+      tick.add_end_tick_hook(block.check)
    end
 end

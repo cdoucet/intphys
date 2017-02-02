@@ -19,12 +19,15 @@
 --
 -- TODO for now we only pick random camera coordinates for the train
 -- pathway, test pathway has constant camera point of view.
+
 local uetorch = require 'uetorch'
+local utils = require 'utils'
+
 local M = {}
 
 
 -- the camera actor defined in the scene
-M.actor = uetorch.GetActor("Camera")
+M.actor = assert(uetorch.GetActor("Camera"))
 
 
 -- Return a random location for the camera
@@ -84,7 +87,7 @@ end
 
 -- Return the camera location, rotation and horizontal field of view (in degree)
 function M.get_status()
-   return coordinates_to_string(M.actor)
+   return utils.coordinates_to_string(M.actor)
 end
 
 return M
