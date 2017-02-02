@@ -137,9 +137,9 @@ function M.get_masks()
       or (not possible and visible1 and not trick1) -- visible 1st half
       or (not possible and visible2 and trick1) -- visible 2nd half
    then
-      table.insert(active, mainActor)
+      table.insert(active, main_actor)
    else
-      table.insert(inactive, mainActor)
+      table.insert(inactive, main_actor)
    end
 
    return active, inactive, text
@@ -158,7 +158,7 @@ end
 function M.set_block(iteration)
    if iteration.type == 5 then
       if config.get_load_params() then
-         params = utils.read_json(iterationPath .. '../params.json')
+         params = utils.read_json(iteration.path .. '../params.json')
       else
          params = get_random_parameters()
          utils.write_json(params, iteration.path .. '../params.json')
@@ -202,7 +202,7 @@ end
 
 function M.run_block()
    -- camera, floor, occluder, lights and background wall
-   camera.setup(iterationType, 150)
+   camera.setup(config.get_current_iteration().type, 150)
    floor.setup(params.floor)
    occluders.setup(params.occluders)
    light.setup(params.light)
@@ -267,18 +267,7 @@ function M.check()
                end
             end
          end
-
-         -- if not status then
-         --    file:write("Iteration check failed on condition 2\n")
-         -- end
       end
-
-      -- if status then
-      --    file:write("Iteration check succeeded\n")
-      -- else
-      --    file:write("Iteration check failed\n")
-      -- end
-      -- file:close()
    end
 
    config.update_iterations_counter(status)
@@ -297,7 +286,7 @@ function M.get_status()
    local masks = {}
    masks[0] = "sky"
    for n, m in pairs(actors) do
-      masks[math.floor(255 * n/ nactors)] = m
+      masks[math.floor(255 * n / nactors)] = m
    end
 
    local status = {}

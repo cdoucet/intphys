@@ -86,9 +86,9 @@ function M.get_masks()
       or (not possible and visible1 and not trick) -- visible 1st half
       or (not possible and visible2 and trick) -- visible 2nd half
    then
-      table.insert(active, mainActor)
+      table.insert(active, main_actor)
    else
-      table.insert(inactive, mainActor)
+      table.insert(inactive, main_actor)
    end
 
    return active, inactive, text
@@ -210,7 +210,7 @@ end
 
 
 function M.run_block()
-   camera.setup(iterationType, 150)
+   camera.setup(config.get_current_iteration().type, 150)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)

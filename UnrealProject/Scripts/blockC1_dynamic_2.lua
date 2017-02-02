@@ -105,9 +105,9 @@ function M.get_masks()
       or (not possible and visible2 and trick1 and not trick2) -- visible 2nd third
       or (not possible and visible1 and trick1 and trick2) -- visible 3rd third
    then
-      table.insert(active, mainActor)
+      table.insert(active, main_actor)
    else
-      table.insert(inactive, mainActor)
+      table.insert(inactive, main_actor)
    end
 
    return active, inactive, text
@@ -243,7 +243,7 @@ end
 
 function M.run_block()
    -- camera, floor, lights and background wall
-   camera.setup(iterationType, 150)
+   camera.setup(config.get_current_iteration().type, 150)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)

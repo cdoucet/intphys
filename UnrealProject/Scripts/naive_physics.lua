@@ -30,7 +30,6 @@ local tick = require 'tick'
 local backwall = require 'backwall'
 local camera = require 'camera'
 
-
 local block
 
 
@@ -50,14 +49,14 @@ posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 local dry_run = os.getenv('NAIVEPHYSICS_DRY') or false
 
 
--- functions called from MainMap_CameraActor_Blueprint
+-- functions called from Unreal Engine blueprints
 GetCurrentIteration = config.get_current_index
 RunBlock = nil
 
--- replace uetorch's Tick function and set the tick rate at 8 Hz
+-- replace uetorch's Tick function and set a constant tick rate at 8
+-- Hz (in the game timescale)
 Tick = tick.tick
 tick.set_tick_delta(1/8)
-
 
 
 local iteration = nil

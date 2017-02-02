@@ -19,6 +19,10 @@ TODO list for the NaivePhysics project
 ** detect occluder or sphere in the backwall
 ** in blockCA_dynamic_1/static
    make sure the 2nd occluder is destroyed (avoid undesirable shadows)
+** in status.json for tests
+   do we need to specify when an actor is hidden (ie after a trick)?
+   For now its coordinates are still registered even if it is no more
+   visible.
 * Improvements
 ** implement different classes of motion
    static, sliding, rolling, falling, walking (agent)
@@ -35,3 +39,4 @@ TODO list for the NaivePhysics project
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
   servers (EGL is enough).
+** increase ambiant lighting to avoid dark scenes

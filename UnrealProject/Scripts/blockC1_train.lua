@@ -95,7 +95,7 @@ end
 
 
 function M.run_block()
-   camera.setup(iterationType, 150, params.camera)
+   camera.setup(config.get_current_iteration().type, 150, params.camera)
    spheres.setup(params.spheres)
    floor.setup(params.floor)
    light.setup(params.light)
@@ -112,7 +112,7 @@ function M.get_status()
    local masks = {}
    masks[0] = "sky"
    for n, m in pairs(actors) do
-      masks[math.floor(255 * n/ nactors)] = m
+      masks[math.floor(255 * n / nactors)] = m
    end
 
    local status = {}
