@@ -218,12 +218,10 @@ def ParseArgs():
 def _BalanceList(l, n):
     """Balance the elements of a list of integers into `n` sublists
 
-    This is used for subjobs configuration generation.
+    This is used for subjobs configuration generation. Sublists with
+    only zeros are removed.
 
     >>> balance_list([5, 1, 2], 2) == [[3, 0, 1], [2, 1, 1]]
-
-    Sublists with only zeros are removed
-
     >>> balance_list([1, 0], 2) == [[1, 0]]
 
     """
@@ -458,6 +456,24 @@ def FindDuplicates(directory):
                 os.path.dirname(n1), os.path.dirname(n2)))
 
 
+def CleanDataDirectory(directory):
+    """Remove temporary and useless files and subdirs from `directory`
+
+    This removes the *.t7 files, iterations_table.json and any empty
+    subdirectory (containing nothing or only empty subdirectories).
+
+    """
+    for (dirpath, dirnames, filenames) in os.walk(directory):
+        for f in filenames:
+            if f.endswith('.t7') or f == 'iterations_table.json':
+                os.remove(os.path.join(dirpath, f))
+
+        if not filenames and not sum([os.listdir(os.path.join(dirpath, d))
+                                      for d in dirnames], []):
+            # dirpath is empty or contains only empy subdirs
+            shutil.rmtree(dirpath)
+
+
 def Main():
     # parse command-line arguments
     args = ParseArgs()
@@ -495,6 +511,9 @@ def Main():
     if not args.dry:
         FindDuplicates(output_dir)
 
+    # remove useless files
+    CleanDataDirectory(output_dir)
+
 
 if __name__ == '__main__':
     try:
@@ -504,4 +523,4 @@ if __name__ == '__main__':
         sys.exit(-1)
     except KeyboardInterrupt:
         print('Keyboard interruption, exiting')
-        sys.exit(0)
+        sys.exit(-1)

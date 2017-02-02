@@ -68,6 +68,7 @@ data*/*
 *.json
 !exemple.json
 !/exemples/config.json
-/core
 /exemples/data
-exemples/html/
+/exemples/html/
+/naivedata.pyc
+/core
