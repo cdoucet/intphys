@@ -24,6 +24,7 @@ local paths = require 'paths'
 local image = require 'image'
 local posix = require 'posix'
 
+local scene = require 'scene'
 local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
@@ -72,12 +73,9 @@ local function save_screen(dt)
       step = step + 1
       local step_str = utils.pad_zeros(step, 3)
 
-      -- save the screen
+      -- save a screen capture
       local file = iteration.path .. 'scene/scene_' .. step_str .. '.png'
-      local i1 = uetorch.Screen()
-      if i1 then
-         image.save(file, i1)
-      end
+      image.save(file, assert(uetorch.Screen()))
 
       -- active and inactive actors in the scene are required for
       -- depth and mask
@@ -107,7 +105,7 @@ local function save_screen(dt)
          backwall.group_masks(i3, active_actors, active_names)
 
          i3 = i3:float()  -- cast from int to float for normalization
-         i3:apply(function(x) return x / block.nactors() end)
+         i3:apply(function(x) return x / block.get_nactors() end)
          image.save(mask_file, i3)
       end
 
@@ -205,12 +203,8 @@ function SetCurrentIteration()
       end
    end
 
-   -- prepare the block for either train or test
-   block = require(iteration.block)
-   block.set_block(iteration)
-
-   -- RunBlock will be called from blueprint
-   RunBlock = function() return block.run_block() end
+   -- prepare the scene from the current iteration
+   scene.initialize(iteration)
 
    tick.set_ticks_remaining(config.get_scene_ticks())
 
@@ -231,11 +225,15 @@ function SetCurrentIteration()
       end
    end
 
-   if iteration.type == -1 then  -- train
+   if config.is_train(iteration) then
       tick.add_end_tick_hook(
          function(dt) return config.update_iterations_counter(true) end)
-   else  -- test
+   else  -- test iteration
       tick.add_tick_hook(block.save_check_info)
       tick.add_end_tick_hook(block.check)
    end
+
+   -- RunBlock will be called from blueprint after this function
+   -- returns
+   RunBlock = function() return scene.run() end
 end

@@ -114,7 +114,7 @@ function M.get_masks()
 end
 
 
-function M.nactors()
+function M.get_nactors()
    local max = 3 -- floor + 2 occluders
    if params.backwall.is_active then
       max = max + 1
@@ -243,7 +243,7 @@ end
 
 function M.run_block()
    -- camera, floor, lights and background wall
-   camera.setup(config.get_current_iteration().type, 150)
+   camera.setup(config.get_current_iteration(), 150)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)
@@ -327,7 +327,7 @@ end
 
 
 function M.get_status()
-   local nactors = M.nactors()
+   local nactors = M.get_nactors()
    local _, _, actors = M.get_masks()
    actors = backwall.get_updated_actors(actors)
 

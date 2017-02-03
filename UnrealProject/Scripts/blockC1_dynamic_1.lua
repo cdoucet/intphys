@@ -95,7 +95,7 @@ function M.get_masks()
 end
 
 
-function M.nactors()
+function M.get_nactors()
    local max = 2 -- floor + occluder
    if params.backwall.is_active then
       max = max + 1
@@ -209,16 +209,16 @@ function M.set_block(iteration)
 end
 
 
-function M.run_block()
-   camera.setup(config.get_current_iteration().type, 150)
-   floor.setup(params.floor)
-   light.setup(params.light)
-   backwall.setup(params.backwall)
-   occluders.setup(params.occluders)
-   spheres.setup(params.spheres)
+-- function M.run_block()
+--    camera.setup(config.get_current_iteration(), 150)
+--    floor.setup(params.floor)
+--    light.setup(params.light)
+--    backwall.setup(params.backwall)
+--    occluders.setup(params.occluders)
+--    spheres.setup(params.spheres)
 
-   uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
-end
+--    uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
+-- end
 
 
 local check_data = {}
@@ -274,17 +274,7 @@ function M.check()
                end
             end
          end
-
-         -- if not status then
-         --    --print("iteration check failed on condition 2\n")
-         -- end
       end
-
-      -- if status then
-      --    print("iteration check succeeded\n")
-      -- else
-      --    print("iteration check failed\n")
-      -- end
    end
 
    config.update_iterations_counter(status)
@@ -297,7 +287,7 @@ end
 
 
 function M.get_status()
-   local nactors = M.nactors()
+   local nactors = M.get_nactors()
    local _, _, actors = M.get_masks()
    actors = backwall.get_updated_actors(actors)
 

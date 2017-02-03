@@ -31,7 +31,7 @@ M.actor = assert(uetorch.GetActor("Camera"))
 
 
 -- Return a random location for the camera
-function M.randomLocation()
+function M.random_location()
    return {
       math.random(-100, 100), -- x axis is left/right
       math.random(200, 400), -- y axis is front/back
@@ -41,7 +41,7 @@ end
 
 
 -- Return a radom rotation for the camera
-function M.randomRotation()
+function M.random_rotation()
    return {
       math.random(-15, 10),
       math.random(-30, 30),
@@ -53,8 +53,8 @@ end
 -- Return random parameters for the camera
 function M.random()
    return {
-      location = M.randomLocation(),
-      rotation = M.randomRotation()
+      location = M.random_location(),
+      rotation = M.random_rotation()
    }
 end
 
@@ -63,10 +63,10 @@ end
 --
 -- params must be a table structured as the one returned by
 -- camera.random(). Params are considered only for train (when
--- iterationType is -1), the camera location on the x axis varies
+-- iteration.type is -1), the camera location on the x axis varies
 -- across blocks and is therefore given as a parameter.
-function M.setup(iterationType, x_location, params)
-   if iterationType == -1 then  -- train
+function M.setup(iteration, x_location, params)
+   if iteration.type == -1 then  -- train
       uetorch.SetActorLocation(
          M.actor,
          x_location + params.location[1],

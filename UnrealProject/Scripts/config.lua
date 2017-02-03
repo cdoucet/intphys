@@ -176,6 +176,17 @@ function M.is_visibility_check(iteration)
 end
 
 
+-- Return true if the iteration is for training, false for testing
+function M.is_train(iteration)
+   return iteration.type == -1
+end
+
+-- Return true if the iteration is the first one of the block
+function M.is_first_iteration_of_block(iteration)
+   return iteration.type == M.get_block_size(iteration)
+end
+
+
 -- Return the iteration at the position `index` in the table
 function M.get_iteration(index)
    -- if not loaded, load the table of all iterations to execute
