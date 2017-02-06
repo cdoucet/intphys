@@ -17,7 +17,6 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
-local material = require 'material'
 local backwall = require 'backwall'
 local occluders = require 'occluders'
 local spheres = require 'spheres'
@@ -32,22 +31,26 @@ local iteration = nil
 local block = nil
 local params = nil
 local actors = {}
-local check_data = {}
 
 function M.initialize(_iteration)
    iteration = _iteration
    block = assert(require(iteration.block))
 
-   local params_file = iteration.path .. 'params.json'
+   local relative_path = ''
+   if not config.is_train(iteration) then
+      relative_path = '../'
+   end
+   local params_file = iteration.path .. relative_path .. 'params.json'
+
    if config.is_first_iteration_of_block(iteration) then
       params = block.get_random_parameters()
       utils.write_json(params, params_file)
    else
-      params = utils.read_json(params_file)
+      params = assert(utils.read_json(params_file))
    end
 
-   if block.set_block then
-      block.set_block(iteration, params)
+   if block.initialize then
+      block.initialize(iteration, params)
    end
 
    for i = 1, params.occluders.n_occluders do
@@ -57,6 +60,42 @@ function M.initialize(_iteration)
    for i = 1, params.spheres.n_spheres do
       actors['sphere_' .. i] = spheres.get_sphere(i)
    end
+end
+
+
+function M.run()
+   camera.setup(iteration, 150, params.camera)
+   spheres.setup(params.spheres)
+   floor.setup(params.floor)
+   light.setup(params.light)
+   backwall.setup(params.backwall)
+   occluders.setup(params.occluders)
+end
+
+
+function M.hook(step)
+   if block.hook then
+      return block.hook(step)
+   end
+end
+
+
+function M.end_hook()
+   if block.end_hook then
+      return block.end_hook()
+   else
+      return true
+   end
+end
+
+
+function M.get_actors()
+   return actors
+end
+
+
+function M.get_main_actor()
+   return block.get_main_actor()
 end
 
 
@@ -73,7 +112,7 @@ function M.get_masks()
    backwall.insert_masks(active, text, params.backwall)
    occluders.insert_masks(active, text, params.occluders)
 
-   if iteration.type == -1 then  -- on train
+   if config.is_train(iteration) then
       spheres.insert_masks(active, text, params.spheres)
    else
       -- on test, the main actor only can be inactive (when hidden)
@@ -85,7 +124,7 @@ function M.get_masks()
       end
 
       -- We add the main actor as active only when it's not hidden
-      local main_actor = block.get_main_actor()
+      local main_actor = M.get_main_actor()
       if block.is_main_actor_visible() then
          table.insert(active, main_actor)
       else
@@ -128,29 +167,6 @@ function M.get_status()
 
    return status
 end
-
-
-function M.run()
-   camera.setup(iteration, 150, params.camera)
-   spheres.setup(params.spheres)
-   floor.setup(params.floor)
-   light.setup(params.light)
-   backwall.setup(params.backwall)
-   occluders.setup(params.occluders)
-
-   if block.visible1 ~= nil then
-      uetorch.SetActorVisible(spheres.get_sphere(params.index), visible1)
-   end
-end
-
-
-function M.save_check_info(dt)
-   local main_actor = block.get_main_actor()
-   table.insert(check_data, {location = uetorch.GetActorLocation(main_actor),
-                             rotation = uetorch.GetActorRotation(main_actor)})
-end
-
-
 
 
 return M

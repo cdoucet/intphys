@@ -17,11 +17,11 @@
 -- This module defines the training configuration for the block C1.
 
 local backwall = require 'backwall'
-local occluders = require 'occluders'
-local spheres = require 'spheres'
+local camera = require 'camera'
 local floor = require 'floor'
 local light = require 'light'
-local camera = require 'camera'
+local occluders = require 'occluders'
+local spheres = require 'spheres'
 
 local M = {}
 
@@ -35,89 +35,14 @@ end
 -- Return random parameters for the C1 block, training configuration
 function M.get_random_parameters()
    return {
-      spheres = spheres.random(),
-      occluders = occluders.random(),
-      floor = floor.random(),
       backwall = backwall.random(),
       camera = camera.random(),
-      light = light.random()
+      floor = floor.random(),
+      light = light.random(),
+      occluders = occluders.random(),
+      spheres = spheres.random()
    }
 end
 
 
 return M
-
-
-
--- function M.run_block()
---    camera.setup(config.get_current_iteration(), 150, params.camera)
---    spheres.setup(params.spheres)
---    floor.setup(params.floor)
---    light.setup(params.light)
---    backwall.setup(params.backwall)
---    occluders.setup(params.occluders)
--- end
-
-
--- function M.get_status()
---    local nactors = M.get_nactors()
---    local _, _, actors = M.get_masks()
---    actors = backwall.get_updated_actors(actors)
-
---    local masks = {}
---    masks[0] = "sky"
---    for n, m in pairs(actors) do
---       masks[math.floor(255 * n / nactors)] = m
---    end
-
---    local status = {}
---    status['possible'] = M.possible
---    status['floor'] = floor.get_status()
---    status['camera'] = camera.get_status()
---    status['lights'] = light.get_status()
---    status['masks_grayscale'] = masks
-
---    return status
--- end
-
--- function M.set_block(iteration, params)
---    -- params = get_random_parameters()
---    -- utils.write_json(params, iteration.path .. 'params.json')
-
---    -- for i = 1, params.occluders.n_occluders do
---    --    M.actors['occluder_' .. i] = occluders.get_occluder(i)
---    -- end
-
---    -- for i = 1, params.spheres.n_spheres do
---    --    M.actors['sphere_' .. i] = spheres.get_sphere(i)
---    -- end
---    return
--- end
-
--- -- Return true as train blocks are always physically possible
--- function M.is_possible()
---    return true
--- end
-
-
--- function M.get_masks()
---    local active, text = {}, {}
-
---    floor.insert_masks(active, text)
---    backwall.insert_masks(active, text, params.backwall)
---    occluders.insert_masks(active, text, params.occluders)
---    spheres.insert_masks(active, text, params.spheres)
-
---    -- on train, we don't have any inactive actor
---    return active, {}, text
--- end
-
-
--- function M.get_nactors()
--- -- spheres + occluders + floor + backwall
--- local max = 1 -- floor
--- if params.backwall.is_active then
---    max = max + 1
--- end
--- return max + params.spheres.n_spheres + params.occluders.n_occluders
--- end

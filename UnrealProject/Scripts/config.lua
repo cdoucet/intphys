@@ -44,10 +44,15 @@ conf = {
    load_params = false,
    capture_interval = 2,
    scene_ticks = 201,  -- to have 100 images per video
-   visibility_check_size = {
+   check_occlusion_size = {
       blockC1_static = 1,
       blockC1_dynamic_1 = 1,
       blockC1_dynamic_2 = 2,
+   },
+   identity_check = {
+      blockC1_static = true,
+      blockC1_dynamic_1 = true,
+      blockC1_dynamic_2 = true,
    },
    tuple_size = {
       blockC1_train = 1,
@@ -58,6 +63,22 @@ conf = {
    blocks = utils.read_json(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }
 
+
+function M.get_check_occlusion_iterations(block)
+   if conf.check_occlusion_size[block] then
+      local iterations = {}
+      for i = 1, conf.check_occlusion_size[block] do
+         table.insert(iterations, tostring(conf.tuple_size[block] + i))
+      end
+      return iterations
+   else
+      return nil
+   end
+end
+
+function M.get_blocks()
+   return conf.blocks
+end
 
 function M.get_scene_ticks()
    return conf.scene_ticks
@@ -75,80 +96,12 @@ function M.get_capture_interval()
    return conf.capture_interval
 end
 
-function M.get_data_path()
-   return conf.data_path
+function M.get_scene_steps()
+   return math.floor(M.get_scene_ticks() / M.get_capture_interval())
 end
 
-
--- Parses the configuration file and setup the iterations
---
--- This function is called directly from UE blueprint at the very
--- beginning of the program execution.
---
--- It parses the configuration file and writes the
--- 'iteration_table.json' file containing the list of all iterations
--- the program will execute. It also initializes the file
--- 'iterations.t7' containing the index of the current iteration at
--- any point in the execution flow.
-function SetIterationsCounter()
-   -- count the number of iterations both for train and test. Each
-   -- train is always a single iteration, the number of test
-   -- iterations depends on the block type
-   local train_runs, test_runs, test_iterations = 0, 0, 0
-   for block, iters in pairs(conf.blocks) do
-      for subblock, nb in pairs(iters) do
-         if string.match(subblock, 'train') then
-            train_runs = train_runs + nb
-         else
-            test_runs = test_runs + nb
-         end
-      end
-   end
-
-   if test_runs + train_runs == 0 then
-      print('no iterations specified, exiting')
-      uetorch.ExecuteConsoleCommand('Exit')
-      return
-   end
-
-   print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
-   print("write data to " .. conf.data_path)
-
-   -- put the detail of each iteration into a table
-   local n, id_train, id_test, iterations_table = 1, 1, 1, {}
-   for block, iters in pairs(conf.blocks) do
-      for subblock, nb in pairs(iters) do
-         local block_name = block .. '_' .. subblock
-
-         -- setup train iterations for the current block
-         if string.match(subblock, "train") then
-            for id = 1, nb do
-               iterations_table[n] = {
-                  block=block_name,
-                  type=-1,
-                  id=id_train}
-               n = n + 1
-               id_train = id_train + 1
-            end
-         else
-            -- setup test iterations for the current block
-            local ntypes = conf.tuple_size[block_name] + conf.visibility_check_size[block_name]
-            for id = 1, nb do
-               for t = ntypes, 1, -1 do
-                  iterations_table[n] = {
-                     block=block_name,
-                     type=t,
-                     id=id_test}
-                  n = n + 1
-               end
-               id_test = id_test + 1
-            end
-         end
-      end
-   end
-
-   utils.write_json(iterations_table, conf.data_path .. 'iterations_table.json')
-   torch.save(conf.data_path .. 'iterations.t7', "1")
+function M.get_data_path()
+   return conf.data_path
 end
 
 
@@ -157,15 +110,15 @@ end
 -- This includes the data generation iteration and, for testing, the
 -- visibility checks.
 function M.get_block_size(iteration)
-   local a = assert(conf.visibility_check_size[iteration.block])
+   local a = conf.check_occlusion_size[iteration.block] or 0
    local b = assert(conf.tuple_size[iteration.block])
    return a + b
 end
 
 
 -- Return true if this iteration is a visibility check
-function M.is_visibility_check(iteration)
-   if conf.visibility_check_size[iteration.block] == 0 then
+function M.is_check_occlusion(iteration)
+   if M.get_check_occlusion_size(iteration) == 0 then
       return false
    end
    if iteration.type > conf.tuple_size[iteration.block] then
@@ -176,6 +129,12 @@ function M.is_visibility_check(iteration)
 end
 
 
+-- Return true if this iteration is an identity check
+function M.is_identity_check(iteration)
+   return conf.identity_check[iteration.block]
+end
+
+
 -- Return true if the iteration is for training, false for testing
 function M.is_train(iteration)
    return iteration.type == -1
@@ -183,7 +142,7 @@ end
 
 -- Return true if the iteration is the first one of the block
 function M.is_first_iteration_of_block(iteration)
-   return iteration.type == M.get_block_size(iteration)
+   return iteration.type == M.get_block_size(iteration) or iteration.type == -1
 end
 
 
@@ -266,6 +225,77 @@ function M.update_iterations_counter(check)
    end
 
    torch.save(conf.data_path .. 'iterations.t7', index)
+end
+
+-- Parses the configuration file and setup the iterations
+--
+-- This function is called directly from UE blueprint at the very
+-- beginning of the program execution.
+--
+-- It parses the configuration file and writes the
+-- 'iteration_table.json' file containing the list of all iterations
+-- the program will execute. It also initializes the file
+-- 'iterations.t7' containing the index of the current iteration at
+-- any point in the execution flow.
+function SetIterationsCounter()
+   -- count the number of iterations both for train and test. Each
+   -- train is always a single iteration, the number of test
+   -- iterations depends on the block type
+   local train_runs, test_runs, test_iterations = 0, 0, 0
+   for block, iters in pairs(conf.blocks) do
+      for subblock, nb in pairs(iters) do
+         if string.match(subblock, 'train') then
+            train_runs = train_runs + nb
+         else
+            test_runs = test_runs + nb
+         end
+      end
+   end
+
+   if test_runs + train_runs == 0 then
+      print('no iterations specified, exiting')
+      uetorch.ExecuteConsoleCommand('Exit')
+      return
+   end
+
+   print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
+   print("write data to " .. conf.data_path)
+
+   -- put the detail of each iteration into a table
+   local n, id_train, id_test, iterations_table = 1, 1, 1, {}
+   for block, iters in pairs(conf.blocks) do
+      for subblock, nb in pairs(iters) do
+         local block_name = block .. '_' .. subblock
+
+         -- setup train iterations for the current block
+         if string.match(subblock, "train") then
+            for id = 1, nb do
+               iterations_table[n] = {
+                  block=block_name,
+                  type=-1,
+                  id=id_train}
+               n = n + 1
+               id_train = id_train + 1
+            end
+         else
+            -- setup test iterations for the current block
+            local ntypes = conf.tuple_size[block_name] + conf.check_occlusion_size[block_name]
+            for id = 1, nb do
+               for t = ntypes, 1, -1 do
+                  iterations_table[n] = {
+                     block=block_name,
+                     type=t,
+                     id=id_test}
+                  n = n + 1
+               end
+               id_test = id_test + 1
+            end
+         end
+      end
+   end
+
+   utils.write_json(iterations_table, conf.data_path .. 'iterations_table.json')
+   torch.save(conf.data_path .. 'iterations.t7', "1")
 end
 
 

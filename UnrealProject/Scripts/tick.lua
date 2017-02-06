@@ -32,10 +32,6 @@ local end_tick_hooks = {}
 -- Remaining ticks before the final one
 local ticks_remaining = nil
 
--- Number of thicks since the scene beginning
-local tick_count = 1
-
-
 
 -- Fix the tick rate of the game at a constant rate (in s.)
 function M.set_tick_delta(dt)
@@ -80,7 +76,6 @@ end
 -- It increment the tick counter, calling each registerd hook, until
 -- the end of the scene where it calls ending hooks
 function M.tick(dt)
-   tick_count = tick_count + 1
    dt = 1
 
    if ticks_remaining then

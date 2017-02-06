@@ -22,6 +22,19 @@ local json = require 'dkjson'
 
 local M = {}
 
+
+-- Return unique elements of a tensor `t` in a table
+--
+-- Equivalent to set(t) in Python. From
+-- https://stackoverflow.com/questions/20066835
+function M.unique(t)
+   local hash, res = {}, {}
+   t:apply(
+      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
+   return res
+end
+
+
 -- Pad a number `int` with `n` beginning zeros, return it as a string
 --
 -- pad_zeros(0, 3)  -> '000'
@@ -74,16 +87,46 @@ function M.coordinates_to_string(actor)
 end
 
 
--- Return unique elements of a tensor `t` in a table
+-- Return a table with the actor coordinates
 --
--- Equivalent to set(t) in Python. From
--- https://stackoverflow.com/questions/20066835
-function M.unique(t)
-   local hash, res = {}, {}
-   t:apply(
-      function(x) if not hash[x] then res[#res+1] = x; hash[x] = true end end)
-   return res
+-- The table has  the following structure:
+-- {location.{x, y, z}, rotation.{pitch, yaw, roll}}
+function M.get_actor_coordinates(actor)
+   return {
+      location = uetorch.GetActorLocation(actor),
+      rotation = uetorch.GetActorRotation(actor)
+   }
 end
 
+
+-- Return true if `x` and `y` have close coordinates
+--
+-- Close means their absolute difference is lesser than `epsilon`,
+-- which default to 1e-6 if not specified.
+--
+-- `x` and `y` must be tables with the following structure:
+-- {location.{x, y, z}, rotation.{pitch, yaw, roll}}
+function M.is_close_coordinates(x, y, epsilon)
+   epsilon = epsilon or 1e-6
+
+   return math.abs(x.location.x - y.location.x) < epsilon
+      or  math.abs(x.location.y - y.location.y) < epsilon
+      or  math.abs(x.location.z - y.location.z) < epsilon
+      or  math.abs(x.rotation.pitch - y.rotation.pitch) < epsilon
+      or  math.abs(x.rotation.yaw - y.rotation.yaw) < epsilon
+      or  math.abs(x.rotation.roll - y.rotation.roll) < epsilon
+end
+
+
+-- -- Return true if the `actor` is visible in the rendered image
+-- function M.is_visible_actor(actor)
+--    local img = assert(uetorch.ObjectSegmentation({actor}))
+
+--    if torch.max(img) == 0 then
+--       return false
+--    else
+--       return true
+--    end
+-- end
 
 return M

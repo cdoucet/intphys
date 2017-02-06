@@ -31,10 +31,15 @@ local sphere_actors = {
 }
 
 
--- Return a reference to the sphere i (must be 1, 2 or 3)
+-- Return the maximal number of spheres in the scene
+function M.get_max_spheres()
+   return #sphere_actors
+end
+
+
+-- Return a reference to the sphere i (in must be in [1, get_max_spheres()])
 function M.get_sphere(i)
-   assert(i >= 1 and i <= 3)
-   return sphere_actors[i]
+   return assert(sphere_actors[i])
 end
 
 
