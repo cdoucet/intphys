@@ -33,6 +33,12 @@ local occluder_actors = {
 }
 
 
+-- Return the max number of occluders
+function M.get_max_occluders()
+   return #occluder_actors
+end
+
+
 -- Return an occluder actor
 --
 -- `i` must be 1 or 2 for occluder1 or occluder2 respectively
@@ -185,7 +191,7 @@ function M.setup(params)
       uetorch.DestroyActor(M.get_occluder(i))
    end
 
-   tick.add_tick_hook(M.tick)
+   tick.add_hook(M.tick, 'fast')
 end
 
 

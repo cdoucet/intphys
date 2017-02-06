@@ -53,8 +53,10 @@ function M.initialize(_iteration)
       block.initialize(iteration, params)
    end
 
-   for i = 1, params.occluders.n_occluders do
-      actors['occluder_' .. i] = occluders.get_occluder(i)
+   if params.occluders then
+      for i = 1, params.occluders.n_occluders do
+         actors['occluder_' .. i] = occluders.get_occluder(i)
+      end
    end
 
    for i = 1, params.spheres.n_spheres do
@@ -63,13 +65,15 @@ function M.initialize(_iteration)
 end
 
 
-function M.run()
+function M.setup()
    camera.setup(iteration, 150, params.camera)
    spheres.setup(params.spheres)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)
-   occluders.setup(params.occluders)
+   if params.occluders then
+      occluders.setup(params.occluders)
+   end
 end
 
 
@@ -110,7 +114,9 @@ function M.get_masks()
 
    floor.insert_masks(active, text)
    backwall.insert_masks(active, text, params.backwall)
-   occluders.insert_masks(active, text, params.occluders)
+   if params.occluders then
+      occluders.insert_masks(active, text, params.occluders)
+   end
 
    if config.is_train(iteration) then
       spheres.insert_masks(active, text, params.spheres)
@@ -143,7 +149,13 @@ function M.get_nactors()
       n = n + 1
    end
 
-   return n + params.spheres.n_spheres + params.occluders.n_occluders
+   n = n + params.spheres.n_spheres
+
+   if params.occluders then
+         n = n + params.occluders.n_occluders
+   end
+
+   return n
 end
 
 

@@ -14,11 +14,6 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module is entry point of the program from the Unreal Engine
--- blueprints. It configures the current iteration block and run it,
--- manages the random seed, takes sceen captures and metadata (masking
--- and depth).
-
 local uetorch = require 'uetorch'
 local config = require 'config'
 
@@ -83,8 +78,7 @@ function M.end_hook()
          data[iteration.type])
    end
 
-   print('check occlusion: ' .. tostring(check))
-
+   -- print('check occlusion: ' .. tostring(check))
    return check
 end
 

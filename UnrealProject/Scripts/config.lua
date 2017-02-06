@@ -42,8 +42,8 @@ conf = {
    data_path = assert(os.getenv('NAIVEPHYSICS_DATA')),
    resolution = {x = 288, y = 288}, -- rendered image resolution (in pixels)
    load_params = false,
-   capture_interval = 2,
-   scene_ticks = 201,  -- to have 100 images per video
+   ticks_interval = 2,
+   nticks = 100,
    check_occlusion_size = {
       blockC1_static = 1,
       blockC1_dynamic_1 = 1,
@@ -51,37 +51,22 @@ conf = {
    },
    identity_check = {
       blockC1_static = true,
+      blockC1_visible = true,
       blockC1_dynamic_1 = true,
       blockC1_dynamic_2 = true,
    },
    tuple_size = {
       blockC1_train = 1,
       blockC1_static = 4,
+      blockC1_visible = 4,
       blockC1_dynamic_1 = 4,
       blockC1_dynamic_2 = 4,
    },
    blocks = utils.read_json(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }
 
-
-function M.get_check_occlusion_iterations(block)
-   if conf.check_occlusion_size[block] then
-      local iterations = {}
-      for i = 1, conf.check_occlusion_size[block] do
-         table.insert(iterations, tostring(conf.tuple_size[block] + i))
-      end
-      return iterations
-   else
-      return nil
-   end
-end
-
 function M.get_blocks()
    return conf.blocks
-end
-
-function M.get_scene_ticks()
-   return conf.scene_ticks
 end
 
 function M.get_resolution()
@@ -92,16 +77,21 @@ function M.get_load_params()
    return conf.load_params
 end
 
-function M.get_capture_interval()
-   return conf.capture_interval
+function M.get_ticks_interval()
+   return conf.ticks_interval
 end
 
-function M.get_scene_steps()
-   return math.floor(M.get_scene_ticks() / M.get_capture_interval())
+function M.get_nticks()
+   return conf.nticks
 end
 
 function M.get_data_path()
    return conf.data_path
+end
+
+
+function M.get_check_occlusion_size(iteration)
+   return conf.check_occlusion_size[iteration.block] or 0
 end
 
 
@@ -227,6 +217,7 @@ function M.update_iterations_counter(check)
    torch.save(conf.data_path .. 'iterations.t7', index)
 end
 
+
 -- Parses the configuration file and setup the iterations
 --
 -- This function is called directly from UE blueprint at the very
@@ -279,7 +270,7 @@ function SetIterationsCounter()
             end
          else
             -- setup test iterations for the current block
-            local ntypes = conf.tuple_size[block_name] + conf.check_occlusion_size[block_name]
+            local ntypes = conf.tuple_size[block_name] + (conf.check_occlusion_size[block_name] or 0)
             for id = 1, nb do
                for t = ntypes, 1, -1 do
                   iterations_table[n] = {

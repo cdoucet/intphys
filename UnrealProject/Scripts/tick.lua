@@ -14,87 +14,104 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module contains functions for handling game loop
--- ticks. Registering of function to be called at each tick and at the
--- final tick.
+-- This module handles game loop ticks. It provides 3 ticking levels
+-- at which some functions can be registered:
+--   * the 'fast' level ticks at each game tick,
+--   * the 'normal' level ticks each few game loop as defined by
+--     config.get_tick_interval(),
+--   * and the 'final' level ticks only once, at the very end of the scene
+--     rendering, just before exit.
+--
+-- A function f is registered to tick at a given level l using the
+-- function tick.add_hook(f, l), l being 'slow', 'fast' or 'final'.
 
 local uetorch = require 'uetorch'
+local config = require 'config'
 
 local M = {}
 
 
--- A table registering ticks hooks
-local tick_hooks = {}
-
--- A table registering final tick hooks
-local end_tick_hooks = {}
+-- Tables registering hooks for the different ticking levels
+local hooks = {slow = {}, fast = {}, final = {}}
 
 -- Remaining ticks before the final one
-local ticks_remaining = nil
+local ticks_remaining = config.get_nticks()
+
+local step = 0
+
+-- Interval between two game ticks in which the hooks are called, and
+-- two variables to compute it
+local ticks_interval, t_tick, t_last_tick = config.get_ticks_interval(), 0, 0
 
 
--- Fix the tick rate of the game at a constant rate (in s.)
+-- Fix the tick rate of the game at a constant rate
 function M.set_tick_delta(dt)
-   uetorch.SetTickDeltaBounds(1/8, 1/8)
+   uetorch.SetTickDeltaBounds(dt, dt)
 end
 
 
--- Set the number of ticks before the end of the scene
-function M.set_ticks_remaining(ticks)
-   ticks_remaining = ticks
-end
+-- -- Set the number of ticks before the end of the scene
+-- function M.set_ticks_remaining(ticks)
+--    ticks_remaining = ticks
+-- end
 
 
--- Register a hook function f called at each game loop tick
+-- Register a hook function `f` called at a given ticking level
 --
--- Tick hooks should take a single argument (dt) and return nil
-function M.add_tick_hook(f)
-   table.insert(tick_hooks, f)
+-- The function `f` should take a single argument and return nil
+-- The level must be 'slow', 'fast', or 'final'
+function M.add_hook(f, level)
+   table.insert(hooks[level], f)
 end
 
 
--- Register a hook function f called at the end of each scene
+-- Unregister the function `f` from the given level hooks
 --
--- Tick hooks should take a single argument (dt) and return nil
-function M.add_end_tick_hook(f)
-   table.insert(end_tick_hooks, f)
-end
-
-
--- Remove the function f from the ticks hooks register
-function M.remove_tick_hook(f)
-   for i = #tick_hooks, 1, -1 do
-      if tick_hooks[i] == f then
-         table.remove(tick_hooks, i)
+-- The level must be 'slow', 'fast', or 'final'
+function M.remove_hook(f, level)
+   local t = hook[level]
+   for i = #t, 1, -1 do
+      if t[i] == f then
+         table.remove(t, i)
       end
+   end
+end
+
+
+-- Run all the registerd at a given ticking level
+--
+-- The level must be 'slow', 'fast', or 'final'
+function M.run_hooks(level, ...)
+   for _, f in pairs(hooks[level]) do
+      f(...)
    end
 end
 
 
 -- This function must be called at each game loop by UETorch
 --
--- It increment the tick counter, calling each registerd hook, until
--- the end of the scene where it calls ending hooks
+-- It increment the tick counter, calling each registerd hook until
+-- the end of the scene.
 function M.tick(dt)
    dt = 1
 
-   if ticks_remaining then
-      ticks_remaining = ticks_remaining - dt
-      -- print('remaining ' .. ticks_remaining)
+   if ticks_remaining >= 0 then
+      -- the scene is running, run tick hooks
+      M.run_hooks('fast', dt)
 
-      if ticks_remaining < 0 then
-         -- end of the scene, run end hooks and go to the next iteration
-         ticks_remaining = nil
-         for _, hook in ipairs(end_tick_hooks) do
-            hook()
-         end
-         uetorch.ExecuteConsoleCommand("RestartLevel")
-      else
-         -- the scene is running, run tick hooks
-         for _, hook in ipairs(tick_hooks) do
-            hook(dt)
-         end
+      if t_tick - t_last_tick >= ticks_interval then
+         ticks_remaining = ticks_remaining - 1
+         step = step + 1
+
+         M.run_hooks('slow', step)
+
+         t_last_tick = t_tick
       end
+      t_tick = t_tick + 1
+   else
+      -- end of the scene, run end hooks and go to the next iteration
+      M.run_hooks('final')
+      uetorch.ExecuteConsoleCommand('RestartLevel')
    end
 end
 

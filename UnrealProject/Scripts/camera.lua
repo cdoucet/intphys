@@ -26,8 +26,14 @@ local utils = require 'utils'
 local M = {}
 
 
--- the camera actor defined in the scene
-M.actor = assert(uetorch.GetActor("Camera"))
+-- The camera actor defined in the scene
+local actor = assert(uetorch.GetActor("Camera"))
+
+
+-- Return the camera actor
+function M.get_actor()
+   return actor
+end
 
 
 -- Return a random location for the camera
@@ -68,26 +74,26 @@ end
 function M.setup(iteration, x_location, params)
    if iteration.type == -1 then  -- train
       uetorch.SetActorLocation(
-         M.actor,
+         M.get_actor(),
          x_location + params.location[1],
          30 + params.location[2],
          80 + params.location[3])
 
       uetorch.SetActorRotation(
-         M.actor,
+         M.get_actor(),
          0 + params.rotation[1],
          -90 + params.rotation[2],
          0 + params.rotation[3])
    else
-      uetorch.SetActorLocation(M.actor, x_location, 30, 80)
-      uetorch.SetActorRotation(M.actor, 0, -90, 0)
+      uetorch.SetActorLocation(M.get_actor(), x_location, 30, 80)
+      uetorch.SetActorRotation(M.get_actor(), 0, -90, 0)
    end
 end
 
 
 -- Return the camera location, rotation and horizontal field of view (in degree)
 function M.get_status()
-   return utils.coordinates_to_string(M.actor)
+   return utils.coordinates_to_string(M.get_actor())
 end
 
 return M

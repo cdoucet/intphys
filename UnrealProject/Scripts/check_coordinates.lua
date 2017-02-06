@@ -43,7 +43,7 @@ end
 function M.end_hook()
    local check = true
    if not config.is_first_iteration_of_block(iteration) then
-      local nticks = config.get_scene_steps()
+      local nticks = config.get_nticks()
 
       -- compare the actual data to the previous one
       last_data = torch.load(iteration.path .. '../check_' .. iteration.type + 1 .. '.t7')
@@ -58,8 +58,6 @@ function M.end_hook()
    if check then
       torch.save(iteration.path .. '../check_' .. iteration.type .. '.t7', data)
    end
-
-   -- print('check coordinates: ' .. tostring(check))
 
    return check
 end

@@ -13,77 +13,63 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
--- This module defines a test configuration for the block C1: a single
--- change and a single occluder, with moving spheres
-
 local uetorch = require 'uetorch'
+local config = require 'config'
 local backwall = require 'backwall'
 local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
-local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
 local M = {}
 
 local main_actor
-local iteration
-
-local is_visible_start = true
-local is_possible = true
 local is_trick_done = false
+local trick_step
 
 
-function M.initialize(_iteration, params)
-   iteration = _iteration
+function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
+   trick_step = assert(params.trick_step)
 
-   check_occlusion.initialize(iteration, main_actor, {5})
    check_coordinates.initialize(iteration, main_actor)
 
-   if iteration.type == 5 then
-      for i = 1, spheres.get_max_spheres() do
-         if i ~= params.index then
-            uetorch.DestroyActor(spheres.get_sphere(i))
-         end
-      end
-   else
-      if iteration.type == 1 then
-         is_visible_start = false
-         is_possible = true
-      elseif iteration.type == 2 then
-         is_visible_start = true
-         is_possible = true
-      elseif iteration.type == 3 then
-         is_visible_start = false
-         is_possible = false
-      elseif iteration.type == 4 then
-         is_visible_start = true
-         is_possible = false
-      end
+   if iteration.type == 1 then
+      is_visible_start = false
+      is_possible = true
+   elseif iteration.type == 2 then
+      is_visible_start = true
+      is_possible = true
+   elseif iteration.type == 3 then
+      is_visible_start = false
+      is_possible = false
+   elseif iteration.type == 4 then
+      is_visible_start = true
+      is_possible = false
+   end
 
-      uetorch.SetActorVisible(main_actor, is_visible_start)
+   uetorch.SetActorVisible(main_actor, is_visible_start)
+
+   -- disable the occluders
+   for i = 1, occluders.get_max_occluders() do
+      uetorch.DestroyActor(occluders.get_occluder(i))
    end
 end
 
 
 function M.hook(step)
    check_coordinates.hook()
-   check_occlusion.hook()
 
-   if iteration.type ~= 5 and not is_possible and not is_trick_done and check_occlusion.data(5, step) then
-      is_trick_done = true
+   if not is_possible and step == trick_step then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
+      is_trick_done = true
    end
 end
 
-
 function M.end_hook()
    return check_coordinates.end_hook()
-      and check_occlusion.end_hook()
 end
 
 function M.is_possible()
@@ -103,26 +89,10 @@ function M.is_main_actor_visible()
 end
 
 
+
 -- Return random parameters for the C1 dynamic_1 block
 function M.get_random_parameters()
    local params = {}
-
-   -- occluder
-   params.occluders = {}
-   params.occluders.n_occluders = 1
-   params.occluders.occluder_1 = {
-      material = occluders.random_material(),
-      movement = 1,
-      scale = {
-         x = 0.5,
-         y = 1,
-         z = 1 - 0.5 * math.random()},
-      location = {
-         x = 50,
-         y = -250},
-      rotation = 0,
-      start_position = 'down',
-      pause = {math.random(5), math.random(5)}}
 
    -- spheres
    params.spheres = {}
@@ -156,6 +126,9 @@ function M.get_random_parameters()
    params.floor = floor.random()
    params.light = light.random()
    params.backwall = backwall.random()
+
+   -- the step at which the magic trick is done
+   params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
 
    return params
 end
