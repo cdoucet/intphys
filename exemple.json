@@ -1,9 +1,18 @@
 {
     "blockC1" :
     {
-        "train" : 100,
-        "static" : 5,
-        "dynamic_1" : 5,
-        "dynamic_2" : 5
+        "train" : 2,
+        "test_visible" :
+        {
+            "static" : 0,
+            "dynamic_1" : 1,
+            "dynamic_2" : 0
+        },
+        "test_occluded" :
+        {
+            "static" : 1,
+            "dynamic_1" : 1,
+            "dynamic_2" : 0
+        }
     }
 }

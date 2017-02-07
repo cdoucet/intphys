@@ -30,6 +30,16 @@ local utils = require 'utils'
 local M = {}
 
 
+-- Return the sum of values in the table t
+local function sum(t)
+   local s = 0
+   for _, v in pairs(t) do
+      s = s + v
+   end
+   return s
+end
+
+
 -- A table containing the iterations registered in the configuration
 -- file
 iterations_table = nil
@@ -44,24 +54,6 @@ conf = {
    load_params = false,
    ticks_interval = 2,
    nticks = 100,
-   check_occlusion_size = {
-      blockC1_static = 1,
-      blockC1_dynamic_1 = 1,
-      blockC1_dynamic_2 = 2,
-   },
-   identity_check = {
-      blockC1_static = true,
-      blockC1_visible = true,
-      blockC1_dynamic_1 = true,
-      blockC1_dynamic_2 = true,
-   },
-   tuple_size = {
-      blockC1_train = 1,
-      blockC1_static = 4,
-      blockC1_visible = 4,
-      blockC1_dynamic_1 = 4,
-      blockC1_dynamic_2 = 4,
-   },
    blocks = utils.read_json(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }
 
@@ -91,18 +83,31 @@ end
 
 
 function M.get_check_occlusion_size(iteration)
-   return conf.check_occlusion_size[iteration.block] or 0
+   local name = iteration.block
+   if string.find(name, 'visible') or string.find(name, 'train') then
+      return 0
+   elseif string.find(name, '*2$') then
+      return 2
+   else
+      return 1
+   end
 end
 
+
+function M.get_tuple_size(iteration)
+   if M.is_train(iteration) then
+      return 1
+   else
+      return 4
+   end
+end
 
 -- Return the total number of runs needed for a given iteration
 --
 -- This includes the data generation iteration and, for testing, the
 -- visibility checks.
 function M.get_block_size(iteration)
-   local a = conf.check_occlusion_size[iteration.block] or 0
-   local b = assert(conf.tuple_size[iteration.block])
-   return a + b
+   return M.get_check_occlusion_size(iteration) + M.get_tuple_size(iteration)
 end
 
 
@@ -111,7 +116,7 @@ function M.is_check_occlusion(iteration)
    if M.get_check_occlusion_size(iteration) == 0 then
       return false
    end
-   if iteration.type > conf.tuple_size[iteration.block] then
+   if iteration.type > M.get_tuple_size(iteration) then
       return true
    else
       return false
@@ -121,7 +126,11 @@ end
 
 -- Return true if this iteration is an identity check
 function M.is_identity_check(iteration)
-   return conf.identity_check[iteration.block] or false
+   if M.is_train(iteration) then
+      return false
+   else
+      return true
+   end
 end
 
 
@@ -140,7 +149,7 @@ function M.is_first_iteration_of_block(iteration, with_occlusion_check)
    if with_occlusion_check then
       is = (iteration.type == M.get_block_size(iteration))
    else
-      is = (iteration.type == assert(conf.tuple_size[iteration.block]))
+      is = (iteration.type == assert(M.get_tuple_size(iteration)))
    end
 
    return is or M.is_train(iteration)
@@ -155,6 +164,9 @@ function M.get_iteration(index)
       max_iteration = 0
       for _, v in pairs(conf.blocks) do
          for _, vv in pairs(v) do
+            if type(vv) == "table" then
+               vv = sum(vv)
+            end
             max_iteration = math.max(max_iteration, vv)
          end
       end
@@ -229,6 +241,7 @@ function M.update_iterations_counter(check)
 end
 
 
+
 -- Parses the configuration file and setup the iterations
 --
 -- This function is called directly from UE blueprint at the very
@@ -243,13 +256,13 @@ function set_iterations_counter()
    -- count the number of iterations both for train and test. Each
    -- train is always a single iteration, the number of test
    -- iterations depends on the block type
-   local train_runs, test_runs, test_iterations = 0, 0, 0
-   for block, iters in pairs(conf.blocks) do
-      for subblock, nb in pairs(iters) do
-         if string.match(subblock, 'train') then
-            train_runs = train_runs + nb
+   local train_runs, test_runs = 0, 0
+   for _, block in pairs(conf.blocks) do
+      for set, scenarii in pairs(block) do
+         if string.match(set, 'train') then
+            train_runs = train_runs + scenarii
          else
-            test_runs = test_runs + nb
+            test_runs = test_runs + sum(scenarii)
          end
       end
    end
@@ -266,12 +279,12 @@ function set_iterations_counter()
    -- put the detail of each iteration into a table
    local n, id_train, id_test, iterations_table = 1, 1, 1, {}
    for block, iters in pairs(conf.blocks) do
-      for subblock, nb in pairs(iters) do
-         local block_name = block .. '_' .. subblock
+      for set, scenarii in pairs(iters) do
+         local block_name = block .. '_' .. set
 
          -- setup train iterations for the current block
-         if string.match(subblock, "train") then
-            for id = 1, nb do
+         if string.match(set, "train") then
+            for id = 1, scenarii do
                iterations_table[n] = {
                   block=block_name,
                   type=-1,
@@ -280,17 +293,22 @@ function set_iterations_counter()
                id_train = id_train + 1
             end
          else
-            -- setup test iterations for the current block
-            local ntypes = conf.tuple_size[block_name] + (conf.check_occlusion_size[block_name] or 0)
-            for id = 1, nb do
-               for t = ntypes, 1, -1 do
-                  iterations_table[n] = {
-                     block=block_name,
-                     type=t,
-                     id=id_test}
-                  n = n + 1
+            for scenario, nb in pairs(scenarii) do
+               local scenario_name = block_name .. '_' .. scenario
+
+               -- setup test iterations for the current block
+               local ntypes = M.get_tuple_size({type = 1})
+                  + M.get_check_occlusion_size({block = scenario_name})
+               for id = 1, nb do
+                  for t = ntypes, 1, -1 do
+                     iterations_table[n] = {
+                        block=scenario_name,
+                        type=t,
+                        id=id_test}
+                     n = n + 1
+                  end
+                  id_test = id_test + 1
                end
-               id_test = id_test + 1
             end
          end
       end

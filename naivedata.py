@@ -52,13 +52,22 @@ JSON_EXEMPLE = '''
     "blockC1" :
     {
         "train" : 100,
-        "static" : 5,
-        "dynamic_1" : 5,
-        "dynamic_2" : 5
+        "test_visible" :
+        {
+            "static" : 5,
+            "dynamic_1" : 5,
+            "dynamic_2" : 5
+        },
+        "test_occluded" :
+        {
+            "static" : 5,
+            "dynamic_1" : 5,
+            "dynamic_2" : 5
+        }
     }
 }
 
-This generates 100 train videos and 15 test videos (5 for each variant).'''
+This generates 100 train videos and 30 test videos (5 for each variant).'''
 
 try:
     # path to packaged the NaivePhysics binary (environment variable has
