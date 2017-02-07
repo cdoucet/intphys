@@ -16,6 +16,7 @@
 
 local uetorch = require 'uetorch'
 local config = require 'config'
+local tick = require 'tick'
 
 local M = {}
 
@@ -23,11 +24,29 @@ local data
 local iteration
 local actor
 local is_check_occlusion
-
+local is_occlusion_started = false
+local  is_occlusion_finished = false
 
 -- Return true if the `actor` is occluded in the rendered image
 local function is_occluded(actor)
    return torch.max(uetorch.ObjectSegmentation({actor})) == 0
+end
+
+
+local function middle(t)
+   local first, last
+   for k, v in ipairs(t) do
+      if v and not first then
+         first = k
+      elseif not v and first and not last then
+         last = k
+         break
+      end
+   end
+   last = last or #t
+
+   assert(first and last)
+   return math.floor((first + last) / 2)
 end
 
 
@@ -40,7 +59,7 @@ function M.initialize(_iteration, _actor, check_iterations)
    for _, v in ipairs(check_iterations) do
       if tostring(v) == tostring(iteration.type) then
          is_check_occlusion = true
-         data[v] = {}
+         data[v] = {raw = {}, middle = nil}
       end
    end
 
@@ -52,39 +71,42 @@ function M.initialize(_iteration, _actor, check_iterations)
 end
 
 
-function M.hook()
-   if is_check_occlusion then
-      table.insert(data[iteration.type], is_occluded(actor))
+function M.tick()
+   if is_check_occlusion and not is_occlusion_finished then
+      local occluded = is_occluded(actor)
+      if occluded and not is_occlusion_started then
+         is_occlusion_started = true
+      end
+
+      if not occluded and is_occlusion_started and not is_occlusion_finished then
+         is_occlusion_finished = true
+         data[iteration.type].middle = middle(data[iteration.type].raw)
+         tick.set_ticks_remaining(0)
+      else
+         table.insert(data[iteration.type].raw, occluded)
+      end
    end
 end
 
 
-function M.end_hook()
+function M.final_tick()
    if not is_check_occlusion then
       return true
    end
 
-   local check = false
-   for _, v in ipairs(data[iteration.type]) do
-      if v then
-         check = true
-         break
-      end
-   end
-
-   if check then
+   if is_occlusion_finished then
       torch.save(
          iteration.path .. '../occlusion_' .. tostring(iteration.type) .. '.t7',
          data[iteration.type])
+      return true
+   else
+      return false
    end
-
-   -- print('check occlusion: ' .. tostring(check))
-   return check
 end
 
 
-function M.data(key, idx)
-   return data[tonumber(key)][idx]
+function M.is_middle_of_occlusion(key, idx)
+   return idx == data[tonumber(key)].middle
 end
 
 

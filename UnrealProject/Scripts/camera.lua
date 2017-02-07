@@ -91,7 +91,7 @@ function M.setup(iteration, x_location, params)
 end
 
 
--- Return the camera location, rotation and horizontal field of view (in degree)
+-- Return the camera location and rotation
 function M.get_status()
    return utils.coordinates_to_string(M.get_actor())
 end

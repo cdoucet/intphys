@@ -121,7 +121,7 @@ end
 
 -- Return true if this iteration is an identity check
 function M.is_identity_check(iteration)
-   return conf.identity_check[iteration.block]
+   return conf.identity_check[iteration.block] or false
 end
 
 
@@ -131,8 +131,19 @@ function M.is_train(iteration)
 end
 
 -- Return true if the iteration is the first one of the block
-function M.is_first_iteration_of_block(iteration)
-   return iteration.type == M.get_block_size(iteration) or iteration.type == -1
+function M.is_first_iteration_of_block(iteration, with_occlusion_check)
+   if with_occlusion_check == nil then
+      with_occlusion_check = true
+   end
+
+   local is = false
+   if with_occlusion_check then
+      is = (iteration.type == M.get_block_size(iteration))
+   else
+      is = (iteration.type == assert(conf.tuple_size[iteration.block]))
+   end
+
+   return is or M.is_train(iteration)
 end
 
 
@@ -228,7 +239,7 @@ end
 -- the program will execute. It also initializes the file
 -- 'iterations.t7' containing the index of the current iteration at
 -- any point in the execution flow.
-function SetIterationsCounter()
+function set_iterations_counter()
    -- count the number of iterations both for train and test. Each
    -- train is always a single iteration, the number of test
    -- iterations depends on the block type

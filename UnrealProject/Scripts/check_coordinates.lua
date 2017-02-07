@@ -27,22 +27,28 @@ local M = {}
 local data = {}
 local iteration
 local actor
+local is_check = false
 
 
 function M.initialize(_iteration, _actor)
    actor = _actor
    iteration = _iteration
+   if not config.is_check_occlusion(iteration) then
+      is_check = true
+   end
 end
 
 
-function M.hook()
-   table.insert(data, utils.get_actor_coordinates(actor))
+function M.tick()
+   if is_check then
+      table.insert(data, utils.get_actor_coordinates(actor))
+   end
 end
 
 
-function M.end_hook()
+function M.final_tick()
    local check = true
-   if not config.is_first_iteration_of_block(iteration) then
+   if is_check and not config.is_first_iteration_of_block(iteration, false) then
       local nticks = config.get_nticks()
 
       -- compare the actual data to the previous one

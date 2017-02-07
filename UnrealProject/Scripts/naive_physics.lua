@@ -14,26 +14,17 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module is entry point of the program from the Unreal Engine
--- blueprints. It configures the current iteration block and run it,
--- manages the random seed, takes sceen captures and metadata (masking
--- and depth).
+-- This module is entry point of the program from the packaged
+-- game. It configures the current iteration scene and run it, manages
+-- the random seed and data saving (screen captures)
 
 local uetorch = require 'uetorch'
 local paths = require 'paths'
 local posix = require 'posix'
-
+local config = require 'config'
 local saver = require 'saver'
 local scene = require 'scene'
-local config = require 'config'
 local tick = require 'tick'
-
-
--- setup the screen resolution to the one defined in config
-function set_resolution(dt)
-   local r = config.get_resolution()
-   uetorch.SetResolution(r.x, r.y)
-end
 
 
 -- setup the random seed
@@ -42,16 +33,18 @@ math.randomseed(seed)
 posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
 
--- functions called from Unreal Engine blueprints
-GetCurrentIteration = config.get_current_index
-RunBlock = nil
-
 -- replace uetorch's Tick function and set a constant tick rate
 Tick = tick.tick
 tick.set_tick_delta(1/8)
 
 
-function SetCurrentIteration()
+-- function called from the packaged game main loop, if that function
+-- returns '0' the program exits, else it continues to the next
+-- iteration by calling run_current_iteration().
+remaining_iterations = config.get_current_index
+
+
+function run_current_iteration()
    -- retrieve the current iteration and display a little description
    local iteration = config.get_current_iteration()
    local description = 'running ' .. config.get_description(iteration)
@@ -60,28 +53,27 @@ function SetCurrentIteration()
    -- create a subdirectory for this iteration
    paths.mkdir(iteration.path)
 
-   -- tweak to force the required resolution
-   tick.add_hook(set_resolution, 'fast')
-
-   -- prepare the scene for the current iteration (generating or
-   -- reading params.json)
+   -- prepare the scene for the current iteration and register it for
+   -- ticking. At the final tick we update the iteration counter to
+   -- prepare the next iteration or, if the current iteration failed,
+   -- retry it with new parameters.
    scene.initialize(iteration)
-   tick.add_hook(scene.hook, 'slow')
-   tick.add_hook(
-      function() return config.update_iterations_counter(scene.end_hook()) end,
-      'final')
+   tick.add_hook(scene.tick, 'slow')
+   tick.add_hook(function()
+         local is_valid_scene = scene.final_tick()
+         config.update_iterations_counter(is_valid_scene)
+                 end, 'final')
 
-   -- setup the dry mode: if active, do not save any data except the params.json
+   -- initialize the saver to write status.json and screen
+   -- captures. We save data only if not in dry mode or during an
+   -- occlusion check.
    local dry_run = os.getenv('NAIVEPHYSICS_DRY') or config.is_check_occlusion(iteration)
-
-   -- initialize the saver to write status.json and screen captures
    if not dry_run then
-      saver.initialize(iteration, scene)
-      tick.add_hook(saver.hook, 'slow')
-      tick.add_hook(saver.final_hook, 'final')
+      saver.initialize(iteration, scene, config.get_nticks())
+      tick.add_hook(saver.tick, 'slow')
+      tick.add_hook(saver.final_tick, 'final')
    end
 
-   -- RunBlock will be called from blueprint after this function
-   -- returns
-   RunBlock = scene.setup
+   -- tweak to force rendering at the required resolution
+   tick.add_hook(scene.set_resolution, 'fast')
 end

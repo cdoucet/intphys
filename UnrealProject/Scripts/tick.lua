@@ -50,10 +50,10 @@ function M.set_tick_delta(dt)
 end
 
 
--- -- Set the number of ticks before the end of the scene
--- function M.set_ticks_remaining(ticks)
---    ticks_remaining = ticks
--- end
+-- Set the number of ticks before the end of the scene
+function M.set_ticks_remaining(ticks)
+   ticks_remaining = ticks
+end
 
 
 -- Register a hook function `f` called at a given ticking level

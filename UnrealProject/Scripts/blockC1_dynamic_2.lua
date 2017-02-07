@@ -83,28 +83,28 @@ function M.initialize(_iteration, params)
 end
 
 
-function M.hook(step)
-   check_coordinates.hook()
-   check_occlusion.hook()
+function M.tick(step)
+   check_coordinates.tick()
+   check_occlusion.tick()
 
    if iteration.type ~= 5 and iteration.type ~= 6 and not possible then
       if main_actor_side == 'left' then
-         if not trick1 and check_occlusion.data(6, step) then
+         if not trick1 and check_occlusion.is_middle_of_occlusion(6, step) then
             trick1 = true
             uetorch.SetActorVisible(main_actor, not visible1)
          end
 
-         if trick1 and not trick2 and check_occlusion.data(5, step) then
+         if trick1 and not trick2 and check_occlusion.is_middle_of_occlusion(5, step) then
             trick2 = true
             uetorch.SetActorVisible(main_actor, visible1)
          end
       else
-         if not trick1 and check_occlusion.data(5, step) then
+         if not trick1 and check_occlusion.is_middle_of_occlusion(5, step) then
             trick1 = true
             uetorch.SetActorVisible(main_actor, not visible1)
          end
 
-         if trick1 and not trick2 and check_occlusion.data(6, step) then
+         if trick1 and not trick2 and check_occlusion.is_middle_of_occlusion(6, step) then
             trick2 = true
             uetorch.SetActorVisible(main_actor, visible1)
          end
@@ -113,8 +113,8 @@ function M.hook(step)
 end
 
 
-function M.end_hook()
-   return check_occlusion.end_hook() and check_coordinates.end_hook()
+function M.final_tick()
+   return check_occlusion.final_tick() and check_coordinates.final_tick()
 end
 
 function M.is_possible()

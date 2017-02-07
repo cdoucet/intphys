@@ -59,17 +59,17 @@ function M.initialize(iteration, params)
 end
 
 
-function M.hook(step)
-   check_coordinates.hook()
+function M.tick(step)
+   check_coordinates.tick()
 
-   if not is_possible and step == trick_step then
+   if not is_possible and not is_trick_done and step == trick_step then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
       is_trick_done = true
    end
 end
 
-function M.end_hook()
-   return check_coordinates.end_hook()
+function M.final_tick()
+   return check_coordinates.final_tick()
 end
 
 function M.is_possible()

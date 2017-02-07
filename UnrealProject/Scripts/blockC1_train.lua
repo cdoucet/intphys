@@ -26,12 +26,6 @@ local spheres = require 'spheres'
 local M = {}
 
 
--- Train blocks are always physically possibles
-function M.is_possible()
-   return true
-end
-
-
 -- Return random parameters for the C1 block, training configuration
 function M.get_random_parameters()
    return {

@@ -27,10 +27,11 @@ local camera = require 'camera'
 
 local M = {}
 
-local iteration = nil
-local block = nil
-local params = nil
+local iteration
+local block
+local params
 local actors = {}
+
 
 function M.initialize(_iteration)
    iteration = _iteration
@@ -53,7 +54,14 @@ function M.initialize(_iteration)
       block.initialize(iteration, params)
    end
 
+   camera.setup(iteration, 150, params.camera)
+   spheres.setup(params.spheres)
+   floor.setup(params.floor)
+   light.setup(params.light)
+   backwall.setup(params.backwall)
    if params.occluders then
+      occluders.setup(params.occluders)
+
       for i = 1, params.occluders.n_occluders do
          actors['occluder_' .. i] = occluders.get_occluder(i)
       end
@@ -65,31 +73,38 @@ function M.initialize(_iteration)
 end
 
 
-function M.setup()
-   camera.setup(iteration, 150, params.camera)
-   spheres.setup(params.spheres)
-   floor.setup(params.floor)
-   light.setup(params.light)
-   backwall.setup(params.backwall)
-   if params.occluders then
-      occluders.setup(params.occluders)
+function M.tick(step)
+   if block.tick then
+      return block.tick(step)
    end
 end
 
 
-function M.hook(step)
-   if block.hook then
-      return block.hook(step)
+function M.final_tick()
+   local is_valid_scene = true
+   if block.final_tick then
+      is_valid_scene =  block.final_tick()
    end
+   return is_valid_scene
 end
 
 
-function M.end_hook()
-   if block.end_hook then
-      return block.end_hook()
-   else
-      return true
+-- setup the screen resolution to (x, y), or default to the one
+-- defined in config
+function M.set_resolution(x, y)
+   if not x or not y then
+      local r = config.get_resolution()
+      x = r.x
+      y = r.y
    end
+
+   uetorch.SetResolution(x, y)
+end
+
+
+-- Return the camera actor
+function M.get_camera()
+   return camera.get_actor()
 end
 
 
@@ -98,14 +113,22 @@ function M.get_actors()
 end
 
 
+-- Return the main actor of the scene if defined, otherwise return nil
 function M.get_main_actor()
-   return block.get_main_actor()
+   if block.get_main_actor then
+      return block.get_main_actor()
+   end
 end
 
 
 -- Return true if iteration is physically possible, false otherwise
 function M.is_possible()
-   return block.is_possible()
+   -- if the block donesn't define this function, we assume the scene
+   -- is possible
+   if block.is_possible then
+      return block.is_possible()
+   end
+   return true
 end
 
 

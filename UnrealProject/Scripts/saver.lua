@@ -14,41 +14,65 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+-- This module saves screen captures and the status of each actor
+-- during a scene execution.
+--
+-- Screen captures are of 3 kinds (screenshots, depth fields and
+-- actors masking wrote in the subdirectories scene, depth and mask
+-- respectively). The status is wrote as a status.json file.
+
 local uetorch = require 'uetorch'
 local image = require 'image'
 local paths = require 'paths'
-
-local config = require 'config'
 local utils = require 'utils'
 local backwall = require 'backwall'
-local camera = require 'camera'
 
 
 local M = {}
 
+-- A reference to the current iteration
 local iteration
-local scene
-local status
 
-local max_depth = 0
+-- A reference to the scene being rendered
+local scene
+
+-- A table for pushing status during the ticks
+local status = {}
+
+-- A table for pushing raw depth fields during the ticks
 local depth_images = {}
 
+-- The maximum depth is estimated during ticking and used to normalize
+-- depth images during the final tick
+local max_depth = 0
 
-function M.initialize(_iteration, _scene)
+-- The size of the id in generated png files (e.g. scene_001.png has a
+-- padding size of 3)
+local padding_size = 0
+
+
+-- Initialize the saver for a given iteration rendered by a given scene
+--
+-- ntick is the maximum number of ticks to be saved
+function M.initialize(_iteration, _scene, nticks)
    iteration = _iteration
    scene = _scene
+   padding_size = #tostring(nticks) -- 10 -> 2, 100 -> 3, 1000 -> 4
 
    paths.mkdir(iteration.path .. 'mask')
    paths.mkdir(iteration.path .. 'scene')
    paths.mkdir(iteration.path .. 'depth')
-
-   status = {}
 end
 
 
-function M.hook(step)
+-- Save data for the current scene state
+--
+-- Write a scene png file and a mask phg file, estimates the global
+-- depth maximum, register the current depth and status to memory
+-- (will be saved in the final tick).
+function M.tick(step)
    -- setup the png files to be wrote
-   local step_str = utils.pad_zeros(step, #tostring(config.get_nticks()))
+   local step_str = utils.pad_zeros(step, padding_size)
    local scene_file = iteration.path .. 'scene/scene_' .. step_str .. '.png'
    local depth_file = iteration.path .. 'depth/depth_' .. step_str .. '.png'
    local mask_file = iteration.path .. 'mask/mask_' .. step_str .. '.png'
@@ -56,15 +80,15 @@ function M.hook(step)
    -- save a screenshot of the scene
    image.save(scene_file, assert(uetorch.Screen()))
 
-   -- scene's actors are required for capturing the mask
+   -- scene's actors are required for capturing the masks
    local scene_actors, ignored_actors, scene_actors_names = scene.get_masks()
 
-   -- compute the depth field and objects segmentation masks
+   -- compute raw depth field and objects segmentation masks
    local depth_img, mask_img = uetorch.CaptureDepthAndMasks(
-      camera.get_actor(), scene_actors, ignored_actors)
+      scene.get_camera(), scene_actors, ignored_actors)
 
    -- update the max depth and store the depth image (will be
-   -- normalized with the global max depth in the end hook)
+   -- normalized with the global max depth in the final tick)
    max_depth = math.max(depth_img:max(), max_depth)
    depth_images[depth_file] = depth_img
 
@@ -86,7 +110,8 @@ function M.hook(step)
 end
 
 
-function M.final_hook()
+-- Save normalized depth images and the status.json file
+function M.final_tick()
    -- normalize the depth field in [0, 1] with the global max depth
    -- computed on the whole scene, and save the images.
    for filename, depth_image in pairs(depth_images) do

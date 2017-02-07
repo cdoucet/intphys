@@ -70,20 +70,22 @@ function M.initialize(_iteration, params)
 end
 
 
-function M.hook(step)
-   check_coordinates.hook()
-   check_occlusion.hook()
+function M.tick(step)
+   check_coordinates.tick()
+   check_occlusion.tick()
 
-   if iteration.type ~= 5 and not is_possible and not is_trick_done and check_occlusion.data(5, step) then
-      is_trick_done = true
+   if (iteration.type ~= 5 and not is_possible
+          and not is_trick_done and check_occlusion.is_middle_of_occlusion(5, step))
+   then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
+      is_trick_done = true
    end
 end
 
 
-function M.end_hook()
-   return check_coordinates.end_hook()
-      and check_occlusion.end_hook()
+function M.final_tick()
+   return check_coordinates.final_tick()
+      and check_occlusion.final_tick()
 end
 
 function M.is_possible()
