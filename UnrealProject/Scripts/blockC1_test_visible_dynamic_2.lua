@@ -26,13 +26,15 @@ local check_coordinates = require 'check_coordinates'
 local M = {}
 
 local main_actor
-local is_trick_done = false
-local trick_step
+local is_visible_start
+local trick1, trick2 = false, false
+local trick1_step, trick2_step
 
 
 function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
-   trick_step = assert(params.trick_step)
+   trick1_step = assert(params.trick1_step)
+   trick2_step = assert(params.trick2_step)
 
    check_coordinates.initialize(iteration, main_actor)
 
@@ -62,15 +64,24 @@ end
 function M.tick(step)
    check_coordinates.tick()
 
-   if not is_possible and not is_trick_done and step == trick_step then
-      uetorch.SetActorVisible(main_actor, not is_visible_start)
-      is_trick_done = true
+   if not is_possible then
+      if not trick1 and step == trick1_step then
+         trick1 = true
+         uetorch.SetActorVisible(main_actor, not is_visible_start)
+      end
+
+      if trick1 and not trick2 and step == trick2_step then
+         trick2 = true
+         uetorch.SetActorVisible(main_actor, is_visible_start)
+      end
    end
 end
+
 
 function M.final_tick()
    return check_coordinates.final_tick()
 end
+
 
 function M.is_possible()
    return is_possible
@@ -83,9 +94,10 @@ end
 
 
 function M.is_main_actor_visible()
-   return (is_possible and is_visible_start) -- visible all time
-      or (not is_possible and is_visible_start and not is_trick_done) -- visible 1st half
-      or (not is_possible and not is_visible_start and is_trick_done) -- visible 2nd half
+   return (possible and is_visible_start) -- visible all time
+      or (not possible and is_visible_start and not trick1 and not trick2) -- visible 1st third
+      or (not possible and not is_visible_start and trick1 and not trick2) -- visible 2nd third
+      or (not possible and is_visible_start and trick1 and trick2) -- visible 3rd third
 end
 
 
@@ -127,7 +139,8 @@ function M.get_random_parameters()
    params.backwall = backwall.random()
 
    -- the step at which the magic trick is done
-   params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
+   params.trick1_step = math.floor((0.3*math.random() + 0.15) * config.get_nticks())
+   params.trick2_step = params.trick1_step + math.random(10, 40)
 
    return params
 end

@@ -13,10 +13,6 @@
 -- You should have received a copy of the GNU General Public License
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
-
--- This module defines a test configuration for the block C1: a single
--- change and a single occluder, with static spheres.
-
 local uetorch = require 'uetorch'
 local config = require 'config'
 local backwall = require 'backwall'
@@ -25,71 +21,56 @@ local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
-local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
 local M = {}
 
 local main_actor
-local data_occlusion
-local iteration
-local is_visible_start
-local is_possible
-local is_trick_done
+local is_trick_done = false
+local trick_step
 
 
-function M.initialize(_iteration, params)
-   iteration = _iteration
+function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
-   check_occlusion.initialize(iteration, main_actor, {5})
+   trick_step = assert(params.trick_step)
+
    check_coordinates.initialize(iteration, main_actor)
 
-   is_trick_done = false
+   if iteration.type == 1 then
+      is_visible_start = false
+      is_possible = true
+   elseif iteration.type == 2 then
+      is_visible_start = true
+      is_possible = true
+   elseif iteration.type == 3 then
+      is_visible_start = false
+      is_possible = false
+   elseif iteration.type == 4 then
+      is_visible_start = true
+      is_possible = false
+   end
 
-   if iteration.type == 5 then
-      for i = 1, spheres.get_max_spheres() do
-         if i ~= params.index then
-            uetorch.DestroyActor(spheres.get_sphere(i))
-         end
-      end
-   else
-      if iteration.type == 1 then
-         is_visible_start = false
-         is_possible = true
-      elseif iteration.type == 2 then
-         is_visible_start = true
-         is_possible = true
-      elseif iteration.type == 3 then
-         is_visible_start = false
-         is_possible = false
-      elseif iteration.type == 4 then
-         is_visible_start = true
-         is_possible = false
-      end
+   uetorch.SetActorVisible(main_actor, is_visible_start)
 
-      uetorch.SetActorVisible(main_actor, is_visible_start)
+   -- disable the occluders
+   for i = 1, occluders.get_max_occluders() do
+      uetorch.DestroyActor(occluders.get_occluder(i))
    end
 end
 
 
 function M.tick(step)
    check_coordinates.tick()
-   check_occlusion.tick()
 
-   if (iteration.type ~= 5 and not is_trick_done
-          and not is_possible and check_occlusion.is_middle_of_occlusion(5, step))
-   then
-      is_trick_done = true
+   if not is_possible and not is_trick_done and step == trick_step then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
+      is_trick_done = true
    end
 end
 
-
 function M.final_tick()
    return check_coordinates.final_tick()
-      and check_occlusion.final_tick()
 end
-
 
 function M.is_possible()
    return is_possible
@@ -108,26 +89,9 @@ function M.is_main_actor_visible()
 end
 
 
--- Return random parameters for the C1 block, static test
+-- Return random parameters for the C1 dynamic_1 block
 function M.get_random_parameters()
    local params = {}
-
-   -- occluder
-   params.occluders = {}
-   params.occluders.n_occluders = 1
-   params.occluders.occluder_1 = {
-      material = occluders.random_material(),
-      movement = 1,
-      scale = {
-         x = 1 - 0.4 * math.random(),
-         y = 1,
-         z = 1 - 0.5 * math.random()},
-      rotation = 0,
-      start_position = 'down',
-      pause = {math.random(20), math.random(20)}
-   }
-   params.occluders.occluder_1.location = {
-      x = 100 - 200 * params.occluders.occluder_1.scale.x, y = -350}
 
    -- spheres
    params.spheres = {}
@@ -149,6 +113,9 @@ function M.get_random_parameters()
    params.floor = floor.random()
    params.light = light.random()
    params.backwall = backwall.random()
+
+   -- the step at which the magic trick is done
+   params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
 
    return params
 end
