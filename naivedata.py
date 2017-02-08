@@ -264,12 +264,18 @@ def _BalanceConfig(config, njobs):
     Return a tuple (subconfigs, nruns, njobs) where subconfigs is a
     list of JSON dicts, each one being the configuration of a
     subjob. `nruns` is a list of the total number of runs in each
-    subjobs. `njobs` can be modified and is returned as the third
+    subjob. `njobs` can be modified and is returned as the third
     element in the pair.
 
     """
-    # compute the list of balanced subjobs (from nested dict to list)
-    values = list(v for vv in config.values() for v in vv.values())
+    # compute the list of balanced subjobs (from nested nested dict to
+    # list of dicts or ints)
+    values = [v for vv in config.itervalues() for v in vv.itervalues()]
+    # from list of dicts or ints to nested list
+    values = [v.values() if isinstance(v, dict) else [v] for v in values]
+    # from nested list to list
+    values = sum(values, [])
+
     balanced = _BalanceList(values, njobs)
     nruns = [sum(l) for l in balanced]
 
@@ -277,12 +283,20 @@ def _BalanceConfig(config, njobs):
         njobs = len(balanced)
         print('reducing the number of jobs to {}'.format(njobs))
 
-    # create subconfigs for each subjob (from list to nested dict)
+    # create subconfigs for each subjob (from list to nested nested dict)
     subconfigs = [copy.deepcopy(config) for _ in range(njobs)]
-    for name, block in config.items():
-        for j, category in enumerate(block.keys()):
-            for i in range(njobs):
-                subconfigs[i][name][category] = balanced[i][j]
+    for i in range(njobs):
+        for block_name, block_value in config.iteritems():
+            j = 0
+            for set_name, set_value in block_value.iteritems():
+                if isinstance(set_value, dict):  # test iteration
+                    for subset_name in set_value.iterkeys():
+                        subconfigs[i][block_name][set_name][subset_name] = (
+                            balanced[i][j])
+                        j += 1
+                else:  # train iteration
+                    subconfigs[i][block_name][set_name] = balanced[i][j]
+                    j += 1
 
     return subconfigs, nruns, njobs
 
@@ -516,11 +530,11 @@ def Main():
         RunBinary(output_dir, args.config_file, njobs=args.njobs,
                   seed=args.seed, dry=args.dry, verbose=args.verbose)
 
-    # check for duplicated scenes
+    # check for duplicated scenes and warn if founded
     if not args.dry:
         FindDuplicates(output_dir)
 
-    # remove useless files
+    # remove temporary files from the output directory
     CleanDataDirectory(output_dir)
 
 
