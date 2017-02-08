@@ -23,6 +23,18 @@ local json = require 'dkjson'
 local M = {}
 
 
+-- Return the sign of the number `x` as -1, 0 or 1
+function M.sign(x)
+   if x<0 then
+      return -1
+   elseif x>0 then
+      return 1
+   else
+      return 0
+   end
+end
+
+
 -- Return unique elements of a tensor `t` in a table
 --
 -- Equivalent to set(t) in Python. From
@@ -126,16 +138,5 @@ function M.is_close_coordinates(x, y, epsilon)
       or  math.abs(x.rotation.roll - y.rotation.roll) < epsilon
 end
 
-
--- -- Return true if the `actor` is visible in the rendered image
--- function M.is_visible_actor(actor)
---    local img = assert(uetorch.ObjectSegmentation({actor}))
-
---    if torch.max(img) == 0 then
---       return false
---    else
---       return true
---    end
--- end
 
 return M

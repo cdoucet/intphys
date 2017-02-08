@@ -15,6 +15,7 @@
 
 local uetorch = require 'uetorch'
 local config = require 'config'
+local utils = require 'utils'
 local backwall = require 'backwall'
 local occluders = require 'occluders'
 local spheres = require 'spheres'
@@ -23,16 +24,24 @@ local light = require 'light'
 local camera = require 'camera'
 local check_coordinates = require 'check_coordinates'
 
+
 local M = {}
+
 
 local main_actor
 local is_trick_done = false
-local trick_step
+local trick_x
+local init_xdiff
+
+
+local function xdiff()
+   return utils.sign(trick_x - uetorch.GetActorLocation(main_actor).x)
+end
 
 
 function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
-   trick_step = assert(params.trick_step)
+   trick_x = assert(params.trick_x)
 
    check_coordinates.initialize(iteration, main_actor)
 
@@ -50,19 +59,20 @@ function M.initialize(iteration, params)
       is_possible = false
    end
 
+   -- no occluder for a visible test
+   occluders.remove_all()
    uetorch.SetActorVisible(main_actor, is_visible_start)
-
-   -- disable the occluders
-   for i = 1, occluders.get_max_occluders() do
-      uetorch.DestroyActor(occluders.get_occluder(i))
-   end
 end
 
 
 function M.tick(step)
+   if not init_xdiff then
+      init_xdiff = xdiff()
+   end
+
    check_coordinates.tick()
 
-   if not is_possible and not is_trick_done and step == trick_step then
+   if not is_possible and not is_trick_done and xdiff() ~= init_xdiff then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
       is_trick_done = true
    end
@@ -127,7 +137,7 @@ function M.get_random_parameters()
    params.backwall = backwall.random()
 
    -- the step at which the magic trick is done
-   params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
+   params.trick_x = math.random()*250 + 50
 
    return params
 end

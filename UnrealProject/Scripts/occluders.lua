@@ -33,6 +33,14 @@ local occluder_actors = {
 }
 
 
+-- Remove all the occluders in the scene
+function M.remove_all()
+   for _, a in ipairs(occluder_actors) do
+      uetorch.DestroyActor(a)
+   end
+end
+
+
 -- Return the max number of occluders
 function M.get_max_occluders()
    return #occluder_actors

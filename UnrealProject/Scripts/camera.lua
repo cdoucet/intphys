@@ -22,6 +22,8 @@
 
 local uetorch = require 'uetorch'
 local utils = require 'utils'
+local config = require 'config'
+
 
 local M = {}
 
@@ -72,7 +74,7 @@ end
 -- iteration.type is -1), the camera location on the x axis varies
 -- across blocks and is therefore given as a parameter.
 function M.setup(iteration, x_location, params)
-   if iteration.type == -1 then  -- train
+   if config.is_train(iteration) then
       uetorch.SetActorLocation(
          M.get_actor(),
          x_location + params.location[1],

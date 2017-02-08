@@ -15,6 +15,7 @@
 
 local uetorch = require 'uetorch'
 local config = require 'config'
+local utils = require 'utils'
 local backwall = require 'backwall'
 local occluders = require 'occluders'
 local spheres = require 'spheres'
@@ -28,13 +29,20 @@ local M = {}
 local main_actor
 local is_visible_start
 local trick1, trick2 = false, false
-local trick1_step, trick2_step
+local trick_start, trick_stop
+local xdiff_start, xdiff_stop
+
+
+-- Return +1 if x if at the left of the main actor, -1 at the right
+local function xdiff(x)
+   return utils.sign(uetorch.GetActorLocation(main_actor).x - x)
+end
 
 
 function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
-   trick1_step = assert(params.trick1_step)
-   trick2_step = assert(params.trick2_step)
+   trick_start = assert(params.trick_start)
+   trick_stop = assert(params.trick_stop)
 
    check_coordinates.initialize(iteration, main_actor)
 
@@ -52,25 +60,27 @@ function M.initialize(iteration, params)
       is_possible = false
    end
 
+   -- no occluder for a visible test
+   occluders.remove_all()
    uetorch.SetActorVisible(main_actor, is_visible_start)
-
-   -- disable the occluders
-   for i = 1, occluders.get_max_occluders() do
-      uetorch.DestroyActor(occluders.get_occluder(i))
-   end
 end
 
 
 function M.tick(step)
+   if not xdiff_start then
+      xdiff_start = xdiff(trick_start)
+      xdiff_stop = xdiff(trick_stop)
+   end
+
    check_coordinates.tick()
 
    if not is_possible then
-      if not trick1 and step == trick1_step then
+      if not trick1 and xdiff(trick_start) ~= xdiff_start then
          trick1 = true
          uetorch.SetActorVisible(main_actor, not is_visible_start)
       end
 
-      if trick1 and not trick2 and step == trick2_step then
+      if trick1 and not trick2 and xdiff(trick_stop) ~= xdiff_stop then
          trick2 = true
          uetorch.SetActorVisible(main_actor, is_visible_start)
       end
@@ -123,7 +133,8 @@ function M.get_random_parameters()
          y = 0,
          z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
 
-      if spheres.random_side() == 'right' then
+      p.side = spheres.random_side()
+      if p.side == 'right' then
          p.location.x = 500
          p.force.x = -1 * p.force.x
       end
@@ -138,9 +149,17 @@ function M.get_random_parameters()
    params.light = light.random()
    params.backwall = backwall.random()
 
-   -- the step at which the magic trick is done
-   params.trick1_step = math.floor((0.3*math.random() + 0.15) * config.get_nticks())
-   params.trick2_step = params.trick1_step + math.random(10, 40)
+   -- length and start position (on the x axis) of the magic
+   -- disparition/apparition of a sphere
+   local trick_length = math.random() * 250 + 200
+   local main_actor_side = assert(params.spheres['sphere_' .. params.index].side)
+   if main_actor_side == 'right' then
+      params.trick_start = math.random() * (400 - trick_length) + trick_length
+      params.trick_stop = params.trick_start - trick_length
+   else
+      params.trick_start = math.random() * (400 - trick_length)
+      params.trick_stop = params.trick_start + trick_length
+   end
 
    return params
 end
