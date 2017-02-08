@@ -14,22 +14,37 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module is entry point of the program from the Unreal Engine
--- blueprints. It configures the current iteration block and run it,
--- manages the random seed, takes sceen captures and metadata (masking
--- and depth).
+-- This module is used during test iterations to ensure the main actor
+-- of the scene has the same coordinates (location and rotation)
+-- during all the test variations (possibles and
+-- impossibles). Basically it stores the actor coordinates during
+-- ticking and, in the final tick, compare thoses coordinates to the
+-- coordinates of the previous run. If those coordinates are not
+-- equal, the check fails.
+
 
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
 
+
 local M = {}
-local data = {}
+
+-- The current iteration
 local iteration
+
+-- The scene actor on which to operate the check
 local actor
+
+-- A table fiiled with actor coordinates during ticking
+local data = {}
+
+-- A flag, true if we run the check for the current iteration, false
+-- otherwise
 local is_check = false
 
 
+-- Initialize the check for a given iteration and a given actor
 function M.initialize(_iteration, _actor)
    actor = _actor
    iteration = _iteration
@@ -39,6 +54,7 @@ function M.initialize(_iteration, _actor)
 end
 
 
+-- Register actor coordinates in a table
 function M.tick()
    if is_check then
       table.insert(data, utils.get_actor_coordinates(actor))
@@ -46,6 +62,8 @@ function M.tick()
 end
 
 
+-- Save the coordinates to a file and compare them to previous
+-- cooridinates (if any)
 function M.final_tick()
    local check = true
    if is_check and not config.is_first_iteration_of_block(iteration, false) then

@@ -86,7 +86,7 @@ function M.get_check_occlusion_size(iteration)
    local name = iteration.block
    if string.find(name, 'visible') or string.find(name, 'train') then
       return 0
-   elseif string.find(name, '*2$') then
+   elseif string.find(name, '2$') then
       return 2
    else
       return 1

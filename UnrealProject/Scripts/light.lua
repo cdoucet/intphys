@@ -82,10 +82,12 @@ function M.setup(params)
 end
 
 
+-- Lights are directional, so only the rotation vector is reported in
+-- the status (location doesn't matter)
 function M.get_status()
    local status = {}
    for i = 1, _params.nlights do
-      status['light_' .. i] = utils.coordinates_to_string(directional_lights[i])
+      status['light_' .. i] = utils.rotation_to_string(directional_lights[i])
    end
 
    return status

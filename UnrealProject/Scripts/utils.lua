@@ -74,16 +74,25 @@ function M.write_json(t, file, keyorder)
 end
 
 
+-- Return the `actor` rotation vector as a string
+function M.rotation_to_string(actor)
+   local r = uetorch.GetActorRotation(actor)
+   return r.pitch .. ' ' .. r.yaw .. ' ' .. r.roll
+end
+
+
+-- Return the `actor` location vector as a string
+function M.location_to_string(actor)
+   local l = uetorch.GetActorLocation(actor)
+   return l.x .. ' ' .. l.y .. ' ' .. l.z
+end
+
 -- Return the location and rotation of an actor in a string
 --
 -- The returned string is formatted as:
 --   'x y z pitch yaw roll'
 function M.coordinates_to_string(actor)
-   local l = uetorch.GetActorLocation(actor)
-   local r = uetorch.GetActorRotation(actor)
-
-   return (l.x .. ' ' .. l.y .. ' ' .. l.z .. ' ' ..
-              r.pitch .. ' ' .. r.yaw .. ' ' .. r.roll)
+   return M.location_to_string(actor) .. ' ' .. M.rotation_to_string(actor)
 end
 
 
