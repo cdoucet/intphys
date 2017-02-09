@@ -27,17 +27,8 @@
 local uetorch = require 'uetorch'
 local utils = require 'utils'
 
+
 local M = {}
-
-
--- Return the sum of values in the table t
-local function sum(t)
-   local s = 0
-   for _, v in pairs(t) do
-      s = s + v
-   end
-   return s
-end
 
 
 -- A table containing the iterations registered in the configuration
@@ -165,7 +156,7 @@ function M.get_iteration(index)
       for _, v in pairs(conf.blocks) do
          for _, vv in pairs(v) do
             if type(vv) == "table" then
-               vv = sum(vv)
+               vv = utils.sum(vv)
             end
             max_iteration = math.max(max_iteration, vv)
          end
@@ -262,7 +253,7 @@ function set_iterations_counter()
          if string.match(set, 'train') then
             train_runs = train_runs + scenarii
          else
-            test_runs = test_runs + sum(scenarii)
+            test_runs = test_runs + utils.sum(scenarii)
          end
       end
    end

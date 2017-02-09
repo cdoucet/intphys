@@ -58,6 +58,8 @@ function run_current_iteration()
    -- prepare the next iteration or, if the current iteration failed,
    -- retry it with new parameters.
    scene.initialize(iteration)
+   scene.set_resolution()
+
    tick.add_hook(scene.tick, 'slow')
    tick.add_hook(function()
          local is_valid_scene = scene.final_tick()
@@ -73,7 +75,4 @@ function run_current_iteration()
       tick.add_hook(saver.tick, 'slow')
       tick.add_hook(saver.final_tick, 'final')
    end
-
-   -- tweak to force rendering at the required resolution
-   tick.add_hook(scene.set_resolution, 'fast')
 end

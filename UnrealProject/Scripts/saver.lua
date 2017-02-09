@@ -78,7 +78,8 @@ function M.tick(step)
    local mask_file = iteration.path .. 'mask/mask_' .. step_str .. '.png'
 
    -- save a screenshot of the scene
-   image.save(scene_file, assert(uetorch.Screen()))
+   local scene_img = assert(uetorch.Screen())
+   image.save(scene_file, scene_img)
 
    -- scene's actors are required for capturing the masks
    local scene_actors, ignored_actors, scene_actors_names = scene.get_masks()

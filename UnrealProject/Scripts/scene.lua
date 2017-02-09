@@ -50,10 +50,6 @@ function M.initialize(_iteration)
       params = assert(utils.read_json(params_file))
    end
 
-   if block.initialize then
-      block.initialize(iteration, params)
-   end
-
    camera.setup(iteration, 150, params.camera)
    spheres.setup(params.spheres)
    floor.setup(params.floor)
@@ -69,6 +65,10 @@ function M.initialize(_iteration)
 
    for i = 1, params.spheres.n_spheres do
       actors['sphere_' .. i] = spheres.get_sphere(i)
+   end
+
+   if block.initialize then
+      block.initialize(iteration, params)
    end
 end
 

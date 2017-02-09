@@ -35,6 +35,16 @@ function M.sign(x)
 end
 
 
+-- Return the sum of values in the table t
+function M.sum(t)
+   local s = 0
+   for _, v in pairs(t) do
+      s = s + v
+   end
+   return s
+end
+
+
 -- Return unique elements of a tensor `t` in a table
 --
 -- Equivalent to set(t) in Python. From
