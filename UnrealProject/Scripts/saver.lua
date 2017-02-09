@@ -128,7 +128,8 @@ function M.final_tick()
 
    -- write the status.json with ordered keys
    local keyorder = {
-      'block', 'possible', 'floor', 'camera', 'lights', 'max_depth', 'masks_grayscale', 'steps'}
+      'block', 'possible', 'floor', 'camera', 'lights',
+      'max_depth', 'masks_grayscale', 'steps'}
    utils.write_json(s, iteration.path .. 'status.json', keyorder)
 end
 

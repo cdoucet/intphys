@@ -19,7 +19,7 @@
 --   * the 'fast' level ticks at each game tick,
 --   * the 'normal' level ticks each few game loop as defined by
 --     config.get_tick_interval(),
---   * and the 'final' level ticks only once, at the very end of the scene
+--   * the 'final' level ticks only once, at the very end of the scene
 --     rendering, just before exit.
 --
 -- A function f is registered to tick at a given level l using the
@@ -37,6 +37,7 @@ local hooks = {slow = {}, fast = {}, final = {}}
 -- Remaining ticks before the final one
 local ticks_remaining = config.get_nticks()
 
+-- A tick counter, from 0 to config.get_nticks()
 local step = 0
 
 -- Interval between two game ticks in which the hooks are called, and
@@ -51,8 +52,8 @@ end
 
 
 -- Set the number of ticks before the end of the scene
-function M.set_ticks_remaining(ticks)
-   ticks_remaining = ticks
+function M.set_ticks_remaining(nticks)
+   ticks_remaining = nticks
 end
 
 
@@ -82,7 +83,7 @@ end
 --
 -- The level must be 'slow', 'fast', or 'final'
 function M.run_hooks(level, ...)
-   for _, f in pairs(hooks[level]) do
+   for _, f in ipairs(hooks[level]) do
       f(...)
    end
 end
@@ -95,7 +96,7 @@ end
 function M.tick(dt)
    dt = 1
 
-   if ticks_remaining >= 0 then
+   if ticks_remaining > 0 then
       -- the scene is running, run tick hooks
       M.run_hooks('fast', dt)
 
