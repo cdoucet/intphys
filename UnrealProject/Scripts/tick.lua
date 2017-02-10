@@ -17,10 +17,10 @@
 -- This module handles game loop ticks. It provides 3 ticking levels
 -- at which some functions can be registered:
 --   * the 'fast' level ticks at each game tick,
---   * the 'normal' level ticks each few game loop as defined by
+--   * the 'slow' level ticks each few game loop as defined by
 --     config.get_tick_interval(),
 --   * the 'final' level ticks only once, at the very end of the scene
---     rendering, just before exit.
+--     rendering.
 --
 -- A function f is registered to tick at a given level l using the
 -- function tick.add_hook(f, l), l being 'slow', 'fast' or 'final'.
@@ -45,9 +45,14 @@ local step = 0
 local ticks_interval, t_tick, t_last_tick = config.get_ticks_interval(), 0, 0
 
 
--- Fix the tick rate of the game at a constant rate
-function M.set_tick_delta(dt)
+-- Set a constant tick rate `dt` and register ticking in uetorch
+function M.initialize(dt)
+   -- set a constant ticking rate
+   dt = dt or 1/8
    uetorch.SetTickDeltaBounds(dt, dt)
+
+   -- replace the uetorch's default tick function by our own
+   Tick = M.tick
 end
 
 
@@ -95,24 +100,24 @@ end
 -- the end of the scene.
 function M.tick(dt)
    dt = 1
+   if ticks_remaining then
+      if ticks_remaining > 0 then
+         -- the scene is running, run tick hooks
+         M.run_hooks('fast', dt)
 
-   if ticks_remaining > 0 then
-      -- the scene is running, run tick hooks
-      M.run_hooks('fast', dt)
+         if t_tick - t_last_tick >= ticks_interval then
+            ticks_remaining = ticks_remaining - 1
+            step = step + 1
+            t_last_tick = t_tick
 
-      if t_tick - t_last_tick >= ticks_interval then
-         ticks_remaining = ticks_remaining - 1
-         step = step + 1
-
-         M.run_hooks('slow', step)
-
-         t_last_tick = t_tick
+            M.run_hooks('slow', step)
+         end
+         t_tick = t_tick + 1
+      else
+         -- end of the scene, run end hooks and go to the next iteration
+         M.run_hooks('final')
+         ticks_remaining = nil
       end
-      t_tick = t_tick + 1
-   else
-      -- end of the scene, run end hooks and go to the next iteration
-      M.run_hooks('final')
-      uetorch.ExecuteConsoleCommand('RestartLevel')
    end
 end
 

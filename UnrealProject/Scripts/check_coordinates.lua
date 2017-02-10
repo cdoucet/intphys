@@ -26,6 +26,7 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+local tick = require 'tick'
 
 
 local M = {}
@@ -50,15 +51,14 @@ function M.initialize(_iteration, _actor)
    iteration = _iteration
    if not config.is_check_occlusion(iteration) then
       is_check = true
+      tick.add_hook(M.tick, 'slow')
    end
 end
 
 
 -- Register actor coordinates in a table
 function M.tick()
-   if is_check then
-      table.insert(data, utils.get_actor_coordinates(actor))
-   end
+   table.insert(data, utils.get_actor_coordinates(actor))
 end
 
 

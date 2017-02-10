@@ -14,9 +14,9 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module is entry point of the program from the packaged
--- game. It configures the current iteration scene and run it, manages
--- the random seed and data saving (screen captures)
+-- This module is entry point of the program, it is called from the
+-- packaged game. It configures the current iteration scene and run
+-- it, manages the random seed and data saving (screen captures)
 
 local uetorch = require 'uetorch'
 local paths = require 'paths'
@@ -27,21 +27,32 @@ local scene = require 'scene'
 local tick = require 'tick'
 
 
--- setup the random seed
-local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
-math.randomseed(seed)
-posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
+
+local M = {}
 
 
--- replace uetorch's Tick function and set a constant tick rate
-Tick = tick.tick
-tick.set_tick_delta(1/8)
+function M.initialize()
+   -- setup the random seed and update it for the next iteration
+   local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
+   math.randomseed(seed)
+   posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
+
+   -- ticking at a constant rate
+   tick.initialize(config.get_ticks_rate())
+end
 
 
--- function called from the packaged game main loop, if that function
--- returns '0' the program exits, else it continues to the next
--- iteration by calling run_current_iteration().
-remaining_iterations = config.get_current_index
+function M.conclude()
+   local is_valid_scene = scene.final_tick()
+
+   local remaining_iterations = config.prepare_next_iteration(is_valid_scene)
+   if remaining_iterations == 0 then
+      print('no more iteration, exiting')
+      uetorch.ExecuteConsoleCommand('Exit')
+   else
+      uetorch.ExecuteConsoleCommand('RestartLevel')
+   end
+end
 
 
 function run_current_iteration()
@@ -58,13 +69,8 @@ function run_current_iteration()
    -- prepare the next iteration or, if the current iteration failed,
    -- retry it with new parameters.
    scene.initialize(iteration)
-   scene.set_resolution()
-
    tick.add_hook(scene.tick, 'slow')
-   tick.add_hook(function()
-         local is_valid_scene = scene.final_tick()
-         config.update_iterations_counter(is_valid_scene)
-                 end, 'final')
+   tick.add_hook(M.conclude, 'final')
 
    -- initialize the saver to write status.json and screen
    -- captures. We save data only if not in dry mode or during an
@@ -76,3 +82,6 @@ function run_current_iteration()
       tick.add_hook(saver.final_tick, 'final')
    end
 end
+
+
+return M

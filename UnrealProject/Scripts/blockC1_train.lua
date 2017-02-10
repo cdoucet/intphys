@@ -17,7 +17,6 @@
 -- This module defines the training configuration for the block C1.
 
 local backwall = require 'backwall'
-local camera = require 'camera'
 local floor = require 'floor'
 local light = require 'light'
 local occluders = require 'occluders'
@@ -30,7 +29,6 @@ local M = {}
 function M.get_random_parameters()
    return {
       backwall = backwall.random(),
-      camera = camera.random(),
       floor = floor.random(),
       light = light.random(),
       occluders = occluders.random(),

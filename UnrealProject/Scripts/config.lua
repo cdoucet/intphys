@@ -35,7 +35,7 @@ local M = {}
 -- file
 iterations_table = nil
 
--- The maximal index ni the iterations table
+-- The maximal index in the iterations table
 max_iteration = nil
 
 
@@ -44,12 +44,14 @@ conf = {
    resolution = {x = 288, y = 288}, -- rendered image resolution (in pixels)
    load_params = false,
    ticks_interval = 2,
+   ticks_rate = 1/8,
    nticks = 100,
    blocks = utils.read_json(assert(os.getenv('NAIVEPHYSICS_JSON')))
 }
 
-function M.get_blocks()
-   return conf.blocks
+
+function M.get_data_path()
+   return conf.data_path
 end
 
 function M.get_resolution()
@@ -64,12 +66,16 @@ function M.get_ticks_interval()
    return conf.ticks_interval
 end
 
+function M.get_ticks_rate()
+   return conf.ticks_rate
+end
+
 function M.get_nticks()
    return conf.nticks
 end
 
-function M.get_data_path()
-   return conf.data_path
+function M.get_blocks()
+   return conf.blocks
 end
 
 
@@ -85,6 +91,8 @@ function M.get_check_occlusion_size(iteration)
 end
 
 
+-- Test iterations have a tuple size of 4 (2 possible cases, 2
+-- impossible). Train iterations are single shot with a size of 1.
 function M.get_tuple_size(iteration)
    if M.is_train(iteration) then
       return 1
@@ -92,6 +100,7 @@ function M.get_tuple_size(iteration)
       return 4
    end
 end
+
 
 -- Return the total number of runs needed for a given iteration
 --
@@ -130,6 +139,7 @@ function M.is_train(iteration)
    return iteration.type == -1
 end
 
+
 -- Return true if the iteration is the first one of the block
 function M.is_first_iteration_of_block(iteration, with_occlusion_check)
    if with_occlusion_check == nil then
@@ -151,16 +161,9 @@ end
 function M.get_iteration(index)
    -- if not loaded, load the table of all iterations to execute
    if not iterations_table then
-      iterations_table = utils.read_json(conf.data_path .. 'iterations_table.json')
-      max_iteration = 0
-      for _, v in pairs(conf.blocks) do
-         for _, vv in pairs(v) do
-            if type(vv) == "table" then
-               vv = utils.sum(vv)
-            end
-            max_iteration = math.max(max_iteration, vv)
-         end
-      end
+      local tmp = utils.read_json(conf.data_path .. 'iterations_table.json')
+      iterations_table = tmp.iterations_table
+      max_iteration = tmp.max_iteration
    end
 
    -- retrieve the current iteration in the table
@@ -198,8 +201,12 @@ end
 
 
 -- Return the index stored in the file 'iterations.t7'
+local _index = nil
 function M.get_current_index()
-   return torch.load(conf.data_path .. 'iterations.t7')
+   if not _index then
+      _index = torch.load(conf.data_path .. 'iterations.t7')
+   end
+   return _index
 end
 
 
@@ -210,27 +217,63 @@ function M.get_current_iteration()
 end
 
 
-function M.update_iterations_counter(check)
+function M.prepare_next_iteration(was_valid)
    local index = M.get_current_index()
-   local iteration = M.get_iteration(index)
+   if was_valid and index == max_iteration then
+      return 0
+   end
 
-   if check then
+   if was_valid then
       index = index + 1
    else
-      print('check failed, trying new parameters')
       -- rerun the whole scene by coming back to its first iteration
+      print('invalid scene, trying new parameters')
+      local iteration = M.get_iteration(index)
       index = index - M.get_block_size(iteration) + iteration.type
    end
 
    -- ensure the iteration exists in the iterations table
-   if not iterations_table[tonumber(index)] then
-      print('no more iteration, exiting')
-      uetorch.ExecuteConsoleCommand('Exit')
-   end
+   assert(iterations_table[tonumber(index)])
 
+   -- save the index of the next iteration
    torch.save(conf.data_path .. 'iterations.t7', index)
+
+   -- return the number of remaining iterations
+   return max_iteration - index + 1
 end
 
+
+-- Add a new iteration in the iterations table
+function add_iteration(b, t, i)
+   -- print('adding ' .. b .. ' : ' .. t .. ' ' .. i)
+   table.insert(iterations_table, {block = b, type = t, id = i})
+end
+
+
+local train_runs, test_runs = 0, 0
+function add_train_iteration(block, case, nruns)
+   local name = block .. '_' .. case
+   for i = 1, nruns do
+      train_runs = train_runs + 1
+      add_iteration(name, -1, train_runs)
+   end
+   max_iteration = (max_iteration or 0) + nruns
+end
+
+
+function add_test_iterations(block, case, subblocks)
+   for subblock, nruns in pairs(subblocks) do
+      local name = block .. '_' .. case .. '_' .. subblock
+      local ntypes = 4 + M.get_check_occlusion_size({block = name})
+      for i = 1, nruns do
+         test_runs = test_runs + 1
+         for t = ntypes, 1, -1 do
+            add_iteration(name, t, test_runs)
+         end
+      end
+      max_iteration = (max_iteration or 0) + ntypes * nruns
+   end
+end
 
 
 -- Parses the configuration file and setup the iterations
@@ -243,70 +286,45 @@ end
 -- the program will execute. It also initializes the file
 -- 'iterations.t7' containing the index of the current iteration at
 -- any point in the execution flow.
-function set_iterations_counter()
+function parse_config_file()
+   -- clean the global iterations table
+   iterations_table = {}
+
    -- count the number of iterations both for train and test. Each
    -- train is always a single iteration, the number of test
-   -- iterations depends on the block type
-   local train_runs, test_runs = 0, 0
-   for _, block in pairs(conf.blocks) do
-      for set, scenarii in pairs(block) do
-         if string.match(set, 'train') then
-            train_runs = train_runs + scenarii
+   -- iterations is 4 + number of occlusion checks (depends on the
+   -- block type)
+   for block, cases in pairs(conf.blocks) do
+      for k, v in pairs(cases) do
+         if string.match(k, 'train') then
+            add_train_iteration(block, k, v)
          else
-            test_runs = test_runs + utils.sum(scenarii)
+            add_test_iterations(block, k, v)
          end
       end
    end
 
-   if test_runs + train_runs == 0 then
+   if max_iteration == 0 then
       print('no iterations specified, exiting')
-      uetorch.ExecuteConsoleCommand('Exit')
-      return
+      return uetorch.ExecuteConsoleCommand('Exit')
    end
 
-   print("generation of " .. test_runs .. " test and " .. train_runs .. " train samples")
+   print("generation of " .. test_runs + train_runs .. " scenes ("
+         .. test_runs .. " for test and " .. train_runs
+         .. " for train, total of " .. max_iteration .. ' iterations)')
    print("write data to " .. conf.data_path)
 
-   -- put the detail of each iteration into a table
-   local n, id_train, id_test, iterations_table = 1, 1, 1, {}
-   for block, iters in pairs(conf.blocks) do
-      for set, scenarii in pairs(iters) do
-         local block_name = block .. '_' .. set
-
-         -- setup train iterations for the current block
-         if string.match(set, "train") then
-            for id = 1, scenarii do
-               iterations_table[n] = {
-                  block=block_name,
-                  type=-1,
-                  id=id_train}
-               n = n + 1
-               id_train = id_train + 1
-            end
-         else
-            for scenario, nb in pairs(scenarii) do
-               local scenario_name = block_name .. '_' .. scenario
-
-               -- setup test iterations for the current block
-               local ntypes = M.get_tuple_size({type = 1})
-                  + M.get_check_occlusion_size({block = scenario_name})
-               for id = 1, nb do
-                  for t = ntypes, 1, -1 do
-                     iterations_table[n] = {
-                        block=scenario_name,
-                        type=t,
-                        id=id_test}
-                     n = n + 1
-                  end
-                  id_test = id_test + 1
-               end
-            end
-         end
-      end
-   end
-
-   utils.write_json(iterations_table, conf.data_path .. 'iterations_table.json')
+   utils.write_json(
+      {iterations_table = iterations_table, max_iteration = max_iteration},
+      conf.data_path .. 'iterations_table.json')
    torch.save(conf.data_path .. 'iterations.t7', "1")
+end
+
+
+-- Change the viewport resolution to the one defined in configuration
+function set_resolution()
+   local r = M.get_resolution()
+   uetorch.ExecuteConsoleCommand("r.setRes " .. r.x .. 'x' .. r.y)
 end
 
 

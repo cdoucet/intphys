@@ -12,5 +12,8 @@
 			"Name": "UETorch",
 			"Enabled": true
 		}
+	],
+	"TargetPlatforms": [
+		"LinuxNoEditor"
 	]
 }

@@ -21,7 +21,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local camera = require 'camera'
 local check_coordinates = require 'check_coordinates'
 
 local M = {}
@@ -71,8 +70,6 @@ function M.tick(step)
       xdiff_start = xdiff(trick_start)
       xdiff_stop = xdiff(trick_stop)
    end
-
-   check_coordinates.tick()
 
    if not is_possible then
       if not trick1 and xdiff(trick_start) ~= xdiff_start then

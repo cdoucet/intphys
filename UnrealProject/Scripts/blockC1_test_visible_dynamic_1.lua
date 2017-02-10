@@ -21,7 +21,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local camera = require 'camera'
 local check_coordinates = require 'check_coordinates'
 
 
@@ -69,8 +68,6 @@ function M.tick(step)
    if not init_xdiff then
       init_xdiff = xdiff()
    end
-
-   check_coordinates.tick()
 
    if not is_possible and not is_trick_done and xdiff() ~= init_xdiff then
       uetorch.SetActorVisible(main_actor, not is_visible_start)

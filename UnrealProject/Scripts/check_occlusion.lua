@@ -99,10 +99,12 @@ function M.initialize(_iteration, _actor, check_iterations)
       end
    end
 
-   if not is_check_occlusion then
+   if is_check_occlusion then
+      tick.add_hook(M.tick, 'slow')
+   else
       for _, v in ipairs(check_iterations) do
-         middles[v] = torch.load(
-            iteration.path .. '../occlusion_' .. tostring(v) .. '.t7')
+         local file = iteration.path .. '../occlusion_' .. tostring(v) .. '.t7'
+         middles[v] = torch.load(file)
       end
    end
 end
@@ -111,19 +113,17 @@ end
 -- Check for occlusion start and stop in the current scene. Stop
 -- rendering when a complete occlusion has been found.
 function M.tick()
-   if is_check_occlusion and not is_occlusion_finished then
-      local occluded = is_occluded(actor)
-      if occluded and not is_occlusion_started then
-         is_occlusion_started = true
-      end
+   local occluded = is_occluded(actor)
+   if occluded and not is_occlusion_started then
+      is_occlusion_started = true
+   end
 
-      if not occluded and is_occlusion_started and not is_occlusion_finished then
-         is_occlusion_finished = true
-         middles[iteration.type] = middle_of_occlusion(data)
-         tick.set_ticks_remaining(0)
-      else
-         table.insert(data, occluded)
-      end
+   if not occluded and is_occlusion_started then
+      middles[iteration.type] = middle_of_occlusion(data)
+      is_occlusion_finished = true
+      tick.set_ticks_remaining(0)
+   else
+      table.insert(data, occluded)
    end
 end
 

@@ -20,7 +20,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local camera = require 'camera'
 local check_coordinates = require 'check_coordinates'
 
 local M = {}
@@ -60,8 +59,6 @@ end
 
 
 function M.tick(step)
-   check_coordinates.tick()
-
    if not is_possible and not is_trick_done and step == trick_step then
       uetorch.SetActorVisible(main_actor, not is_visible_start)
       is_trick_done = true

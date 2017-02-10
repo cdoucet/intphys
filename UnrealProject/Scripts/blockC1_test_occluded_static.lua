@@ -24,7 +24,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local camera = require 'camera'
 local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
@@ -73,9 +72,6 @@ end
 
 
 function M.tick(step)
-   check_coordinates.tick()
-   check_occlusion.tick()
-
    if (iteration.type ~= 5 and not is_trick_done
           and not is_possible and check_occlusion.is_middle_of_occlusion(5, step))
    then

@@ -30,19 +30,25 @@ local M = {}
 local iteration
 local block
 local params
+
 local actors = {}
 
 
 function M.initialize(_iteration)
    iteration = _iteration
+
+   -- load the block module for the current iteration
    block = assert(require(iteration.block))
 
+   -- retrieve the parameters filename
    local relative_path = ''
    if not config.is_train(iteration) then
       relative_path = '../'
    end
    local params_file = iteration.path .. relative_path .. 'params.json'
 
+   -- If this the first iteration of this block, generate random
+   -- parameters and save them, otherwise load them
    if config.is_first_iteration_of_block(iteration) then
       params = block.get_random_parameters()
       utils.write_json(params, params_file)
@@ -50,7 +56,15 @@ function M.initialize(_iteration)
       params = assert(utils.read_json(params_file))
    end
 
-   camera.setup(iteration, 150, params.camera)
+   -- setup the camera with a fixed position in test and a more
+   -- variable one for training
+   local camera_params = camera.get_default_parameters()
+   if config.is_train(iteration) then
+      camera_params = camera.get_random_parameters()
+   end
+   camera.setup(camera_params)
+
+   -- setup the actors
    spheres.setup(params.spheres)
    floor.setup(params.floor)
    light.setup(params.light)
@@ -89,19 +103,6 @@ function M.final_tick()
 end
 
 
--- setup the screen resolution to (x, y), or default to the one
--- defined in config
-function M.set_resolution(x, y)
-   if not x or not y then
-      local r = config.get_resolution()
-      x = r.x
-      y = r.y
-   end
-
-   uetorch.SetResolution(x, y)
-end
-
-
 -- Return the camera actor
 function M.get_camera()
    return camera.get_actor()
@@ -124,7 +125,7 @@ end
 -- Return true if iteration is physically possible, false otherwise
 function M.is_possible()
    -- if the block donesn't define this function, we assume the scene
-   -- is possible
+   -- is possible (train cases)
    if block.is_possible then
       return block.is_possible()
    end
