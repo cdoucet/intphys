@@ -229,17 +229,23 @@ function M.prepare_next_iteration(was_valid)
       -- rerun the whole scene by coming back to its first iteration
       print('invalid scene, trying new parameters')
       local iteration = M.get_iteration(index)
-      index = index - M.get_block_size(iteration) + iteration.type
+      if not M.is_train(iteration) then
+         index = index - M.get_block_size(iteration) + iteration.type
+      end
    end
 
-   -- ensure the iteration exists in the iterations table
-   assert(iterations_table[tonumber(index)])
+   -- the number of remaining iterations
+   local remaining = max_iteration - index + 1
 
-   -- save the index of the next iteration
-   torch.save(conf.data_path .. 'iterations.t7', index)
+   if remaining > 0 then
+      -- ensure the iteration exists in the iterations table
+      assert(iterations_table[tonumber(index)])
 
-   -- return the number of remaining iterations
-   return max_iteration - index + 1
+      -- save the index of the next iteration
+      torch.save(conf.data_path .. 'iterations.t7', index)
+   end
+
+   return remaining
 end
 
 
@@ -252,7 +258,11 @@ end
 
 local train_runs, test_runs = 0, 0
 function add_train_iteration(block, case, nruns)
-   local name = block .. '_' .. case
+   local name = block
+   if case then
+      name = block .. '_' .. case
+   end
+
    for i = 1, nruns do
       train_runs = train_runs + 1
       add_iteration(name, -1, train_runs)
@@ -295,11 +305,17 @@ function parse_config_file()
    -- iterations is 4 + number of occlusion checks (depends on the
    -- block type)
    for block, cases in pairs(conf.blocks) do
-      for k, v in pairs(cases) do
-         if string.match(k, 'train') then
-            add_train_iteration(block, k, v)
-         else
-            add_test_iterations(block, k, v)
+      -- dev is a special case for development purpose. It require the
+      -- dev.lua file which is not tracked in the source tree.
+      if string.match(block, 'dev') then
+         add_train_iteration(block, nil, cases)
+      else
+         for k, v in pairs(cases) do
+            if string.match(k, 'train') then
+               add_train_iteration(block, k, v)
+            else
+               add_test_iterations(block, k, v)
+            end
          end
       end
    end

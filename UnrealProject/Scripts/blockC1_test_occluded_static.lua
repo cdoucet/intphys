@@ -42,7 +42,6 @@ function M.initialize(_iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
    check_occlusion.initialize(iteration, main_actor, {5})
    check_coordinates.initialize(iteration, main_actor)
-
    is_trick_done = false
 
    if iteration.type == 5 then

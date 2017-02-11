@@ -25,7 +25,7 @@ local config = require 'config'
 local saver = require 'saver'
 local scene = require 'scene'
 local tick = require 'tick'
-
+local check_overlap = require 'check_overlap'
 
 
 local M = {}
@@ -43,7 +43,7 @@ end
 
 
 function M.conclude()
-   local is_valid_scene = scene.final_tick()
+   local is_valid_scene = scene.final_tick() and check_overlap.is_valid()
 
    local remaining_iterations = config.prepare_next_iteration(is_valid_scene)
    if remaining_iterations == 0 then
@@ -71,6 +71,10 @@ function run_current_iteration()
    scene.initialize(iteration)
    tick.add_hook(scene.tick, 'slow')
    tick.add_hook(M.conclude, 'final')
+
+   -- initialize the overlap check. The scene will fail if any illegal
+   -- overlaping between actors is detected.
+   check_overlap.initialize()
 
    -- initialize the saver to write status.json and screen
    -- captures. We save data only if not in dry mode or during an

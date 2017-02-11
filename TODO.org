@@ -13,7 +13,7 @@ TODO list for the NaivePhysics project
 *** release of a NaivePhysics-1.0 version as well
 
 * Bugs
-** detect any collision with the camera
+** reimplement occluders rotation
 ** detect superposition of the 2 occluders
 ** detect occluder or sphere in the backwall
 * Improvements

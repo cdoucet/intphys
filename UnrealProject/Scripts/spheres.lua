@@ -43,6 +43,14 @@ function M.get_sphere(i)
 end
 
 
+-- Destroy all the spheres in the scene
+function M.remove_all()
+   for i = 1, M.get_max_spheres() do
+      uetorch.DestroyActor(M.get_sphere(i))
+   end
+end
+
+
 -- Return a random number of spheres
 function M.random_n_spheres()
    return math.random(1, 3)

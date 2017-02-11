@@ -42,7 +42,6 @@ function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
    trick_start = assert(params.trick_start)
    trick_stop = assert(params.trick_stop)
-
    check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 1 then
@@ -59,8 +58,6 @@ function M.initialize(iteration, params)
       is_possible = false
    end
 
-   -- no occluder for a visible test
-   occluders.remove_all()
    uetorch.SetActorVisible(main_actor, is_visible_start)
 end
 

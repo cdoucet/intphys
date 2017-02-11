@@ -29,8 +29,10 @@ local M = {}
 
 
 -- The camera actor defined in the scene, initialized during the first
--- call to the get_actor() function
-local camera_actor
+-- call to the get_actor() function, as well as it's trigger box. The
+-- trigger box is used for overlapping detection on the camera (see
+-- check_overlap.lua)
+local camera_actor, camera_trigger_box
 
 
 -- Return the camera actor defined in the scene
@@ -53,11 +55,15 @@ function M.get_actor()
          end
       end
 
-      -- make sure we found the camera
+      -- get the trigger box
+      camera_trigger_box = uetorch.GetActor('CameraTriggerBox')
+
+      -- make sure we found the camera and the box
       assert(camera_actor)
+      assert(camera_trigger_box)
    end
 
-   return camera_actor
+   return camera_actor, camera_trigger_box
 end
 
 
@@ -109,17 +115,21 @@ function M.setup(params)
       params = M.get_default_parameters()
    end
 
-   uetorch.SetActorLocation(
-      M.get_actor(),
-      params.location.x,
-      params.location.y,
-      params.location.z)
+   -- the trigger box follows the camera
+   local camera, box = M.get_actor()
+   for _, actor in ipairs({camera, box}) do
+      uetorch.SetActorLocation(
+         actor,
+         params.location.x,
+         params.location.y,
+         params.location.z)
 
-   uetorch.SetActorRotation(
-      M.get_actor(),
-      params.rotation.pitch,
-      params.rotation.yaw,
-      params.rotation.roll)
+      uetorch.SetActorRotation(
+         actor,
+         params.rotation.pitch,
+         params.rotation.yaw,
+         params.rotation.roll)
+   end
 end
 
 

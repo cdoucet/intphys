@@ -32,7 +32,6 @@ local trick_step
 function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
    trick_step = assert(params.trick_step)
-
    check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 1 then
@@ -50,11 +49,6 @@ function M.initialize(iteration, params)
    end
 
    uetorch.SetActorVisible(main_actor, is_visible_start)
-
-   -- disable the occluders
-   for i = 1, occluders.get_max_occluders() do
-      uetorch.DestroyActor(occluders.get_occluder(i))
-   end
 end
 
 

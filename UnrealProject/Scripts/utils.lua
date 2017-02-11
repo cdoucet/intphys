@@ -23,6 +23,13 @@ local json = require 'dkjson'
 local M = {}
 
 
+-- Return true if `name` is a readable file, false otherwise
+function M.file_exists(name)
+   local f=io.open(name,"r")
+   if f~=nil then io.close(f) return true else return false end
+end
+
+
 -- Return the sign of the number `x` as -1, 0 or 1
 function M.sign(x)
    if x<0 then

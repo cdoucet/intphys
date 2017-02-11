@@ -65,22 +65,31 @@ function M.initialize(_iteration)
    camera.setup(camera_params)
 
    -- setup the actors
-   spheres.setup(params.spheres)
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)
+
+   if params.spheres then
+      spheres.setup(params.spheres)
+
+      for i = 1, params.spheres.n_spheres do
+         actors['sphere_' .. i] = spheres.get_sphere(i)
+      end
+   else
+      spheres.remove_all()
+   end
+
    if params.occluders then
       occluders.setup(params.occluders)
 
       for i = 1, params.occluders.n_occluders do
          actors['occluder_' .. i] = occluders.get_occluder(i)
       end
+   else
+      occluders.remove_all()
    end
 
-   for i = 1, params.spheres.n_spheres do
-      actors['sphere_' .. i] = spheres.get_sphere(i)
-   end
-
+   -- setup the block (registering any block specific tick)
    if block.initialize then
       block.initialize(iteration, params)
    end
