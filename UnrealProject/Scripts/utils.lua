@@ -148,11 +148,11 @@ function M.is_close_coordinates(x, y, epsilon)
    epsilon = epsilon or 1e-6
 
    return math.abs(x.location.x - y.location.x) < epsilon
-      or  math.abs(x.location.y - y.location.y) < epsilon
-      or  math.abs(x.location.z - y.location.z) < epsilon
-      or  math.abs(x.rotation.pitch - y.rotation.pitch) < epsilon
-      or  math.abs(x.rotation.yaw - y.rotation.yaw) < epsilon
-      or  math.abs(x.rotation.roll - y.rotation.roll) < epsilon
+      and  math.abs(x.location.y - y.location.y) < epsilon
+      and  math.abs(x.location.z - y.location.z) < epsilon
+      and  math.abs(x.rotation.pitch - y.rotation.pitch) < epsilon
+      and  math.abs(x.rotation.yaw - y.rotation.yaw) < epsilon
+      and  math.abs(x.rotation.roll - y.rotation.roll) < epsilon
 end
 
 
