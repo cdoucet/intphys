@@ -171,7 +171,7 @@ function M.setup(params)
 
       if p.start_position == 'up' then
          uetorch.SetActorRotation(mesh, 0, p.rotation, 0)
-         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20 + (201 * p.scale.z)/2)
+         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20)
       else -- down
          uetorch.SetActorRotation(mesh, 0, p.rotation, 90)
          uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20 + box)
@@ -227,7 +227,7 @@ local function _occluder_move(occ, dir, dt)
    local location = uetorch.GetActorLocation(occ.mesh)
    uetorch.SetActorLocation(
       occ.mesh, location.x, location.y,
-      20 + (201 * occ.scale.z)/2 + math.sin((angle_rel) * math.pi / 180) * occ.box)
+      20 + math.sin((angle_rel) * math.pi / 180) * occ.box)
    uetorch.SetActorRotation(occ.mesh, 0, occ.rotation, angle_rel)
 
    if angle_abs >= 90 then

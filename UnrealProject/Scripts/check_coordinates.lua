@@ -81,6 +81,8 @@ function M.final_tick()
 
    if check then
       torch.save(iteration.path .. '../check_' .. iteration.type .. '.t7', data)
+   else
+      print('actor coordinates do not match')
    end
 
    return check

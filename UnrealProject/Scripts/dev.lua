@@ -28,7 +28,7 @@ local function put_an_occluder_on_the_camera()
               movement = 2,
               pause = {10, 10, 10, 10},
               scale = {x = 1, y = 1, z = 1},
-              location = {x = 0, y = -300, z = 70},
+              location = {x = 100, y = -300, z = 70},
               rotation = 0,
               start_position = 'up'}
 
@@ -40,7 +40,7 @@ function M.get_random_parameters()
    local p = {backwall = backwall.random(),
               floor = floor.random(),
               light = light.random()}
-   -- p.spheres = shot_a_ball_in_the_camera()
+   --p.spheres = shot_a_ball_in_the_camera()
    p.occluders = put_an_occluder_on_the_camera()
    return p
 end
@@ -53,8 +53,8 @@ end
 
 
 function M.final_tick()
-   -- return check_overlap.is_valid()
-   return false
+   return check_overlap.is_valid()
+   --return false
 end
 
 

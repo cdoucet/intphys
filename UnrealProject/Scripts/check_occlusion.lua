@@ -143,6 +143,7 @@ function M.final_tick()
          middles[iteration.type])
       return true
    else
+      print('valid occlusion not found')
       return false
    end
 end
