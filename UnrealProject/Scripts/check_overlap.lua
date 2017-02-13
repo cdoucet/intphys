@@ -41,6 +41,18 @@ function camera_overlap_detected(actor)
 end
 
 
+-- This one is called when the two occluders are so close that they
+-- overlap (can appends in train scenes)
+function occluders_overlap_detected()
+   -- at spawn time, the two occluders can trigger an overlap event
+   -- before the 1st tick, so we don't display the message twice.
+   if not utils.file_exists(overlap_file) then
+      torch.save(overlap_file)
+      print('overlap detected between the occluders')
+   end
+end
+
+
 -- This module is called from the main process.
 local M = {}
 

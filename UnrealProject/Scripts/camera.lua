@@ -96,7 +96,8 @@ function M.get_random_parameters()
 end
 
 
--- Return default parameters for the camera
+-- Return default parameters for the camera (configuration used for
+-- test scenes)
 function M.get_default_parameters()
    return {
       location = {x = 150, y = 30, z = 80},
