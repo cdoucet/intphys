@@ -1,10 +1,57 @@
 # NaivePhysics
+
 #### Data generation for the Naive Physics project using Unreal Engine
 
 Developed
 with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
 4.8 and our [UETorch](https://github.com/bootphon/UETorch) fork.
+
+
+## Exemples
+
+
+Train samples
+---
+
+Train samples are always physically possible and have high variability
+
+
+<img src="exemples/gif/train_1.gif" width="256">
+<img src="exemples/gif/train_2.gif" width="256">
+<img src="exemples/gif/train_3.gif" width="256">
+
+
+Test samples
+---
+
+Test samples have a constrained variability and come as quadruplets: 2
+possibles cases and 2 impossibles ones
+
+<img src="exemples/gif/test_1.gif" width="256">
+<img src="exemples/gif/test_2.gif" width="256">
+<img src="exemples/gif/test_3.gif" width="256">
+
+
+Metadata
+---
+
+Each video comes with it's associated depth field and object masking
+(each object have a unique id), along with a detailed status in JSON
+format.
+
+<img src="exemples/gif/meta_1.gif" width="256">
+<img src="exemples/gif/meta_2.gif" width="256">
+<img src="exemples/gif/meta_3.gif" width="256">
+
+
+## Usage
+
+Once installed and packaged, use the `naivedata.py` program to
+generate data. To discover it, have a:
+
+    ./naivedata.py --help
+
 
 ## Installation details
 
@@ -41,18 +88,11 @@ not been tested.
         ./naivedata.py exemple.json ./data --editor --verbose
 
   In the *File/Package Project* menu, select the *Linux* target and
-  `./UnrealProject/Package` as the package directory. This operation
+  `./NaivePhysicsProject/Package` as the package directory. This operation
   takes a while.
 
   ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
 
-
-## Usage
-
-Once installed and packaged, use the `naivedata.py` program to
-generate data. To discover it, have a:
-
-    ./naivedata.py --help
 
 ## Potential issue
 
@@ -68,7 +108,7 @@ of `naivedata.py`), click on the *Play* button (in the top panel) and
 repackage the game from the *File/Package Project* menu.
 
 
-## Lua scripts in UnrealProject/Scripts
+## Lua scripts in NaivePhysicsProject/Scripts
 
 The **naive_physics.lua** file contains the parts that are common to
 all different blocks, like setting the scenario and providing some

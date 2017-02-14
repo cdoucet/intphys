@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Copyright 2016 Mario Ynocente Castro, Mathieu Bernard
+# Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
 #
 # You can redistribute this file and/or modify it under the terms of
 # the GNU General Public License as published by the Free Software
@@ -23,10 +23,12 @@
 
 # display a usage message if bad params
 [ $# -lt 2 ] \
-    && echo "Usage: $0 <directory> [avi|gif]" \
+    && echo "Usage: $0 <directory> [avi|gif] [extra_opts]" \
     && echo "Find subdirectories of <directory> which contain png files and \
 convert them to video (in avi or gif format according to the second \
-argument). Create one video in each subdirectory." \
+argument). Create one video in each subdirectory. Extra options can be \
+passed to the converter ('convert' for gif and 'avconv' for avi) as an \
+optionnal third argument." \
     && exit 0
 
 
@@ -55,6 +57,9 @@ else
     exit 1
 fi
 
+extra_options=""
+if [ ! -z "$3" ]; then extra_options="$3"; fi
+
 # ensure GNU parallel is installed
 [ -z $(which parallel 2> /dev/null) ] \
     && echo "Error: GNU parallel is not installed on your system." \
@@ -62,7 +67,7 @@ fi
     && exit 1
 
 # display error message if input is not a directory
-[ ! -d "$data_dir" ] && echo "Error: $data_dir is not a directory"  && exit 1
+[ ! -d "$data_dir" ] && echo "Error: $data_dir is not a directory" && exit 1
 
 # list all subdirectories containing at least one png file
 png_dirs=$(find $data_dir -type f -name "*.png" -exec dirname {} \; | uniq)
@@ -88,6 +93,7 @@ fi
 make_video() {
     dir=$1
     format=$2
+    extra_options=$3
 
     # list all png images in the directory
     png=$(ls $dir/*.png 2> /dev/null)
@@ -109,15 +115,19 @@ make_video() {
             pattern=$(echo $dir/$base%0${n}d.png)
 
             # convert the png images into a video.avi
-            avconv -y -framerate 24 -i $pattern -c:v libx264 -r 30 \
-                   -pix_fmt yuv420p $dir/video.avi -v panic\
+            avconv $extra_options -y -framerate 24 -i $pattern -c:v libx264 \
+                   -r 30 -pix_fmt yuv420p -v panic\
+                   $dir/video.avi \
                 || (echo "Error: failed to write video from $pattern"; exit 1)
             echo "Wrote $dir/video.avi"
             ;;
         "gif"*)
             # convert the png sequence to a video.gif (with black at
             # begin and end of the animation)
-            convert -delay 10 -loop 0 black.png $dir/*.png black.png $dir/video.gif
+            # -compress jpeg -resize 128x128
+            convert $extra_options -delay 10 -loop 0 \
+                    black.png $dir/*.png black.png $dir/video.gif \
+                || (echo "failed gif conversion"; exit 1)
             echo "Wrote $dir/video.gif"
             ;;
     esac
@@ -125,6 +135,6 @@ make_video() {
 
 # convert the videos in parallel using all the available CPUs
 export -f make_video
-parallel make_video ::: $png_dirs ::: $format
+parallel make_video ::: $png_dirs ::: $format ::: "$extra_options" || exit 1
 
 exit 0

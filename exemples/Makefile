@@ -1,11 +1,16 @@
+COMPRESS_GIF_OPTIONS="-compress jpeg -resize 128x128"
+
 # building an html page from gif files
-html: data
+html: data gif
 	./build_html.sh $< $@
 
-# generate data in gif and avi from config file
+# generate data as raw png files
 data: config.json
 	$(NAIVEPHYSICS_ROOT)/naivedata.py $< $@ -f
-	$(NAIVEPHYSICS_ROOT)/tools/images2video.sh $@ gif
+
+# generate compressed gifs from raw png
+gif: data
+	$(NAIVEPHYSICS_ROOT)/tools/images2video.sh $< $@ $(COMPRESS_GIF_OPTIONS)
 
 clean:
 	rm -rf html data

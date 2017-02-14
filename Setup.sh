@@ -67,9 +67,9 @@ export UNREALENGINE_ROOT=$UNREALENGINE_ROOT
 source \$NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
 source \$UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
 
-LUA_PATH="\$NAIVEPHYSICS_ROOT/UnrealProject/Scripts/?.lua;\$LUA_PATH"
+LUA_PATH="\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Scripts/?.lua;\$LUA_PATH"
 
-export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/UnrealProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
+export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
 
 EOF
 

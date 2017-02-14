@@ -14,7 +14,7 @@ data_dir=$(readlink -f $1)
 html_dir=$(readlink -f $2)
 
 # width of each image in pixels
-width=256
+width=200
 
 
 ##
@@ -25,30 +25,17 @@ width=256
 find $data_dir -type f -name *.gif -exec readlink -f {} \; > gifs
 
 
-# select train exemples (scene only, 12 random videos)
-cat gifs | grep scene | grep train | sort -R | head -12 > train
+# select train exemples (scene only, 4 random videos)
+cat gifs | grep scene | grep train | sort -R | head -4 > train
 
-
-# select test exemple (scene only, 1 random static)
+# select test exemple (scene only, 1 occluded_dynamic_2)
 sample=$(cat gifs | grep scene | grep test | sed -r 's|^(.*)/[0-9]+/scene/video.gif$|\1|' | \
-              uniq | grep static | sort -R | head -1)
+              uniq | grep occluded_dynamic_2 | sort -R | head -1)
 find $sample -type f -name video.gif | grep scene | sort > test
 
-# select test exemple (scene only, 1 random dynamic1)
-sample=$(cat gifs | grep scene | grep test | sed -r 's|^(.*)/[0-9]+/scene/video.gif$|\1|' | \
-                uniq | grep dynamic_1 | sort -R | head -1)
-find $sample -type f -name video.gif | grep scene | sort >> test
 
-# select test exemple (scene only, 1 random dynamic2)
-sample=$(cat gifs | grep scene | grep test | sed -r 's|^(.*)/[0-9]+/scene/video.gif$|\1|' | \
-              uniq | grep dynamic_2 | sort -R | head -1)
-find $sample -type f -name video.gif | grep scene | sort >> test
-
-
-# select random videos with depth and mask (two train, two tests)
-samples=$(cat gifs | grep scene | grep train | sort -R | head -2)
-samples="$samples $(cat gifs | grep scene | grep test | grep /3/ | sort -R | head -1)"
-samples="$samples $(cat gifs | grep scene | grep test | grep /2/ | sort -R | head -1)"
+# select a random videos with depth and mask (one random)
+samples=$(cat gifs | grep scene | sort -R | head -1)
 for sample in $samples
 do
     echo $sample >> meta
