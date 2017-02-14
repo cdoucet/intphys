@@ -11,40 +11,37 @@ with
 ## Exemples
 
 
-Train samples
----
+#### Train samples
 
 Train samples are always physically possible and have high variability
 
 
-<img src="exemples/gif/train_1.gif" width="128">
-<img src="exemples/gif/train_2.gif" width="128">
-<img src="exemples/gif/train_3.gif" width="128">
-<img src="exemples/gif/train_4.gif" width="128">
+<img src="exemples/gif/train_1.gif" width="150">
+<img src="exemples/gif/train_2.gif" width="150">
+<img src="exemples/gif/train_3.gif" width="150">
+<img src="exemples/gif/train_4.gif" width="150">
 
 
-Test samples
----
+#### Test samples
 
 Test samples have a constrained variability and come as quadruplets: 2
 possibles cases and 2 impossibles ones
 
-<img src="exemples/gif/test_1.gif" width="128">
-<img src="exemples/gif/test_2.gif" width="128">
-<img src="exemples/gif/test_3.gif" width="128">
-<img src="exemples/gif/test_4.gif" width="128">
+<img src="exemples/gif/test_1.gif" width="150">
+<img src="exemples/gif/test_2.gif" width="150">
+<img src="exemples/gif/test_3.gif" width="150">
+<img src="exemples/gif/test_4.gif" width="150">
 
 
-Metadata
----
+#### Metadata
 
 Each video comes with it's associated depth field and object masking
 (each object have a unique id), along with a detailed status in JSON
 format.
 
-<img src="exemples/gif/meta_1.gif" width="128">
-<img src="exemples/gif/meta_2.gif" width="128">
-<img src="exemples/gif/meta_3.gif" width="128">
+<img src="exemples/gif/meta_1.gif" width="150">
+<img src="exemples/gif/meta_2.gif" width="150">
+<img src="exemples/gif/meta_3.gif" width="150">
 
 
 ## Usage

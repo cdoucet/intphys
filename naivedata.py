@@ -436,7 +436,7 @@ def RunEditor(output_dir, config_file, seed=None, dry=False, verbose=False):
         raise IOError('No such file {}'.format(editor))
 
     project = os.path.join(
-        NAIVEPHYSICS_ROOT, 'UnrealProject', 'NaivePhysics.uproject')
+        NAIVEPHYSICS_ROOT, 'NaivePhysicsProject', 'NaivePhysics.uproject')
     if not os.path.isfile(project):
         raise IOError('No such file {}'.format(project))
 

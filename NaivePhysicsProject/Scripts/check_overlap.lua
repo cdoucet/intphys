@@ -36,19 +36,27 @@ local overlap_file = config.get_data_path() .. 'overlap_detected.t7'
 -- begin overlap event is triggered by the camera trigger box. `actor`
 -- is the name of the actor overlapping the camera.
 function camera_overlap_detected(actor)
-   torch.save(overlap_file)
-   print('overlap detected between camera and ' .. actor)
+   if not utils.file_exists(overlap_file) then
+      torch.save(overlap_file)
+      print('overlap detected between camera and ' .. actor)
+   end
 end
 
 
 -- This one is called when the two occluders are so close that they
 -- overlap (can appends in train scenes)
 function occluders_overlap_detected()
-   -- at spawn time, the two occluders can trigger an overlap event
-   -- before the 1st tick, so we don't display the message twice.
    if not utils.file_exists(overlap_file) then
       torch.save(overlap_file)
       print('overlap detected between the occluders')
+   end
+end
+
+
+function backwall_overlap_detected(actor)
+   if not utils.file_exists(overlap_file) then
+      torch.save(overlap_file)
+      print('overlap detected between background wall and ' .. actor)
    end
 end
 
