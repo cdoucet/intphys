@@ -130,9 +130,14 @@ end
 -- This method should be called only after the final tick (so that all
 -- the checks have a definitive status on the scene)
 function M.is_valid()
-   return check_overlap.is_valid()
-      and check_coordinates.is_valid()
-      and check_occlusion.is_valid()
+   -- special case for unit tests
+   if string.match(iteration.block, 'test.test_') then
+      return block.is_test_valid()
+   else
+      return check_overlap.is_valid()
+         and check_coordinates.is_valid()
+         and check_occlusion.is_valid()
+   end
 end
 
 
@@ -155,7 +160,7 @@ function M.get_main_actor()
 end
 
 
--- Return true if iteration is physically possible, false otherwise
+-- Return true if scene is physically possible, false otherwise
 function M.is_possible()
    -- if the block doesn't define this function, we assume the scene
    -- is possible (train cases)

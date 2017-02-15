@@ -305,11 +305,12 @@ function parse_config_file()
    -- iterations is 4 + number of occlusion checks (depends on the
    -- block type)
    for block, cases in pairs(conf.blocks) do
-      -- dev is a special case for development purpose. It require the
-      -- dev.lua file which is not tracked in the source tree.
-      if string.match(block, 'dev') then
+      -- special case of the test/config.json file configuring the
+      -- unit tests
+      if string.match(block, 'test.test_') then
          add_train_iteration(block, nil, cases)
       else
+         -- we are parsing a usual config file
          for k, v in pairs(cases) do
             if string.match(k, 'train') then
                add_train_iteration(block, k, v)

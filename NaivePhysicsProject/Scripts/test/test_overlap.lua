@@ -1,3 +1,23 @@
+-- Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
+--
+-- You can redistribute this file and/or modify it under the terms of
+-- the GNU General Public License as published by the Free Software
+-- Foundation, either version 3 of the License, or (at your option) any
+-- later version.
+--
+-- This program is distributed in the hope that it will be useful, but
+-- WITHOUT ANY WARRANTY; without even the implied warranty of
+-- MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+-- General Public License for more details.
+--
+-- You should have received a copy of the GNU General Public License
+-- along with this program. If not, see <http://www.gnu.org/licenses/>.
+
+
+-- A test module asserting the lua/UE interaction works
+-- well. Detection of various overlapping situation in reaction to the
+-- events triggered in the MainMap level blueprint
+
 local uetorch = require 'uetorch'
 local backwall = require 'backwall'
 local floor = require 'floor'
@@ -6,7 +26,9 @@ local spheres = require 'spheres'
 local occluders = require 'occluders'
 local camera = require 'camera'
 local config = require 'config'
+local utils = require 'utils'
 local tick = require 'tick'
+
 local check_overlap = require 'check_overlap'
 
 
@@ -62,6 +84,9 @@ local function occluders_overlapping()
 end
 
 
+-- test do not pass because actors with physics allowed do not
+-- overlap at spawn time: they are placed by UE with an offset
+-- avoiding the overlap
 local function sphere_overlaps_backwall()
    local b = {
       is_active = true,
@@ -101,27 +126,42 @@ local function occluder_overlaps_backwall()
 end
 
 
+local tests = {
+   function(p) p.spheres = shot_a_ball_in_the_camera() end,
+   function(p) p.occluders = put_an_occluder_on_the_camera() end,
+   function(p) p.occluders = occluders_overlapping() end,
+   function(p) p.backwall, p.occluders = occluder_overlaps_backwall() end,
+   -- function(p) p.backwall, p.spheres = sphere_overlaps_backwall() end
+}
+
+
+local idx_file = config.get_data_path() .. 'test_idx.t7'
+local idx
+function M.initialize()
+   -- camera in test position
+   camera.setup(camera.get_default_parameters())
+end
+
+
 function M.get_random_parameters()
+   if not utils.file_exists(idx_file) then
+      idx = 1
+   else
+      idx = torch.load(idx_file)
+   end
+   torch.save(idx_file, idx+1)
+
    local p = {backwall = backwall.random(),
               floor = floor.random(),
               light = light.random()}
 
-   -- p.spheres = shot_a_ball_in_the_camera()
-   -- p.occluders = put_an_occluder_on_the_camera()
-   -- p.occluders = occluders_overlapping()
-   -- p.backwall, p.occluders = occluder_overlaps_backwall()
-    p.backwall, p.spheres = sphere_overlaps_backwall()
+   tests[idx](p)
+
    return p
 end
 
 
-function M.initialize(iteration)
-   camera.setup(camera.get_default_parameters())
-   check_overlap.initialize()
-end
-
-
-function M.final_tick()
+function M.is_test_valid()
    return not check_overlap.is_valid()
 end
 
