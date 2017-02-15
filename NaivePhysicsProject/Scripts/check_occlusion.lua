@@ -143,12 +143,10 @@ end
 
 
 function M.is_valid()
-   if not is_check_occlusion then
-      return true
-   elseif is_occlusion_finished then
+   if not is_check_occlusion or is_occlusion_finished then
       return true
    else
-      print('valid occlusion not found')
+      print('occlusion not valid')
       return false
    end
 end

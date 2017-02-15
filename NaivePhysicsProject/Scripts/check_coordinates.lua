@@ -54,7 +54,7 @@ local index
 
 -- True is all coordinates are equal up to the current iteration and
 -- the current frame, false otherwise
-local is_valid
+local is_valid = true
 
 
 
@@ -115,8 +115,7 @@ local function check_coordinates()
       tick.set_ticks_remaining(0)
       is_valid = false
 
-      print('main actor coordinates differ across iterations '
-               .. iteration.type+1 .. ' and ' .. iteration.type)
+      print('bad actor coordinates')
    end
 
    index = index + 1
@@ -133,7 +132,6 @@ function M.initialize(_iteration, _actor)
 
    current_data = {}
    index = 1
-   is_valid = true
 
    tick.add_hook(push_current_coordinates, 'slow')
    tick.add_hook(save_current_coordinates, 'final')
