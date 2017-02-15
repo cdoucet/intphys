@@ -21,7 +21,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local check_coordinates = require 'check_coordinates'
 
 local M = {}
 
@@ -42,7 +41,6 @@ function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
    trick_start = assert(params.trick_start)
    trick_stop = assert(params.trick_stop)
-   check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 1 then
       is_visible_start = false
@@ -79,11 +77,6 @@ function M.tick(step)
          uetorch.SetActorVisible(main_actor, is_visible_start)
       end
    end
-end
-
-
-function M.final_tick()
-   return check_coordinates.final_tick()
 end
 
 

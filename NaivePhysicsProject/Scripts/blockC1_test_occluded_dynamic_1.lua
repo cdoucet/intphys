@@ -24,7 +24,7 @@ local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local check_occlusion = require 'check_occlusion'
-local check_coordinates = require 'check_coordinates'
+
 
 local M = {}
 
@@ -39,9 +39,6 @@ local is_trick_done = false
 function M.initialize(_iteration, params)
    iteration = _iteration
    main_actor = spheres.get_sphere(assert(params.index))
-
-   check_occlusion.initialize(iteration, main_actor, {5})
-   check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 5 then
       for i = 1, spheres.get_max_spheres() do
@@ -79,10 +76,10 @@ function M.tick(step)
 end
 
 
-function M.final_tick()
-   return check_coordinates.final_tick()
-      and check_occlusion.final_tick()
+function M.get_occlusion_check_iterations()
+   return {5}
 end
+
 
 function M.is_possible()
    return is_possible

@@ -17,12 +17,18 @@
 local uetorch = require 'uetorch'
 local config = require 'config'
 local utils = require 'utils'
+local tick = require 'tick'
+
 local backwall = require 'backwall'
 local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
+
+local check_overlap = require 'check_overlap'
+local check_occlusion = require 'check_occlusion'
+local check_coordinates = require 'check_coordinates'
 
 
 local M = {}
@@ -64,11 +70,12 @@ function M.initialize(_iteration)
    end
    camera.setup(camera_params)
 
-   -- setup the actors
+   -- setup the static actors
    floor.setup(params.floor)
    light.setup(params.light)
    backwall.setup(params.backwall)
 
+   -- setup the moving actors (if any)
    if params.spheres then
       spheres.setup(params.spheres)
 
@@ -79,6 +86,7 @@ function M.initialize(_iteration)
       spheres.remove_all()
    end
 
+   -- setup the occluders (if any)
    if params.occluders then
       occluders.setup(params.occluders)
 
@@ -89,26 +97,42 @@ function M.initialize(_iteration)
       occluders.remove_all()
    end
 
-   -- setup the block (registering any block specific tick)
+   -- setup the block (registering any block specific ticking method)
    if block.initialize then
       block.initialize(iteration, params)
    end
-end
-
-
-function M.tick(step)
    if block.tick then
-      return block.tick(step)
+      tick.add_hook(block.tick, 'slow')
+   end
+   if block.final_tick then
+      tick.add_hook(block.final_tick, 'final')
+   end
+
+   -- initialize the overlap check. The scene will fail if any illegal
+   -- overlaping between actors is detected (eg some actor hit the
+   -- camera, two occluders are overlapping, etc...).
+   check_overlap.initialize()
+
+   if not config.is_train(iteration) then
+      check_coordinates.initialize(iteration, block.get_main_actor())
+   end
+
+   if block.get_occlusion_check_iterations then
+      check_occlusion.initialize(
+         iteration, block.get_main_actor(),
+         block.get_occlusion_check_iterations())
    end
 end
 
 
-function M.final_tick()
-   local is_valid_scene = true
-   if block.final_tick then
-      is_valid_scene =  block.final_tick()
-   end
-   return is_valid_scene
+-- Return true is the scene has been validated (all checks successful)
+--
+-- This method should be called only after the final tick (so that all
+-- the checks have a definitive status on the scene)
+function M.is_valid()
+   return check_overlap.is_valid()
+      and check_coordinates.is_valid()
+      and check_occlusion.is_valid()
 end
 
 
@@ -133,7 +157,7 @@ end
 
 -- Return true if iteration is physically possible, false otherwise
 function M.is_possible()
-   -- if the block donesn't define this function, we assume the scene
+   -- if the block doesn't define this function, we assume the scene
    -- is possible (train cases)
    if block.is_possible then
       return block.is_possible()

@@ -101,6 +101,7 @@ function M.initialize(_iteration, _actor, check_iterations)
 
    if is_check_occlusion then
       tick.add_hook(M.tick, 'slow')
+      tick.add_hook(M.final_tick, 'final')
    else
       for _, v in ipairs(check_iterations) do
          local file = iteration.path .. '../occlusion_' .. tostring(v) .. '.t7'
@@ -133,14 +134,18 @@ end
 -- also save the middle tick to a file. If the iteration is not an
 -- iteration check, it returns true.
 function M.final_tick()
-   if not is_check_occlusion then
-      return true
-   end
-
    if is_occlusion_finished then
       torch.save(
          iteration.path .. '../occlusion_' .. tostring(iteration.type) .. '.t7',
          middles[iteration.type])
+   end
+end
+
+
+function M.is_valid()
+   if not is_check_occlusion then
+      return true
+   elseif is_occlusion_finished then
       return true
    else
       print('valid occlusion not found')

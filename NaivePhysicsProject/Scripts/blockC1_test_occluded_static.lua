@@ -25,7 +25,7 @@ local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local check_occlusion = require 'check_occlusion'
-local check_coordinates = require 'check_coordinates'
+
 
 local M = {}
 
@@ -40,8 +40,6 @@ local is_trick_done
 function M.initialize(_iteration, params)
    iteration = _iteration
    main_actor = spheres.get_sphere(assert(params.index))
-   check_occlusion.initialize(iteration, main_actor, {5})
-   check_coordinates.initialize(iteration, main_actor)
    is_trick_done = false
 
    if iteration.type == 5 then
@@ -80,9 +78,8 @@ function M.tick(step)
 end
 
 
-function M.final_tick()
-   return check_coordinates.final_tick()
-      and check_occlusion.final_tick()
+function M.get_occlusion_check_iterations()
+   return {5}
 end
 
 
@@ -107,7 +104,7 @@ end
 function M.get_random_parameters()
    local params = {}
 
-   -- occluder
+   -- occluders
    params.occluders = {}
    params.occluders.n_occluders = 1
    params.occluders.occluder_1 = {
@@ -140,7 +137,7 @@ function M.get_random_parameters()
    end
    params.index = math.random(1, params.spheres.n_spheres)
 
-   -- others
+   -- static actors
    params.floor = floor.random()
    params.light = light.random()
    params.backwall = backwall.random()

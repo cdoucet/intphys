@@ -25,6 +25,7 @@ local uetorch = require 'uetorch'
 local image = require 'image'
 local paths = require 'paths'
 local utils = require 'utils'
+local tick = require 'tick'
 local backwall = require 'backwall'
 
 
@@ -53,6 +54,9 @@ local padding_size = 0
 
 -- Initialize the saver for a given iteration rendered by a given scene
 --
+-- Setup the output subdirectories for storing scene, depth and masks,
+-- register functions for ticking
+--
 -- ntick is the maximum number of ticks to be saved
 function M.initialize(_iteration, _scene, nticks)
    iteration = _iteration
@@ -62,6 +66,9 @@ function M.initialize(_iteration, _scene, nticks)
    paths.mkdir(iteration.path .. 'mask')
    paths.mkdir(iteration.path .. 'scene')
    paths.mkdir(iteration.path .. 'depth')
+
+   tick.add_hook(M.tick, 'slow')
+   tick.add_hook(M.final_tick, 'final')
 end
 
 

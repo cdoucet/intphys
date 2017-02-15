@@ -20,7 +20,6 @@ local occluders = require 'occluders'
 local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
-local check_coordinates = require 'check_coordinates'
 
 local M = {}
 
@@ -32,7 +31,6 @@ local trick_step
 function M.initialize(iteration, params)
    main_actor = spheres.get_sphere(assert(params.index))
    trick_step = assert(params.trick_step)
-   check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 1 then
       is_visible_start = false
@@ -59,9 +57,6 @@ function M.tick(step)
    end
 end
 
-function M.final_tick()
-   return check_coordinates.final_tick()
-end
 
 function M.is_possible()
    return is_possible

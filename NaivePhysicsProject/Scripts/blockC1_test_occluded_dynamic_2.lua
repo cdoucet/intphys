@@ -27,7 +27,6 @@ local spheres = require 'spheres'
 local floor = require 'floor'
 local light = require 'light'
 local check_occlusion = require 'check_occlusion'
-local check_coordinates = require 'check_coordinates'
 
 local M = {}
 
@@ -46,9 +45,6 @@ function M.initialize(_iteration, params)
    iteration = _iteration
    main_actor = spheres.get_sphere(assert(params.index))
    main_actor_side = params.spheres['sphere_' .. params.index].side
-
-   check_occlusion.initialize(iteration, main_actor, {6, 5})
-   check_coordinates.initialize(iteration, main_actor)
 
    if iteration.type == 6 then
       uetorch.DestroyActor(occluders.get_occluder(2))
@@ -109,9 +105,10 @@ function M.tick(step)
 end
 
 
-function M.final_tick()
-   return check_occlusion.final_tick() and check_coordinates.final_tick()
+function M.get_occlusion_check_iterations()
+   return {6, 5}
 end
+
 
 function M.is_possible()
    return possible
