@@ -14,21 +14,24 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
+
 -- This module is used during test iterations to ensure the main actor
--- of the scene has the same coordinates (location and rotation)
--- during all the test variations (possibles and
--- impossibles). Basically it compares the coordinates from the
--- current iteration to the previous one of the same block, and store
--- the current coordinates for the next iteration's check.
+-- of the scene has the same coordinates (location and rotation
+-- vectors) frame per frame in the whole test quadruplet.
+--
+-- Basically it compares the coordinates of a choosen actor from the
+-- current iteration to the previous one (the first one excepted),
+-- storing the current coordinates for the next iteration lookup.
+--
+-- When different coordinates are detected for the same frame in two
+-- successive iterations of a quadruplet, the scene terminates and is
+-- invalidated.
 
 
 local uetorch = require 'uetorch'
 local config = require 'config'
-local utils = require 'utils'
 local tick = require 'tick'
 
-
-local M = {}
 
 -- The current iteration
 local iteration
@@ -36,72 +39,63 @@ local iteration
 -- The scene actor on which to operate the check
 local actor
 
--- A flag, true if we run the check for the current iteration, false
--- otherwise
-local is_check
-
--- A counter to get the coordinates of the curretn tick
-local index
-
--- A flag, true if the iteration is the first on ein the block (in
--- that case we do not have a previous_data to load)
-local is_first_check
-
 -- A table filled with actor coordinates during ticking
 local current_data
 
--- A table of coordinates loaded from the previous iteration (if the
--- current iteration is not the first one in the current block)
+-- A table of coordinates loaded from the previous iteration (if
+-- first_check is false)
 local previous_data
 
+-- The size of previous_data
+local previous_data_size
 
-local is_valid = true
+-- A tick counter to compare current and previous coordinates in the tables
+local index
+
+-- True is all coordinates are equal up to the current iteration and
+-- the current frame, false otherwise
+local is_valid
 
 
--- Initialize the check for a given iteration and a given actor
-function M.initialize(_iteration, _actor)
-   actor = _actor
-   iteration = _iteration
 
-   if not config.is_check_occlusion(iteration) then
-      is_check = true
-      is_first_check = config.is_first_iteration_of_block(iteration, false)
-      current_data = {}
-      index = 1
+-- Return a table with the current coordinates of an actor
+--
+-- The returned table has the following structure:
+--   {x, y, z, pitch, yaw, roll}
+local function get_actor_coordinates(actor)
+   local l = uetorch.GetActorLocation(actor)
+   local r = uetorch.GetActorRotation(actor)
 
-      tick.add_hook(M.push_data, 'slow')
-
-      if not is_first_check then
-         previous_data = torch.load(iteration.path .. '../check_' .. iteration.type + 1 .. '.t7')
-         tick.add_hook(M.check_data, 'slow')
-      end
-
-      tick.add_hook(M.final_tick, 'final')
-   end
+   return {x = l.x, y = l.y, z = l.z,
+           pitch = r.pitch, yaw = r.yaw, roll = r.roll}
 end
 
 
--- Register the current actor coordinates in a table
-function M.push_data()
-   table.insert(current_data, utils.get_actor_coordinates(actor))
+-- Return true if |x - y| < epsilon, false otherwise
+--
+-- `x` and `y` must be tables with the following structure:
+--   {x, y, z, pitch, yaw, roll}
+-- `epsilon` default to 1e-6 if not specified
+local function is_close_coordinates(x, y, epsilon)
+   epsilon = epsilon or 1e-6
+
+   return math.abs(x.x - y.x) < epsilon
+      and math.abs(x.y - y.y) < epsilon
+      and math.abs(x.z - y.z) < epsilon
+      and math.abs(x.pitch - y.pitch) < epsilon
+      and math.abs(x.yaw - y.yaw) < epsilon
+      and math.abs(x.roll - y.roll) < epsilon
 end
 
 
--- Compare current and previous coordinates, terminates the scene if a
--- difference is found
-function M.check_data()
-   if not utils.is_close_coordinates(current_data[index], previous_data[index]) then
-      is_valid = false
-      print('actor coordinates do not match')
-      tick.set_ticks_remaining(0)
-   end
-
-   index = index + 1
+-- Register the actor current coordinates to the a table
+local function push_current_coordinates()
+   table.insert(current_data, get_actor_coordinates(actor))
 end
 
 
--- Save the current coordinates to a file for the next iteration
-function M.final_tick()
+-- Save the current coordinates to a file for the next iteration lookup
+local function save_current_coordinates()
    if is_valid then
       torch.save(
          iteration.path .. '../check_' .. iteration.type .. '.t7',
@@ -110,9 +104,56 @@ function M.final_tick()
 end
 
 
--- return true is the scene had correct coordinates
+-- Compare current and previous coordinates for the current frame
+--
+-- Terminates the scene and set is_valid to false if a difference is
+-- found
+local function check_coordinates()
+   if index <= previous_data_size
+      and not is_close_coordinates(current_data[index], previous_data[index])
+   then
+      tick.set_ticks_remaining(0)
+      is_valid = false
+
+      print('main actor coordinates differ across iterations '
+               .. iteration.type+1 .. ' and ' .. iteration.type)
+   end
+
+   index = index + 1
+end
+
+
+local M = {}
+
+
+-- Initialize the check for a given iteration and a given actor
+function M.initialize(_iteration, _actor)
+   actor = _actor
+   iteration = _iteration
+
+   current_data = {}
+   index = 1
+   is_valid = true
+
+   tick.add_hook(push_current_coordinates, 'slow')
+   tick.add_hook(save_current_coordinates, 'final')
+
+   -- True if the iteration is the first in the block (in that case we do
+   -- not have a previous_data to load)
+   local is_first_check = config.is_first_iteration_of_block(iteration)
+   if not is_first_check then
+      -- the previous iteration is n+1, as we execute them from n to 1
+      previous_data = torch.load(iteration.path .. '../check_' .. iteration.type + 1 .. '.t7')
+      previous_data_size = #previous_data
+      tick.add_hook(check_coordinates, 'slow')
+   end
+end
+
+
+-- Return true is the actor has homogoneous coordinates across iterations
 function M.is_valid()
    return is_valid
 end
+
 
 return M

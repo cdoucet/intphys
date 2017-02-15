@@ -125,35 +125,4 @@ function M.coordinates_to_string(actor)
 end
 
 
--- Return a table with the actor coordinates
---
--- The table has  the following structure:
--- {location.{x, y, z}, rotation.{pitch, yaw, roll}}
-function M.get_actor_coordinates(actor)
-   return {
-      location = uetorch.GetActorLocation(actor),
-      rotation = uetorch.GetActorRotation(actor)
-   }
-end
-
-
--- Return true if `x` and `y` have close coordinates
---
--- Close means their absolute difference is lesser than `epsilon`,
--- which default to 1e-6 if not specified.
---
--- `x` and `y` must be tables with the following structure:
--- {location.{x, y, z}, rotation.{pitch, yaw, roll}}
-function M.is_close_coordinates(x, y, epsilon)
-   epsilon = epsilon or 1e-6
-
-   return math.abs(x.location.x - y.location.x) < epsilon
-      and  math.abs(x.location.y - y.location.y) < epsilon
-      and  math.abs(x.location.z - y.location.z) < epsilon
-      and  math.abs(x.rotation.pitch - y.rotation.pitch) < epsilon
-      and  math.abs(x.rotation.yaw - y.rotation.yaw) < epsilon
-      and  math.abs(x.rotation.roll - y.rotation.roll) < epsilon
-end
-
-
 return M
