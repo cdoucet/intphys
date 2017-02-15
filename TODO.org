@@ -10,6 +10,8 @@ TODO list for the NaivePhysics project
 *** release of a NaivePhysics-1.0 version as well
 *** if possible, release the block C2 (shape consistency)
 * Improvements
+** In occluded tests
+make sure there is no hit between main sphere and the background wall
 ** in status.json for tests
    do we need to specify when an actor is hidden (ie after a trick)?
    For now its coordinates are still registered even if it is no more

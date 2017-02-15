@@ -177,7 +177,7 @@ function M.get_iteration(index)
 
    local path = conf.data_path .. subpath
       .. utils.pad_zeros(iteration.id, #tostring(max_iteration))
-      .. '_' .. iteration.block .. '/'
+      .. '_' .. iteration.block:gsub('%.', '_') .. '/'
 
    if iteration.type ~= -1 then
       path = path .. iteration.type .. '/'
@@ -251,7 +251,6 @@ end
 
 -- Add a new iteration in the iterations table
 function add_iteration(b, t, i)
-   -- print('adding ' .. b .. ' : ' .. t .. ' ' .. i)
    table.insert(iterations_table, {block = b, type = t, id = i})
 end
 
@@ -260,7 +259,7 @@ local train_runs, test_runs = 0, 0
 function add_train_iteration(block, case, nruns)
    local name = block
    if case then
-      name = block .. '_' .. case
+      name = block .. '.' .. case
    end
 
    for i = 1, nruns do
@@ -273,7 +272,7 @@ end
 
 function add_test_iterations(block, case, subblocks)
    for subblock, nruns in pairs(subblocks) do
-      local name = block .. '_' .. case .. '_' .. subblock
+      local name = block .. '.' .. case .. '_' .. subblock
       local ntypes = 4 + M.get_check_occlusion_size({block = name})
       for i = 1, nruns do
          test_runs = test_runs + 1
