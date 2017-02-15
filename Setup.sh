@@ -20,8 +20,8 @@
 #
 
 export NAIVEPHYSICS_ROOT=$(readlink -f .)
-[ ! -f $NAIVEPHYSICS_ROOT/build_package.sh ] \
-    && echo "Error: ./build_package.sh not found, are you in the NaivePhysics directory?" \
+[ ! -f $NAIVEPHYSICS_ROOT/tools/build_package.sh ] \
+    && echo "Error: ./tools/build_package.sh not found, are you in the NaivePhysics directory?" \
     && exit 1
 
 export UNREALENGINE_ROOT=$NAIVEPHYSICS_ROOT/UnrealEngine
@@ -73,9 +73,10 @@ export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Package/Linux
 
 EOF
 
+
 source $NAIVEPHYSICS_ROOT/activate-naivephysics
 echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
 
 echo "Successful installation of the Unreal Engine with UETorch,
-please package the NaivePhysics project (refer to the 'Installation
-details' section of the README)"
+please package the NaivePhysics project within the UE editor (refer to
+the 'Installation details' section of the README)"

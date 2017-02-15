@@ -101,7 +101,8 @@ make_video() {
     # get the first png file in the list
     first=$(echo $png | cut -f1 -d' ')
 
-    # find the length of the images index (just consider the first png, we
+    # find the "length" of the images index, i.e. the number of digits
+    # isuffixing the png filenames (just consider the first png, we
     # assume they all have same index length)
     index=$(echo $first | sed -r 's|^.+_([0-9]+)\.png$|\1|g')
     n=${#index}
@@ -116,8 +117,7 @@ make_video() {
 
             # convert the png images into a video.avi
             avconv $extra_options -y -framerate 24 -i $pattern -c:v libx264 \
-                   -r 30 -pix_fmt yuv420p -v panic\
-                   $dir/video.avi \
+                   -r 30 -pix_fmt yuv420p -v panic $dir/video.avi \
                 || (echo "Error: failed to write video from $pattern"; exit 1)
             echo "Wrote $dir/video.avi"
             ;;
