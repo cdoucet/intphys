@@ -28,6 +28,17 @@ local uetorch = require 'uetorch'
 local utils = require 'utils'
 
 
+-- from '800x600' to {x = 800, y = 600}
+local function parse_resolution(r)
+   assert(r:match('^[0-9]+x[0-9]+$'))
+
+   local x = r:gsub('x.*$', '')
+   local y = r:gsub('^.*x', '')
+
+   return {x = tonumber(x), y = tonumber(y)}
+end
+
+
 local M = {}
 
 
@@ -41,7 +52,7 @@ max_iteration = nil
 
 conf = {
    data_path = assert(os.getenv('NAIVEPHYSICS_DATA')),
-   resolution = {x = 288, y = 288}, -- rendered image resolution (in pixels)
+   resolution = parse_resolution(assert(os.getenv('NAIVEPHYSICS_RESOLUTION'))),
    load_params = false,
    ticks_interval = 2,
    ticks_rate = 1/8,
@@ -340,6 +351,12 @@ end
 function set_resolution()
    local r = M.get_resolution()
    uetorch.ExecuteConsoleCommand("r.setRes " .. r.x .. 'x' .. r.y)
+end
+
+
+function get_aspect_ratio()
+   local r = M.get_resolution()
+   return tostring(r.x / r.y)
 end
 
 
