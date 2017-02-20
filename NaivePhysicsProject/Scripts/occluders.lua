@@ -20,8 +20,9 @@
 -- method handling the occluders movements.
 
 local uetorch = require 'uetorch'
-local tick = require 'tick'
 local material = require 'material'
+local tick = require 'tick'
+
 
 local M = {}
 
@@ -124,8 +125,8 @@ end
 function M.random()
    local params = {}
 
-   params.n_occluders = math.random(1, 2)
-   for i = 1, params.n_occluders do
+   params.noccluders = math.random(1, 2)
+   for i = 1, params.noccluders do
         local p = {
            material = M.random_material(),
            movement = M.random_movement(),
@@ -144,7 +145,7 @@ end
 
 
 function M.insert_masks(actors, text, params)
-   for i = 1, params.n_occluders do
+   for i = 1, params.noccluders do
       table.insert(actors, M.get_occluder(i))
       table.insert(text, 'occluder_' .. i)
    end
@@ -160,11 +161,24 @@ local occluder_register = {}
 --
 -- `params` must be a table structured as the one returned by
 --     occluder.random().
-function M.setup(params)
-   for i = 1, params.n_occluders do
+function M.setup(params, bounds)
+   if not params then
+      M.remove_all()
+      return
+   end
+
+   for i = 1, params.noccluders do
       local mesh = M.get_occluder(i)
       local box = uetorch.GetActorBounds(mesh).boxY
       local p = params['occluder_' .. i]
+
+      -- stay in the bounds
+      if bounds then
+         p.location.x = math.max(bounds.xmin, p.location.x)
+         p.location.x = math.min(bounds.xmax, p.location.x)
+         p.location.y = math.max(bounds.ymin, p.location.y)
+         p.location.y = math.min(bounds.ymax, p.location.y)
+      end
 
       material.set_actor_material(mesh, material.wall_materials[p.material])
       uetorch.SetActorScale3D(mesh, p.scale.x, p.scale.y, p.scale.z)
@@ -196,7 +210,7 @@ function M.setup(params)
       end
    end
 
-   for i = params.n_occluders+1, 2 do
+   for i = params.noccluders+1, 2 do
       uetorch.DestroyActor(M.get_occluder(i))
    end
 
@@ -241,15 +255,15 @@ local function _occluder_move(occ, dir, dt)
 end
 
 
-function M.tick(dt)
+function M.tick()
    for n, occ in pairs(occluder_register) do
       if occ.movement > 0 then
          if occ.status == 'pause' then
             _occluder_pause(occ)
          elseif occ.status == 'go_down' then
-            _occluder_move(occ, -1, dt)
+            _occluder_move(occ, -1, 1)
          else -- 'go_up'
-            _occluder_move(occ, 1, dt)
+            _occluder_move(occ, 1, 1)
          end
       end
    end

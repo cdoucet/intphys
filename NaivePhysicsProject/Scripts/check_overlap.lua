@@ -61,6 +61,14 @@ function backwall_overlap_detected(actor)
 end
 
 
+function backwall_hit_detected(actor)
+   if not utils.file_exists(overlap_file) then
+      --torch.save(overlap_file)
+      print('hit detected on background wall by ' .. actor)
+   end
+end
+
+
 -- This module is called from the main process.
 local M = {}
 
@@ -76,17 +84,15 @@ end
 
 
 -- Return true if an overlap on the camera has been detected in the scene
---
--- TODO side effect by deleting the file, is_valid returns true only
--- once (if any)
 function M.is_valid()
-   local is_valid = true
+   return not utils.file_exists(overlap_file)
+end
+
+
+function M.clean()
    if utils.file_exists(overlap_file) then
       os.remove(overlap_file)
-      is_valid = false
    end
-
-   return is_valid
 end
 
 

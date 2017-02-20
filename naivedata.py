@@ -32,6 +32,7 @@ To see command-line arguments, have a::
 """
 
 import argparse
+import atexit
 import copy
 import joblib
 import json
@@ -42,6 +43,7 @@ import shlex
 import shutil
 import subprocess
 import sys
+import tempfile
 import threading
 import time
 
@@ -187,14 +189,15 @@ def ParseArgs():
         formatter_class=CustomFormatter)
 
     parser.add_argument(
-        'config_file', metavar='<json-file>', help=(
-            'json configuration file defining the number of test and train '
-            'iterations to run for each block, see exemple below.'))
+        'config_file', metavar='<json-file>', help='''
+        json configuration file defining the number of test and train
+        runs for each block, see exemple below.''')
 
     parser.add_argument(
-        'output_dir', metavar='<output-dir>', help='''
+        '-o', '--output-dir', metavar='<output-dir>', default=None, help='''
         directory where to write generated data, must be non-existing
-        or used along with the --force option.''')
+        or used along with the --force option. If <output-dir> is not
+        specified, the programs run in "dry mode" and do not save any data.''')
 
     parser.add_argument(
         '-v', '--verbose', action='store_true',
@@ -218,9 +221,9 @@ def ParseArgs():
         '-e', '--editor', action='store_true',
         help='launch the NaivePhysics project in the UnrealEngine editor')
 
-    parser.add_argument(
-        '-d', '--dry', action='store_true',
-        help='do not save any image, this runs really faster')
+    # parser.add_argument(
+    #     '-d', '--dry', action='store_true',
+    #     help='do not save any image, this runs really faster')
 
     return parser.parse_args()
 
@@ -332,7 +335,9 @@ def _Run(command, log, config_file, output_dir, seed=None, dry=False):
 
     if dry:
         environ['NAIVEPHYSICS_DRY'] = 'true'
-        log.info('running in dry mode: do not capture any image')
+        log.info('running in dry mode, dont save anything')
+    else:
+        log.info('write data to ' + output_dir)
 
     if seed is not None:
         environ['NAIVEPHYSICS_SEED'] = str(seed)
@@ -503,16 +508,22 @@ def Main():
     args = ParseArgs()
 
     # setup an empty output directory
-    output_dir = os.path.abspath(args.output_dir)
-    if os.path.exists(output_dir):
-        if args.force:
-            shutil.rmtree(output_dir)
-        else:
-            raise IOError(
-                'Existing output directory {}\n'
-                'Use the --force option to overwrite it'
-                .format(output_dir))
-    os.makedirs(output_dir)
+    dry_mode = False
+    if args.output_dir is None:
+        dry_mode = True
+        output_dir = tempfile.mkdtemp()
+        atexit.register(lambda: shutil.rmtree(output_dir))
+    else:
+        output_dir = os.path.abspath(args.output_dir)
+        if os.path.exists(output_dir):
+            if args.force:
+                shutil.rmtree(output_dir)
+            else:
+                raise IOError(
+                    'Existing output directory {}\n'
+                    'Use the --force option to overwrite it'
+                    .format(output_dir))
+        os.makedirs(output_dir)
 
     # check the config_file is a correct JSON file
     try:
@@ -526,13 +537,13 @@ def Main():
     # program
     if args.editor:
         RunEditor(output_dir, args.config_file,
-                  seed=args.seed, dry=args.dry, verbose=args.verbose)
+                  seed=args.seed, dry=dry_mode, verbose=args.verbose)
     else:
         RunBinary(output_dir, args.config_file, njobs=args.njobs,
-                  seed=args.seed, dry=args.dry, verbose=args.verbose)
+                  seed=args.seed, dry=dry_mode, verbose=args.verbose)
 
     # check for duplicated scenes and warn if founded
-    if not args.dry:
+    if not dry_mode:
         FindDuplicates(output_dir)
 
     # remove temporary files from the output directory

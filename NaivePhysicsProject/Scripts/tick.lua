@@ -26,7 +26,7 @@
 -- function tick.add_hook(f, l), l being 'slow', 'fast' or 'final'.
 
 local uetorch = require 'uetorch'
-local config = require 'config'
+
 
 local M = {}
 
@@ -34,31 +34,44 @@ local M = {}
 -- Tables registering hooks for the different ticking levels
 local hooks = {slow = {}, fast = {}, final = {}}
 
--- Remaining ticks before the final one
-local ticks_remaining = config.get_nticks()
 
--- A tick counter, from 0 to config.get_nticks()
-local step = 0
+-- Number of ticks to execute before calling the final hooks
+local nticks
 
--- Interval between two game ticks in which the hooks are called, and
--- two variables to compute it
-local ticks_interval, t_tick, t_last_tick = config.get_ticks_interval(), 0, 0
+-- Interval between two game ticks in which the slow hooks are called
+local ticks_interval
+
+-- -- two variables to compute the ticks interval
+local t_tick, t_last_tick = 0, 0
+
+-- A tick counter, from 0 to nticks
+local ticks_counter
 
 
--- Set a constant tick rate `dt` and register ticking in uetorch
-function M.initialize(dt)
+-- Set a constant tick rate and register ticking in uetorch
+function M.initialize(_nticks, _ticks_interval, ticks_rate)
+   nticks = _nticks
+   ticks_interval = _ticks_interval
+   ticks_counter = 0
+
    -- set a constant ticking rate
-   dt = dt or 1/8
-   uetorch.SetTickDeltaBounds(dt, dt)
+   ticks_rate = ticks_rate or 1/8
+   uetorch.SetTickDeltaBounds(ticks_rate, ticks_rate)
 
    -- replace the uetorch's default tick function by our own
    Tick = M.tick
 end
 
 
--- Set the number of ticks before the end of the scene
-function M.set_ticks_remaining(nticks)
-   ticks_remaining = nticks
+-- Set the number of slow ticks before the end of the scene
+function M.set_ticks_remaining(ticks_remaining)
+   ticks_counter = nticks - ticks_remaining + 1
+end
+
+
+-- Return the number of slow ticks since the beginning of the scene
+function M.get_counter()
+   return ticks_counter
 end
 
 
@@ -75,7 +88,7 @@ end
 --
 -- The level must be 'slow', 'fast', or 'final'
 function M.remove_hook(f, level)
-   local t = hook[level]
+   local t = hooks[level]
    for i = #t, 1, -1 do
       if t[i] == f then
          table.remove(t, i)
@@ -99,24 +112,21 @@ end
 -- It increment the tick counter, calling each registerd hook until
 -- the end of the scene.
 function M.tick(dt)
-   dt = 1
-   if ticks_remaining then
-      if ticks_remaining > 0 then
-         -- the scene is running, run tick hooks
-         M.run_hooks('fast', dt)
+   -- dt not used here is the time since the last tick
+   if ticks_counter then
+      if ticks_counter < nticks then
+         M.run_hooks('fast')
 
          if t_tick - t_last_tick >= ticks_interval then
-            ticks_remaining = ticks_remaining - 1
-            step = step + 1
             t_last_tick = t_tick
 
-            M.run_hooks('slow', step)
+            ticks_counter = ticks_counter + 1
+            M.run_hooks('slow')
          end
          t_tick = t_tick + 1
       else
-         -- end of the scene, run end hooks and go to the next iteration
          M.run_hooks('final')
-         ticks_remaining = nil
+         ticks_counter = nil
       end
    end
 end

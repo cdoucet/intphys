@@ -46,7 +46,7 @@ M.ground_materials = {
 }
 
 
-M.sphere_materials = {
+M.actor_materials = {
    "BlackMaterial",
    "GreenMaterial",
    "M_ColorGrid_LowSpec",

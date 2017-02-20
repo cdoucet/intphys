@@ -24,6 +24,8 @@
 local uetorch = require 'uetorch'
 local image = require 'image'
 local paths = require 'paths'
+
+local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
 local backwall = require 'backwall'
@@ -37,19 +39,15 @@ local iteration
 -- A reference to the scene being rendered
 local scene
 
--- A table for pushing status during the ticks
-local status = {}
+-- A table to store scene's status
+local t_status
 
--- A table for pushing raw depth fields during the ticks
-local depth_images = {}
+-- Tensors to store raw images of the scene
+local t_scene, t_depth, t_masks
 
 -- The maximum depth is estimated during ticking and used to normalize
 -- depth images during the final tick
-local max_depth = 0
-
--- The size of the id in generated png files (e.g. scene_001.png has a
--- padding size of 3)
-local padding_size = 0
+local max_depth
 
 
 -- Initialize the saver for a given iteration rendered by a given scene
@@ -61,83 +59,103 @@ local padding_size = 0
 function M.initialize(_iteration, _scene, nticks)
    iteration = _iteration
    scene = _scene
-   padding_size = #tostring(nticks) -- 10 -> 2, 100 -> 3, 1000 -> 4
+   max_depth = 0
+   t_status = {}
 
-   paths.mkdir(iteration.path .. 'mask')
-   paths.mkdir(iteration.path .. 'scene')
-   paths.mkdir(iteration.path .. 'depth')
+   -- allocate memory for images
+   local nticks = config.get_nticks()
+   local resolution = config.get_resolution()
+   t_scene = torch.FloatTensor(nticks, 3, resolution.y, resolution.x):contiguous()
+   t_depth = torch.FloatTensor(nticks, resolution.y, resolution.x):contiguous()
+   t_masks = torch.IntTensor(nticks, resolution.y, resolution.x):contiguous()
 
-   tick.add_hook(M.tick, 'slow')
-   tick.add_hook(M.final_tick, 'final')
+   tick.add_hook(M.push_data, 'slow')
+   tick.add_hook(M.save_data, 'final')
 end
 
 
--- Save data for the current scene state
+-- Store the scene's current state in memory
 --
 -- Write a scene png file and a mask phg file, estimates the global
 -- depth maximum, register the current depth and status to memory
 -- (will be saved in the final tick).
-function M.tick(step)
-   -- setup the png files to be wrote
-   local step_str = utils.pad_zeros(step, padding_size)
-   local scene_file = iteration.path .. 'scene/scene_' .. step_str .. '.png'
-   local depth_file = iteration.path .. 'depth/depth_' .. step_str .. '.png'
-   local mask_file = iteration.path .. 'mask/mask_' .. step_str .. '.png'
+function M.push_data()
+   if not scene.is_valid() then
+      return
+   end
+
+   local idx = tick.get_counter()
 
    -- save a screenshot of the scene
-   local scene_img = assert(uetorch.Screen())
-   image.save(scene_file, scene_img)
+   assert(uetorch.Screen(t_scene[idx]))
 
    -- scene's actors are required for capturing the masks
-   local scene_actors, ignored_actors, scene_actors_names = scene.get_masks()
+   local scene_actors, ignored_actors, _ = scene.get_masks()
 
    -- compute raw depth field and objects segmentation masks
-   local depth_img, mask_img = uetorch.CaptureDepthAndMasks(
-      scene.get_camera(), scene_actors, ignored_actors)
+   assert(uetorch.CaptureDepthAndMasks(
+      scene.get_camera(), scene_actors, ignored_actors,
+      t_depth[idx], t_masks[idx]))
 
-   -- update the max depth and store the depth image (will be
-   -- normalized with the global max depth in the final tick)
-   max_depth = math.max(depth_img:max(), max_depth)
-   depth_images[depth_file] = depth_img
+   -- update the max depth
+   max_depth = math.max(t_depth[idx]:max(), max_depth)
 
-   -- postprocess the mask image in place: merge the backwall
-   -- actors in a single mask.
-   backwall.group_masks(mask_img, scene_actors, scene_actors_names)
-
-   -- normalize the mask image in [0, 1] and save it
-   mask_img = mask_img:float()
-   mask_img:apply(function(x) return x / scene.get_nactors() end)
-   image.save(mask_file, mask_img)
-
-   -- push the current coordinates of all actors in the status
+   -- push the current coordinates of all actors in the status table
    local aux = {}
-   for k, v in pairs(scene.get_actors()) do
+   for k, v in pairs(scene.get_moving_actors()) do
       aux[k] = utils.coordinates_to_string(v)
    end
-   status[step] = aux
+   table.insert(t_status, aux)
 end
 
 
--- Save normalized depth images and the status.json file
-function M.final_tick()
-   -- normalize the depth field in [0, 1] with the global max depth
-   -- computed on the whole scene, and save the images.
-   for filename, depth_image in pairs(depth_images) do
-      depth_image:apply(function(x) return x / max_depth end)
-      image.save(filename, depth_image)
+-- Postprocess and save scene data accumulated during the ticks
+--
+-- Save scene images, normalized depth images, masks images (with
+-- bacwall actors merged in a single mask) and the status.json file
+function M.save_data()
+   if not scene.is_valid() then
+      return
    end
 
-   -- get the status header from the scene and append it the status
-   -- table filled during the hook
+   -- normalize the depth in [0, 1]
+   t_depth:div(max_depth)
+
+   -- merge the backwall actors in a single mask and normalize in [0, 1]
+   if backwall.is_active() then
+      local min_idx, max_idx = backwall.get_indices(scene.get_masks())
+      t_masks[torch.cmul(t_masks:ge(min_idx), t_masks:le(max_idx))] = min_idx
+      t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - 2
+   end
+   t_masks = t_masks:float():div(scene.get_nactors())
+
+   -- save the images as png, a subdirectory per category
+   paths.mkdir(iteration.path .. 'mask')
+   paths.mkdir(iteration.path .. 'scene')
+   paths.mkdir(iteration.path .. 'depth')
+
+   local nframes = #t_status
+   for i = 1, nframes do
+      -- numeric index in images filenames
+      local idx = utils.pad_zeros(i, #tostring(nframes))
+
+      image.save(iteration.path .. 'scene/scene_' .. idx .. '.png', t_scene[i])
+      image.save(iteration.path .. 'depth/depth_' .. idx .. '.png', t_depth[i])
+      image.save(iteration.path .. 'mask/mask_' .. idx .. '.png', t_masks[i])
+   end
+
+   -- get the status header from the scene
    local s = scene.get_status()
-   s['block'] = iteration.block
+   s['block'] = iteration.block:gsub('%.', '_')
    s['max_depth'] = max_depth
-   s['steps'] = status
+
+   --  append it the status table filled during the ticks
+   s['frames'] = t_status
 
    -- write the status.json with ordered keys
    local keyorder = {
       'block', 'possible', 'floor', 'camera', 'lights',
-      'max_depth', 'masks_grayscale', 'steps'}
+      'max_depth', 'masks_grayscale', 'frames'}
    utils.write_json(s, iteration.path .. 'status.json', keyorder)
 end
 

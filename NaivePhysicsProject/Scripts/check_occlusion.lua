@@ -46,8 +46,11 @@ local middles = {}
 -- True or false we perform an occlusion check on the current iteration
 local is_check_occlusion
 
+-- A tensor to store the captured segmentation
+local t_occlusion
+
 -- Flags to detect the begin and end of an occlusion
-local is_occlusion_started, is_occlusion_finished = false, false
+local has_been_visible, is_occlusion_started, is_occlusion_finished = false, false, false
 
 
 -- Return true if the `actor` is occluded in the rendered image
@@ -56,7 +59,8 @@ local is_occlusion_started, is_occlusion_finished = false, false
 -- actors being ignored). The actor is considered as occluded if the
 -- whole mask is black.
 local function is_occluded(actor)
-   return torch.max(uetorch.ObjectSegmentation({actor})) == 0
+   uetorch.ObjectSegmentationNoAlloc(t_occlusion, {actor})
+   return 0 == t_occlusion:max()
 end
 
 
@@ -88,7 +92,7 @@ end
 -- `check_iterations` is a table of iteration types for which checks
 -- are performed, e.g. {5} for blockC1_test_occluded_dynamic_1 or {6, 5}
 -- for blockC1_test_occluded_dynamic_2
-function M.initialize(_iteration, _actor, check_iterations)
+function M.initialize(_iteration, _actor, check_iterations, resolution)
    iteration = _iteration
    actor = _actor
 
@@ -96,13 +100,19 @@ function M.initialize(_iteration, _actor, check_iterations)
    for _, v in ipairs(check_iterations) do
       if tostring(v) == tostring(iteration.type) then
          is_check_occlusion = true
+         break
       end
    end
 
    if is_check_occlusion then
+      -- allocate the buffer storing current occlusion data
+      t_occlusion = torch.IntTensor(resolution.y, resolution.x):contiguous()
+
+      -- register the tick hooks
       tick.add_hook(M.tick, 'slow')
-      tick.add_hook(M.final_tick, 'final')
+      tick.add_hook(M.save_middle_tick, 'final')
    else
+      -- load the occlusion data built in check occlusion iterations
       for _, v in ipairs(check_iterations) do
          local file = iteration.path .. '../occlusion_' .. tostring(v) .. '.t7'
          middles[v] = torch.load(file)
@@ -115,7 +125,11 @@ end
 -- rendering when a complete occlusion has been found.
 function M.tick()
    local occluded = is_occluded(actor)
-   if occluded and not is_occlusion_started then
+   if not has_been_visible and not occluded then
+      has_been_visible = true
+   end
+
+   if has_been_visible and occluded and not is_occlusion_started then
       is_occlusion_started = true
    end
 
@@ -129,11 +143,8 @@ function M.tick()
 end
 
 
--- If the current iteration is an occlusion check, returns true if a
--- complete occlusion has been found in the scene, false otherwise, it
--- also save the middle tick to a file. If the iteration is not an
--- iteration check, it returns true.
-function M.final_tick()
+-- Save the middle tick to a file for the next iterations
+function M.save_middle_tick()
    if is_occlusion_finished then
       torch.save(
          iteration.path .. '../occlusion_' .. tostring(iteration.type) .. '.t7',
@@ -142,6 +153,9 @@ function M.final_tick()
 end
 
 
+-- If the current iteration is an occlusion check, returns true if a
+-- complete occlusion has been found in the scene, false otherwise. If
+-- the iteration is not an iteration check, it returns true.
 function M.is_valid()
    if not is_check_occlusion or is_occlusion_finished then
       return true
@@ -152,10 +166,10 @@ function M.is_valid()
 end
 
 
--- Return true if the `tick` corresponds to the middle of an occlusion
+-- Return true if the current tick corresponds to the middle of an occlusion
 -- for the iteration type specified, false otherwise.
-function M.is_middle_of_occlusion(iteration_type, tick)
-   return tick == middles[tonumber(iteration_type)]
+function M.is_middle_of_occlusion(iteration_type)
+   return tick.get_counter() == middles[tonumber(iteration_type)]
 end
 
 

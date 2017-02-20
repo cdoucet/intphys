@@ -20,7 +20,9 @@
 local uetorch = require 'uetorch'
 local utils = require 'utils'
 
+
 local M = {}
+
 
 local sky_sphere = assert(uetorch.GetActor('SkySphere'))
 local directional_lights = {

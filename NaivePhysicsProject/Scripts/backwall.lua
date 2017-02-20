@@ -22,7 +22,9 @@
 local uetorch = require 'uetorch'
 local material = require 'material'
 
-local M = {}
+
+-- true the background wall is currently active, false otherwise
+local is_active
 
 
 -- Componants of the background wall in the Unreal scene
@@ -31,6 +33,9 @@ local wall = {
    left = assert(uetorch.GetActor("WallLeft")),
    right = assert(uetorch.GetActor("WallRight"))
 }
+
+
+local M = {}
 
 
 -- Return true or false with the probability `p` for true, default to 0.5
@@ -92,14 +97,16 @@ end
 --
 -- The params must be table structured as the one returned by
 -- M.random()
-function M.setup(params)
+function M.setup(params, is_train)
    params = params or M.random()
 
    if not params.is_active then
+      is_active = false
       M.destroy()
       return
    end
 
+   is_active = true
    for _, w in pairs(wall) do
       -- material
       material.set_actor_material(w, material.wall_materials[params.material])
@@ -119,30 +126,48 @@ function M.setup(params)
 
    local location = uetorch.GetActorLocation(wall.right)
    uetorch.SetActorLocation(wall.right, params.width / 2, location.y, location.z)
-end
 
-
--- Insert the background wall componants in the masks table
-function M.insert_masks(tActor, tText, params)
-   if params.is_active then
-     table.insert(tActor, wall.back)
-     table.insert(tActor, wall.left)
-     table.insert(tActor, wall.right)
-
-     table.insert(tText, "back_wall")
-     table.insert(tText, "left_wall")
-     table.insert(tText, "right_wall")
+   -- in test blocks, we don't want to have hits between backwall and
+   -- actors because it can make the occlusion check to fail
+   if not is_train then
+      uetorch.DestroyActor(wall.left)
+      uetorch.DestroyActor(wall.right)
    end
 end
 
 
-function M.group_masks(img, actors, names)
+function M.is_active()
+   return is_active
+end
+
+
+-- return the boundary box the backwall, or nil if the backwall is not
+-- active
+function M.get_actors()
+   return wall
+end
+
+
+-- Insert the background wall componants in the masks table
+function M.insert_masks(t_actor, t_text)
+   if M.is_active() then
+     table.insert(t_actor, wall.back)
+     table.insert(t_actor, wall.left)
+     table.insert(t_actor, wall.right)
+
+     table.insert(t_text, "back_wall")
+     table.insert(t_text, "left_wall")
+     table.insert(t_text, "right_wall")
+   end
+end
+
+
+-- Return (min, max) indices of bacwall actors in a list of `actors`
+function M.get_indices(actors)
    -- get the indices of the backwall actors in the image (should be 2, 3, 4)
-   local idx, min_idx, max_idx = {}, 10e9, 0
+   local min_idx, max_idx = 10e9, 0
    for k, v in ipairs(actors) do
       if v == wall.back or v == wall.left or v == wall.right then
-         idx[k] = true
-
          if min_idx > k then
             min_idx = k
          end
@@ -153,21 +178,7 @@ function M.group_masks(img, actors, names)
       end
    end
 
-   -- if no actor found, the backwall is not active
-   if #idx == 0 then
-      return
-   end
-
-   -- filter the image to merge backwall actors in a single mask value
-   img:apply(function(x)
-         if idx[x] then -- pixel from backwall
-            return min_idx
-         elseif x > max_idx then
-            return x - 2
-         else
-            return x
-         end
-   end)
+   return min_idx, max_idx
 end
 
 

@@ -196,7 +196,7 @@ function M.get_description(iteration)
       _type = 'test ' .. iteration.id ..
          ' (' .. _n .. '/' .. M.get_block_size(iteration) .. ')'
    end
-   return _type .. ' (' .. iteration.block .. ')'
+   return _type .. ' (' .. iteration.block:gsub('block_', ''):gsub('%.', '_') .. ')'
 end
 
 
@@ -328,7 +328,6 @@ function parse_config_file()
    print("generation of " .. test_runs + train_runs .. " scenes ("
          .. test_runs .. " for test and " .. train_runs
          .. " for train, total of " .. max_iteration .. ' iterations)')
-   print("write data to " .. conf.data_path)
 
    utils.write_json(
       {iterations_table = iterations_table, max_iteration = max_iteration},

@@ -21,7 +21,7 @@ local tick = require 'tick'
 
 local backwall = require 'backwall'
 local occluders = require 'occluders'
-local spheres = require 'spheres'
+local actors = require 'actors'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
@@ -31,22 +31,24 @@ local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
 
-local M = {}
-
+-- The current iteration to run
 local iteration
+
+-- The block module (required from iteration.block)
 local block
+
+-- The scene's parameters
 local params
 
-local actors = {}
 
-
-function M.initialize(_iteration)
-   iteration = _iteration
-
-   -- load the block module for the current iteration
-   block = assert(require(iteration.block))
-
-   -- retrieve the parameters filename
+-- Return a table of parameters for the current scene
+--
+-- If the iteration is the first one of the block, generate random
+-- parameters for that block and save it as 'params.json'. Otherwise
+-- load them from 'params.json'.
+local function init_params(subblock)
+   -- retrieve the parameters filename, when we are in test block,
+   -- params.json is a directory up
    local relative_path = ''
    if not config.is_train(iteration) then
       relative_path = '../'
@@ -55,73 +57,102 @@ function M.initialize(_iteration)
 
    -- If this the first iteration of this block, generate random
    -- parameters and save them, otherwise load them
+   local params
    if config.is_first_iteration_of_block(iteration) then
-      params = block.get_random_parameters()
+      -- choose random parameters for the block actors
+      params = block.get_random_parameters(subblock)
+
+      -- choose random parameters for static actors
+      params.floor = floor.random()
+      params.light = light.random()
+      params.backwall = backwall.random()
+
+      -- choose parameters for the camera with a fixed position in
+      -- test and a more variable one for training
+      if config.is_train(iteration) then
+         params.camera = camera.get_random_parameters()
+      else
+         params.camera = camera.get_default_parameters()
+      end
+
       utils.write_json(params, params_file)
    else
       params = assert(utils.read_json(params_file))
    end
 
-   -- setup the camera with a fixed position in test and a more
-   -- variable one for training
-   local camera_params = camera.get_default_parameters()
-   if config.is_train(iteration) then
-      camera_params = camera.get_random_parameters()
-   end
-   camera.setup(camera_params)
+   return params
+end
 
-   -- setup the static actors
+
+-- Return the [xmin, xmax, ymin, ymax] boundaries of the scene when
+-- backwall is active, else return nil
+local function get_scene_bounds()
+   if not backwall.is_active() then
+      return nil
+   end
+
+   local wall = backwall.get_actors()
+   return {
+      xmin = uetorch.GetActorLocation(wall.left).x,
+      xmax = uetorch.GetActorLocation(wall.right).x,
+      ymin = uetorch.GetActorLocation(wall.back).y,
+      ymax = uetorch.GetActorLocation(camera.get_actor()).y}
+end
+
+
+local M = {}
+
+
+function M.initialize(_iteration)
+   iteration = _iteration
+
+
+   local block_name = iteration.block:gsub('%..*$', '')
+   local subblock_name = iteration.block:gsub('^.*%.', '')
+
+   -- load the scene parameters and the block module
+   block = assert(require(block_name))
+   params = init_params(subblock_name)
+
+   -- setup the camera and static actors. On test blocks, left and
+   -- right components of the backwall are disabled to avoid
+   -- unexpected collisions
+   camera.setup(params.camera)
    floor.setup(params.floor)
    light.setup(params.light)
-   backwall.setup(params.backwall)
+   backwall.setup(params.backwall, config.is_train(iteration))
 
-   -- setup the moving actors (if any)
-   if params.spheres then
-      spheres.setup(params.spheres)
+   -- retrieve the backwall bounds to make sure all actors are inside
+   local bounds = get_scene_bounds()
 
-      for i = 1, params.spheres.n_spheres do
-         actors['sphere_' .. i] = spheres.get_sphere(i)
-      end
-   else
-      spheres.remove_all()
-   end
-
-   -- setup the occluders (if any)
-   if params.occluders then
-      occluders.setup(params.occluders)
-
-      for i = 1, params.occluders.n_occluders do
-         actors['occluder_' .. i] = occluders.get_occluder(i)
-      end
-   else
-      occluders.remove_all()
-   end
+   -- setup the physics actors and the occluders
+   actors.initialize(params.actors, bounds)
+   occluders.setup(params.occluders, bounds)
 
    -- setup the block (registering any block specific ticking method)
-   if block.initialize then
-      block.initialize(iteration, params)
-   end
-   if block.tick then
-      tick.add_hook(block.tick, 'slow')
-   end
-   if block.final_tick then
-      tick.add_hook(block.final_tick, 'final')
-   end
+   block.initialize(subblock_name, iteration, params)
 
    -- initialize the overlap check. The scene will fail if any illegal
    -- overlaping between actors is detected (eg some actor hit the
    -- camera, two occluders are overlapping, etc...).
    check_overlap.initialize()
 
+   -- on test blocks, we make sure the main actor coordinates
+   -- (location and rotation) are strictly comparable over the
+   -- different iterations. If not, the scene fails. This is to detect
+   -- an issue we have with the packaged game: some videos run slower
+   -- than others (seems to append only in packaged, not in editor)
    if not config.is_train(iteration) then
       check_coordinates.initialize(iteration, block.get_main_actor())
    end
 
-   if block.get_occlusion_check_iterations then
-      check_occlusion.initialize(
-         iteration, block.get_main_actor(),
-         block.get_occlusion_check_iterations())
-   end
+   -- in tests blocks with occlusion, we have to make sure the main
+   -- actor is occluded before applying the magic trick.
+   check_occlusion.initialize(
+      iteration,
+      block.get_main_actor(),
+      block.get_occlusion_check_iterations(),
+      config.get_resolution())
 end
 
 
@@ -147,52 +178,63 @@ function M.get_camera()
 end
 
 
-function M.get_actors()
-   return actors
+function M.get_moving_actors()
+   local a = {}
+   for name, actor in pairs(actors.get_active_actors()) do
+      a[name] = actor
+   end
+   if params.occluders then
+      for i = 1, params.occluders.noccluders do
+         a['occluder_' .. i] = occluders.get_occluder(i)
+      end
+   end
+   return a
 end
 
 
 -- Return the main actor of the scene if defined, otherwise return nil
 function M.get_main_actor()
-   if block.get_main_actor then
-      return block.get_main_actor()
-   end
+   return block.get_main_actor()
 end
 
 
 -- Return true if scene is physically possible, false otherwise
 function M.is_possible()
-   -- if the block doesn't define this function, we assume the scene
-   -- is possible (train cases)
-   if block.is_possible then
-      return block.is_possible()
-   end
-   return true
+   return block.is_possible()
 end
 
 
 function M.get_masks()
    local active, inactive, text = {}, {}, {}
 
+
    floor.insert_masks(active, text)
-   backwall.insert_masks(active, text, params.backwall)
+   backwall.insert_masks(active, text)
+
    if params.occluders then
-      occluders.insert_masks(active, text, params.occluders)
+      for i = 1, params.occluders.noccluders do
+         table.insert(text, 'occluder_' .. i)
+         table.insert(active, occluders.get_occluder(i))
+      end
    end
 
    if config.is_train(iteration) then
-      spheres.insert_masks(active, text, params.spheres)
+      for name, actor in pairs(actors.get_active_actors()) do
+         table.insert(text, name)
+         table.insert(active, actor)
+      end
+
    else
       -- on test, the main actor only can be inactive (when hidden)
-      for i = 1, params.spheres.n_spheres do
-         table.insert(text, "sphere_" .. i)
-         if i ~= params.index then
-            table.insert(active, spheres.get_sphere(i))
+      for name, actor in pairs(actors.get_active_actors()) do
+         table.insert(text, name)
+         if name ~= params.main_actor then
+            table.insert(active, actor)
          end
       end
 
       -- We add the main actor as active only when it's not hidden
-      local main_actor = M.get_main_actor()
+      local main_actor = block.get_main_actor()
       if block.is_main_actor_visible() then
          table.insert(active, main_actor)
       else
@@ -207,28 +249,26 @@ end
 function M.get_nactors()
    -- spheres + occluders + floor + backwall
    local n = 1 -- floor
-   if params.backwall.is_active then
+   if backwall.is_active() then
       n = n + 1
    end
 
-   n = n + params.spheres.n_spheres
-
+   n = n + actors.get_nactors()
    if params.occluders then
-         n = n + params.occluders.n_occluders
+         n = n + params.occluders.noccluders
    end
-
    return n
 end
 
 
 function M.get_status()
    local nactors = M.get_nactors()
-   local _, _, actors = M.get_masks()
-   actors = backwall.get_updated_actors(actors)
+   local _, _, mask_names = M.get_masks(true)
+   mask_names = backwall.get_updated_actors(mask_names)
 
    local masks = {}
    masks[0] = "sky"
-   for n, m in pairs(actors) do
+   for n, m in pairs(mask_names) do
       masks[math.floor(255 * n / nactors)] = m
    end
 
@@ -240,6 +280,11 @@ function M.get_status()
    status['masks_grayscale'] = masks
 
    return status
+end
+
+
+function M.clean()
+   check_overlap.clean()
 end
 
 

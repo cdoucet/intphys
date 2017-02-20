@@ -15,9 +15,10 @@
 
 
 -- This module is entry point of the program, it is called from the
--- packaged game. It configures the current iteration scene and run
--- it, managing the random seed, the tick function and data saving
--- (screen captures)
+-- packaged game.
+
+-- It configures the current iteration scene and run it, managing the
+-- random seed, the tick function and data saving (screen captures).
 
 local uetorch = require 'uetorch'
 local paths = require 'paths'
@@ -40,19 +41,25 @@ function M.initialize()
    math.randomseed(seed)
    posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
-   -- ticking at a constant rate
-   tick.initialize(config.get_ticks_rate())
+   -- ticking for `nticks`, taking screenshot every `tick_interval` at
+   -- a constant `tick rate`
+   tick.initialize(
+      config.get_nticks(),
+      config.get_ticks_interval(),
+      config.get_ticks_rate())
 end
 
 
--- Called after the last tick: this function prepares the next
--- iteration.
+-- Called after the last tick, prepares the next iteration.
 --
 -- If the scene is valid, go to the next iteration, else restart the
 -- current iteration with new parameters. Exit the program if there is
 -- no more iteration.
 function M.terminate()
-   local remaining_iterations = config.prepare_next_iteration(scene.is_valid())
+   local is_valid = scene.is_valid()
+   scene.clean()
+
+   local remaining_iterations = config.prepare_next_iteration(is_valid)
    if remaining_iterations == 0 then
       print('no more iteration, exiting')
       uetorch.ExecuteConsoleCommand('Exit')
@@ -82,7 +89,7 @@ function run_current_iteration()
       saver.initialize(iteration, scene, config.get_nticks())
    end
 
-   -- At the very end we update the iteration counter to
+   -- at the very end we update the iteration counter to
    -- prepare the next iteration or, if the current iteration failed,
    -- retry it with new parameters.
    tick.add_hook(M.terminate, 'final')

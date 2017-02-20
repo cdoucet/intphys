@@ -114,7 +114,6 @@ local function check_coordinates()
    then
       tick.set_ticks_remaining(0)
       is_valid = false
-
       print('bad actor coordinates')
    end
 
