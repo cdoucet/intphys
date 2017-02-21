@@ -77,131 +77,87 @@ function M.get_random_parameters(subblock)
    assert(is_valid_subblock(subblock))
    local nspheres = math.random(1, 3)
 
+   local params = {}
+
+   -- occluders
    if subblock:match('train') then
-      return {
-         occluders = occluders.random(),
-         actors = actors.get_random_parameters({sphere = nspheres})}
+      params.occluders = occluders.get_random_parameters(math.random(0, 2))
    else
-      -- we are in a test subblock
-      local params = {}
+      local noccluders = #(M.get_occlusion_check_iterations(subblock))
+      params.occluders = occluders.get_random_parameters(noccluders, subblock)
+   end
 
-      -- setup occluders parameters
-      if subblock:match('occluded') then
-         local noccluders = #(M.get_occlusion_check_iterations(subblock))
-         params.occluders = {noccluders = noccluders}
-
-         if noccluders == 2 then
-            params.occluders.occluder_1 = {
-               material = occluders.random_material(),
-               movement = 1,
-               scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()},
-               location = {x = -100, y = -350},
-               rotation = 0,
-               start_position = 'down',
-               pause = {math.random(5), math.random(5)}}
-
-            params.occluders.occluder_2 = {
-               material = occluders.random_material(),
-               movement = 1,
-               scale = params.occluders.occluder_1.scale,
-               location = {x = 200, y = -350},
-               rotation = 0,
-               start_position = 'down',
-               pause = {table.unpack(params.occluders.occluder_1.pause)}}
-
-         elseif noccluders == 1 and subblock:match('dynamic') then
-            params.occluders.occluder_1 = {
-               material = occluders.random_material(),
-               movement = 1,
-               scale = {x = 0.5, y = 1, z = 1 - 0.5 * math.random()},
-               location = {x = 50, y = -250},
-               rotation = 0,
-               start_position = 'down',
-               pause = {math.random(5), math.random(5)}}
-
-         else
-            params.occluders.occluder_1 = {
-               material = occluders.random_material(),
-               movement = 1,
-               scale = {x = 1 - 0.4 * math.random(), y = 1, z = 1 - 0.5 * math.random()},
-               rotation = 0,
-               start_position = 'down',
-               pause = {math.random(20), math.random(20)}}
-            params.occluders.occluder_1.location = {
-               x = 100 - 200 * params.occluders.occluder_1.scale.x, y = -350}
-         end
-      end
-
+   -- physics actors
+   if subblock:match('train') then
+      params.actors = actors.get_random_parameters({sphere = nspheres})
+   else  -- we are in a test subblock
       -- setup the sphere actors parameters and the main actor (on
       -- which the trick is done)
       params.main_actor = 'sphere_' .. math.random(1, nspheres)
       params.actors = {}
 
-      if subblock:match('static') then
-         local x_loc = {150, 40, 260}
-         for i = 1, nspheres do
-            params.actors['sphere_' .. i] = {
-               material = actors.random_material(),
-               location = {x = x_loc[i], y = -550, z = 70},
-               scale = 1}
-         end
-      elseif subblock:match('dynamic_1') then
-         for i = 1, nspheres do
-            params.actors['sphere_' .. i] = {
-               material = actors.random_material(),
-               scale = 0.9,
-               location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)},
-               force = {
+      for i = 1, nspheres do
+         params.actors['sphere_' .. i] = {
+            material = actors.random_material(),
+            scale = 0.9}
+         local p = params.actors['sphere_' .. i]
+
+         if subblock:match('static') then
+            local x_loc = {150, 40, 260}
+            p.location = {x = x_loc[i], y = -550, z = 70}
+            p.scale = 1
+         elseif subblock:match('dynamic_1') then
+            p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.force = {
                   x = math.random(8e5, 1.1e6), y = 0,
-                  z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}}
+                  z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
 
             if actors.random_side() == 'right' then
-               params.actors['sphere_' .. i].location.x = 500
-               params.actors['sphere_' .. i].force.x = -1 * params.actors['sphere_' .. i].force.x
+               p.location.x = 500
+               p.force.x = -1 * p.force.x
             end
-         end
-      else
-         assert(subblock:match('dynamic_2'))
-         for i = 1, nspheres do
-            params.actors['sphere_' .. i] = {
-               material = actors.random_material(),
-               scale = 0.9,
-               side = actors.random_side(),
-               location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)},
-               force = {x = 1.6e6, y = 0, z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}}
-            if params.actors['sphere_' .. i].side == 'right' then
-               params.actors['sphere_' .. i].location.x = 700
-               params.actors['sphere_' .. i].force.x = -1 * params.actors['sphere_' .. i].force.x
-            end
-         end
-      end
-
-      -- setup the trick parameters for the subblocks
-      if subblock:match('static') and subblock:match('visible') then
-         -- the step at which the magic trick is done
-         params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
-      end
-
-      if subblock:match('dynamic_1') and subblock:match('visible') then
-         -- the x position on which the magic trick is done
-         params.trick_x = math.random()*250 + 50
-      end
-      if subblock:match('dynamic_2') and subblock:match('visible') then
-         -- length and start position (on the x axis) of the magic
-         -- disparition/apparition of a sphere
-         local trick_length = math.random() * 250 + 200
-         local main_actor_side = assert(params.actors[params.main_actor].side)
-         if main_actor_side == 'right' then
-            params.trick_start = math.random() * (400 - trick_length) + trick_length
-            params.trick_stop = params.trick_start - trick_length
          else
-            params.trick_start = math.random() * (400 - trick_length)
-            params.trick_stop = params.trick_start + trick_length
+            assert(subblock:match('dynamic_2'))
+
+            p.side = actors.random_side()
+            p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.force = {
+               x = 1.6e6, y = 0,
+               z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+
+            if p.side == 'right' then
+               p.location.x = 700
+               p.force.x = -1 * p.force.x
+            end
          end
       end
 
-      return params
+      -- setup the trick parameters for the visible subblocks (for
+      -- occluded blocks this is done by the check_occlusion module)
+      if subblock:match('visible') then
+         if subblock:match('static') then
+            -- the step at which the magic trick is done
+            params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
+         elseif subblock:match('dynamic_1') then
+            -- the x position on which the magic trick is done
+            params.trick_x = math.random()*250 + 50
+         else  -- dynamic_2
+            -- length and start position (on the x axis) of the magic
+            -- disparition/apparition of a sphere
+            local trick_length = math.random() * 250 + 200
+            local main_actor_side = assert(params.actors[params.main_actor].side)
+            if main_actor_side == 'right' then
+               params.trick_start = math.random() * (400 - trick_length) + trick_length
+               params.trick_stop = params.trick_start - trick_length
+            else
+               params.trick_start = math.random() * (400 - trick_length)
+               params.trick_stop = params.trick_start + trick_length
+            end
+         end
+      end
    end
+
+   return params
 end
 
 
@@ -239,9 +195,9 @@ function M.initialize(_subblock, _iteration, _params)
    -- on check occlusion iterations, keep alive a single occluder and
    -- the main actor
    if iteration.type == 6 then
-      uetorch.DestroyActor(occluders.get_occluder(1))
+      uetorch.DestroyActor(occluders.get_occluder('occluder_1'))
    elseif iteration.type == 5 then
-      uetorch.DestroyActor(occluders.get_occluder(2))
+      uetorch.DestroyActor(occluders.get_occluder('occluder_2'))
    end
 
    if iteration.type == 5 or iteration.type == 6 then
@@ -341,7 +297,7 @@ function M.is_main_actor_visible()
       return (v and not t1 and not t2)
          or (not v and t1 and not t2)
          or (v and t1 and t2)
-   else -- this is static or dynamic_1
+   else  -- this is static or dynamic_1
       local t = trick.is_done
       return (v and not t) or (not v and t)
    end
@@ -358,7 +314,7 @@ function M.magic_trick()
          trick.is_done_2 = true
          tick.remove_hook(M.magic_trick, 'slow')
       end
-   else -- this is static or dynamic_1
+   else  -- this is static or dynamic_1
       if not trick.is_done and trick.can_do() then
          uetorch.SetActorVisible(main_actor, not is_visible_start)
          trick.is_done = true

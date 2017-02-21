@@ -173,4 +173,10 @@ function M.is_middle_of_occlusion(iteration_type)
 end
 
 
+function M.is_middle_of_two_occlusions(it1, it2)
+   return tick.get_counter() == math.floor(
+      (middles[tonumber(it1)] + middles[tonumber(it2)]) / 2)
+end
+
+
 return M

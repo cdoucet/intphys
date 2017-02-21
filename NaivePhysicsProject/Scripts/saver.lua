@@ -100,12 +100,8 @@ function M.push_data()
    -- update the max depth
    max_depth = math.max(t_depth[idx]:max(), max_depth)
 
-   -- push the current coordinates of all actors in the status table
-   local aux = {}
-   for k, v in pairs(scene.get_moving_actors()) do
-      aux[k] = utils.coordinates_to_string(v)
-   end
-   table.insert(t_status, aux)
+   -- udate the status table
+   table.insert(t_status, scene.get_status())
 end
 
 
@@ -145,7 +141,7 @@ function M.save_data()
    end
 
    -- get the status header from the scene
-   local s = scene.get_status()
+   local s = scene.get_status_header()
    s['block'] = iteration.block:gsub('%.', '_')
    s['max_depth'] = max_depth
 

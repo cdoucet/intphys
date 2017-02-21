@@ -24,9 +24,6 @@ local material = require 'material'
 local tick = require 'tick'
 
 
-local M = {}
-
-
 -- the occluder's actors defined in the scene
 local occluder_actors = {
    assert(uetorch.GetActor('Occluder_1')),
@@ -34,143 +31,109 @@ local occluder_actors = {
 }
 
 
--- Remove all the occluders in the scene
-function M.remove_all()
-   for _, a in ipairs(occluder_actors) do
-      uetorch.DestroyActor(a)
+-- This table registers the mobile (rotating) occluders. It is built in
+-- occluder.initialize() and used in occluder.tick()
+local mobile_occluders
+
+-- Registers the active occluders, mobile or not, and their number
+local active_occluders, noccluders
+
+
+-- Return true if the actor is currently active in the scene
+local function is_active_occluder(actor)
+   for _, a in pairs(active_occluders) do
+      if a == actor then
+         return true
+      end
+   end
+   return false
+end
+
+
+-- Internal function handling occluder's rotation
+local function _occluder_move(o, dir, dt)
+   local angle_abs = (o.t_rotation - o.t_rotation_change) * 20 * 0.125
+   local angle_rel = angle_abs
+   if dir == 1 then --go up
+      angle_rel = 90 - angle_rel
+   end
+
+   local location = uetorch.GetActorLocation(o.mesh)
+   uetorch.SetActorLocation(
+      o.mesh, location.x, location.y,
+      20 + math.sin((angle_rel) * math.pi / 180) * o.box)
+   uetorch.SetActorRotation(o.mesh, 0, o.rotation, angle_rel)
+
+   if angle_abs >= 90 then
+      table.remove(o.pause, 1)
+      o.movement = o.movement - 0.5
+      o.status = "pause"
+      o.t_rotation_change = o.t_rotation
+   end
+
+   o.t_rotation = o.t_rotation + dt
+end
+
+
+-- Internal function handling pause steps between occluder's rotations
+local function _occluder_pause(o)
+   o.pause[1] = o.pause[1] - 1
+   if o.pause[1] <= 0 then
+      -- go to the next movement: if down, go up, if up, go down
+      if uetorch.GetActorRotation(o.mesh).roll >= 89.5 then
+         o.status = 'go_up'
+      else
+         o.status = 'go_down'
+      end
    end
 end
 
 
--- Return the max number of occluders
-function M.get_max_occluders()
-   return #occluder_actors
-end
+
+local M = {}
 
 
--- Return an occluder actor
---
--- `i` must be 1 or 2 for occluder1 or occluder2 respectively
-function M.get_occluder(i)
-   assert(i == 1 or i == 2)
-   return occluder_actors[i]
-end
+function M.get_random_parameters(noccluders, subblock)
+   noccluders = noccluders or math.random(1, 2)
+   subblock = subblock or 'train'
 
-
--- Return a random wall texture for an occluder
-function M.random_material()
-   return math.random(#material.wall_materials)
-end
-
-
--- Select a random round trip for the occluder (0 -> no motion, 0.5 ->
--- single one way, 1 -> one round trip, 1.5 -> one round trip and one
--- more single, 2 -> 2 round trips)
-function M.random_movement()
-   return math.random(0, 4) / 2
-end
-
-
--- Return a brief pause between each movement steps
---
--- `movement` is as returned by occluder.movement()
-function M.random_pause(movement)
-   local p = {}
-   for i=1, movement*2 do
-      table.insert(p, math.random(50))
-   end
-   return p
-end
-
-
--- Return a random position on the X and Y axes
---
--- TODO actually nothing random here...
--- `id` must be 1 or 2 for occluder1 or occluder2 respectively
-function M.random_location(id)
-   local shift = 0
-   if id == 2 then
-      shift = 500
-   end
-
-   return {x = shift - 300, y = -150 - shift}
-end
-
-
--- Return a random rotation on the Z axis in degree
-function M.random_rotation()
-   return math.random(-45, 45)
-end
-
-
--- Return the occluder start position
---
--- Start position is randomly 'up' or 'down'
-function M.random_start_position()
-   return (math.random(0, 1) == 1 and 'up' or 'down')
-end
-
-
--- Return a random scale for occluder dimensions
-function M.random_scale()
-   return {
-      x = math.random() + 0.5,
-      y = 1,
-      z = 1.5 - 0.3 * math.random()
-   }
-end
-
-
--- Return a random set of parameters to setup an occluder
-function M.random()
    local params = {}
-
-   params.noccluders = math.random(1, 2)
-   for i = 1, params.noccluders do
-        local p = {
-           material = M.random_material(),
-           movement = M.random_movement(),
-           scale = M.random_scale(),
-           location = M.random_location(i),
-           rotation = M.random_rotation(),
-           start_position = M.random_start_position()
-        }
-        p.pause = M.random_pause(p.movement)
-
-        params['occluder_' .. i] = p
+   for i = 1, noccluders do
+      local name = 'occluder_' .. tostring(i)
+      assert(i <= #occluder_actors)
+      params[name] = M.get_random_occluder_parameters(name, subblock)
    end
 
    return params
 end
 
 
-function M.insert_masks(actors, text, params)
-   for i = 1, params.noccluders do
-      table.insert(actors, M.get_occluder(i))
-      table.insert(text, 'occluder_' .. i)
-   end
-end
-
-
--- This table registers the parametrized occluders. It is built in
--- occluder.setup() and used in occluder.tick()
-local occluder_register = {}
-
-
 -- Initialize the occluders with given parameters.
 --
--- `params` must be a table structured as the one returned by
---     occluder.random().
-function M.setup(params, bounds)
-   if not params then
-      M.remove_all()
-      return
-   end
+-- Setup the location, scale, movement and material of
+-- parametrized occluders, destroy the unused ones.
+--
+-- `params` is a table of (occluder_name -> occluder_params), for
+--     exemple as returned by the get_random_parameters() method. Each
+--     occluder name must be valid and the params must have the
+--     following structure:
+--         {material, movement, scale, location={x, y, z},
+--          rotation, start_position, pause}
+--
+-- `bounds` is an optional table of scene boundaries structured as
+--     {xmin, xmax, ymin, ymax}. When used, the occluders location is
+--     forced to be in thoses bounds.
+function M.initialize(params, bounds)
+   active_occluders = {}
+   mobile_occluders = {}
+   noccluders = 0
 
-   for i = 1, params.noccluders do
-      local mesh = M.get_occluder(i)
-      local box = uetorch.GetActorBounds(mesh).boxY
-      local p = params['occluder_' .. i]
+   for occluder_name, occluder_params in pairs(params) do
+      local o = M.get_occluder(occluder_name)
+      local p = occluder_params
+
+      -- the y bound box is used for occluder rotation
+      local box = uetorch.GetActorBounds(o).boxY
 
       -- stay in the bounds
       if bounds then
@@ -180,25 +143,29 @@ function M.setup(params, bounds)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
 
-      material.set_actor_material(mesh, material.wall_materials[p.material])
-      uetorch.SetActorScale3D(mesh, p.scale.x, p.scale.y, p.scale.z)
+      material.set_actor_material(o, material.wall_materials[p.material])
+      uetorch.SetActorScale3D(o, p.scale.x, p.scale.y, p.scale.z)
 
       if p.start_position == 'up' then
-         uetorch.SetActorRotation(mesh, 0, p.rotation, 0)
-         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20)
+         uetorch.SetActorRotation(o, 0, p.rotation, 0)
+         uetorch.SetActorLocation(o, p.location.x, p.location.y, 20)
       else -- down
-         uetorch.SetActorRotation(mesh, 0, p.rotation, 90)
-         uetorch.SetActorLocation(mesh, p.location.x, p.location.y, 20 + box)
+         uetorch.SetActorRotation(o, 0, p.rotation, 90)
+         uetorch.SetActorLocation(o, p.location.x, p.location.y, 20 + box)
       end
+
+      -- register the new occluder as active in the scene
+      active_occluders[occluder_name] = o
+      noccluders = noccluders + 1
 
       -- register the occluder for motion (through the occluder.tick
       -- method). If movement==0, the occluder remains static and do
       -- nothing on ticks.
       if p.movement > 0 then
          table.insert(
-            occluder_register, {
-               id=i,
-               mesh=mesh,
+            mobile_occluders, {
+               id=occluder_name:gsub('^.*_', ''),
+               mesh=o,
                box=box,
                scale=p.scale,
                rotation=p.rotation,
@@ -210,63 +177,113 @@ function M.setup(params, bounds)
       end
    end
 
-   for i = params.noccluders+1, 2 do
-      uetorch.DestroyActor(M.get_occluder(i))
-   end
-
-   tick.add_hook(M.tick, 'fast')
-end
-
-
-local function _occluder_pause(occ)
-   occ.pause[1] = occ.pause[1] - 1
-   if occ.pause[1] <= 0 then
-      -- go to the next movement: if down, go up, if up, go down
-      if uetorch.GetActorRotation(occ.mesh).roll >= 89 then
-         occ.status = 'go_up'
-      else
-         occ.status = 'go_down'
+   -- destroy the actors not parametrized: for all active actors in
+   -- the bank, if it is not an active actor, destroy it
+   for _, actor in pairs(occluder_actors) do
+      if not is_active_occluder(actor) then
+         uetorch.DestroyActor(actor)
       end
    end
+
+   -- register the tick method for occluders rotation (if we have
+   -- rotating occluders)
+   if mobile_occluders ~= {} then
+      tick.add_hook(M.tick, 'fast')
+   end
 end
 
 
-local function _occluder_move(occ, dir, dt)
-   local angle_abs = (occ.t_rotation - occ.t_rotation_change) * 20 * 0.125
-   local angle_rel = angle_abs
-   if dir == 1 then --go up
-      angle_rel = 90 - angle_rel
-   end
+-- Return an occluder actor from its name e.g. occluder_1
+function M.get_occluder(name)
+   local idx = name:gsub('^.*_', '')
+   return assert(occluder_actors[tonumber(idx)])
+end
 
-   local location = uetorch.GetActorLocation(occ.mesh)
-   uetorch.SetActorLocation(
-      occ.mesh, location.x, location.y,
-      20 + math.sin((angle_rel) * math.pi / 180) * occ.box)
-   uetorch.SetActorRotation(occ.mesh, 0, occ.rotation, angle_rel)
 
-   if angle_abs >= 90 then
-      table.remove(occ.pause, 1)
-      occ.movement = occ.movement - 0.5
-      occ.status = "pause"
-      occ.t_rotation_change = occ.t_rotation
-   end
+-- Return the table (name -> actor) of the active occluders
+--
+-- Active occluders are those initialized from parameters
+function M.get_active_occluders()
+   return active_occluders
+end
 
-   occ.t_rotation = occ.t_rotation + dt
+
+-- Return the number of active occluders
+function M.get_noccluders()
+   return noccluders
 end
 
 
 function M.tick()
-   for n, occ in pairs(occluder_register) do
-      if occ.movement > 0 then
-         if occ.status == 'pause' then
-            _occluder_pause(occ)
-         elseif occ.status == 'go_down' then
-            _occluder_move(occ, -1, 1)
+   for _, occluder in pairs(mobile_occluders) do
+      if occluder.movement > 0 then
+         if occluder.status == 'pause' then
+            _occluder_pause(occluder)
+         elseif occluder.status == 'go_down' then
+            _occluder_move(occluder, -1, 1)
          else -- 'go_up'
-            _occluder_move(occ, 1, 1)
+            _occluder_move(occluder, 1, 1)
          end
       end
    end
+end
+
+
+function M.get_random_occluder_parameters(name, subblock)
+   -- index of the occluder we are generating parameters for
+   local idx = name:gsub('occluder_', '')
+   idx = tonumber(idx)
+
+   local params = {}
+   params.material = math.random(#material.wall_materials)
+
+   -- for train, occluders are fully random
+   if subblock:match('train') then
+      local shift = {0, 500}
+      params.location = {x = shift[idx] - 300, y = -150 - shift[idx]}
+
+      -- Rotation around the Z axis in degree
+      params.rotation = math.random(-45, 45)
+
+      params.scale = {x = math.random() + 0.5, y = 1, z = 1.5 - 0.3 * math.random()}
+
+      -- Start position is randomly 'up' or 'down'
+      params.start_position = (math.random(0, 1) == 1 and 'up' or 'down')
+
+      -- Select random motion steps for the occluder (0 -> no motion,
+      -- 0.5 -> single one way, 1 -> one round trip, 1.5 -> one round
+      -- trip and a half, 2 -> two round trips)
+      params.movement = math.random(0, 4) / 2
+
+      -- a brief pause between each movement steps
+      params.pause = {}
+      for i=1, params.movement*2 do
+         table.insert(params.pause, math.random(50))
+      end
+
+      return params
+   end
+
+   -- we are generating occluders for test iterations, with a more
+   -- controlled variability
+   params.movement = 1
+   params.rotation = 0
+   params.start_position = 'down'
+   params.pause = {math.random(5), math.random(5)}  -- was 20 for static
+   params.scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()}
+
+   -- occluder's location depends on subblock
+   if subblock:match('dynamic_2') then
+      local x = {-100, 200}
+      params.location = {x = x[idx], y = -350}
+   elseif subblock:match('dynamic_1') then
+      params.location = {x = 50, y = -250}
+   else
+      assert(subblock:match('static'))
+      params.location = {x = 100 - 200 * params.scale.x, y = -350}
+   end
+
+   return params
 end
 
 

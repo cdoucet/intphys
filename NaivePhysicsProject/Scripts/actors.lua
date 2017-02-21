@@ -39,6 +39,11 @@ local actors_bank = {
       assert(uetorch.GetActor('Cylinder_1')),
       assert(uetorch.GetActor('Cylinder_2')),
       assert(uetorch.GetActor('Cylinder_3'))},
+
+   cone =  {
+      assert(uetorch.GetActor('Cone_1')),
+      assert(uetorch.GetActor('Cone_2')),
+      assert(uetorch.GetActor('Cone_3'))},
 }
 
 
@@ -58,6 +63,32 @@ end
 local M = {}
 
 
+-- Return the list of shapes in the bank
+function M.get_shapes()
+   local s = {}
+   for k, _ in pairs(actors_bank) do
+      table.insert(s, k)
+   end
+   return s
+end
+
+
+-- Return an actor name of another shape that the given actor
+--
+-- e.g. 'cylinder_1' -> 'cube_1'
+function M.get_other_shape_actor(name)
+   local shape = name:gsub('_.*$', '')
+   local idx = name:gsub('^.*_', '')
+   local shapes = M.get_shapes()
+   local other = shapes[math.random(1, #shapes)]
+   while other == shape do
+      other = shapes[math.random(1, #shapes)]
+   end
+
+   return other .. '_' .. idx
+end
+
+
 -- Return a table of parameters for the given actors
 --
 -- `t_actors` is a table of (actor_shape -> n). For exemple, the table
@@ -68,31 +99,30 @@ local M = {}
 -- where actor_params is also a table with the following structure:
 --    {material, scale, location={x, y, z}, force={x, y, z}}
 function M.get_random_parameters(t_actors)
-   local p = {}
-   for shape, n in pairs(t_actors) do
-      for i = 1, n do
-         local name = shape .. '_' .. tostring(i)
-         assert(M.is_valid_name(name))
-         p[name] = M.get_random_actor_parameters(name)
-      end
+   local params = {}
+
+   for _, name in pairs(t_actors) do
+      assert(M.is_valid_name(name))
+      params[name] = M.get_random_actor_parameters(name)
    end
-   return p
+
+   return params
 end
 
 
 -- Initialize scene's physics actors given their parameters
 --
--- Setup actors location, scale, force and material of parametrized
--- actors, destroy the unused actors.
+-- Setup the location, scale, force and material of parametrized
+-- actors, destroy the unused ones.
 --
 -- `params` is a table of (actor_name -> actor_params), for exemple as
 --     returned by the get_random_parameters() method. Each actor name
 --     must be valid and the actor params must have the following
---     structure: {material, scale, location={x, y, z}, force={x, y,
---     z}}, where the 'force' entry is optional.
+--     structure (where the 'force' entry is optional):
+--         {material, scale, location={x, y, z}, force={x, y, z}}
 --
 -- `bounds` is an optional table of scene boundaries structured as
---     {xmin, xmax, ymin, ymax}. When used the actors location s
+--     {xmin, xmax, ymin, ymax}. When used, the actors location is
 --     forced to be in thoses bounds.
 function M.initialize(params, bounds)
    for actor_name, actor_params in pairs(params) do
@@ -155,6 +185,17 @@ function M.get_actor(name)
    return assert(actors_bank[shape][tonumber(idx)])
 end
 
+
+-- Return the name of a given actor, or nil if actor not found
+function M.get_name(actor)
+   for shape, a in pairs(actors_bank) do
+      for idx, bactor in ipairs(a) do
+         if actor == bactor then
+            return shape .. '_' .. idx
+         end
+      end
+   end
+end
 
 -- Return the table (name -> actor) of the active actors
 --
