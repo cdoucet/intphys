@@ -139,7 +139,7 @@ function M.initialize(params, bounds)
       end
 
       if not p.rotation then
-         p.rotation = {pitch = 0, yam = 0, roll = 0}
+         p.rotation = {pitch = 0, yaw = 0, roll = 0}
       end
 
       -- setup material, scale and location
