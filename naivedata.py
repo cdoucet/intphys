@@ -231,7 +231,12 @@ def ParseArgs():
         '-e', '--editor', action='store_true',
         help='launch the NaivePhysics project in the UnrealEngine editor')
 
-    return parser.parse_args()
+    args = parser.parse_args()
+    if not re.match('[0-9]+x[0-9]+', args.resolution):
+        raise IOError('resolution is not in <width>x<height> format'
+                      '(e.g. "800x600"): {}'.format(args.resolution))
+
+    return args
 
 
 def _BalanceList(l, n):
