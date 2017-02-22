@@ -21,6 +21,7 @@ local tick = require 'tick'
 local occluders = require 'occluders'
 local actors = require 'actors'
 local check_occlusion = require 'check_occlusion'
+local check_coordinates = require 'check_coordinates'
 
 
 local subblocks = {
@@ -69,9 +70,6 @@ local function swap_actors()
    local new_actor = possible_main_actors[new_idx]
    local old_actor = possible_main_actors[main_actor_idx]
 
-   -- print('swapping ' .. actors.get_name(old_actor)
-   --          .. ' to ' .. actors.get_name(new_actor))
-
    local l = uetorch.GetActorLocation(old_actor)
    -- local r = uetorch.GetActorRotation(old_actor)
    -- local v = uetorch.GetActorVelocity(old_actor)
@@ -83,7 +81,6 @@ local function swap_actors()
    -- uetorch.SetActorVelocity(old_actor, 0, 0, 0)
    -- uetorch.SetActorAngularVelocity(old_actor, 0, 0, 0)
 
-   -- print(l.x, l.y, l.z)
    uetorch.SetActorLocation(new_actor, l.x, l.y, l.z)
    -- uetorch.SetActorRotation(new_actor, r.pitch, r.yaw, r.roll)
    -- uetorch.SetActorVelocity(new_actor, v.x, v.y, v.z)
@@ -92,6 +89,7 @@ local function swap_actors()
 
    main_actor_idx = new_idx
    main_actor = new_actor
+   check_coordinates.change_actor(main_actor)
 end
 
 

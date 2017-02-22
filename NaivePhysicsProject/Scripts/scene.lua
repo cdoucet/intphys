@@ -140,8 +140,7 @@ function M.initialize(_iteration)
    -- different iterations. If not, the scene fails. This is to detect
    -- an issue we have with the packaged game: some videos run slower
    -- than others (seems to append only in packaged, not in editor)
-   -- TODO get this to pass with block C2
-   if not config.is_train(iteration) and not block_name:match('C2') then
+   if not config.is_train(iteration) then
       check_coordinates.initialize(iteration, block.get_main_actor())
    end
 

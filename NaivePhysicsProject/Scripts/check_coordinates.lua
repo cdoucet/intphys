@@ -153,4 +153,9 @@ function M.is_valid()
 end
 
 
+function M.change_actor(_actor)
+   actor = _actor
+end
+
+
 return M

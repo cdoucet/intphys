@@ -138,6 +138,10 @@ function M.initialize(params, bounds)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
 
+      if not p.rotation then
+         p.rotation = {pitch = 0, yam = 0, roll = 0}
+      end
+
       -- setup material, scale and location
       material.set_actor_material(a, material.actor_materials[p.material])
       uetorch.SetActorScale3D(a, p.scale, p.scale, p.scale)
