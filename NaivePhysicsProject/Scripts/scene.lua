@@ -63,9 +63,9 @@ local function init_params(subblock)
       params = block.get_random_parameters(subblock)
 
       -- choose random parameters for static actors
-      params.floor = floor.random()
-      params.light = light.random()
-      params.backwall = backwall.random()
+      params.floor = floor.get_random_parameters()
+      params.light = light.get_random_parameters()
+      params.backwall = backwall.get_random_parameters()
 
       -- choose parameters for the camera with a fixed position in
       -- test and a more variable one for training
@@ -117,10 +117,10 @@ function M.initialize(_iteration)
    -- setup the camera and static actors. On test blocks, left and
    -- right components of the backwall are disabled to avoid
    -- unexpected collisions
-   camera.setup(params.camera)
-   floor.setup(params.floor)
-   light.setup(params.light)
-   backwall.setup(params.backwall, config.is_train(iteration))
+   camera.initialize(params.camera)
+   floor.initialize(params.floor)
+   light.initialize(params.light)
+   backwall.initialize(params.backwall, config.is_train(iteration))
 
    -- setup the physics actors, the occluders and block's specific
    -- tricks, retrieve the backwall boundaries to make sure all the

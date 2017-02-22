@@ -31,27 +31,21 @@ local directional_lights = {
 }
 
 
--- Return a random rotation vector for a directional light orientation
-function M.random_directional()
-   return {
-      x = -25 - 40 * math.random(),
-      y = 150 + 120 * math.random(),
-      z = 360 * math.random()
-   }
-end
-
-
 -- Return random parameters for the scene illumination
 --
 -- Choose 1 or 2 directional light with random orientation, and the
 -- presence/absence of the sky sphere (with clouds)
-function M.random()
+function M.get_random_parameters()
    local params = {}
 
    params.nlights = (math.random() >= 0.5 and 2 or 1)
    params.directional = {}
    for i = 1, params.nlights do
-      table.insert(params.directional, M.random_directional())
+      -- random rotation vector for a directional light orientation
+      table.insert(params.directional,
+                   {x = -25 - 40 * math.random(),
+                    y = 150 + 120 * math.random(),
+                    z = 360 * math.random()})
    end
 
    params.is_sky = (math.random() >= 0.5)
@@ -63,7 +57,7 @@ end
 --- Setup the scene illumination with the given parameters, store the
 --- parameters locally
 local _params = nil
-function M.setup(params)
+function M.initialize(params)
    -- setup the lights
    for i = 1, params.nlights do
       local d = params.directional[i]

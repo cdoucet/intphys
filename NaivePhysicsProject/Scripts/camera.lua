@@ -67,32 +67,18 @@ function M.get_actor()
 end
 
 
--- Return a random location vector for the camera
-function M.random_location()
-   return {
-      x = 150 + math.random(-100, 100),
-      y = 30 + math.random(200, 400),
-      z = 80 + math.random(-10, 100)
-   }
-end
-
-
--- Return a random rotation vector for the camera
-function M.random_rotation()
-   return {
-      pitch = math.random(-15, 10),
-      yaw = -90 + math.random(-30, 30),
-      roll = 0
-   }
-end
-
-
--- Return random parameters for the camera
+-- Return random location and rotation parameters for the camera
 function M.get_random_parameters()
    return {
-      location = M.random_location(),
-      rotation = M.random_rotation()
-   }
+      location = {
+         x = 150 + math.random(-100, 100),
+         y = 30 + math.random(200, 400),
+         z = 80 + math.random(-10, 100)},
+
+      rotation = {
+         pitch = math.random(-15, 10),
+         yaw = -90 + math.random(-30, 30),
+         roll = 0}}
 end
 
 
@@ -111,7 +97,7 @@ end
 -- If params are not specified, use default parameters. `params` must
 -- be a table structured as {location = {x, y, z}, rotation = {pitch,
 -- yaw, roll}}
-function M.setup(params)
+function M.initialize(params)
    if not params then
       params = M.get_default_parameters()
    end

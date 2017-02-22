@@ -38,47 +38,30 @@ local wall = {
 local M = {}
 
 
--- Return true or false with the probability `p` for true, default to 0.5
-function M.random_active(p)
-   p = p or 0.5
-   return (math.random() < p)
-end
-
-
--- Return a random wall texture for the background wall
-function M.random_material()
-   return math.random(#material.wall_materials)
-end
-
-
--- Return a random height for the background wall
-function M.random_height()
-   return math.random(1, 10) * 0.5
-end
-
-
--- Return a random location on the Y axis
-function M.random_depth()
-   return math.random(-1500, -900)
-end
-
-
--- Pick a random width (length of wall.back)
-function M.random_width()
-   return math.random(1500, 4000)
-end
-
-
 -- Generate a random set of attributes for the background wall
-function M.random()
+--
+-- Params:
+--
+--    is_active (bool): if true, the backwall is active in the scene,
+--       if false the backwall is disabled and the method returns nil.
+--
+--    If is_active is omitted, it is set to true or false with a 50%
+--    probability (the wall is randomly absent or present).
+--
+-- Returns:
+--    If the backwall is active, the returned table has the following
+--    entries:
+--       {material, height, depth, width}
+--    Else it returns an empty table
+function M.get_random_parameters(is_active)
    local params = {}
-   params.is_active = M.random_active()
+   is_active = is_active or (math.random() < 0.5)
 
-   if params.is_active then
-      params.material = M.random_material()
-      params.height = M.random_height()
-      params.depth = M.random_depth()
-      params.width = M.random_width()
+   if is_active then
+      params.material = math.random(#material.wall_materials)
+      params.height = math.random(1, 10) * 0.5
+      params.depth = math.random(-1500, -900)
+      params.width = math.random(1500, 4000)
    end
 
    return params
@@ -96,11 +79,10 @@ end
 -- Setup a background wall configuration from precomputed attributes
 --
 -- The params must be table structured as the one returned by
--- M.random()
-function M.setup(params, is_train)
-   params = params or M.random()
-
-   if not params.is_active then
+-- M.get_random_parameters()
+function M.initialize(params, is_train)
+   -- the params table is empty, destroy the wall and return
+   if not params or next(params) == nil then
       is_active = false
       M.destroy()
       return
