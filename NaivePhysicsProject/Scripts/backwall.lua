@@ -29,9 +29,9 @@ local is_active
 
 -- Componants of the background wall in the Unreal scene
 local wall = {
-   back = assert(uetorch.GetActor("WallBack")),
-   left = assert(uetorch.GetActor("WallLeft")),
-   right = assert(uetorch.GetActor("WallRight"))
+   wall_back = assert(uetorch.GetActor("WallBack")),
+   wall_left = assert(uetorch.GetActor("WallLeft")),
+   wall_right = assert(uetorch.GetActor("WallRight"))
 }
 
 
@@ -121,17 +121,17 @@ function M.setup(params, is_train)
    end
 
    -- width
-   local location = uetorch.GetActorLocation(wall.left)
-   uetorch.SetActorLocation(wall.left, -params.width / 2, location.y, location.z)
+   local location = uetorch.GetActorLocation(wall.wall_left)
+   uetorch.SetActorLocation(wall.wall_left, -params.width / 2, location.y, location.z)
 
-   local location = uetorch.GetActorLocation(wall.right)
-   uetorch.SetActorLocation(wall.right, params.width / 2, location.y, location.z)
+   local location = uetorch.GetActorLocation(wall.wall_right)
+   uetorch.SetActorLocation(wall.wall_right, params.width / 2, location.y, location.z)
 
    -- in test blocks, we don't want to have hits between backwall and
    -- actors because it can make the occlusion check to fail
    if not is_train then
-      uetorch.DestroyActor(wall.left)
-      uetorch.DestroyActor(wall.right)
+      uetorch.DestroyActor(wall.wall_left)
+      uetorch.DestroyActor(wall.wall_right)
    end
 end
 
@@ -148,26 +148,13 @@ function M.get_actors()
 end
 
 
--- Insert the background wall componants in the masks table
-function M.insert_masks(t_actor, t_text)
-   if M.is_active() then
-     table.insert(t_actor, wall.back)
-     table.insert(t_actor, wall.left)
-     table.insert(t_actor, wall.right)
-
-     table.insert(t_text, "back_wall")
-     table.insert(t_text, "left_wall")
-     table.insert(t_text, "right_wall")
-   end
-end
-
-
--- Return (min, max) indices of bacwall actors in a list of `actors`
+-- Return (min, max) indices of bacwall actors in a list of `{name, actor}` pairs
 function M.get_indices(actors)
    -- get the indices of the backwall actors in the image (should be 2, 3, 4)
    local min_idx, max_idx = 10e9, 0
    for k, v in ipairs(actors) do
-      if v == wall.back or v == wall.left or v == wall.right then
+      v = v[2]
+      if v == wall.wall_back or v == wall.wall_left or v == wall.wall_right then
          if min_idx > k then
             min_idx = k
          end
@@ -182,13 +169,13 @@ function M.get_indices(actors)
 end
 
 
-function M.get_updated_actors(names)
+function M.get_merged_actors_names(names)
    local new_names = {}
-   local __done = false
+   local is_done = false
    for _, v in ipairs(names) do
       if string.match(v, 'wall') then
-         if not __done then
-            __done = true
+         if not is_done then
+            is_done = true
             table.insert(new_names, 'wall')
          end
       else

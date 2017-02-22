@@ -25,10 +25,10 @@ local uetorch = require 'uetorch'
 local image = require 'image'
 local paths = require 'paths'
 
+local backwall = require 'backwall'
 local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
-local backwall = require 'backwall'
 
 
 local M = {}
@@ -49,6 +49,9 @@ local t_scene, t_depth, t_masks
 -- depth images during the final tick
 local max_depth
 
+-- scene's actors are required for capturing the masks
+local scene_actors = {}
+
 
 -- Initialize the saver for a given iteration rendered by a given scene
 --
@@ -61,6 +64,11 @@ function M.initialize(_iteration, _scene, nticks)
    scene = _scene
    max_depth = 0
    t_status = {}
+
+   -- get the scene actors for masking
+   for _, a in ipairs(scene.get_ordered_actors()) do
+      table.insert(scene_actors, a[2])
+   end
 
    -- allocate memory for images
    local nticks = config.get_nticks()
@@ -76,9 +84,8 @@ end
 
 -- Store the scene's current state in memory
 --
--- Write a scene png file and a mask phg file, estimates the global
--- depth maximum, register the current depth and status to memory
--- (will be saved in the final tick).
+-- Push the raw scene, mask and depth screenshots to memory (will be
+-- post-processed and saved in the final tick).
 function M.push_data()
    if not scene.is_valid() then
       return
@@ -89,18 +96,32 @@ function M.push_data()
    -- save a screenshot of the scene
    assert(uetorch.Screen(t_scene[idx]))
 
-   -- scene's actors are required for capturing the masks
-   local scene_actors, ignored_actors, _ = scene.get_masks()
+   -- prepare the actors to be segmented for mask image generation. If
+   -- the main actor is inactive (during a magic trick), it must be
+   -- ignored in mask images
+   local segmented_actors = scene_actors
+   local ignored_actors = {}
+   if not config.is_train(iteration) and not scene.is_main_actor_active() then
+      local main_actor = scene.get_main_actor()
+      ignored_actors = {main_actor}
+      segmented_actors = {}
+      for _, a in pairs(scene_actors) do
+         if a ~= main_actor then
+            table.insert(segmented_actors, a)
+         end
+      end
+   end
 
    -- compute raw depth field and objects segmentation masks
    assert(uetorch.CaptureDepthAndMasks(
-      scene.get_camera(), scene_actors, ignored_actors,
-      t_depth[idx], t_masks[idx]))
+             scene.get_camera(),
+             segmented_actors, ignored_actors,
+             t_depth[idx], t_masks[idx]))
 
    -- update the max depth
    max_depth = math.max(t_depth[idx]:max(), max_depth)
 
-   -- udate the status table
+   -- update the status table
    table.insert(t_status, scene.get_status())
 end
 
@@ -118,12 +139,23 @@ function M.save_data()
    t_depth:div(max_depth)
 
    -- merge the backwall actors in a single mask and normalize in [0, 1]
+   local ordered_actors = scene.get_ordered_actors()
+   local nactors = #ordered_actors
    if backwall.is_active() then
-      local min_idx, max_idx = backwall.get_indices(scene.get_masks())
+      local min_idx, max_idx = backwall.get_indices(ordered_actors)
       t_masks[torch.cmul(t_masks:ge(min_idx), t_masks:le(max_idx))] = min_idx
       t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - 2
+      nactors = nactors - 2
    end
-   t_masks = t_masks:float():div(scene.get_nactors())
+   t_masks = t_masks:float():div(nactors)
+
+   -- map each mask to it's grayvalue index in the mask image
+   local grayscale = {{0, 'sky'}}  -- sky is always black
+   local mask_names = {}
+   for _, a in pairs(ordered_actors) do table.insert(mask_names, a[1]) end
+   for idx, name in pairs(backwall.get_merged_actors_names(mask_names)) do
+      table.insert(grayscale, {math.floor(255 * idx / nactors), name})
+   end
 
    -- save the images as png, a subdirectory per category
    paths.mkdir(iteration.path .. 'mask')
@@ -144,6 +176,7 @@ function M.save_data()
    local s = scene.get_status_header()
    s['block'] = iteration.block:gsub('%.', '_')
    s['max_depth'] = max_depth
+   s['masks_grayscale'] = grayscale
 
    --  append it the status table filled during the ticks
    s['frames'] = t_status

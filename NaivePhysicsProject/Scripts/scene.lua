@@ -93,9 +93,9 @@ local function get_scene_bounds()
 
    local wall = backwall.get_actors()
    return {
-      xmin = uetorch.GetActorLocation(wall.left).x,
-      xmax = uetorch.GetActorLocation(wall.right).x,
-      ymin = uetorch.GetActorLocation(wall.back).y,
+      xmin = uetorch.GetActorLocation(wall.wall_left).x,
+      xmax = uetorch.GetActorLocation(wall.wall_right).x,
+      ymin = uetorch.GetActorLocation(wall.wall_back).y,
       ymax = uetorch.GetActorLocation(camera.get_actor()).y}
 end
 
@@ -197,55 +197,32 @@ function M.clean()
 end
 
 
-function M.get_masks()
-   local active, inactive, text = {}, {}, {}
-
-
-   floor.insert_masks(active, text)
-   backwall.insert_masks(active, text)
-
-   for name, actor in pairs(occluders.get_active_occluders()) do
-      table.insert(text, name)
-      table.insert(active, actor)
+function M.is_main_actor_active()
+   if block.is_main_actor_active then
+      return block.is_main_actor_active()
+   else
+      return true
    end
-
-   if config.is_train(iteration) then
-      for name, actor in pairs(actors.get_active_actors()) do
-         table.insert(text, name)
-         table.insert(active, actor)
-      end
-   else  -- on test, the main actor can be hidden
-      for name, actor in pairs(actors.get_active_actors()) do
-         table.insert(text, name)
-         if name ~= params.main_actor then
-            table.insert(active, actor)
-         end
-      end
-
-      -- We add the main actor as active only when it's not hidden
-      local main_actor = block.get_main_actor()
-      if block.is_main_actor_visible() then
-         table.insert(active, main_actor)
-      else
-         table.insert(inactive, main_actor)
-      end
-   end
-
-   return active, inactive, text
 end
 
 
-function M.get_nactors()
-   -- floor
-   local n = 1
+function M.get_ordered_actors()
+   local ordered = {}
 
-   -- backwall
-   if backwall.is_active() then
-      n = n + 1
+   for name, actor in pairs(floor.get_actor()) do
+      table.insert(ordered, {name, actor})
+   end
+   for name, actor in pairs(backwall.get_actors()) do
+      table.insert(ordered, {name, actor})
+   end
+   for name, actor in pairs(occluders.get_active_occluders()) do
+      table.insert(ordered, {name, actor})
+   end
+   for name, actor in pairs(actors.get_active_actors()) do
+      table.insert(ordered, {name, actor})
    end
 
-   -- physics actors and occluders
-   return n + actors.get_nactors() + occluders.get_noccluders()
+   return ordered
 end
 
 
@@ -261,18 +238,6 @@ function M.get_status_header()
    status['camera'] = camera.get_status()
    status['lights'] = light.get_status()
 
-   -- map each mask to it's grayvalue index in the mask image
-   local _, _, masks = M.get_masks(true)
-   masks = backwall.get_updated_actors(masks)
-
-   status['masks_grayscale'] = {{0, 'sky'}}
-   local nactors = M.get_nactors()
-   for idx, name in pairs(masks) do
-      table.insert(
-         status['masks_grayscale'],
-         {math.floor(255 * idx / nactors), name})
-   end
-
    return status
 end
 
@@ -287,7 +252,7 @@ function M.get_status()
    -- the physics actors
    for name, actor in pairs(actors.get_active_actors()) do
       -- don't register the main actor when hidden by a magic trick
-      if actor ~= block.get_main_actor() or block.is_main_actor_visible() then
+      if actor ~= block.get_main_actor() or block.is_main_actor_active() then
          status[name] = utils.coordinates_to_string(actor)
       end
    end

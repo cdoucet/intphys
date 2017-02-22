@@ -19,11 +19,13 @@
 
 local uetorch = require 'uetorch'
 local material = require 'material'
-local M = {}
 
 
 -- The floor actor defined in the scene
-M.actor = assert(uetorch.GetActor('Floor'))
+local actor = assert(uetorch.GetActor('Floor'))
+
+
+local M = {}
 
 
 -- Return a random material for the floor
@@ -33,16 +35,15 @@ end
 
 
 -- Insert actor and name in the masking tables
-function M.insert_masks(actors, text)
-   table.insert(actors, M.actor)
-   table.insert(text, "floor")
+function M.get_actor()
+   return {floor = actor}
 end
 
 
 -- Setup the floor with a random material
 function M.setup(floor_material)
    floor_material = floor_material or M.random()
-   material.set_actor_material(M.actor, material.ground_materials[floor_material])
+   material.set_actor_material(actor, material.ground_materials[floor_material])
 end
 
 
@@ -50,7 +51,7 @@ end
 function M.get_status()
    status = {}
 
-   local bounds = uetorch.GetActorBounds(M.actor)
+   local bounds = uetorch.GetActorBounds(actor)
    status.minx = bounds["x"] - bounds["boxX"]
    status.maxx = bounds["x"] + bounds["boxX"]
    status.miny = bounds["y"] - bounds["boxY"]

@@ -89,7 +89,12 @@ function M.get_random_parameters(subblock)
 
    -- physics actors
    if subblock:match('train') then
-      params.actors = actors.get_random_parameters({sphere = nspheres})
+      local t_actors = {}
+      for i = 1, nspheres do
+         table.insert(t_actors, 'sphere_' .. i)
+      end
+
+      params.actors = actors.get_random_parameters(t_actors)
    else  -- we are in a test subblock
       -- setup the sphere actors parameters and the main actor (on
       -- which the trick is done)
@@ -283,7 +288,7 @@ function M.get_occlusion_check_iterations(s)
 end
 
 
-function M.is_main_actor_visible()
+function M.is_main_actor_active()
    local p = M.is_possible()
    local v = is_visible_start
    if p and v then

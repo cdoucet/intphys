@@ -250,11 +250,6 @@ function M.get_occlusion_check_iterations(s)
 end
 
 
-function M.is_main_actor_visible()
-   return true
-end
-
-
 function M.magic_trick()
    -- if subblock:match('dynamic_2') then
    --    -- if not trick.is_done_1 and trick.can_do_1() then
