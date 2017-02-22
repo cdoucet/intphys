@@ -25,6 +25,7 @@
 
 
 local uetorch = require 'uetorch'
+local paths = require 'paths'
 local utils = require 'utils'
 
 
@@ -237,9 +238,12 @@ function M.prepare_next_iteration(was_valid)
    if was_valid then
       index = index + 1
    else
+      local iteration = M.get_iteration(index)
+      -- delete the saved data because the scene is not valid
+      paths.rmall(iteration.path, 'yes')
+
       -- rerun the whole scene by coming back to its first iteration
       print('invalid scene, trying new parameters')
-      local iteration = M.get_iteration(index)
       if not M.is_train(iteration) then
          index = index - M.get_block_size(iteration) + iteration.type
       end
