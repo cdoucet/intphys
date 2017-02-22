@@ -76,10 +76,11 @@ end
 -- Return an actor name of another shape that the given actor
 --
 -- e.g. 'cylinder_1' -> 'cube_1'
-function M.get_other_shape_actor(name)
+function M.get_other_shape_actor(name, shapes)
+   shapes = shapes or M.get_shapes()
+
    local shape = name:gsub('_.*$', '')
    local idx = name:gsub('^.*_', '')
-   local shapes = M.get_shapes()
    local other = shapes[math.random(1, #shapes)]
    while other == shape do
       other = shapes[math.random(1, #shapes)]
@@ -141,6 +142,7 @@ function M.initialize(params, bounds)
       material.set_actor_material(a, material.actor_materials[p.material])
       uetorch.SetActorScale3D(a, p.scale, p.scale, p.scale)
       uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
+      uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
 
       -- setup force if required
       if p.force then
@@ -286,6 +288,10 @@ function M.get_random_actor_parameters(name)
    p.material = M.random_material()
    p.scale = M.random_scale()
    p.location = M.random_location(name, side)
+   p.rotation = {
+      pitch = math.random() * 360,
+      yaw = math.random() * 360,
+      roll = math.random() * 360}
    if M.random_static() then
       p.force = M.random_force(side)
    end

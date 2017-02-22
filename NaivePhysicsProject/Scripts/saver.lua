@@ -49,9 +49,6 @@ local t_scene, t_depth, t_masks
 -- depth images during the final tick
 local max_depth
 
--- scene's actors are required for capturing the masks
-local scene_actors = {}
-
 
 -- Initialize the saver for a given iteration rendered by a given scene
 --
@@ -64,11 +61,6 @@ function M.initialize(_iteration, _scene, nticks)
    scene = _scene
    max_depth = 0
    t_status = {}
-
-   -- get the scene actors for masking
-   for _, a in ipairs(scene.get_ordered_actors()) do
-      table.insert(scene_actors, a[2])
-   end
 
    -- allocate memory for images
    local nticks = config.get_nticks()
@@ -99,15 +91,18 @@ function M.push_data()
    -- prepare the actors to be segmented for mask image generation. If
    -- the main actor is inactive (during a magic trick), it must be
    -- ignored in mask images
-   local segmented_actors = scene_actors
+   local segmented_actors = {}
+   for _, a in ipairs(scene.get_ordered_actors()) do
+      table.insert(segmented_actors, a[2])
+   end
+
    local ignored_actors = {}
    if not config.is_train(iteration) and not scene.is_main_actor_active() then
       local main_actor = scene.get_main_actor()
       ignored_actors = {main_actor}
-      segmented_actors = {}
-      for _, a in pairs(scene_actors) do
-         if a ~= main_actor then
-            table.insert(segmented_actors, a)
+      for n, a in pairs(segmented_actors) do
+         if a == main_actor then
+            table.remove(segmented_actors, n)
          end
       end
    end

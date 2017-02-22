@@ -92,14 +92,21 @@ end
 
 
 function M.get_check_occlusion_size(iteration)
+   local size = 0
    local name = iteration.block
-   if string.find(name, 'visible') or string.find(name, 'train') then
-      return 0
-   elseif string.find(name, '2$') then
-      return 2
+   if name:match('visible') or name:match('train') then
+      size = 0
+   elseif name:match('2$') then
+      size = 2
    else
-      return 1
+      size = 1
    end
+
+   if name:match('C2') then
+      size = size * 2
+   end
+
+   return size
 end
 
 

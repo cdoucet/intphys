@@ -133,10 +133,7 @@ function M.initialize(_iteration)
    -- initialize the overlap check. The scene will fail if any illegal
    -- overlaping between actors is detected (eg some actor hit the
    -- camera, two occluders are overlapping, etc...).
-   -- TODO get this to pass with block C2
-   if not block_name:match('C2') then
-      check_overlap.initialize()
-   end
+   check_overlap.initialize()
 
    -- on test blocks, we make sure the main actor coordinates
    -- (location and rotation) are strictly comparable over the
@@ -206,6 +203,14 @@ function M.is_main_actor_active()
 end
 
 
+function M.get_active_actors()
+   if block.get_active_actors then
+      return block.get_active_actors()
+   else
+      return actors.get_active_actors()
+   end
+end
+
 function M.get_ordered_actors()
    local ordered = {}
 
@@ -218,7 +223,7 @@ function M.get_ordered_actors()
    for name, actor in pairs(occluders.get_active_occluders()) do
       table.insert(ordered, {name, actor})
    end
-   for name, actor in pairs(actors.get_active_actors()) do
+   for name, actor in pairs(M.get_active_actors()) do
       table.insert(ordered, {name, actor})
    end
 
@@ -250,12 +255,15 @@ function M.get_status()
    local status = {}
 
    -- the physics actors
-   for name, actor in pairs(actors.get_active_actors()) do
+   --local s = ''
+   for name, actor in pairs(M.get_active_actors()) do
+     -- s = s .. ' ' .. name
       -- don't register the main actor when hidden by a magic trick
-      if actor ~= block.get_main_actor() or block.is_main_actor_active() then
+      if actor ~= block.get_main_actor() or M.is_main_actor_active() then
          status[name] = utils.coordinates_to_string(actor)
       end
    end
+   --print('active: ' .. s)
 
    -- the occluders
    for name, actor in pairs(occluders.get_active_occluders()) do

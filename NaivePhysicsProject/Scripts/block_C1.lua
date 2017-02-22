@@ -103,8 +103,7 @@ function M.get_random_parameters(subblock)
 
       for i = 1, nspheres do
          params.actors['sphere_' .. i] = {
-            material = actors.random_material(),
-            scale = 0.9}
+            material = actors.random_material(), scale = 0.9}
          local p = params.actors['sphere_' .. i]
 
          if subblock:match('static') then
