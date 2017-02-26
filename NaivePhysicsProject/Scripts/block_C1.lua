@@ -20,6 +20,7 @@ local utils = require 'utils'
 local tick = require 'tick'
 local occluders = require 'occluders'
 local actors = require 'actors'
+local material = require 'material'
 local check_occlusion = require 'check_occlusion'
 
 
@@ -102,14 +103,17 @@ function M.get_random_parameters(subblock)
       params.actors = {}
 
       for i = 1, nspheres do
-         params.actors['sphere_' .. i] = {
-            material = actors.random_material(), scale = 0.9}
+         params.actors['sphere_' .. i] = {}
          local p = params.actors['sphere_' .. i]
+
+         p.material = material.random('actor')
+         p.scale = 0.9
 
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
             p.scale = 1
+
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
@@ -121,8 +125,8 @@ function M.get_random_parameters(subblock)
                p.force.x = -1 * p.force.x
             end
          else
-            assert(subblock:match('dynamic_2'))
 
+            assert(subblock:match('dynamic_2'))
             p.side = actors.random_side()
             p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {

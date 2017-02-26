@@ -110,6 +110,12 @@ function M.initialize(_iteration)
    local block_name = iteration.block:gsub('%..*$', '')
    local subblock_name = iteration.block:gsub('^.*%.', '')
 
+   -- special case of unit tests and dev scripts
+   if iteration.block:match('^test.test') then
+      block_name = iteration.block
+      subblock_name = 'train'
+   end
+
    -- load the scene parameters and the block module
    block = assert(require(block_name))
    params = init_params(subblock_name)
@@ -254,15 +260,12 @@ function M.get_status()
    local status = {}
 
    -- the physics actors
-   --local s = ''
    for name, actor in pairs(M.get_active_actors()) do
-     -- s = s .. ' ' .. name
       -- don't register the main actor when hidden by a magic trick
       if actor ~= block.get_main_actor() or M.is_main_actor_active() then
          status[name] = utils.coordinates_to_string(actor)
       end
    end
-   --print('active: ' .. s)
 
    -- the occluders
    for name, actor in pairs(occluders.get_active_occluders()) do

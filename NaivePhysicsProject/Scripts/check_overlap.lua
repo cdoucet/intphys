@@ -69,6 +69,13 @@ function backwall_hit_detected(actor)
 end
 
 
+-- TODO activate hit tracking with uetorch.SimulationGenerateHitEvents
+-- actors is a string '1st_actor 2nd_actor game_time'
+function on_actor_hit(actors)
+   print('hit: ' .. actors)
+end
+
+
 -- This module is called from the main process.
 local M = {}
 

@@ -30,7 +30,7 @@ local M = {}
 
 -- Return a random material for the floor
 function M.get_random_parameters()
-   return math.random(#material.ground_materials)
+   return material.random('floor')
 end
 
 
@@ -42,8 +42,7 @@ end
 
 -- Setup the floor with a random material
 function M.initialize(floor_material)
-   floor_material = floor_material or M.get_random_parameters()
-   material.set_actor_material(actor, material.ground_materials[floor_material])
+   material.set_actor_material(actor, floor_material or M.get_random_parameters())
 end
 
 

@@ -14,78 +14,114 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module defines possible materials for the ground, the walls
--- and the spheres. It also defines a function setup a given actor
--- with a given material.
+-- This module handles the different materials available for the
+-- scene's physics actors, floor and walls (including background wall
+-- and occluders).
+
+
 local uetorch = require 'uetorch'
+local paths = require 'paths'
+
+
+-- We have different materials for actors, wall (back and occluders) and floor
+local materials = {actor = {}, floor = {}, wall = {}}
+
+-- Physical materials defines how an actor insteracts with the world:
+-- friction, restitution and density.
+local physicals = {}
+
+
+-- Return a reference to a UMaterialInterface instance given it's name
+--
+-- `name` must be formatted as 'Category/Name'
+--     (e.g. 'Wall/M_BasicWall'). The available names are the keys of
+--     table returned by the method material.get_materials()
+local function get_material(name)
+   local suffix = name:gsub('.*/', '')
+   local path = "Material'/Game/Materials/" .. name .. '.' .. suffix .. "'"
+   return assert(UE.LoadObject(Material.Class(), nil, path))
+end
+
+
+-- Return a reference to a UPhysicalMaterial instance given it's name
+--
+-- `name` must be formatted as 'Name'
+--     (e.g. 'F0R1'). The available names are the keys of
+--     table returned by the method material.get_physicals()
+local function get_physical(name)
+   local path = "PhysicalMaterial'/Game/PhysicalMaterials/" .. name .. '.' .. name .. "'"
+   return assert(UE.LoadObject(PhysicalMaterial.Class(), nil, path))
+end
+
 
 local M = {}
 
 
-M.ground_materials = {
-   "M_Basic_Floor",
-   "M_Brick_Clay_Beveled",
-   "M_Brick_Clay_New",
-   "M_Brick_Clay_Old",
-   "M_Brick_Cut_Stone",
-   "M_Ground_Grass",
-   "M_Ground_Gravel",
-   "M_Ground_Moss",
-   "M_Wood_Floor_Walnut_Polished",
-   "M_Wood_Floor_Walnut_Worn",
-   "M_Wood_Oak",
-   "M_Wood_Pine",
-   "M_Wood_Walnut",
-   "M_ConcreteTile",
-   "M_Concrete_Tiles",
-   "M_Floor_01",
-   "M_FloorTile_02",
-   "M_GroundSand_01",
-   "M_SoilMud01",
-   "M_SoilSand_01"
-}
+-- Return the available materials for a given category
+--
+-- The `category` must be 'actor', 'floor' or 'wall'
+function M.get_materials(category)
+   assert(category == 'actor' or category == 'wall' or category == 'floor')
+
+   -- if not already done, read the available materials in the game directory
+   if not next(materials[category]) then
+      -- the category with first letter upcased
+      local Category = category:gsub('^%l', string.upper)
+
+      -- the directory where uasset material files are stored
+      local directory = assert(os.getenv('NAIVEPHYSICS_ROOT'))
+         .. '/NaivePhysicsProject/Content/Materials/' .. Category
+
+      for f in paths.files(directory, '%.uasset$') do
+         table.insert(materials[category], Category .. '/' .. f:gsub('%.uasset$', ''))
+      end
+   end
+
+   return materials[category]
+end
 
 
-M.actor_materials = {
-   "BlackMaterial",
-   "GreenMaterial",
-   "M_ColorGrid_LowSpec",
-   "M_Metal_Brushed_Nickel",
-   "M_Metal_Burnished_Steel",
-   -- "M_Metal_Chrome",
-   "M_Metal_Copper",
-   "M_Metal_Gold",
-   "M_Metal_Rust",
-   "M_Metal_Steel",
-   "M_Tech_Hex_Tile",
-   "M_Tech_Panel",
-   "Base_Colour",
-   "M_MetalFloor_01",
-}
+function M.get_physicals()
+   if not next(physicals) then
+      local directory = assert(os.getenv('NAIVEPHYSICS_ROOT'))
+         .. '/NaivePhysicsProject/Content/PhysicalMaterials'
+
+      for f in paths.files(directory, '%.uasset$') do
+         table.insert(physicals, '' .. f:gsub('%.uasset$', ''))
+      end
+   end
+
+   return physicals
+end
 
 
-M.wall_materials = {
-   "M_Basic_Wall",
-   "M_Brick_Clay_Beveled",
-   "M_Brick_Clay_New",
-   "M_Brick_Clay_Old",
-   "M_Brick_Cut_Stone",
-   "M_Brick_Hewn_Stone",
-   "M_Ceramic_Tile_Checker",
-   "M_CobbleStone_Pebble",
-   "M_CobbleStone_Rough",
-   "M_CobbleStone_Smooth",
-   "M_Bricks_1",
-   "M_Bricks_2",
-   "M_Bricks_3",
-   "M_Bricks_4"
-}
+-- Change the material of an `actor` to be the one specified by `name`
+--
+-- `actor` is a reference to an actor object in the scene
+-- `name` is the name of the material to setup
+function M.set_actor_material(actor, name)
+   uetorch.SetMaterial(actor, get_material(name))
+end
 
 
-function M.set_actor_material(actor, id)
-   local material_id = "Material'/Game/Materials/" .. id .. "." .. id .. "'"
-   local material = UE.LoadObject(Material.Class(), nil, material_id)
-   uetorch.SetMaterial(actor, material)
+function M.set_physical(actor, name)
+   uetorch.SetPhysicalMaterial(actor, get_physical(name))
+end
+
+
+function M.get_physical_properties(actor)
+   return uetorch.GetMaterialPhysicalProperties(actor)
+end
+
+
+-- category must be 'floor', 'wall' or 'actor'
+function M.random(category)
+   if category == 'ground' then
+      category = 'floor'
+   end
+
+   local m = M.get_materials(category)
+   return m[math.random(1, #m)]
 end
 
 

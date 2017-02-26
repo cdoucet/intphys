@@ -128,7 +128,7 @@ function M.initialize(params, bounds)
    mobile_occluders = {}
    noccluders = 0
 
-   for occluder_name, occluder_params in pairs(params) do
+   for occluder_name, occluder_params in pairs(params or {}) do
       local o = M.get_occluder(occluder_name)
       local p = occluder_params
 
@@ -143,7 +143,7 @@ function M.initialize(params, bounds)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
 
-      material.set_actor_material(o, material.wall_materials[p.material])
+      material.set_actor_material(o, p.material)
       uetorch.SetActorScale3D(o, p.scale.x, p.scale.y, p.scale.z)
 
       if p.start_position == 'up' then
@@ -235,7 +235,7 @@ function M.get_random_occluder_parameters(name, subblock)
    idx = tonumber(idx)
 
    local params = {}
-   params.material = math.random(#material.wall_materials)
+   params.material = material.random('wall')
 
    -- for train, occluders are fully random
    if subblock:match('train') then
@@ -269,7 +269,7 @@ function M.get_random_occluder_parameters(name, subblock)
    params.movement = 1
    params.rotation = 0
    params.start_position = 'down'
-   params.pause = {math.random(5), math.random(5)}  -- was 20 for static
+   params.pause = {math.random(5), math.random(5)}
    params.scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()}
 
    -- occluder's location depends on subblock
@@ -280,6 +280,7 @@ function M.get_random_occluder_parameters(name, subblock)
       params.location = {x = 50, y = -250}
    else
       assert(subblock:match('static'))
+      params.pause = {5 + math.random(20), math.random(20)}
       params.location = {x = 100 - 200 * params.scale.x, y = -350}
    end
 

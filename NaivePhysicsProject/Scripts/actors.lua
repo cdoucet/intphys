@@ -47,6 +47,8 @@ local actors_bank = {
 }
 
 
+local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
+
 local active_actors, nactors = {}, 0
 
 -- true if the actor is currently active in the scene
@@ -126,7 +128,7 @@ end
 --     {xmin, xmax, ymin, ymax}. When used, the actors location is
 --     forced to be in thoses bounds.
 function M.initialize(params, bounds)
-   for actor_name, actor_params in pairs(params) do
+   for actor_name, actor_params in pairs(params or {}) do
       local a = M.get_actor(actor_name)
       local p = actor_params
 
@@ -142,11 +144,22 @@ function M.initialize(params, bounds)
          p.rotation = {pitch = 0, yaw = 0, roll = 0}
       end
 
+      -- scale normalization factor
+      local scale = p.scale
+      if p.volume_normalization then
+         scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
+      end
+
       -- setup material, scale and location
-      material.set_actor_material(a, material.actor_materials[p.material])
-      uetorch.SetActorScale3D(a, p.scale, p.scale, p.scale)
+      material.set_actor_material(a, p.material)
+      uetorch.SetActorScale3D(a, scale, scale, scale)
       uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
       uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
+
+      -- setup mass scale
+      if params.mass_scale then
+         uetorch.SetMassScale(a, p.mass_scale)
+      end
 
       -- setup force if required
       if p.force then
@@ -203,6 +216,7 @@ function M.get_name(actor)
    end
 end
 
+
 -- Return the table (name -> actor) of the active actors
 --
 -- Active actors are those initialized from parameters
@@ -217,12 +231,6 @@ function M.get_nactors()
 end
 
 
--- Return a random texture for an actor
-function M.random_material()
-   return math.random(#material.actor_materials)
-end
-
-
 -- Return 'left' or 'right' with 50% chance
 function M.random_side()
    if math.random(0, 1) == 1 then
@@ -230,12 +238,6 @@ function M.random_side()
    else
       return 'right'
    end
-end
-
-
--- Return a random scale coefficient for an actor
-function M.random_scale()
-   return math.random() + 1.5
 end
 
 
@@ -266,7 +268,7 @@ function M.random_static()
 end
 
 
--- Return a random force vector applied to an actor
+-- Return a random force vector to be applied on an actor
 function M.random_force(side)
    local sign_z = 2 * math.random(2) - 3 -- -1 or 1
 
@@ -289,8 +291,8 @@ function M.get_random_actor_parameters(name)
    local p = {}
    local side = M.random_side()
 
-   p.material = M.random_material()
-   p.scale = M.random_scale()
+   p.material = material.random('actor')
+   p.scale = math.random() + 1.5
    p.location = M.random_location(name, side)
    p.rotation = {
       pitch = math.random() * 360,

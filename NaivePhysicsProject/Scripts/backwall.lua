@@ -58,7 +58,7 @@ function M.get_random_parameters(is_active)
    is_active = is_active or (math.random() < 0.5)
 
    if is_active then
-      params.material = math.random(#material.wall_materials)
+      params.material = material.random('wall')
       params.height = math.random(1, 10) * 0.5
       params.depth = math.random(-1500, -900)
       params.width = math.random(1500, 4000)
@@ -91,7 +91,7 @@ function M.initialize(params, is_train)
    is_active = true
    for _, w in pairs(wall) do
       -- material
-      material.set_actor_material(w, material.wall_materials[params.material])
+      material.set_actor_material(w, params.material)
 
       -- height
       local scale = uetorch.GetActorScale3D(w)

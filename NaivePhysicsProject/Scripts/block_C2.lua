@@ -20,6 +20,7 @@ local utils = require 'utils'
 local tick = require 'tick'
 local occluders = require 'occluders'
 local actors = require 'actors'
+local material = require 'material'
 local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
@@ -27,7 +28,7 @@ local check_coordinates = require 'check_coordinates'
 local subblocks = {
    'train',
    'test_visible_static',
-   -- 'test_visible_dynamic_1',
+   'test_visible_dynamic_1',
    -- 'test_visible_dynamic_2',
    'test_occluded_static',
    -- 'test_occluded_dynamic_1',
@@ -77,9 +78,6 @@ local function swap_actors()
 
    uetorch.SetActorVisible(old_actor, false)
    uetorch.SetActorLocation(old_actor, 0, 1000, 70)
-   -- uetorch.SetActorRotation(old_actor, 0, 0, 0)
-   -- uetorch.SetActorVelocity(old_actor, 0, 0, 0)
-   -- uetorch.SetActorAngularVelocity(old_actor, 0, 0, 0)
 
    uetorch.SetActorLocation(new_actor, l.x, l.y, l.z)
    -- uetorch.SetActorRotation(new_actor, r.pitch, r.yaw, r.roll)
@@ -151,14 +149,26 @@ function M.get_random_parameters(subblock)
       params.actors = {}
 
       for i = 1, nactors do
-         params.actors[t_actors[i]] = {
-            material = actors.random_material(), scale = 0.9}
+         params.actors[t_actors[i]] = {}
          local p = params.actors[t_actors[i]]
+
+         p.material = material.random('actor')
+         p.scale = 1 --0.9
 
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
             p.scale = 1
+         elseif subblock:match('dynamic_1') then
+            p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.force = {
+               x = math.random(8e5, 1.1e6), y = 0,
+               z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+
+            if actors.random_side() == 'right' then
+               p.location.x = 500
+               p.force.x = -1 * p.force.x
+            end
          end
       end
 
@@ -174,6 +184,9 @@ function M.get_random_parameters(subblock)
          if subblock:match('static') then
             -- the step at which the magic trick is done
             params.trick_step = math.floor((0.3*math.random() + 0.2) * config.get_nticks())
+         elseif subblock:match('dynamic_1') then
+            -- the x position on which the magic trick is done
+            params.trick_x = math.random()*250 + 50
          end
       end
    end
@@ -263,6 +276,17 @@ function M.initialize(_subblock, _iteration, _params)
          elseif subblock:match('static') then -- visible static
             trick.can_do = function()
                return tick.get_counter() == assert(params.trick_step) end
+         else -- visible dynamic_1
+            trick.init_xdiff = nil
+            trick.xdiff = function()
+               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_actor).x)
+            end
+            trick.can_do = function()
+               if not trick.init_xdiff then
+                  trick.init_xdiff = trick.xdiff()
+               end
+               return trick.xdiff() ~= trick.init_xdiff
+            end
          end
       end
    end
