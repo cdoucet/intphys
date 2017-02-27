@@ -157,7 +157,7 @@ function M.initialize(params, bounds)
       uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
 
       -- setup mass scale
-      if params.mass_scale then
+      if p.mass_scale then
          uetorch.SetMassScale(a, p.mass_scale)
       end
 

@@ -28,6 +28,8 @@ local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
 
+local check_overlap = require 'check_overlap'
+
 
 local M = {}
 
@@ -42,24 +44,32 @@ function M.get_random_parameters()
       mass_scale = 100,
       material = material.random('actor'),
       scale = 1,
-      location = {x = 0, y = -300, z = 70},
-      force = {x = 5e5, y = 0, z = 0}}
+      location = {x = -100, y = -300, z = 70},
+      force = {x = 0, y = 0, z = 0}}
 
    p.actors.sphere_2 = {
       mass_scale = 1,
-      material = material.random('actor'),
+      material = 'Actor/GreenMaterial',  --material.random('actor'),
       scale = 1,
-      location = {x = 100, y = -300, z = 70},
-      force = {x = 2e6, y = 0, z = 0}}
+      location = {x = 50, y = -300, z = 70},
+      force = {x = 3e6, y = 0, z = 0}}
 
    p.actors.sphere_3 = {
-      mass_scale = 100,
+      mass_scale = 10000,
       material = material.random('actor'),
       scale = 1,
-      location = {x = 400, y = -300, z = 70},
-      force = {x = -5e5, y = 0, z = 0}}
+      location = {x = 300, y = -300, z = 70},
+      force = {x = 0, y = 0, z = 0}}
 
    return p
+end
+
+
+local function on_hit_hook(actor1, actor2)
+   if actor1 == 'Sphere_2' and actor2 == 'Sphere_1' then
+      uetorch.SetNotifyRigidBodyCollision(actors.get_active_actors()['sphere_2'], false)
+      uetorch.SetMassScale(actors.get_active_actors()['sphere_3'], 0.001)
+   end
 end
 
 
@@ -67,13 +77,11 @@ function M.initialize(subblock, iteration, params)
    -- camera in test position
    camera.initialize(camera.get_default_parameters())
 
+   -- detect hits on the sphere_2
    uetorch.SetNotifyRigidBodyCollision(actors.get_active_actors()['sphere_2'], true)
 
-   --print('masses:')
-   for name, actor in pairs(actors.get_active_actors()) do
-      print(name .. ' : ' .. uetorch.GetMassScale(actor) .. ' ' .. uetorch.GetMass(actor))
-   --    --print(name, material.get_physical_properties(params.actors[name].material))
-   end
+   -- register the hook to be triggered on actors hit events
+   table.insert(check_overlap.hit_hooks, on_hit_hook)
 end
 
 

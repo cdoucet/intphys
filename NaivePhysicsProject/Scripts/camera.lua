@@ -35,32 +35,14 @@ local M = {}
 local camera_actor, camera_trigger_box
 
 
--- Return the camera actor defined in the scene
+-- Return the camera actor defined in the scene and it's trigger box
 function M.get_actor()
    if not camera_actor then
-      -- Unreal renames the camera accidentally when the MainMap
-      -- blueprint is modified, so we also try other known names for
-      -- that actor...
-      local known_names = {
-         'Camera',
-         'MainMap_CameraActor_Blueprint_C_0',
-         'MainMap_CameraActor_Blueprint_C_1'}
-
-      -- search the real name in the known names
-      for _, n in ipairs(known_names) do
-         local a = uetorch.GetActor(n)
-         if a then
-            camera_actor = a
-            break
-         end
-      end
+      -- get the camera
+      camera_actor = assert(uetorch.GetActor('Camera'))
 
       -- get the trigger box
-      camera_trigger_box = uetorch.GetActor('CameraTriggerBox')
-
-      -- make sure we found the camera and the box
-      assert(camera_actor)
-      assert(camera_trigger_box)
+      camera_trigger_box = assert(uetorch.GetActor('CameraTriggerBox'))
    end
 
    return camera_actor, camera_trigger_box

@@ -61,24 +61,22 @@ function backwall_overlap_detected(actor)
 end
 
 
-function backwall_hit_detected(actor)
-   if not utils.file_exists(overlap_file) then
-      --torch.save(overlap_file)
-      print('hit detected on background wall by ' .. actor)
+-- This module is called from the main process.
+local M = {}
+
+
+-- actors is a string '1st_actor 2nd_actor game_time'
+function on_actor_hit(actors)
+   -- print('hit: ' .. actors, M.hit_hooks)
+   local actor1 = actors:gsub(' .* .*$', '')
+   local actor2 = actors:gsub('^[^ ]* ', ''):gsub(' .*$', '')
+   for _, f in ipairs(M.hit_hooks) do
+      f(actor1, actor2)
    end
 end
 
 
--- TODO activate hit tracking with uetorch.SimulationGenerateHitEvents
--- actors is a string '1st_actor 2nd_actor game_time'
-function on_actor_hit(actors)
-   print('hit: ' .. actors)
-end
-
-
--- This module is called from the main process.
-local M = {}
-
+M.hit_hooks = {}
 
 -- Register a tick terminating the scene when an ocverlap on the
 -- camera is detected.
