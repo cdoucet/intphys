@@ -55,16 +55,30 @@ end
 -- If the scene is valid, go to the next iteration, else restart the
 -- current iteration with new parameters. Exit the program if there is
 -- no more iteration.
+local go_to_next_iteration = false
 function M.terminate()
    local is_valid = scene.is_valid()
    scene.clean()
 
-   local remaining_iterations = config.prepare_next_iteration(is_valid)
+   local remaining_iterations, next_index = config.prepare_next_iteration(is_valid)
    if remaining_iterations == 0 then
       print('no more iteration, exiting')
       uetorch.ExecuteConsoleCommand('Exit')
    else
-      uetorch.ExecuteConsoleCommand('RestartLevel')
+      go_to_next_iteration = true
+      tick.clear()
+      -- run_current_iteration()
+      --uetorch.ExecuteConsoleCommand('RestartLevel')
+   end
+end
+
+
+function can_go_to_next_iteration()
+   if go_to_next_iteration then
+      go_to_next_iteration = false
+      return "1"
+   else
+      return "0"
    end
 end
 
@@ -81,17 +95,14 @@ function run_current_iteration()
    -- prepare the scene for the current iteration
    scene.initialize(iteration)
 
-   -- initialize the saver to write status.json and take screen
-   -- captures. We save data only if not in dry mode and not during an
-   -- occlusion check.
+   -- initialize the saver to write status.json and take screenshots
    local dry_run = os.getenv('NAIVEPHYSICS_DRY') or config.is_check_occlusion(iteration)
    if not dry_run then
       saver.initialize(iteration, scene, config.get_nticks())
    end
 
-   -- at the very end we update the iteration counter to
-   -- prepare the next iteration or, if the current iteration failed,
-   -- retry it with new parameters.
+   -- at the very end we update the iteration counter to prepare the
+   -- next iteration
    tick.add_hook(M.terminate, 'final')
 end
 

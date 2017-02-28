@@ -106,6 +106,7 @@ local M = {}
 function M.initialize(_iteration)
    iteration = _iteration
 
+   tick.set_ticks_remaining(config.get_nticks())
 
    local block_name = iteration.block:gsub('%..*$', '')
    local subblock_name = iteration.block:gsub('^.*%.', '')

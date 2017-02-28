@@ -97,6 +97,13 @@ function M.remove_hook(f, level)
 end
 
 
+-- Clear all the registered hooks
+function M.clear()
+   for _, hook in pairs(hooks) do
+      hook = {}
+   end
+end
+
 -- Run all the registerd at a given ticking level
 --
 -- The level must be 'slow', 'fast', or 'final'

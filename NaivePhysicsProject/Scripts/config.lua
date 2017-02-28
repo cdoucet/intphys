@@ -32,10 +32,8 @@ local utils = require 'utils'
 -- from '800x600' to {x = 800, y = 600}
 local function parse_resolution(r)
    assert(r:match('^[0-9]+x[0-9]+$'))
-
    local x = r:gsub('x.*$', '')
    local y = r:gsub('^.*x', '')
-
    return {x = tonumber(x), y = tonumber(y)}
 end
 
@@ -58,7 +56,7 @@ conf = {
    ticks_interval = 2,
    ticks_rate = 1/8,
    nticks = 100,
-   blocks = utils.read_json(assert(os.getenv('NAIVEPHYSICS_JSON')))
+   config_file = assert(os.getenv('NAIVEPHYSICS_JSON'))
 }
 
 
@@ -86,9 +84,9 @@ function M.get_nticks()
    return conf.nticks
 end
 
-function M.get_blocks()
-   return conf.blocks
-end
+-- function M.get_blocks()
+--    return conf.blocks
+-- end
 
 
 function M.get_check_occlusion_size(iteration)
@@ -267,18 +265,18 @@ function M.prepare_next_iteration(was_valid)
       torch.save(conf.data_path .. 'iterations.t7', index)
    end
 
-   return remaining
+   return remaining, index
 end
 
 
 -- Add a new iteration in the iterations table
-function add_iteration(b, t, i)
+local function add_iteration(b, t, i)
    table.insert(iterations_table, {block = b, type = t, id = i})
 end
 
 
 local train_runs, test_runs = 0, 0
-function add_train_iteration(block, case, nruns)
+local function add_train_iteration(block, case, nruns)
    local name = block
    if case then
       name = block .. '.' .. case
@@ -292,7 +290,7 @@ function add_train_iteration(block, case, nruns)
 end
 
 
-function add_test_iterations(block, case, subblocks)
+local function add_test_iterations(block, case, subblocks)
    for subblock, nruns in pairs(subblocks) do
       local name = block .. '.' .. case .. '_' .. subblock
       local ntypes = 4 + M.get_check_occlusion_size({block = name})
@@ -318,6 +316,8 @@ end
 -- 'iterations.t7' containing the index of the current iteration at
 -- any point in the execution flow.
 function parse_config_file()
+   local blocks = utils.read_json(conf.config_file)
+
    -- clean the global iterations table
    iterations_table = {}
 
@@ -325,7 +325,7 @@ function parse_config_file()
    -- train is always a single iteration, the number of test
    -- iterations is 4 + number of occlusion checks (depends on the
    -- block type)
-   for block, cases in pairs(conf.blocks) do
+   for block, cases in pairs(blocks) do
       -- special case of the test/config.json file configuring the
       -- unit tests
       if string.match(block, 'test.test_') then
@@ -355,6 +355,8 @@ function parse_config_file()
       {iterations_table = iterations_table, max_iteration = max_iteration},
       conf.data_path .. 'iterations_table.json')
    torch.save(conf.data_path .. 'iterations.t7', "1")
+
+   return iteration_table, max_iteration
 end
 
 
