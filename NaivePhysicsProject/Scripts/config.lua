@@ -41,22 +41,25 @@ end
 local M = {}
 
 
--- A table containing the iterations registered in the configuration
--- file
-iterations_table = nil
+
+-- A table of iterations registered in the configuration file
+local iterations_table
 
 -- The maximal index in the iterations table
-max_iteration = nil
+local max_iteration
+
+-- The index of the current iteration in the table
+local current_index
 
 
 conf = {
    data_path = assert(os.getenv('NAIVEPHYSICS_DATA')),
+   config_file = assert(os.getenv('NAIVEPHYSICS_JSON')),
    resolution = parse_resolution(assert(os.getenv('NAIVEPHYSICS_RESOLUTION'))),
    load_params = false,
    ticks_interval = 2,
    ticks_rate = 1/8,
    nticks = 100,
-   config_file = assert(os.getenv('NAIVEPHYSICS_JSON'))
 }
 
 
@@ -83,10 +86,6 @@ end
 function M.get_nticks()
    return conf.nticks
 end
-
--- function M.get_blocks()
---    return conf.blocks
--- end
 
 
 function M.get_check_occlusion_size(iteration)
@@ -176,15 +175,8 @@ end
 
 -- Return the iteration at the position `index` in the table
 function M.get_iteration(index)
-   -- if not loaded, load the table of all iterations to execute
-   if not iterations_table then
-      local tmp = utils.read_json(conf.data_path .. 'iterations_table.json')
-      iterations_table = tmp.iterations_table
-      max_iteration = tmp.max_iteration
-   end
-
    -- retrieve the current iteration in the table
-   local iteration = assert(iterations_table[tonumber(index)])
+   local iteration = assert(iterations_table[index])
 
    -- get the output directory for that iteration
    local subpath = 'test/'
@@ -217,55 +209,40 @@ function M.get_description(iteration)
 end
 
 
--- Return the index stored in the file 'iterations.t7'
-local _index = nil
-function M.get_current_index()
-   if not _index then
-      _index = torch.load(conf.data_path .. 'iterations.t7')
-   end
-   return _index
-end
-
-
 -- Return the current iteration from 'iteration.t7' and the iteration table
 function M.get_current_iteration()
-   local index = M.get_current_index()
-   return M.get_iteration(index)
+   return M.get_iteration(current_index)
 end
 
 
 function M.prepare_next_iteration(was_valid)
-   local index = M.get_current_index()
-   if was_valid and index == max_iteration then
+   if was_valid and current_index == max_iteration then
       return 0
    end
 
    if was_valid then
-      index = index + 1
+      current_index = current_index + 1
    else
-      local iteration = M.get_iteration(index)
+      local iteration = M.get_iteration(current_index)
       -- delete the saved data because the scene is not valid
       paths.rmall(iteration.path, 'yes')
 
       -- rerun the whole scene by coming back to its first iteration
       print('invalid scene, trying new parameters')
       if not M.is_train(iteration) then
-         index = index - M.get_block_size(iteration) + iteration.type
+         current_index = current_index - M.get_block_size(iteration) + iteration.type
       end
    end
 
    -- the number of remaining iterations
-   local remaining = max_iteration - index + 1
+   local remaining = max_iteration - current_index + 1
 
    if remaining > 0 then
       -- ensure the iteration exists in the iterations table
-      assert(iterations_table[tonumber(index)])
-
-      -- save the index of the next iteration
-      torch.save(conf.data_path .. 'iterations.t7', index)
+      assert(iterations_table[current_index])
    end
 
-   return remaining, index
+   return remaining
 end
 
 
@@ -315,11 +292,13 @@ end
 -- the program will execute. It also initializes the file
 -- 'iterations.t7' containing the index of the current iteration at
 -- any point in the execution flow.
-function parse_config_file()
+function M.parse_config_file()
    local blocks = utils.read_json(conf.config_file)
 
    -- clean the global iterations table
    iterations_table = {}
+   max_iteration = 0
+   current_index = 1
 
    -- count the number of iterations both for train and test. Each
    -- train is always a single iteration, the number of test
@@ -350,26 +329,6 @@ function parse_config_file()
    print("generation of " .. test_runs + train_runs .. " scenes ("
          .. test_runs .. " for test and " .. train_runs
          .. " for train, total of " .. max_iteration .. ' iterations)')
-
-   utils.write_json(
-      {iterations_table = iterations_table, max_iteration = max_iteration},
-      conf.data_path .. 'iterations_table.json')
-   torch.save(conf.data_path .. 'iterations.t7', "1")
-
-   return iteration_table, max_iteration
-end
-
-
--- Change the viewport resolution to the one defined in configuration
-function set_resolution()
-   local r = M.get_resolution()
-   uetorch.ExecuteConsoleCommand("r.setRes " .. r.x .. 'x' .. r.y)
-end
-
-
-function get_aspect_ratio()
-   local r = M.get_resolution()
-   return tostring(r.x / r.y)
 end
 
 

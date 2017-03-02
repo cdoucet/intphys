@@ -27,26 +27,24 @@ local config = require 'config'
 local saver = require 'saver'
 local scene = require 'scene'
 local tick = require 'tick'
+local utils = require 'utils'
 
 
-local M = {}
 
-
--- Called before the first tick, setup the random seed and the tick
--- module. This function is automatically called when the module is
--- loaded within the blueprints.
-function M.initialize()
-   -- setup the random seed and update it for the next iteration
+-- Called at module startup. This function is automatically called
+-- when the module is loaded within the level blueprint.
+function initialize()
+   -- setup the random seed for parameters generation
    local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
    math.randomseed(seed)
-   posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
+   --posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
-   -- ticking for `nticks`, taking screenshot every `tick_interval` at
-   -- a constant `tick rate`
-   tick.initialize(
-      config.get_nticks(),
-      config.get_ticks_interval(),
-      config.get_ticks_rate())
+   -- setup the game resolution
+   local res = config.get_resolution()
+   uetorch.ExecuteConsoleCommand("r.setRes " .. res.x .. 'x' .. res.y)
+
+   -- parse the input json configuration file
+   config.parse_config_file()
 end
 
 
@@ -55,35 +53,30 @@ end
 -- If the scene is valid, go to the next iteration, else restart the
 -- current iteration with new parameters. Exit the program if there is
 -- no more iteration.
-local go_to_next_iteration = false
-function M.terminate()
+--local go_to_next_iteration = false
+function terminate()
    local is_valid = scene.is_valid()
-   scene.clean()
 
-   local remaining_iterations, next_index = config.prepare_next_iteration(is_valid)
+   local remaining_iterations = config.prepare_next_iteration(is_valid)
+   scene.destroy()
+
    if remaining_iterations == 0 then
       print('no more iteration, exiting')
       uetorch.ExecuteConsoleCommand('Exit')
    else
-      go_to_next_iteration = true
-      tick.clear()
-      -- run_current_iteration()
-      --uetorch.ExecuteConsoleCommand('RestartLevel')
-   end
-end
-
-
-function can_go_to_next_iteration()
-   if go_to_next_iteration then
-      go_to_next_iteration = false
-      return "1"
-   else
-      return "0"
+      run_current_iteration()
    end
 end
 
 
 function run_current_iteration()
+   -- ticking for `nticks`, taking screenshot every `tick_interval` at
+   -- a constant `tick rate`, setup the counter to 0
+   tick.initialize(
+      config.get_nticks(),
+      config.get_ticks_interval(),
+      config.get_ticks_rate())
+
    -- retrieve the current iteration and display a little description
    local iteration = config.get_current_iteration()
    local description = 'running ' .. config.get_description(iteration)
@@ -103,8 +96,8 @@ function run_current_iteration()
 
    -- at the very end we update the iteration counter to prepare the
    -- next iteration
-   tick.add_hook(M.terminate, 'final')
+   tick.add_hook(terminate, 'final')
 end
 
 
-return M
+return {initialize = initialize}

@@ -197,17 +197,20 @@ function M.initialize(_subblock, _iteration, _params)
    end
 
    -- on test, setup the main actor
-   main_actor = actors.get_actor(assert(params.main_actor))
+   main_actor = actors.get_active_actors()[params.main_actor]
    uetorch.SetActorVisible(main_actor, is_visible_start)
 
-   -- on check occlusion iterations, keep alive a single occluder and
-   -- the main actor
-   if iteration.type == 6 then
-      uetorch.DestroyActor(occluders.get_occluder('occluder_1'))
-   elseif iteration.type == 5 then
-      uetorch.DestroyActor(occluders.get_occluder('occluder_2'))
+   local f = function(a)
+      --uetorch.SetActorVisible(occluders.get_occluders()[a], false)
+      occluders.destroy(a)
+   end
+   if subblock:match('dynamic_2') then
+      if iteration.type == 6 then f('occluder_1') end
+      if iteration.type == 5 then f('occluder_2') end
    end
 
+   -- when we are in an occlusion test, remove all the actors excepted
+   -- the main one TODO better not to spaw them
    if iteration.type == 5 or iteration.type == 6 then
       for n, a in pairs(actors.get_active_actors()) do
          if n ~= params.main_actor then

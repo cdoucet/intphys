@@ -106,8 +106,6 @@ local M = {}
 function M.initialize(_iteration)
    iteration = _iteration
 
-   tick.set_ticks_remaining(config.get_nticks())
-
    local block_name = iteration.block:gsub('%..*$', '')
    local subblock_name = iteration.block:gsub('^.*%.', '')
 
@@ -133,23 +131,23 @@ function M.initialize(_iteration)
    -- tricks, retrieve the backwall boundaries to make sure all the
    -- actors are within
    local bounds = get_scene_bounds()
-   actors.initialize(params.actors, bounds)
    occluders.initialize(params.occluders, bounds)
+   actors.initialize(params.actors, bounds)
    block.initialize(subblock_name, iteration, params)
 
-   -- initialize the overlap check. The scene will fail if any illegal
-   -- overlaping between actors is detected (eg some actor hit the
-   -- camera, two occluders are overlapping, etc...).
-   check_overlap.initialize()
+   -- -- initialize the overlap check. The scene will fail if any illegal
+   -- -- overlaping between actors is detected (eg some actor hit the
+   -- -- camera, two occluders are overlapping, etc...).
+   -- check_overlap.initialize()
 
    -- on test blocks, we make sure the main actor coordinates
    -- (location and rotation) are strictly comparable over the
    -- different iterations. If not, the scene fails. This is to detect
    -- an issue we have with the packaged game: some videos run slower
    -- than others (seems to append only in packaged, not in editor)
-   if not config.is_train(iteration) then
-      check_coordinates.initialize(iteration, block.get_main_actor())
-   end
+   -- if not config.is_train(iteration) then
+   --    check_coordinates.initialize(iteration, block.get_main_actor())
+   -- end
 
    -- in tests blocks with occlusion, we have to make sure the main
    -- actor is occluded before applying the magic trick.
@@ -160,6 +158,14 @@ function M.initialize(_iteration)
       config.get_resolution())
 end
 
+
+function M.destroy()
+   backwall.destroy()
+   occluders.destroy()
+   actors.destroy()
+
+--   check_overlap.clean()
+end
 
 -- Return true is the scene has been validated (all checks successful)
 --
@@ -195,11 +201,6 @@ function M.is_possible()
 end
 
 
-function M.clean()
-   check_overlap.clean()
-end
-
-
 function M.is_main_actor_active()
    if block.is_main_actor_active then
       return block.is_main_actor_active()
@@ -217,6 +218,7 @@ function M.get_active_actors()
    end
 end
 
+
 function M.get_ordered_actors()
    local ordered = {}
 
@@ -226,7 +228,7 @@ function M.get_ordered_actors()
    for name, actor in pairs(backwall.get_actors()) do
       table.insert(ordered, {name, actor})
    end
-   for name, actor in pairs(occluders.get_active_occluders()) do
+   for name, actor in pairs(occluders.get_occluders()) do
       table.insert(ordered, {name, actor})
    end
    for name, actor in pairs(M.get_active_actors()) do
@@ -269,7 +271,7 @@ function M.get_status()
    end
 
    -- the occluders
-   for name, actor in pairs(occluders.get_active_occluders()) do
+   for name, actor in pairs(occluders.get_occluders()) do
       status[name] = utils.coordinates_to_string(actor)
    end
 

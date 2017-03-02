@@ -64,15 +64,15 @@ function M.initialize(params)
       uetorch.SetActorRotation(directional_lights[i], d.x, d.y, d.z)
    end
 
-   -- desactivate any unused light
-   for i = params.nlights + 1, #directional_lights do
-      uetorch.DestroyActor(directional_lights[i])
-   end
+   -- -- desactivate any unused light
+   -- for i = params.nlights + 1, #directional_lights do
+   --    uetorch.DestroyActor(directional_lights[i])
+   -- end
 
-   -- setup the sky sphere
-   if not params.is_sky then
-      uetorch.DestroyActor(sky_sphere)
-   end
+   -- -- setup the sky sphere
+   -- if not params.is_sky then
+   --    uetorch.DestroyActor(sky_sphere)
+   -- end
 
    _params = params
 end

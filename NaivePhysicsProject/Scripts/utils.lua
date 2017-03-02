@@ -103,6 +103,16 @@ function M.write_json(t, file, keyorder)
 end
 
 
+function M.location(x, y, z)
+   return {x = x, y = y, z = z}
+end
+
+function M.rotation(pitch, yaw, roll)
+   return {pitch = pitch, yaw = yaw, roll = roll}
+end
+
+M.scale = M.location
+
 -- Return the `actor` rotation vector as a string
 function M.rotation_to_string(actor)
    local r = uetorch.GetActorRotation(actor)

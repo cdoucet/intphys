@@ -22,44 +22,62 @@
 
 local uetorch = require 'uetorch'
 local material = require 'material'
+local utils = require 'utils'
 
 
-local actors_bank = {
-   sphere = {
-      assert(uetorch.GetActor('Sphere_1')),
-      assert(uetorch.GetActor('Sphere_2')),
-      assert(uetorch.GetActor('Sphere_3'))},
-
-   cube =  {
-      assert(uetorch.GetActor('Cube_1')),
-      assert(uetorch.GetActor('Cube_2')),
-      assert(uetorch.GetActor('Cube_3'))},
-
-   cylinder =  {
-      assert(uetorch.GetActor('Cylinder_1')),
-      assert(uetorch.GetActor('Cylinder_2')),
-      assert(uetorch.GetActor('Cylinder_3'))},
-
-   cone =  {
-      assert(uetorch.GetActor('Cone_1')),
-      assert(uetorch.GetActor('Cone_2')),
-      assert(uetorch.GetActor('Cone_3'))},
-}
-
-
-local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
 
 local active_actors, nactors = {}, 0
 
--- true if the actor is currently active in the scene
-local function is_active_actor(actor)
-   for _, a in pairs(active_actors) do
-      if a == actor then
-         return true
-      end
+local meshes_bank
+
+
+-- Load the 'meshes_bank' table with the available static meshes
+local function load_meshes_bank()
+   meshes_bank = {}
+
+   local shapes = {'sphere', 'cube', 'cone', 'cylinder'}
+   for _, shape in ipairs(shapes) do
+      local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
+      local path = "StaticMesh'/Engine/BasicShapes/" .. Shape .. "." .. Shape .. "'"
+      meshes_bank[shape] = assert(UE.LoadObject(StaticMesh.Class(), nil, path))
    end
-   return false
 end
+
+local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
+
+
+-- local actors_bank = {
+--    sphere = {
+--       assert(uetorch.GetActor('Sphere_1')),
+--       assert(uetorch.GetActor('Sphere_2')),
+--       assert(uetorch.GetActor('Sphere_3'))},
+
+--    cube =  {
+--       assert(uetorch.GetActor('Cube_1')),
+--       assert(uetorch.GetActor('Cube_2')),
+--       assert(uetorch.GetActor('Cube_3'))},
+
+--    cylinder =  {
+--       assert(uetorch.GetActor('Cylinder_1')),
+--       assert(uetorch.GetActor('Cylinder_2')),
+--       assert(uetorch.GetActor('Cylinder_3'))},
+
+--    cone =  {
+--       assert(uetorch.GetActor('Cone_1')),
+--       assert(uetorch.GetActor('Cone_2')),
+--       assert(uetorch.GetActor('Cone_3'))},
+-- }
+
+
+-- -- true if the actor is currently active in the scene
+-- local function is_active_actor(actor)
+--    for _, a in pairs(active_actors) do
+--       if a == actor then
+--          return true
+--       end
+--    end
+--    return false
+-- end
 
 
 local M = {}
@@ -67,8 +85,12 @@ local M = {}
 
 -- Return the list of shapes in the bank
 function M.get_shapes()
+   if not meshes_bank then
+      load_meshes_bank()
+   end
+
    local s = {}
-   for k, _ in pairs(actors_bank) do
+   for k, _ in pairs(meshes_bank) do
       table.insert(s, k)
    end
    return s
@@ -94,9 +116,9 @@ end
 
 -- Return a table of parameters for the given actors
 --
--- `t_actors` is a table of (actor_shape -> n). For exemple, the table
+-- `t_actors` is a table of (shape -> n). For exemple, the table
 --     {'sphere' = 2, 'cube' = 1}) will generate parameters for
---     sphere_1, sphere_2 and cube_1.
+--     sphere_1, sphere_2 and cube_3.
 --
 -- The returned table has the format (actor_name -> actor_params),
 -- where actor_params is also a table with the following structure:
@@ -128,8 +150,14 @@ end
 --     {xmin, xmax, ymin, ymax}. When used, the actors location is
 --     forced to be in thoses bounds.
 function M.initialize(params, bounds)
-   for actor_name, actor_params in pairs(params or {}) do
-      local a = M.get_actor(actor_name)
+   -- when params is empty we do nothing
+   if not params or next(params) == nil then return end
+
+   if not meshes_bank then
+      load_meshes_bank()
+   end
+
+   for actor_name, actor_params in pairs(params) do
       local p = actor_params
 
       -- stay in the bounds
@@ -141,7 +169,7 @@ function M.initialize(params, bounds)
       end
 
       if not p.rotation then
-         p.rotation = {pitch = 0, yaw = 0, roll = 0}
+         p.rotation = utils.rotation(0, 0, 0)
       end
 
       -- scale normalization factor
@@ -150,45 +178,53 @@ function M.initialize(params, bounds)
          scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
       end
 
-      -- setup material, scale and location
-      material.set_actor_material(a, p.material)
-      uetorch.SetActorScale3D(a, scale, scale, scale)
-      uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
-      uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
+      local mesh = meshes_bank[actor_name:gsub('_.*$', '')]
+      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
+      uetorch.SetActorScale3D(actor, scale, scale, scale)
+      material.set_actor_material(actor, actor_params.material)
+      uetorch.SetActorSimulatePhysics(actor, true)
 
       -- setup mass scale
       if p.mass_scale then
-         uetorch.SetMassScale(a, p.mass_scale)
+         uetorch.SetActorMassScale(actor, p.mass_scale)
       end
 
       -- setup force if required
       if p.force then
-         uetorch.AddForce(a, p.force.x, p.force.y, p.force.z)
+         uetorch.AddForce(actor, p.force.x, p.force.y, p.force.z)
       end
+
+      uetorch.SetActorVisible(actor, true)
 
       -- register the new actor as active in the scene
-      active_actors[actor_name] = a
+      active_actors[actor_name] = actor
       nactors = nactors + 1
    end
+end
 
-   -- destroy the actors not parametrized: for all active actors in
-   -- the bank, if it is not an active actor, destroy it
-   for _, v in pairs(actors_bank) do
-      for _, actor in ipairs(v) do
-         if not is_active_actor(actor) then
-            uetorch.DestroyActor(actor)
-         end
-      end
+
+function M.destroy()
+   for _, actor in pairs(active_actors) do
+      uetorch.SetActorSimulatePhysics(actor, false)
+      uetorch.SetActorVisible(actor, false)
+      uetorch.DestroyActor(actor)
    end
+
+   active_actors = {}
+   nactors = 0
 end
 
 
 -- Return true if `name` is a valid name in the actors bank
 function M.is_valid_name(name)
+   if not meshes_bank then
+      load_meshes_bank()
+   end
+
    local shape = name:gsub('_.*$', '')
    local idx = name:gsub('^.*_', '')
 
-   if actors_bank[shape] and tonumber(idx) <= #(actors_bank[shape]) then
+   if meshes_bank[shape] then
       return true
    else
       return false
@@ -196,25 +232,16 @@ function M.is_valid_name(name)
 end
 
 
--- Return an actor from its name e.g. cube_1 or sphere_3
-function M.get_actor(name)
-   local shape = name:gsub('_.*$', '')
-   local idx = name:gsub('^.*_', '')
-
-   return assert(actors_bank[shape][tonumber(idx)])
-end
-
-
--- Return the name of a given actor, or nil if actor not found
-function M.get_name(actor)
-   for shape, a in pairs(actors_bank) do
-      for idx, bactor in ipairs(a) do
-         if actor == bactor then
-            return shape .. '_' .. idx
-         end
-      end
-   end
-end
+-- -- Return the name of a given actor, or nil if actor not found
+-- function M.get_name(actor)
+--    for shape, a in pairs(actors_bank) do
+--       for idx, bactor in ipairs(a) do
+--          if actor == bactor then
+--             return shape .. '_' .. idx
+--          end
+--       end
+--    end
+-- end
 
 
 -- Return the table (name -> actor) of the active actors

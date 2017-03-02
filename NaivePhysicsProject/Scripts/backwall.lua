@@ -20,19 +20,14 @@
 -- the spheres can collide to it.
 
 local uetorch = require 'uetorch'
+local utils = require 'utils'
 local material = require 'material'
 
 
--- true the background wall is currently active, false otherwise
-local is_active
+local wall = {}
 
-
--- Componants of the background wall in the Unreal scene
-local wall = {
-   wall_back = assert(uetorch.GetActor("WallBack")),
-   wall_left = assert(uetorch.GetActor("WallLeft")),
-   wall_right = assert(uetorch.GetActor("WallRight"))
-}
+local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+local mesh = assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
 
 
 local M = {}
@@ -41,7 +36,6 @@ local M = {}
 -- Generate a random set of attributes for the background wall
 --
 -- Params:
---
 --    is_active (bool): if true, the backwall is active in the scene,
 --       if false the backwall is disabled and the method returns nil.
 --
@@ -55,24 +49,16 @@ local M = {}
 --    Else it returns an empty table
 function M.get_random_parameters(is_active)
    local params = {}
-   is_active = is_active or (math.random() < 0.5)
 
+   is_active = is_active or (math.random() < 0.5)
    if is_active then
+      params.xwidth = math.random() * 2500 + 1500
+      params.ylocation = math.random() * 600 - 1500
+      params.zscale = math.random() * 9 + 1
       params.material = material.random('wall')
-      params.height = math.random(1, 10) * 0.5
-      params.depth = math.random(-1500, -900)
-      params.width = math.random(1500, 4000)
    end
 
    return params
-end
-
-
--- Destroy the background wall
-function M.destroy()
-   for _, w in pairs(wall) do
-      uetorch.DestroyActor(w)
-   end
 end
 
 
@@ -81,40 +67,48 @@ end
 -- The params must be table structured as the one returned by
 -- M.get_random_parameters()
 function M.initialize(params, is_train)
-   -- the params table is empty, destroy the wall and return
-   if not params or next(params) == nil then
-      is_active = false
-      M.destroy()
-      return
-   end
+   -- when params is empty we do nothing
+   if not params or next(params) == nil then return end
 
-   is_active = true
-   for _, w in pairs(wall) do
-      -- material
-      material.set_actor_material(w, params.material)
-
-      -- height
-      local scale = uetorch.GetActorScale3D(w)
-      uetorch.SetActorScale3D(w, scale.x, scale.y, scale.z * params.height)
-
-      -- depth
-      local location = uetorch.GetActorLocation(w)
-      uetorch.SetActorLocation(w, location.x, params.depth, location.z)
-   end
-
-   -- width
-   local location = uetorch.GetActorLocation(wall.wall_left)
-   uetorch.SetActorLocation(wall.wall_left, -params.width / 2, location.y, location.z)
-
-   local location = uetorch.GetActorLocation(wall.wall_right)
-   uetorch.SetActorLocation(wall.wall_right, params.width / 2, location.y, location.z)
+   local setup = {}
+   setup.back = {
+      location = utils.location(-3140, params.ylocation, 0),
+      rotation = utils.rotation(0, 0, 0),
+      scale = utils.scale(15, 0.75, params.zscale)}
 
    -- in test blocks, we don't want to have hits between backwall and
    -- actors because it can make the occlusion check to fail
-   if not is_train then
-      uetorch.DestroyActor(wall.wall_left)
-      uetorch.DestroyActor(wall.wall_right)
+   if is_train then
+      setup.left = {
+         location = utils.location(-params.xwidth / 2, params.ylocation - 200, 0),
+         rotation = utils.rotation(0, 90, 0),
+         scale = utils.scale(6, 0.75, params.zscale)}
+
+      setup.right = {
+         location = utils.location(params.xwidth / 2, params.ylocation - 200, 0),
+         rotation = utils.rotation(0, 90, 0),
+         scale = utils.scale(6, 0.75, params.zscale)}
    end
+
+   for n, p in pairs(setup) do
+      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
+      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
+      material.set_actor_material(actor, params.material)
+      uetorch.SetActorVisible(actor, true)
+
+      wall['wall_' .. n] = actor
+   end
+end
+
+
+-- Destroy the background wall actor
+function M.destroy()
+   for _, w in pairs(wall) do
+      uetorch.SetActorVisible(w, false)
+      uetorch.DestroyActor(w)
+   end
+
+   wall = {}
 end
 
 

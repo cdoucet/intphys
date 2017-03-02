@@ -41,11 +41,11 @@ function M.get_actor()
       -- get the camera
       camera_actor = assert(uetorch.GetActor('Camera'))
 
-      -- get the trigger box
-      camera_trigger_box = assert(uetorch.GetActor('CameraTriggerBox'))
+      -- -- get the trigger box
+      -- camera_trigger_box = assert(uetorch.GetActor('CameraTriggerBox'))
    end
 
-   return camera_actor, camera_trigger_box
+   return camera_actor  --, camera_trigger_box
 end
 
 
@@ -84,21 +84,34 @@ function M.initialize(params)
       params = M.get_default_parameters()
    end
 
-   -- the trigger box follows the camera
-   local camera, box = M.get_actor()
-   for _, actor in ipairs({camera, box}) do
-      uetorch.SetActorLocation(
-         actor,
-         params.location.x,
-         params.location.y,
-         params.location.z)
+   -- -- the trigger box follows the camera
+   -- local camera, box = M.get_actor()
+   -- for _, actor in ipairs({camera, box}) do
+   --    uetorch.SetActorLocation(
+   --       actor,
+   --       params.location.x,
+   --       params.location.y,
+   --       params.location.z)
 
-      uetorch.SetActorRotation(
-         actor,
-         params.rotation.pitch,
-         params.rotation.yaw,
-         params.rotation.roll)
-   end
+   --    uetorch.SetActorRotation(
+   --       actor,
+   --       params.rotation.pitch,
+   --       params.rotation.yaw,
+   --       params.rotation.roll)
+   -- end
+   local actor = M.get_actor()
+
+   uetorch.SetActorLocation(
+      actor,
+      params.location.x,
+      params.location.y,
+      params.location.z)
+
+   uetorch.SetActorRotation(
+      actor,
+      params.rotation.pitch,
+      params.rotation.yaw,
+      params.rotation.roll)
 end
 
 

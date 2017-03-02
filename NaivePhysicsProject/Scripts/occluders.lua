@@ -21,14 +21,12 @@
 
 local uetorch = require 'uetorch'
 local material = require 'material'
+local utils = require 'utils'
 local tick = require 'tick'
 
 
--- the occluder's actors defined in the scene
-local occluder_actors = {
-   assert(uetorch.GetActor('Occluder_1')),
-   assert(uetorch.GetActor('Occluder_2'))
-}
+local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+local mesh = assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
 
 
 -- This table registers the mobile (rotating) occluders. It is built in
@@ -37,17 +35,6 @@ local mobile_occluders
 
 -- Registers the active occluders, mobile or not, and their number
 local active_occluders, noccluders
-
-
--- Return true if the actor is currently active in the scene
-local function is_active_occluder(actor)
-   for _, a in pairs(active_occluders) do
-      if a == actor then
-         return true
-      end
-   end
-   return false
-end
 
 
 -- Internal function handling occluder's rotation
@@ -94,13 +81,13 @@ local M = {}
 
 
 function M.get_random_parameters(noccluders, subblock)
-   noccluders = noccluders or math.random(1, 2)
+   noccluders = noccluders or math.random(0, 2)
    subblock = subblock or 'train'
 
    local params = {}
+
    for i = 1, noccluders do
       local name = 'occluder_' .. tostring(i)
-      assert(i <= #occluder_actors)
       params[name] = M.get_random_occluder_parameters(name, subblock)
    end
 
@@ -124,16 +111,15 @@ end
 --     {xmin, xmax, ymin, ymax}. When used, the occluders location is
 --     forced to be in thoses bounds.
 function M.initialize(params, bounds)
-   active_occluders = {}
+   -- when params is empty we do nothing
+   if not params or next(params) == nil then return end
+
    mobile_occluders = {}
+   active_occluders = {}
    noccluders = 0
 
    for occluder_name, occluder_params in pairs(params or {}) do
-      local o = M.get_occluder(occluder_name)
       local p = occluder_params
-
-      -- the y bound box is used for occluder rotation
-      local box = uetorch.GetActorBounds(o).boxY
 
       -- stay in the bounds
       if bounds then
@@ -143,19 +129,26 @@ function M.initialize(params, bounds)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
 
-      material.set_actor_material(o, p.material)
-      uetorch.SetActorScale3D(o, p.scale.x, p.scale.y, p.scale.z)
+      -- spawn the occluder actor
+      local location = utils.location(p.location.x, p.location.y, 20)
+      local rotation = utils.rotation(0, 0, 0)
+      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, location, rotation))
 
-      if p.start_position == 'up' then
-         uetorch.SetActorRotation(o, 0, p.rotation, 0)
-         uetorch.SetActorLocation(o, p.location.x, p.location.y, 20)
-      else -- down
-         uetorch.SetActorRotation(o, 0, p.rotation, 90)
-         uetorch.SetActorLocation(o, p.location.x, p.location.y, 20 + box)
+      -- the y bound box is used for occluder movement details
+      local box = uetorch.GetActorBounds(actor).boxY
+      if p.start_position == 'down' then
+         uetorch.SetActorRotation(actor, 0, p.rotation, 90)
+         uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20 + box)
+      else
+         uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20)
       end
 
+      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
+      material.set_actor_material(actor, p.material)
+      uetorch.SetActorVisible(actor, true)
+
       -- register the new occluder as active in the scene
-      active_occluders[occluder_name] = o
+      active_occluders[occluder_name] = actor
       noccluders = noccluders + 1
 
       -- register the occluder for motion (through the occluder.tick
@@ -165,7 +158,7 @@ function M.initialize(params, bounds)
          table.insert(
             mobile_occluders, {
                id=occluder_name:gsub('^.*_', ''),
-               mesh=o,
+               mesh=actor,
                box=box,
                scale=p.scale,
                rotation=p.rotation,
@@ -177,14 +170,6 @@ function M.initialize(params, bounds)
       end
    end
 
-   -- destroy the actors not parametrized: for all active actors in
-   -- the bank, if it is not an active actor, destroy it
-   for _, actor in pairs(occluder_actors) do
-      if not is_active_occluder(actor) then
-         uetorch.DestroyActor(actor)
-      end
-   end
-
    -- register the tick method for occluders rotation (if we have
    -- rotating occluders)
    if mobile_occluders ~= {} then
@@ -193,17 +178,34 @@ function M.initialize(params, bounds)
 end
 
 
--- Return an occluder actor from its name e.g. occluder_1
-function M.get_occluder(name)
-   local idx = name:gsub('^.*_', '')
-   return assert(occluder_actors[tonumber(idx)])
+-- destroy the spawned occluders
+function M.destroy(name)
+   if name then
+      local a = active_occluders[name]
+      if not a then return end
+      uetorch.SetActorVisible(a, false)
+      uetorch.DestroyActor(a)
+      active_occluders[name] = nil
+      --table.remove(active_occluders, name)
+      noccluders = noccluders - 1
+      return
+   end
+
+   for _, a in pairs(active_occluders) do
+      uetorch.SetActorVisible(a, false)
+      uetorch.DestroyActor(a)
+   end
+
+   active_occluders = {}
+   mobile_occluders = {}
+   noccluders = 0
 end
 
 
 -- Return the table (name -> actor) of the active occluders
 --
 -- Active occluders are those initialized from parameters
-function M.get_active_occluders()
+function M.get_occluders()
    return active_occluders
 end
 

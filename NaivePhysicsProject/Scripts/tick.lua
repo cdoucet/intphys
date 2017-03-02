@@ -54,18 +54,39 @@ function M.initialize(_nticks, _ticks_interval, ticks_rate)
    ticks_interval = _ticks_interval
    ticks_counter = 0
 
+   -- delete any registered hook
+   M.clear()
+
    -- set a constant ticking rate
    ticks_rate = ticks_rate or 1/8
    uetorch.SetTickDeltaBounds(ticks_rate, ticks_rate)
 
    -- replace the uetorch's default tick function by our own
-   Tick = M.tick
+   if Tick ~= M.Tick then
+      Tick = M.tick
+   end
 end
+
+
+-- function M.print()
+--    local s = 'hooks: '
+--    for k, v in pairs(hooks) do
+--       s = s .. k .. '=' .. #v .. ' '
+--    end
+--    print(s)
+--    print(ticks_counter, nticks)
+-- end
 
 
 -- Set the number of slow ticks before the end of the scene
 function M.set_ticks_remaining(ticks_remaining)
-   ticks_counter = nticks - ticks_remaining + 1
+   print('set remaining to ' .. ticks_remaining)
+   nticks = ticks_remaining
+end
+
+
+function M.get_ticks_remaining()
+   return nticks - ticks_counter
 end
 
 
@@ -99,9 +120,7 @@ end
 
 -- Clear all the registered hooks
 function M.clear()
-   for _, hook in pairs(hooks) do
-      hook = {}
-   end
+   hooks = {slow = {}, fast = {}, final = {}}
 end
 
 -- Run all the registerd at a given ticking level
@@ -120,21 +139,18 @@ end
 -- the end of the scene.
 function M.tick(dt)
    -- dt not used here is the time since the last tick
-   if ticks_counter then
-      if ticks_counter < nticks then
-         M.run_hooks('fast')
+   if ticks_counter < nticks then
+      M.run_hooks('fast')
 
-         if t_tick - t_last_tick >= ticks_interval then
-            t_last_tick = t_tick
+      if t_tick - t_last_tick >= ticks_interval then
+         t_last_tick = t_tick
 
-            ticks_counter = ticks_counter + 1
-            M.run_hooks('slow')
-         end
-         t_tick = t_tick + 1
-      else
-         M.run_hooks('final')
-         ticks_counter = nil
+         ticks_counter = ticks_counter + 1
+         M.run_hooks('slow')
       end
+      t_tick = t_tick + 1
+   else
+      M.run_hooks('final')
    end
 end
 

@@ -125,7 +125,7 @@ class LogNoStartupMessagesFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         return not (
-            'Importing uetorch.lua ...' in msg or
+            #'Importing uetorch.lua ...' in msg or
             'Using binned.' in msg or
             'per-process limit of core file size to infinity.' in msg or
             'depot+UE4-Releases' in msg)
@@ -520,6 +520,11 @@ def CleanDataDirectory(directory):
             shutil.rmtree(dirpath)
 
 
+def AtExit(output_dir):
+    if os.path.isdir(output_dir):
+        shutil.rmtree(output_dir)
+
+
 def Main():
     # parse command-line arguments
     args = ParseArgs()
@@ -529,7 +534,8 @@ def Main():
     if args.output_dir is None:
         dry_mode = True
         output_dir = tempfile.mkdtemp()
-        atexit.register(lambda: shutil.rmtree(output_dir))
+        atexit.register(lambda: AtExit(output_dir))
+
     else:
         output_dir = os.path.abspath(args.output_dir)
         if os.path.exists(output_dir):

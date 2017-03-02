@@ -100,7 +100,7 @@ end
 -- `actor` is a reference to an actor object in the scene
 -- `name` is the name of the material to setup
 function M.set_actor_material(actor, name)
-   uetorch.SetMaterial(actor, get_material(name))
+   uetorch.SetActorMaterial(actor, get_material(name))
 end
 
 
