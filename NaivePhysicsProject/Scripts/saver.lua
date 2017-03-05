@@ -59,8 +59,8 @@ local max_depth
 function M.initialize(_iteration, _scene, nticks)
    iteration = _iteration
    scene = _scene
-   max_depth = 0
    t_status = {}
+   max_depth = 0
 
    -- allocate memory for images
    local nticks = config.get_nticks()

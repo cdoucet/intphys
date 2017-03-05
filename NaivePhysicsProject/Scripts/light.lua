@@ -15,10 +15,16 @@
 
 
 -- This module manages the lighting of the scene, the number of active
--- lights and the presence/absence of clouds.
+-- lights and the presence/absence of clouds. It depends on the floor
+-- module to pick a random location for the lights in the ground
+-- boundaries.
+--
+-- TODO would be better to spawn the lights at runtime
+-- TODO control parameters of the sky sphere from here
 
 local uetorch = require 'uetorch'
 local utils = require 'utils'
+local floor = require 'floor'
 
 
 local M = {}
@@ -38,14 +44,18 @@ local directional_lights = {
 function M.get_random_parameters()
    local params = {}
 
-   params.nlights = (math.random() >= 0.5 and 2 or 1)
-   params.directional = {}
+   params.nlights = math.random(0, 2)
    for i = 1, params.nlights do
-      -- random rotation vector for a directional light orientation
-      table.insert(params.directional,
-                   {x = -25 - 40 * math.random(),
-                    y = 150 + 120 * math.random(),
-                    z = 360 * math.random()})
+      local b = floor.get_status()
+      params['directional_light_' .. i] = {
+         location = utils.location(
+            math.random() * (b.maxx - b.minx) + b.minx,
+            math.random() * (b.maxy - b.miny) + b.miny,
+            math.random() * 200 + 100),
+         rotation = utils.rotation(
+            math.random() * 40 - 25,
+            math.random() * 120 + 150,
+            math.random() * 360)}
    end
 
    params.is_sky = (math.random() >= 0.5)
@@ -58,21 +68,28 @@ end
 --- parameters locally
 local _params = nil
 function M.initialize(params)
+   if not params then return end
+
    -- setup the lights
    for i = 1, params.nlights do
-      local d = params.directional[i]
-      uetorch.SetActorRotation(directional_lights[i], d.x, d.y, d.z)
+      local p = params['directional_light_' .. i]
+      local a = directional_lights[i]
+      uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
+      uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
+      uetorch.SetActorVisible(a, true)
    end
 
-   -- -- desactivate any unused light
-   -- for i = params.nlights + 1, #directional_lights do
-   --    uetorch.DestroyActor(directional_lights[i])
-   -- end
+   -- desactivate any unused light
+   for i = params.nlights + 1, #directional_lights do
+      uetorch.SetActorVisible(directional_lights[i], false)
+   end
 
-   -- -- setup the sky sphere
-   -- if not params.is_sky then
-   --    uetorch.DestroyActor(sky_sphere)
-   -- end
+   -- setup the sky sphere
+   if params.is_sky then
+      uetorch.SetActorVisible(sky_sphere, true)
+   else
+      uetorch.SetActorVisible(sky_sphere, false)
+   end
 
    _params = params
 end
@@ -83,7 +100,7 @@ end
 function M.get_status()
    local status = {}
    for i = 1, _params.nlights do
-      status['light_' .. i] = utils.rotation_to_string(directional_lights[i])
+      status['light_' .. i] = utils.coordinates_to_string(directional_lights[i])
    end
 
    return status

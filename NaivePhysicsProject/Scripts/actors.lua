@@ -25,7 +25,6 @@ local material = require 'material'
 local utils = require 'utils'
 
 
-
 local active_actors, nactors = {}, 0
 
 local meshes_bank
@@ -44,40 +43,6 @@ local function load_meshes_bank()
 end
 
 local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
-
-
--- local actors_bank = {
---    sphere = {
---       assert(uetorch.GetActor('Sphere_1')),
---       assert(uetorch.GetActor('Sphere_2')),
---       assert(uetorch.GetActor('Sphere_3'))},
-
---    cube =  {
---       assert(uetorch.GetActor('Cube_1')),
---       assert(uetorch.GetActor('Cube_2')),
---       assert(uetorch.GetActor('Cube_3'))},
-
---    cylinder =  {
---       assert(uetorch.GetActor('Cylinder_1')),
---       assert(uetorch.GetActor('Cylinder_2')),
---       assert(uetorch.GetActor('Cylinder_3'))},
-
---    cone =  {
---       assert(uetorch.GetActor('Cone_1')),
---       assert(uetorch.GetActor('Cone_2')),
---       assert(uetorch.GetActor('Cone_3'))},
--- }
-
-
--- -- true if the actor is currently active in the scene
--- local function is_active_actor(actor)
---    for _, a in pairs(active_actors) do
---       if a == actor then
---          return true
---       end
---    end
---    return false
--- end
 
 
 local M = {}
@@ -178,35 +143,42 @@ function M.initialize(params, bounds)
          scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
       end
 
-      local mesh = meshes_bank[actor_name:gsub('_.*$', '')]
+      local mesh = assert(meshes_bank[actor_name:gsub('_.*$', '')])
       local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
       uetorch.SetActorScale3D(actor, scale, scale, scale)
       material.set_actor_material(actor, actor_params.material)
-      uetorch.SetActorSimulatePhysics(actor, true)
-
-      -- setup mass scale
       if p.mass_scale then
          uetorch.SetActorMassScale(actor, p.mass_scale)
       end
 
-      -- setup force if required
+      uetorch.SetActorSimulatePhysics(actor, true)
+      uetorch.SetActorVisible(actor, true)
+
       if p.force then
          uetorch.AddForce(actor, p.force.x, p.force.y, p.force.z)
       end
 
-      uetorch.SetActorVisible(actor, true)
-
       -- register the new actor as active in the scene
       active_actors[actor_name] = actor
       nactors = nactors + 1
+
+      local l = uetorch.GetActorLocation(actor)
+      print(actor_name, l.x, l.y, l.z)
    end
 end
 
 
-function M.destroy()
+function M.destroy(name)
+   if name then
+      local a = active_actors[name]
+      if not a then return end
+
+      active_actors[name] = nil
+      nactors = nactors - 1
+      return
+   end
+
    for _, actor in pairs(active_actors) do
-      uetorch.SetActorSimulatePhysics(actor, false)
-      uetorch.SetActorVisible(actor, false)
       uetorch.DestroyActor(actor)
    end
 
@@ -232,23 +204,16 @@ function M.is_valid_name(name)
 end
 
 
--- -- Return the name of a given actor, or nil if actor not found
--- function M.get_name(actor)
---    for shape, a in pairs(actors_bank) do
---       for idx, bactor in ipairs(a) do
---          if actor == bactor then
---             return shape .. '_' .. idx
---          end
---       end
---    end
--- end
-
-
 -- Return the table (name -> actor) of the active actors
 --
 -- Active actors are those initialized from parameters
 function M.get_active_actors()
    return active_actors
+end
+
+
+function M.get_actor(name)
+   return active_actors[name]
 end
 
 

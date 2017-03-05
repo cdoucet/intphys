@@ -68,23 +68,13 @@ function M.initialize(_nticks, _ticks_interval, ticks_rate)
 end
 
 
--- function M.print()
---    local s = 'hooks: '
---    for k, v in pairs(hooks) do
---       s = s .. k .. '=' .. #v .. ' '
---    end
---    print(s)
---    print(ticks_counter, nticks)
--- end
-
-
 -- Set the number of slow ticks before the end of the scene
 function M.set_ticks_remaining(ticks_remaining)
-   print('set remaining to ' .. ticks_remaining)
    nticks = ticks_remaining
 end
 
 
+-- Return the number of ticks remaining before the end of the scene
 function M.get_ticks_remaining()
    return nticks - ticks_counter
 end

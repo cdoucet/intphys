@@ -113,7 +113,7 @@ end
 
 
 function M.is_active()
-   return is_active
+   return wall ~= {}
 end
 
 

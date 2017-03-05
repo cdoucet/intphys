@@ -63,6 +63,7 @@ end
 
 -- swap the main actor between the possible_main_actors
 local function swap_actors()
+   print('swap ' .. tick.get_counter())
    local new_idx = main_actor_idx + 1
    if new_idx == 3 then
       new_idx = 1
@@ -70,19 +71,13 @@ local function swap_actors()
 
    local new_actor = possible_main_actors[new_idx]
    local old_actor = possible_main_actors[main_actor_idx]
+   uetorch.SetActorVisible(old_actor, false)
 
    local l = uetorch.GetActorLocation(old_actor)
-   -- local r = uetorch.GetActorRotation(old_actor)
-   -- local v = uetorch.GetActorVelocity(old_actor)
-   -- local a = uetorch.GetActorAngularVelocity(old_actor)
 
-   uetorch.SetActorVisible(old_actor, false)
    uetorch.SetActorLocation(old_actor, 0, 1000, 70)
-
    uetorch.SetActorLocation(new_actor, l.x, l.y, l.z)
-   -- uetorch.SetActorRotation(new_actor, r.pitch, r.yaw, r.roll)
-   -- uetorch.SetActorVelocity(new_actor, v.x, v.y, v.z)
-   -- uetorch.SetActorAngularVelocity(new_actor, a.x, a.y, a.z)
+
    uetorch.SetActorVisible(new_actor, true)
 
    main_actor_idx = new_idx
@@ -247,15 +242,15 @@ function M.initialize(_subblock, _iteration, _params)
    -- on check occlusion iterations, keep alive a single occluder and
    -- the main actor (in either the first or second possible shapes)
    if iteration.type > 4 and iteration.type <= 6 then
-      uetorch.DestroyActor(occluders.get_occluder('occluder_2'))
+      occluders.destroy('occluder_2')
    elseif iteration.type > 6 and iteration.type <= 8 then
-      uetorch.DestroyActor(occluders.get_occluder('occluder_1'))
+      occluders.destroy('occluder_1')
    end
 
    if iteration.type > 4 then
-      for n, a in pairs(actors.get_active_actors()) do
-         if n ~= actors.get_name(main_actor) then
-            uetorch.DestroyActor(a)
+      for name, _ in pairs(actors.get_active_actors()) do
+         if name ~= actors.get_name(main_actor) then
+            actors.destroy(name)
          end
       end
    end
@@ -324,6 +319,7 @@ function M.get_active_actors()
 
    return a
 end
+
 
 function M.magic_trick()
    -- if subblock:match('dynamic_2') then

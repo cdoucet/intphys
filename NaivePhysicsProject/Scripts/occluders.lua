@@ -183,16 +183,22 @@ function M.destroy(name)
    if name then
       local a = active_occluders[name]
       if not a then return end
-      uetorch.SetActorVisible(a, false)
+
+      for n, occ in ipairs(mobile_occluders) do
+         if occ.mesh == a then
+            table.remove(mobile_occluders, n)
+            break
+         end
+      end
+
       uetorch.DestroyActor(a)
       active_occluders[name] = nil
-      --table.remove(active_occluders, name)
+
       noccluders = noccluders - 1
       return
    end
 
-   for _, a in pairs(active_occluders) do
-      uetorch.SetActorVisible(a, false)
+   for _, a in pairs(active_occluders or {}) do
       uetorch.DestroyActor(a)
    end
 
@@ -206,13 +212,13 @@ end
 --
 -- Active occluders are those initialized from parameters
 function M.get_occluders()
-   return active_occluders
+   return active_occluders or {}
 end
 
 
 -- Return the number of active occluders
 function M.get_noccluders()
-   return noccluders
+   return noccluders or 0
 end
 
 
@@ -279,7 +285,7 @@ function M.get_random_occluder_parameters(name, subblock)
       local x = {-100, 200}
       params.location = {x = x[idx], y = -350}
    elseif subblock:match('dynamic_1') then
-      params.location = {x = 50, y = -250}
+      params.location = {x = 50, y = -350}
    else
       assert(subblock:match('static'))
       params.pause = {5 + math.random(20), math.random(20)}

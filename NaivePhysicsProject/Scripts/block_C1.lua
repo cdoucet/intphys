@@ -115,7 +115,7 @@ function M.get_random_parameters(subblock)
             p.scale = 1
 
          elseif subblock:match('dynamic_1') then
-            p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
                   x = math.random(8e5, 1.1e6), y = 0,
                   z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
@@ -174,6 +174,9 @@ function M.initialize(_subblock, _iteration, _params)
    iteration = _iteration
    params = _params
 
+   main_actor = nil
+   trick = nil
+
    if iteration.type == 1 then
       is_visible_start = false
       is_possible = true
@@ -200,6 +203,10 @@ function M.initialize(_subblock, _iteration, _params)
    main_actor = actors.get_active_actors()[params.main_actor]
    uetorch.SetActorVisible(main_actor, is_visible_start)
 
+   -- if iteration.type == 6 then
+   --    print(uetorch.GetActorLocation(main_actor))
+   -- end
+
    local f = function(a)
       --uetorch.SetActorVisible(occluders.get_occluders()[a], false)
       occluders.destroy(a)
@@ -212,9 +219,9 @@ function M.initialize(_subblock, _iteration, _params)
    -- when we are in an occlusion test, remove all the actors excepted
    -- the main one TODO better not to spaw them
    if iteration.type == 5 or iteration.type == 6 then
-      for n, a in pairs(actors.get_active_actors()) do
-         if n ~= params.main_actor then
-            uetorch.DestroyActor(a)
+      for name, _ in pairs(actors.get_active_actors()) do
+         if name ~= params.main_actor then
+            actors.destroy(name)
          end
       end
    end

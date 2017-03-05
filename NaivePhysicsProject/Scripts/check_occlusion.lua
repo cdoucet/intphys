@@ -38,10 +38,10 @@ local actor
 
 -- A table of ticks indexed booleans (false = main actor visible, true
 -- = main actor occluded)
-local data = {}
+local data
 
 -- The tick numbers corresponding to middle of the occlusions
-local middles = {}
+local middles
 
 -- True or false we perform an occlusion check on the current iteration
 local is_check_occlusion
@@ -50,7 +50,7 @@ local is_check_occlusion
 local t_occlusion
 
 -- Flags to detect the begin and end of an occlusion
-local has_been_visible, is_occlusion_started, is_occlusion_finished = false, false, false
+local has_been_visible, is_occlusion_started, is_occlusion_finished
 
 
 -- Return true if the `actor` is occluded in the rendered image
@@ -95,6 +95,10 @@ end
 function M.initialize(_iteration, _actor, check_iterations, resolution)
    iteration = _iteration
    actor = _actor
+
+   has_been_visible, is_occlusion_started, is_occlusion_finished = false, false, false
+   middles = {}
+   data = {}
 
    is_check_occlusion = false
    for _, v in ipairs(check_iterations) do

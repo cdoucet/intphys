@@ -140,11 +140,11 @@ function M.initialize(_iteration)
    -- -- camera, two occluders are overlapping, etc...).
    -- check_overlap.initialize()
 
-   -- on test blocks, we make sure the main actor coordinates
-   -- (location and rotation) are strictly comparable over the
-   -- different iterations. If not, the scene fails. This is to detect
-   -- an issue we have with the packaged game: some videos run slower
-   -- than others (seems to append only in packaged, not in editor)
+   -- -- on test blocks, we make sure the main actor coordinates
+   -- -- (location and rotation) are strictly comparable over the
+   -- -- different iterations. If not, the scene fails. This is to detect
+   -- -- an issue we have with the packaged game: some videos run slower
+   -- -- than others (seems to append only in packaged, not in editor)
    -- if not config.is_train(iteration) then
    --    check_coordinates.initialize(iteration, block.get_main_actor())
    -- end
@@ -163,8 +163,7 @@ function M.destroy()
    backwall.destroy()
    occluders.destroy()
    actors.destroy()
-
---   check_overlap.clean()
+   -- check_overlap.clean()
 end
 
 -- Return true is the scene has been validated (all checks successful)
@@ -176,9 +175,9 @@ function M.is_valid()
    if string.match(iteration.block, 'test.test_') then
       return block.is_test_valid()
    else
-      return check_overlap.is_valid()
-         and check_coordinates.is_valid()
-         and check_occlusion.is_valid()
+      return check_occlusion.is_valid() --check_overlap.is_valid()
+         -- and check_coordinates.is_valid()
+         --and check_occlusion.is_valid()
    end
 end
 
