@@ -132,7 +132,9 @@ function M.initialize(_iteration)
    -- actors are within
    local bounds = get_scene_bounds()
    occluders.initialize(params.occluders, bounds)
+   print('occluders ok')
    actors.initialize(params.actors, bounds)
+   print('actors ok')
    block.initialize(subblock_name, iteration, params)
 
    -- -- initialize the overlap check. The scene will fail if any illegal

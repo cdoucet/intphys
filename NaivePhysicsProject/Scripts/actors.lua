@@ -25,19 +25,21 @@ local material = require 'material'
 local utils = require 'utils'
 
 
-local active_actors, nactors = {}, 0
+local active_actors, nactors
 
-local meshes_bank
+local meshes_bank, meshes_index
 
 
 -- Load the 'meshes_bank' table with the available static meshes
 local function load_meshes_bank()
    meshes_bank = {}
+   meshes_index = {}
 
    local shapes = {'sphere', 'cube', 'cone', 'cylinder'}
    for _, shape in ipairs(shapes) do
       local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
-      local path = "StaticMesh'/Engine/BasicShapes/" .. Shape .. "." .. Shape .. "'"
+      local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
+      table.insert(meshes_index, shape)
       meshes_bank[shape] = assert(UE.LoadObject(StaticMesh.Class(), nil, path))
    end
 end
@@ -54,11 +56,7 @@ function M.get_shapes()
       load_meshes_bank()
    end
 
-   local s = {}
-   for k, _ in pairs(meshes_bank) do
-      table.insert(s, k)
-   end
-   return s
+   return meshes_index
 end
 
 
@@ -118,11 +116,16 @@ function M.initialize(params, bounds)
    -- when params is empty we do nothing
    if not params or next(params) == nil then return end
 
+   active_actors = {}
+   nactors = 0
+
    if not meshes_bank then
       load_meshes_bank()
    end
+   print('init actors...')
 
    for actor_name, actor_params in pairs(params) do
+      print(actor_name .. ' init...')
       local p = actor_params
 
       -- stay in the bounds
@@ -132,6 +135,7 @@ function M.initialize(params, bounds)
          p.location.y = math.max(bounds.ymin, p.location.y)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
+      print('bounded: ', p.location)
 
       if not p.rotation then
          p.rotation = utils.rotation(0, 0, 0)
@@ -144,7 +148,9 @@ function M.initialize(params, bounds)
       end
 
       local mesh = assert(meshes_bank[actor_name:gsub('_.*$', '')])
+      print('meshed ', actor_name:gsub('_.*$', ''))--, tostring(mesh))
       local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
+      print('spawned: ' .. tostring(actor))
       uetorch.SetActorScale3D(actor, scale, scale, scale)
       material.set_actor_material(actor, actor_params.material)
       if p.mass_scale then
@@ -162,8 +168,7 @@ function M.initialize(params, bounds)
       active_actors[actor_name] = actor
       nactors = nactors + 1
 
-      local l = uetorch.GetActorLocation(actor)
-      print(actor_name, l.x, l.y, l.z)
+      print(actor_name .. ' done')
    end
 end
 

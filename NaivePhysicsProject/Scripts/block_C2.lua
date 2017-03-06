@@ -195,6 +195,9 @@ function M.initialize(_subblock, _iteration, _params)
    iteration = _iteration
    params = _params
 
+   main_actor = nil
+   trick = nil
+
    if iteration.type == 1 then
       main_actor_idx = 2
       is_possible = true
@@ -215,14 +218,17 @@ function M.initialize(_subblock, _iteration, _params)
          main_actor_idx = 2
       end
    else  -- this is train
+      assert(iteration.type == -1)
       main_actor_idx = 1
       is_possible = true
-   end
-
-   -- on train iteration we have no more job
-   if iteration.type == -1 then
       return
    end
+
+   -- -- on train iteration we have no more job
+   -- if iteration.type == -1 then
+   --    print('here')
+   --    return
+   -- end
 
    -- on test, setup the main actor
    possible_main_actors = {

@@ -104,7 +104,6 @@ end
 -- Destroy the background wall actor
 function M.destroy()
    for _, w in pairs(wall) do
-      uetorch.SetActorVisible(w, false)
       uetorch.DestroyActor(w)
    end
 
@@ -113,7 +112,7 @@ end
 
 
 function M.is_active()
-   return wall ~= {}
+   return next(wall) ~= nil
 end
 
 

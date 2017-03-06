@@ -140,6 +140,7 @@ function M.initialize(params, bounds)
          uetorch.SetActorRotation(actor, 0, p.rotation, 90)
          uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20 + box)
       else
+         uetorch.SetActorRotation(actor, 0, p.rotation, 0)
          uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20)
       end
 
