@@ -122,7 +122,6 @@ function M.initialize(params, bounds)
    if not meshes_bank then
       load_meshes_bank()
    end
-   print('init actors...')
 
    for actor_name, actor_params in pairs(params) do
       print(actor_name .. ' init...')
@@ -135,22 +134,18 @@ function M.initialize(params, bounds)
          p.location.y = math.max(bounds.ymin, p.location.y)
          p.location.y = math.min(bounds.ymax, p.location.y)
       end
-      print('bounded: ', p.location)
-
       if not p.rotation then
          p.rotation = utils.rotation(0, 0, 0)
       end
 
       -- scale normalization factor
       local scale = p.scale
-      if p.volume_normalization then
-         scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
-      end
+      -- if p.volume_normalization then
+      --    scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
+      -- end
 
-      local mesh = assert(meshes_bank[actor_name:gsub('_.*$', '')])
-      print('meshed ', actor_name:gsub('_.*$', ''))--, tostring(mesh))
+      local mesh = meshes_bank[actor_name:gsub('_.*$', '')]
       local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
-      print('spawned: ' .. tostring(actor))
       uetorch.SetActorScale3D(actor, scale, scale, scale)
       material.set_actor_material(actor, actor_params.material)
       if p.mass_scale then
@@ -178,17 +173,16 @@ function M.destroy(name)
       local a = active_actors[name]
       if not a then return end
 
+      uetorch.DestroyActor(a)
       active_actors[name] = nil
       nactors = nactors - 1
-      return
+   else
+      for _, actor in pairs(active_actors or {}) do
+         uetorch.DestroyActor(actor)
+      end
+      active_actors = {}
+      nactors = 0
    end
-
-   for _, actor in pairs(active_actors) do
-      uetorch.DestroyActor(actor)
-   end
-
-   active_actors = {}
-   nactors = 0
 end
 
 

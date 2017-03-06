@@ -126,15 +126,16 @@ function M.initialize(_iteration)
    floor.initialize(params.floor)
    light.initialize(params.light)
    backwall.initialize(params.backwall, config.is_train(iteration))
+   --backwall.initialize({}, config.is_train(iteration))
 
    -- setup the physics actors, the occluders and block's specific
    -- tricks, retrieve the backwall boundaries to make sure all the
    -- actors are within
    local bounds = get_scene_bounds()
    occluders.initialize(params.occluders, bounds)
-   print('occluders ok')
+   --occluders.initialize({}, bounds)
    actors.initialize(params.actors, bounds)
-   print('actors ok')
+   --actors.initialize({}, bounds)
    block.initialize(subblock_name, iteration, params)
 
    -- -- initialize the overlap check. The scene will fail if any illegal
