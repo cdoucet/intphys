@@ -156,6 +156,12 @@ function M.initialize(_iteration)
 end
 
 
+function M.run()
+   actors.activate_physics()
+   tick.run()
+end
+
+
 function M.destroy()
    backwall.destroy()
    occluders.destroy()

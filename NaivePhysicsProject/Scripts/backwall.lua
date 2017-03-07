@@ -26,8 +26,11 @@ local floor = require 'floor'
 
 local wall = {}
 
-local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
-local mesh = assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+
+local function get_mesh()
+   local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+   return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+end
 
 
 local M = {}
@@ -91,7 +94,7 @@ function M.initialize(params, is_train)
    end
 
    for n, p in pairs(setup) do
-      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
+      local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), p.location, p.rotation))
       uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
       material.set_actor_material(actor, params.material)
       uetorch.SetActorVisible(actor, true)

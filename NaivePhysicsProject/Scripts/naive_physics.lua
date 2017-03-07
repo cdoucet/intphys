@@ -37,7 +37,6 @@ function initialize()
    -- setup the random seed for parameters generation
    local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
    math.randomseed(seed)
-   --posix.setenv('NAIVEPHYSICS_SEED', seed + 1)
 
    -- setup the game resolution
    local res = config.get_resolution()
@@ -97,6 +96,8 @@ function run_current_iteration()
    -- at the very end we update the iteration counter to prepare the
    -- next iteration
    tick.add_hook(terminate, 'final')
+
+   scene.run()
 end
 
 

@@ -25,8 +25,10 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 
-local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
-local mesh = assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+local function get_mesh()
+   local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+   return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+end
 
 
 -- This table registers the mobile (rotating) occluders. It is built in
@@ -132,7 +134,7 @@ function M.initialize(params, bounds)
       -- spawn the occluder actor
       local location = utils.location(p.location.x, p.location.y, 20)
       local rotation = utils.rotation(0, 0, 0)
-      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, location, rotation))
+      local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), location, rotation))
 
       -- the y bound box is used for occluder movement details
       local box = uetorch.GetActorBounds(actor).boxY

@@ -34,6 +34,8 @@ local active_actors
 -- The length of active_actors
 local nactors
 
+local forces
+
 
 -- Return true if `shape` is an available shape, false otherwise
 local function is_valid_shape(shape)
@@ -129,6 +131,7 @@ function M.initialize(params, bounds)
    if not params or next(params) == nil then return end
 
    active_actors = {}
+   forces = {}
    nactors = 0
 
    for actor_name, actor_params in pairs(params) do
@@ -159,11 +162,11 @@ function M.initialize(params, bounds)
          uetorch.SetActorMassScale(actor, p.mass_scale)
       end
 
-      uetorch.SetActorSimulatePhysics(actor, true)
+      --uetorch.SetActorSimulatePhysics(actor, false)
       uetorch.SetActorVisible(actor, true)
 
       if p.force then
-         uetorch.AddForce(actor, p.force.x, p.force.y, p.force.z)
+         forces[actor_name] = p.force
       end
 
       -- register the new actor as active in the scene
@@ -172,6 +175,14 @@ function M.initialize(params, bounds)
    end
 end
 
+
+function M.activate_physics()
+   for n, a in pairs(active_actors or {}) do
+      uetorch.SetActorSimulatePhysics(a, true)
+      local f = forces[n]
+      if f then uetorch.AddForce(a, f.x, f.y, f.z) end
+   end
+end
 
 -- Destroy a single actor in the scene
 function M.destroy_actor(name)
@@ -184,7 +195,7 @@ end
 
 -- Destroy all the actors in the scene
 function M.destroy()
-   for n, _ in pairs(active_actors) do
+   for n, _ in pairs(active_actors or {}) do
       M.destroy_actor(n)
    end
 end

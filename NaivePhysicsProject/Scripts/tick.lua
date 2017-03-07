@@ -47,12 +47,14 @@ local t_tick, t_last_tick = 0, 0
 -- A tick counter, from 0 to nticks
 local ticks_counter
 
+local is_ticking
 
 -- Set a constant tick rate and register ticking in uetorch
 function M.initialize(_nticks, _ticks_interval, ticks_rate)
    nticks = _nticks
    ticks_interval = _ticks_interval
    ticks_counter = 0
+   is_ticking = false
 
    -- delete any registered hook
    M.clear()
@@ -65,6 +67,11 @@ function M.initialize(_nticks, _ticks_interval, ticks_rate)
    if Tick ~= M.Tick then
       Tick = M.tick
    end
+end
+
+
+function M.run()
+   is_ticking = true
 end
 
 
@@ -136,7 +143,7 @@ end
 -- the end of the scene.
 function M.tick(dt)
    -- dt not used here is the time since the last tick
-   if ticks_counter < nticks then
+   if is_ticking and ticks_counter < nticks then
       M.run_hooks('fast')
 
       if t_tick - t_last_tick >= ticks_interval then
@@ -146,7 +153,7 @@ function M.tick(dt)
          M.run_hooks('slow')
       end
       t_tick = t_tick + 1
-   else
+   elseif is_ticking then
       M.run_hooks('final')
    end
 end

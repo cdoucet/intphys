@@ -125,7 +125,7 @@ class LogNoStartupMessagesFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         return not (
-            #'Importing uetorch.lua ...' in msg or
+            'Importing uetorch.lua ...' in msg or
             'Using binned.' in msg or
             'per-process limit of core file size to infinity.' in msg or
             'depot+UE4-Releases' in msg)

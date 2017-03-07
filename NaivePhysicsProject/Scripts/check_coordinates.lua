@@ -53,9 +53,6 @@ local is_valid
 local function push_current_coordinates()
    local l = assert(uetorch.GetActorLocation(actor))
    current_data[tick.get_counter()] = torch.Tensor({l.x, l.y, l.z})
-
-   -- local c = current_data[tick.get_counter()]
-   -- print(string.format('push %u: %f %f %f', tick.get_counter(), c[1], c[2], c[3]))
 end
 
 
@@ -78,17 +75,14 @@ local function push_and_check_coordinates()
    push_current_coordinates()
 
    if index <= previous_data:size(1) then
-      -- local l = previous_data[index]
-      -- print(string.format('chec %u: %f %f %f', index, l[1], l[2], l[3]))
-
       -- euclidean distance of current/previous location
       local dist = math.sqrt((current_data[index] - previous_data[index]):pow(2):sum())
       if dist > 10e-6 then
          tick.set_ticks_remaining(0)
          is_valid = false
 
-         print('bad actor coordinates (tick ' .. tick.get_counter() .. '): ' .. dist)
-         uetorch.ExecuteConsoleCommand('Exit')
+         print('bad actor coordinates (tick ' .. tick.get_counter() ..
+                  '): distance = ' .. dist .. ' cm')
          return
       end
    end

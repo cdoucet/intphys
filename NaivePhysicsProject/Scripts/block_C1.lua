@@ -203,17 +203,9 @@ function M.initialize(_subblock, _iteration, _params)
    main_actor = actors.get_active_actors()[params.main_actor]
    uetorch.SetActorVisible(main_actor, is_visible_start)
 
-   -- if iteration.type == 6 then
-   --    print(uetorch.GetActorLocation(main_actor))
-   -- end
-
-   local f = function(a)
-      --uetorch.SetActorVisible(occluders.get_occluders()[a], false)
-      occluders.destroy(a)
-   end
    if subblock:match('dynamic_2') then
-      if iteration.type == 6 then f('occluder_1') end
-      if iteration.type == 5 then f('occluder_2') end
+      if iteration.type == 6 then occluders.destroy('occluder_1') end
+      if iteration.type == 5 then occluders.destroy('occluder_2') end
    end
 
    -- when we are in an occlusion test, remove all the actors excepted
