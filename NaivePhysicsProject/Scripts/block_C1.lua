@@ -221,7 +221,7 @@ function M.initialize(_subblock, _iteration, _params)
    if iteration.type == 5 or iteration.type == 6 then
       for name, _ in pairs(actors.get_active_actors()) do
          if name ~= params.main_actor then
-            actors.destroy(name)
+            actors.destroy_actor(name)
          end
       end
    end

@@ -25,24 +25,40 @@ local material = require 'material'
 local utils = require 'utils'
 
 
-local active_actors, nactors
+-- The shapes available as 3D meshes for the physics actors.
+local shapes_available = {'sphere', 'cube', 'cone', 'cylinder'}
 
-local meshes_bank, meshes_index
+-- A table (name -> actor) of actors actually active in the scene
+local active_actors
+
+-- The length of active_actors
+local nactors
 
 
--- Load the 'meshes_bank' table with the available static meshes
-local function load_meshes_bank()
-   meshes_bank = {}
-   meshes_index = {}
-
-   local shapes = {'sphere', 'cube', 'cone', 'cylinder'}
-   for _, shape in ipairs(shapes) do
-      local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
-      local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
-      table.insert(meshes_index, shape)
-      meshes_bank[shape] = assert(UE.LoadObject(StaticMesh.Class(), nil, path))
+-- Return true if `shape` is an available shape, false otherwise
+local function is_valid_shape(shape)
+   local is_valid = false
+   for _, s in ipairs(shapes_available) do
+      if shape == s then
+         is_valid = true
+         break
+      end
    end
+   return is_valid
 end
+
+
+-- Instanciate a UStaticMesh of `shape` and return a reference to it
+--
+-- return nil if `shape` is not a valid shape
+local function get_mesh(shape)
+   if not is_valid_shape(shape) then return nil end
+
+   local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
+   local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
+   return assert(UE.LoadObject(StaticMesh.Class(), nil, path))
+end
+
 
 local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
 
@@ -50,13 +66,9 @@ local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2
 local M = {}
 
 
--- Return the list of shapes in the bank
+-- Return the list of available shapes for the physics actors
 function M.get_shapes()
-   if not meshes_bank then
-      load_meshes_bank()
-   end
-
-   return meshes_index
+   return shapes_available
 end
 
 
@@ -119,12 +131,7 @@ function M.initialize(params, bounds)
    active_actors = {}
    nactors = 0
 
-   if not meshes_bank then
-      load_meshes_bank()
-   end
-
    for actor_name, actor_params in pairs(params) do
-      print(actor_name .. ' init...')
       local p = actor_params
 
       -- stay in the bounds
@@ -140,11 +147,11 @@ function M.initialize(params, bounds)
 
       -- scale normalization factor
       local scale = p.scale
-      -- if p.volume_normalization then
-      --    scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
-      -- end
+      if p.volume_normalization then
+         scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
+      end
 
-      local mesh = meshes_bank[actor_name:gsub('_.*$', '')]
+      local mesh = get_mesh(actor_name:gsub('_.*$', ''))
       local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
       uetorch.SetActorScale3D(actor, scale, scale, scale)
       material.set_actor_material(actor, actor_params.material)
@@ -162,40 +169,33 @@ function M.initialize(params, bounds)
       -- register the new actor as active in the scene
       active_actors[actor_name] = actor
       nactors = nactors + 1
-
-      print(actor_name .. ' done')
    end
 end
 
 
-function M.destroy(name)
-   if name then
-      local a = active_actors[name]
-      if not a then return end
+-- Destroy a single actor in the scene
+function M.destroy_actor(name)
+   local a = assert(active_actors[name])
+   uetorch.DestroyActor(a)
+   active_actors[name] = nil
+   nactors = nactors - 1
+end
 
-      uetorch.DestroyActor(a)
-      active_actors[name] = nil
-      nactors = nactors - 1
-   else
-      for _, actor in pairs(active_actors or {}) do
-         uetorch.DestroyActor(actor)
-      end
-      active_actors = {}
-      nactors = 0
+
+-- Destroy all the actors in the scene
+function M.destroy()
+   for n, _ in pairs(active_actors) do
+      M.destroy_actor(n)
    end
 end
 
 
 -- Return true if `name` is a valid name in the actors bank
 function M.is_valid_name(name)
-   if not meshes_bank then
-      load_meshes_bank()
-   end
-
    local shape = name:gsub('_.*$', '')
    local idx = name:gsub('^.*_', '')
 
-   if meshes_bank[shape] then
+   if is_valid_shape(shape) then
       return true
    else
       return false
