@@ -330,13 +330,13 @@ function M.magic_trick()
       elseif trick.is_done_1 and not trick.is_done_2 and trick.can_do_2() then
          uetorch.SetActorVisible(main_actor, is_visible_start)
          trick.is_done_2 = true
-         tick.remove_hook(M.magic_trick, 'slow')
+         -- assert(tick.remove_hook(M.magic_trick, 'slow'))
       end
    else  -- this is static or dynamic_1
       if not trick.is_done and trick.can_do() then
          uetorch.SetActorVisible(main_actor, not is_visible_start)
          trick.is_done = true
-         tick.remove_hook(M.magic_trick, 'slow')
+         -- assert(tick.remove_hook(M.magic_trick, 'slow'))
       end
    end
 end

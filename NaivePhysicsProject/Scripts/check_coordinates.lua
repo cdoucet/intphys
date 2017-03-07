@@ -14,10 +14,9 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
-
 -- This module is used during test iterations to ensure the main actor
--- of the scene has the same coordinates (location and rotation
--- vectors) frame per frame in the whole test quadruplet.
+-- of the scene has the same frame per frame coordinates in the whole
+-- test quadruplet.
 --
 -- Basically it compares the coordinates of a choosen actor from the
 -- current iteration to the previous one (the first one excepted),
@@ -50,25 +49,19 @@ local previous_data
 local is_valid
 
 
--- Return a tensor with the current location of an actor
-local function get_actor_coordinates(actor)
-   local l = assert(uetorch.GetActorLocation(actor))
-   return torch.Tensor({l.x, l.y, l.z})
-end
-
-
 -- Register the actor current coordinates to the a table
 local function push_current_coordinates()
-   current_data[tick.get_counter()] = get_actor_coordinates(actor)
+   local l = assert(uetorch.GetActorLocation(actor))
+   current_data[tick.get_counter()] = torch.Tensor({l.x, l.y, l.z})
 end
 
 
 -- Save the current coordinates to a tensor for the next iteration lookup
 local function save_current_coordinates()
    if is_valid then
-      local c = current_data
       local n = tick.get_counter()
-      previous_data = torch.Tensor(c:size()):copy(c):narrow(1, 1, n)
+      local narrowed = current_data:narrow(1, 1, n)
+      previous_data = torch.Tensor(narrowed:size()):copy(narrowed)
    end
 end
 
@@ -77,18 +70,18 @@ end
 --
 -- Terminates the scene and set is_valid to false if a difference is
 -- found
-local function check_coordinates()
+local function push_and_check_coordinates()
    local index = tick.get_counter()
+   push_current_coordinates()
+
    if index <= previous_data:size(1) then
       -- euclidean distance of current/previous location
       local dist = math.sqrt((current_data[index] - previous_data[index]):pow(2):sum())
       if dist > 10e-6 then
          tick.set_ticks_remaining(0)
          is_valid = false
+
          print('bad actor coordinates (tick ' .. tick.get_counter() .. '): ' .. dist)
-         torch.save(
-            'coords.t7',
-            {current = current_data:narrow(1, 1, index), previous = previous_data})
          uetorch.ExecuteConsoleCommand('Exit')
          return
       end
@@ -107,11 +100,12 @@ function M.initialize(_iteration, _actor)
 
    current_data = torch.Tensor(config.get_nticks(), 3):fill(0)
 
-   tick.add_hook(push_current_coordinates, 'slow')
-   tick.add_hook(save_current_coordinates, 'final')
-   if not config.is_first_iteration_of_block(iteration) then
-      tick.add_hook(check_coordinates, 'slow')
+   if config.is_first_iteration_of_block(iteration) then
+      tick.add_hook(push_current_coordinates, 'slow')
+   else
+      tick.add_hook(push_and_check_coordinates, 'slow')
    end
+   tick.add_hook(save_current_coordinates, 'final')
 end
 
 

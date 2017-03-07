@@ -95,23 +95,30 @@ function M.add_hook(f, level)
 end
 
 
--- Unregister the function `f` from the given level hooks
+-- -- TODO bug here !! removing a hook disturbs the next call to
+-- -- M.tick(), all functions are not called as it should be.
 --
--- The level must be 'slow', 'fast', or 'final'
-function M.remove_hook(f, level)
-   local t = hooks[level]
-   for i = #t, 1, -1 do
-      if t[i] == f then
-         table.remove(t, i)
-      end
-   end
-end
+-- -- Unregister the function `f` from the given level hooks
+-- --
+-- -- The level must be 'slow', 'fast', or 'final'
+-- -- Return true if `f` has been removed, false otherwise
+-- function M.remove_hook(f, level)
+--    for i, ff in ipairs(hooks[level]) do
+--       if ff == f then
+--          -- table.remove(hooks[level], i)
+--          hooks[level][i] = nil
+--          return true
+--       end
+--    end
+--    return false
+-- end
 
 
 -- Clear all the registered hooks
 function M.clear()
    hooks = {slow = {}, fast = {}, final = {}}
 end
+
 
 -- Run all the registerd at a given ticking level
 --
