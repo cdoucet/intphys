@@ -35,7 +35,7 @@ local tick = require 'tick'
 -- The current iteration
 local iteration
 
--- The scene actor on which to operate the check
+-- A method to get back the scene actor on which to operate the check
 local actor
 
 -- A tensor filled with actor coordinates of the current iteration
@@ -94,9 +94,10 @@ local M = {}
 
 -- Initialize the check for a given iteration and a given actor
 function M.initialize(_iteration, _actor)
-   actor = _actor
    iteration = _iteration
+   actor = _actor
    is_valid = true
+
 
    current_data = torch.Tensor(config.get_nticks(), 3):fill(0)
 
@@ -116,11 +117,6 @@ function M.is_valid()
    else
       return is_valid
    end
-end
-
-
-function M.change_actor(_actor)
-   actor = _actor
 end
 
 

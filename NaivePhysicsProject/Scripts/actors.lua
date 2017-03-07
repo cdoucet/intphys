@@ -50,22 +50,22 @@ local function is_valid_shape(shape)
 end
 
 
+local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
+
+
+local M = {}
+
+
 -- Instanciate a UStaticMesh of `shape` and return a reference to it
 --
 -- return nil if `shape` is not a valid shape
-local function get_mesh(shape)
+function M.get_mesh(shape)
    if not is_valid_shape(shape) then return nil end
 
    local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
    local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
    return assert(UE.LoadObject(StaticMesh.Class(), nil, path))
 end
-
-
-local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
-
-
-local M = {}
 
 
 -- Return the list of available shapes for the physics actors
@@ -81,13 +81,12 @@ function M.get_other_shape_actor(name, shapes)
    shapes = shapes or M.get_shapes()
 
    local shape = name:gsub('_.*$', '')
-   local idx = name:gsub('^.*_', '')
    local other = shapes[math.random(1, #shapes)]
    while other == shape do
       other = shapes[math.random(1, #shapes)]
    end
 
-   return other .. '_' .. idx
+   return other
 end
 
 
@@ -154,7 +153,7 @@ function M.initialize(params, bounds)
          scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
       end
 
-      local mesh = get_mesh(actor_name:gsub('_.*$', ''))
+      local mesh = M.get_mesh(actor_name:gsub('_.*$', ''))
       local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
       uetorch.SetActorScale3D(actor, scale, scale, scale)
       material.set_actor_material(actor, actor_params.material)
@@ -224,6 +223,17 @@ end
 
 function M.get_actor(name)
    return active_actors[name]
+end
+
+
+-- Return the name of an `actor`, or nil if the actor is not active
+function M.get_name(actor)
+   for n, a in pairs(M.get_active_actors()) do
+      if a == actor then
+         return n
+      end
+   end
+   return nil
 end
 
 

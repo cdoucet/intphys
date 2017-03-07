@@ -42,11 +42,11 @@ local iteration
 
 local params
 
-local main_actor, possible_main_actors, main_actor_idx
+local main_actor
+
+local possible_shapes, current_shape_idx
 
 local is_possible
-
-local is_shape1_start
 
 local trick
 
@@ -61,29 +61,15 @@ local function is_valid_subblock(name)
 end
 
 
--- swap the main actor between the possible_main_actors
-local function swap_actors()
-   print('swap ' .. tick.get_counter())
-   local new_idx = main_actor_idx + 1
-   if new_idx == 3 then
-      new_idx = 1
-   end
+local function swap_shapes()
+   -- index of the new main actor (after swapping)
+   local new_idx = current_shape_idx + 1
+   if new_idx == 3 then new_idx = 1 end
+   current_shape_idx = new_idx
 
-   local new_actor = possible_main_actors[new_idx]
-   local old_actor = possible_main_actors[main_actor_idx]
-   uetorch.SetActorVisible(old_actor, false)
-
-   local l = uetorch.GetActorLocation(old_actor)
-
-   uetorch.SetActorLocation(old_actor, 0, 1000, 70)
-   uetorch.SetActorLocation(new_actor, l.x, l.y, l.z)
-
-   uetorch.SetActorVisible(new_actor, true)
-
-   main_actor_idx = new_idx
-   main_actor = new_actor
-   check_coordinates.change_actor(main_actor)
+   uetorch.SetActorStaticMesh(main_actor, actors.get_mesh(possible_shapes[current_shape_idx]))
 end
+
 
 
 local M = {}
@@ -121,7 +107,7 @@ function M.get_random_parameters(subblock)
       table.insert(t_actors, t_shapes[math.random(1, #t_shapes)] .. '_' .. i)
    end
    local main_actor = t_actors[math.random(1, nactors)]
-   local other_actor = actors.get_other_shape_actor(main_actor, t_shapes)
+   local other_shape = actors.get_other_shape_actor(main_actor, t_shapes)
 
    local params = {}
 
@@ -140,7 +126,7 @@ function M.get_random_parameters(subblock)
       -- setup the actors parameters and the main actor (on which the
       -- trick is done)
       params.main_actor = main_actor
-      params.other_actor = other_actor
+      params.other_shape = other_shape
       params.actors = {}
 
       for i = 1, nactors do
@@ -166,12 +152,6 @@ function M.get_random_parameters(subblock)
             end
          end
       end
-
-      params.actors[other_actor] = {
-         material = params.actors[main_actor].material,
-         scale = params.actors[main_actor].scale,
-         -- behind the camera
-         location = {x = 0, y = 1000, z = 70}}
 
       -- setup the trick parameters for the visible subblocks (for
       -- occluded blocks this is done by the check_occlusion module)
@@ -199,50 +179,28 @@ function M.initialize(_subblock, _iteration, _params)
    trick = nil
 
    if iteration.type == 1 then
-      main_actor_idx = 2
       is_possible = true
    elseif iteration.type == 2 then
-      main_actor_idx = 1
       is_possible = true
    elseif iteration.type == 3 then
-      main_actor_idx = 2
       is_possible = false
    elseif iteration.type == 4 then
-      main_actor_idx = 1
       is_possible = false
    elseif iteration.type > 4 then  -- occlusion checks
       is_possible = true
-      if iteration.type % 2 == 0 then
-         main_actor_idx = 1
-      else
-         main_actor_idx = 2
-      end
    else  -- this is train
       assert(iteration.type == -1)
-      main_actor_idx = 1
       is_possible = true
       return
    end
 
-   -- -- on train iteration we have no more job
-   -- if iteration.type == -1 then
-   --    print('here')
-   --    return
-   -- end
-
-   -- on test, setup the main actor
-   possible_main_actors = {
-      actors.get_actor(assert(params.main_actor)),
-      actors.get_actor(assert(params.other_actor))}
-
-   main_actor = possible_main_actors[main_actor_idx]
-   local other_actor_idx = main_actor_idx + 1
-   if other_actor_idx == 3 then other_actor_idx = 1 end
-   uetorch.SetActorVisible(possible_main_actors[other_actor_idx], false)
-
-   if main_actor_idx == 2 then
-      main_actor_idx = 1
-      swap_actors()
+   -- on test, setup the main actor with the good shape
+   main_actor = actors.get_actor(params.main_actor)
+   local main_shape = params.main_actor:gsub('_.*', '')
+   possible_shapes = {main_shape, params.other_shape}
+   current_shape_idx = 1
+   if iteration.type % 2 == 1 then
+      swap_shapes()
    end
 
    -- on check occlusion iterations, keep alive a single occluder and
@@ -311,19 +269,7 @@ end
 
 
 function M.get_active_actors()
-   local idx = 2
-   if main_actor_idx == 2 then
-      idx = 1
-   end
-
-   local a = {}
-   for name, actor in pairs(actors.get_active_actors()) do
-      if actor ~= possible_main_actors[idx] then
-         a[name] = actor
-      end
-   end
-
-   return a
+   return actors.get_active_actors()
 end
 
 
@@ -341,7 +287,7 @@ function M.magic_trick()
    -- else -- this is static or dynamic_1
    if subblock:match('static') then
       if not trick.is_done and trick.can_do() then
-         swap_actors()
+         swap_shapes()
          trick.is_done = true
 
          -- TODO do not work: we have a black screenshot for the 3
