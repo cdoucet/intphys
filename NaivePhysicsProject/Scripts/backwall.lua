@@ -22,7 +22,7 @@
 local uetorch = require 'uetorch'
 local utils = require 'utils'
 local material = require 'material'
-
+local floor = require 'floor'
 
 local wall = {}
 
@@ -120,6 +120,35 @@ end
 -- active
 function M.get_actors()
    return wall
+end
+
+
+-- Return the backwall bounding box as a table {xmin, xmax, ymin, ymax}
+function M.get_bounds()
+   local b = {}
+   local fb = floor.get_status()
+
+   if wall.wall_left then
+      b.xmin = uetorch.GetActorLocation(wall.wall_left).x
+   else
+      b.xmin = fb.minx
+   end
+
+   if wall.wall_right then
+      b.xmax = uetorch.GetActorLocation(wall.wall_right).x
+   else
+      b.xmax = fb.maxx
+   end
+
+   if wall.wall_back then
+      b.ymin = uetorch.GetActorLocation(wall.wall_back).y
+   else
+      b.ymin = fb.miny
+   end
+
+   b.ymax = fb.maxy
+
+   return b
 end
 
 

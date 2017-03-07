@@ -91,12 +91,9 @@ local function get_scene_bounds()
       return nil
    end
 
-   local wall = backwall.get_actors()
-   return {
-      xmin = uetorch.GetActorLocation(wall.wall_left).x,
-      xmax = uetorch.GetActorLocation(wall.wall_right).x,
-      ymin = uetorch.GetActorLocation(wall.wall_back).y,
-      ymax = uetorch.GetActorLocation(camera.get_actor()).y}
+   local bounds = backwall.get_bounds()
+   bounds.ymax = uetorch.GetActorLocation(camera.get_actor()).y
+   return bounds
 end
 
 
