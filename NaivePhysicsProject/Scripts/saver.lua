@@ -137,10 +137,11 @@ function M.save_data()
    local ordered_actors = scene.get_ordered_actors()
    local nactors = #ordered_actors
    if backwall.is_active() then
+      local ndiff = backwall.get_nactors()
       local min_idx, max_idx = backwall.get_indices(ordered_actors)
       t_masks[torch.cmul(t_masks:ge(min_idx), t_masks:le(max_idx))] = min_idx
-      t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - 2
-      nactors = nactors - 2
+      t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - ndiff + 1
+      nactors = nactors - ndiff + 1
    end
    t_masks = t_masks:float():div(nactors)
 

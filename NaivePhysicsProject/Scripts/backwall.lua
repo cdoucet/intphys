@@ -126,6 +126,15 @@ function M.get_actors()
 end
 
 
+function M.get_nactors()
+   local i = 0
+   for _, _ in pairs(M.get_actors()) do
+      i = i + 1
+   end
+   return i
+end
+
+
 -- Return the backwall bounding box as a table {xmin, xmax, ymin, ymax}
 function M.get_bounds()
    local b = {}

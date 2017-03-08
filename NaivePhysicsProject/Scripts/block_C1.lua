@@ -77,7 +77,6 @@ end
 function M.get_random_parameters(subblock)
    assert(is_valid_subblock(subblock))
    local nspheres = math.random(1, 3)
-
    local params = {}
 
    -- occluders
