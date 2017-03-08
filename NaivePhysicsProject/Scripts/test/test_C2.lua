@@ -14,67 +14,67 @@
 -- along with this program. If not, see <http://www.gnu.org/licenses/>.
 
 
--- This module demonstrates the change of an actor's
--- friction/restitution coeficients at runtime
+-- This test module is asserting the lua/UE interaction works
+-- well. Detection of various overlapping situation in reaction to the
+-- events triggered in the MainMap level blueprint
 
 local uetorch = require 'uetorch'
 local backwall = require 'backwall'
 local floor = require 'floor'
 local light = require 'light'
 local actors = require 'actors'
+local scene = require 'scene'
+local occluders = require 'occluders'
 local material = require 'material'
 local camera = require 'camera'
 local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
 
+--local check_overlap = require 'check_overlap'
+
 
 local M = {}
 
 
-
-function M.get_random_parameters()
-   local p = {backwall = backwall.get_random_parameters(),
-              floor = floor.get_random_parameters(),
-              light = light.get_random_parameters()}
+local function params_dynamic_ice(p)
+   local s = {
+      scale = 1,
+      material = material.random('actor'),
+      location = {x = 0, y = -550, z = 70},
+      force = {x = 1e6, y = 0, z = 0}}
    p.actors = {}
-   p.actors.sphere_1 = {
-      scale = 1,
-      material = material.random('actor'),
-      location = {x = 500, y = -320, z = 70},
-      force = {x = -1e6, y = 0, z = 0}}
-
-   p.actors.cube_1 = {
-      scale = 1,
-      material = material.random('actor'),
-      location = {x = 500, y = -200, z = 70},
-      force = {x = -1e6, y = 0, z = 0}}
-
-   p.actors.cylinder_1 = {
-      scale = 1,
-      material = material.random('actor'),
-      location = {x = 500, y = -440, z = 70},
-      rotation = {pitch = 0, yaw = 0, roll = 90},
-      force = {x = -1e6, y = 0, z = 0}}
-
-   -- p.actors.cone_1 = {
-   --    material = material.random('actor'),
-   --    scale = 1,
-   --    is_static = false,
-   --    location = {x = 500, y = -80, z = 70},
-   --    force = {x = -0.5e6, y = 0, z = 0}}
-
-   return p
+   p.actors.cube_1 = s
 end
 
 
+local function params_dynamic_parabolic(p)
+   local s = {
+      scale = 1,
+      material = material.random('actor'),
+      location = {x = -100, y = -550, z = 150},
+      force = {x = 2.5e6, y = 0, z = 2.5e6}}
+   p.actors = {}
+   p.actors.cube_1 = s
+end
+
+
+local tests = {
+   --function(p) params_dynamic_ice(p) end,
+   function(p) params_dynamic_parabolic(p) end,
+}
+
+local idx = 1
+
+
 function M.initialize()
-   -- camera in test position
    camera.initialize(camera.get_default_parameters())
 
    local floor_actor = floor.get_actor().floor
    material.set_actor_material(floor_actor, 'M_Ice')
    material.set_physical(floor_actor, 'Ice')
+
+   local actor = assert(actors.get_actor('cube_1'))
 
    tick.add_hook(
       function()
@@ -82,20 +82,33 @@ function M.initialize()
             print('ice friction:' .. material.get_physical_properties(floor_actor).friction)
          end
 
-         if tick.get_counter() == 25 then
-            material.set_physical(floor_actor, 'F0R1')
+         if tick.get_counter() == 15 then
+            uetorch.SetActorStaticMesh(actor, actors.get_mesh('sphere'))
          end
+   end, 'slow')
+end
 
-         if tick.get_counter() == 50 then
-            material.set_physical(floor_actor, 'F1R0')
-         end
 
-      end, 'slow')
+function M.get_random_parameters()
+   local p = {backwall = backwall.get_random_parameters(),
+              floor = floor.get_random_parameters(),
+              light = light.get_random_parameters()}
+
+   if idx > #tests then
+      uetorch.ExecuteConsoleCommand('Exit')
+      print('failure !!')
+      return p
+   else
+      tests[idx](p)
+      idx = idx + 1
+      return p
+   end
 end
 
 
 function M.get_main_actor() return nil end
 function M.get_occlusion_check_iterations() return {} end
-function M.is_test_valid() return false end
+function M.is_test_valid() return true end
+
 
 return M
