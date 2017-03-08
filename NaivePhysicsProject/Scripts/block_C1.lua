@@ -127,13 +127,13 @@ function M.get_random_parameters(subblock)
 
             assert(subblock:match('dynamic_2'))
             p.side = actors.random_side()
-            p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.location = {x = -350, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
                x = 1.6e6, y = 0,
                z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
 
             if p.side == 'right' then
-               p.location.x = 700
+               p.location.x = 750
                p.force.x = -1 * p.force.x
             end
          end

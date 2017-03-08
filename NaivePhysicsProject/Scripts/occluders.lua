@@ -60,7 +60,9 @@ local function _occluder_move(o, dir, dt)
       o.t_rotation_change = o.t_rotation
    end
 
-   o.t_rotation = o.t_rotation + dt
+   -- TODO make this a parameter
+   local speed_coef = 0.9
+   o.t_rotation = o.t_rotation + dt * speed_coef
 end
 
 
@@ -282,7 +284,7 @@ function M.get_random_occluder_parameters(name, subblock)
    params.rotation = 0
    params.start_position = 'down'
    params.pause = {math.random(5), math.random(5)}
-   params.scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()}
+   params.scale = {x = 0.5, y = 0.8, z = 0.8 - 0.2 * math.random()}
 
    -- occluder's location depends on subblock
    if subblock:match('dynamic_2') then

@@ -105,12 +105,12 @@ end
 
 
 function M.set_physical(actor, name)
-   uetorch.SetPhysicalMaterial(actor, get_physical(name))
+   uetorch.SetActorPhysicalMaterial(actor, get_physical(name))
 end
 
 
 function M.get_physical_properties(actor)
-   return uetorch.GetMaterialPhysicalProperties(actor)
+   return uetorch.GetActorlPhysicalProperties(actor)
 end
 
 
