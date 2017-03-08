@@ -163,6 +163,7 @@ function M.initialize(params, bounds)
 
       --uetorch.SetActorSimulatePhysics(actor, false)
       uetorch.SetActorVisible(actor, true)
+      uetorch.SetActorGenerateOverlapEvents(actor, true)
 
       if p.force then
          forces[actor_name] = p.force

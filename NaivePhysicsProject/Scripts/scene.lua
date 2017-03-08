@@ -132,10 +132,10 @@ function M.initialize(_iteration)
    actors.initialize(params.actors, bounds)
    block.initialize(subblock_name, iteration, params)
 
-   -- -- initialize the overlap check. The scene will fail if any illegal
-   -- -- overlaping between actors is detected (eg some actor hit the
-   -- -- camera, two occluders are overlapping, etc...).
-   -- check_overlap.initialize()
+   -- initialize the overlap check. The scene will fail if any illegal
+   -- overlaping between actors is detected (eg some actor hit the
+   -- camera, two occluders are overlapping, etc...).
+   check_overlap.initialize()
 
    -- on test blocks, we make sure the main actor coordinates
    -- (location and rotation) are strictly comparable over the
@@ -166,7 +166,6 @@ function M.destroy()
    backwall.destroy()
    occluders.destroy()
    actors.destroy()
-   -- check_overlap.clean()
 end
 
 -- Return true is the scene has been validated (all checks successful)
@@ -178,9 +177,9 @@ function M.is_valid()
    if string.match(iteration.block, 'test.test_') then
       return block.is_test_valid()
    else
-      return check_occlusion.is_valid() --check_overlap.is_valid()
+      return check_occlusion.is_valid()
          and check_coordinates.is_valid()
-         --and check_occlusion.is_valid()
+         and check_overlap.is_valid()
    end
 end
 

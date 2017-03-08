@@ -149,6 +149,7 @@ function M.initialize(params, bounds)
       uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
       material.set_actor_material(actor, p.material)
       uetorch.SetActorVisible(actor, true)
+      uetorch.SetActorGenerateOverlapEvents(actor, true)
 
       -- register the new occluder as active in the scene
       active_occluders[occluder_name] = actor

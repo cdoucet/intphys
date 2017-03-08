@@ -68,7 +68,7 @@ local function occluders_overlapping()
       movement = 2,
       pause = {10, 10, 10, 10},
       scale = {x = 1, y = 1, z = 1},
-      location = {x = 100, y = -300, z = 70},
+      location = {x = 100, y = -500, z = 70},
       rotation = 60,
       start_position = 'up'}
 
@@ -77,7 +77,7 @@ local function occluders_overlapping()
       movement = 2,
       pause = {10, 10, 10, 10},
       scale = {x = 1, y = 1, z = 1},
-      location = {x = 100, y = -300, z = 70},
+      location = {x = 110, y = -480, z = 70},
       rotation = 150,
       start_position = 'up'}
 

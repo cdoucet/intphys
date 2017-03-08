@@ -26,39 +26,36 @@ local tick = require 'tick'
 local utils = require 'utils'
 
 
--- A file created empty when an overlap is detected. It serves for
--- interprocess communication (the overlap detection function and the
--- main loop run in different processes).
-local overlap_file = config.get_data_path() .. 'overlap_detected.t7'
+-- false if we have encoutered an illegal overlap, true otherwise
+local is_valid
 
 
 -- This function is called from the MainMap level blueprint when a
 -- begin overlap event is triggered by the camera trigger box. `actor`
 -- is the name of the actor overlapping the camera.
 function camera_overlap_detected(actor)
-   if not utils.file_exists(overlap_file) then
-      torch.save(overlap_file)
-      print('overlap detected between camera and ' .. actor)
-   end
+   print('invalid scene: overlap detected on camera')
+   tick.set_ticks_remaining(0)
+   is_valid = false
 end
 
 
--- This one is called when the two occluders are so close that they
--- overlap (can appends in train scenes)
-function occluders_overlap_detected()
-   if not utils.file_exists(overlap_file) then
-      torch.save(overlap_file)
-      print('overlap detected between the occluders')
-   end
-end
+-- -- This one is called when the two occluders are so close that they
+-- -- overlap (can appends in train scenes)
+-- function occluders_overlap_detected()
+--    if not utils.file_exists(overlap_file) then
+--       torch.save(overlap_file)
+--       print('overlap detected between the occluders')
+--    end
+-- end
 
 
-function backwall_overlap_detected(actor)
-   if not utils.file_exists(overlap_file) then
-      torch.save(overlap_file)
-      print('overlap detected between background wall and ' .. actor)
-   end
-end
+-- function backwall_overlap_detected(actor)
+--    if not utils.file_exists(overlap_file) then
+--       torch.save(overlap_file)
+--       print('overlap detected between background wall and ' .. actor)
+--    end
+-- end
 
 
 -- This module is called from the main process.
@@ -81,23 +78,13 @@ M.hit_hooks = {}
 -- Register a tick terminating the scene when an ocverlap on the
 -- camera is detected.
 function M.initialize()
-   tick.add_hook(function()
-         if utils.file_exists(overlap_file) then
-            tick.set_ticks_remaining(0)
-         end end, 'slow')
+   is_valid = true
 end
 
 
 -- Return true if an overlap on the camera has been detected in the scene
 function M.is_valid()
-   return not utils.file_exists(overlap_file)
-end
-
-
-function M.clean()
-   if utils.file_exists(overlap_file) then
-      os.remove(overlap_file)
-   end
+   return is_valid
 end
 
 
