@@ -30,11 +30,16 @@ local floor = require 'floor'
 local M = {}
 
 
-local sky_sphere = assert(uetorch.GetActor('SkySphere'))
+local sky_sphere = assert(uetorch.GetActor('Sky_Sphere'))
 local directional_lights = {
    assert(uetorch.GetActor('LightSource_1')),
    assert(uetorch.GetActor('LightSource_2'))
 }
+
+-- local function get_sky_sphere()
+--    local path = "Blueprint'/Game/EngineSky/BP_Sky_Sphere'"
+--    return assert(UE.LoadObject(Blueprint.Class(), nil, path))
+-- end
 
 
 -- Return random parameters for the scene illumination
@@ -44,7 +49,7 @@ local directional_lights = {
 function M.get_random_parameters()
    local params = {}
 
-   params.nlights = math.random(0, 2)
+   params.nlights = math.random(1, 2)
    for i = 1, params.nlights do
       local b = floor.get_status()
       params['directional_light_' .. i] = {
@@ -53,9 +58,9 @@ function M.get_random_parameters()
             math.random() * (b.maxy - b.miny) + b.miny,
             math.random() * 200 + 100),
          rotation = utils.rotation(
-            math.random() * 40 - 25,
-            math.random() * 120 + 150,
-            math.random() * 360)}
+            -- math.random() * 40 - 25, math.random() * 120 + 150, math.random() * 360)
+            math.random() * 80 - 90, math.random() * 360, 0)
+      }
    end
 
    params.is_sky = (math.random() >= 0.5)

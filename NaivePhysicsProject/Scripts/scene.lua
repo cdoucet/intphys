@@ -168,6 +168,7 @@ function M.destroy()
    actors.destroy()
 end
 
+
 -- Return true is the scene has been validated (all checks successful)
 --
 -- This method should be called only after the final tick (so that all
