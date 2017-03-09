@@ -100,7 +100,7 @@ function M.get_random_parameters()
       return p
    else
       tests[idx](p)
-      idx = idx + 1
+      --idx = idx + 1
       return p
    end
 end
@@ -108,7 +108,7 @@ end
 
 function M.get_main_actor() return nil end
 function M.get_occlusion_check_iterations() return {} end
-function M.is_test_valid() return true end
+function M.is_test_valid() return false end
 
 
 return M

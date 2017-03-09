@@ -67,7 +67,7 @@ end
 
 local function on_hit_hook(actor1, actor2)
    if actor1 == 'Sphere_2' and actor2 == 'Sphere_1' then
-      uetorch.SetNotifyRigidBodyCollision(actors.get_active_actors()['sphere_2'], false)
+      uetorch.SetActorGenerateHitEvents(actors.get_active_actors()['sphere_2'], false)
       uetorch.SetMassScale(actors.get_active_actors()['sphere_3'], 0.001)
    end
 end
@@ -78,7 +78,7 @@ function M.initialize(subblock, iteration, params)
    camera.initialize(camera.get_default_parameters())
 
    -- detect hits on the sphere_2
-   uetorch.SetNotifyRigidBodyCollision(actors.get_active_actors()['sphere_2'], true)
+   uetorch.SetActorGenerateHitEvents(actors.get_active_actors()['sphere_2'], true)
 
    -- register the hook to be triggered on actors hit events
    table.insert(check_overlap.hit_hooks, on_hit_hook)
