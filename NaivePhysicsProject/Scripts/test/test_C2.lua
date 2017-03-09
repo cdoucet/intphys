@@ -52,15 +52,24 @@ local function params_dynamic_parabolic(p)
    local s = {
       scale = 1,
       material = material.random('actor'),
-      location = {x = -100, y = -550, z = 150},
-      force = {x = 2.5e6, y = 0, z = 2.5e6}}
+      location = {x = -200, y = -550, z = 150},
+      force = {x = 2.5e6, y = 0, z = 2.7e6}}
    p.actors = {}
    p.actors.cube_1 = s
 end
 
 
+local function print_velocity(actor)
+   local v = uetorch.GetActorVelocity(actor)
+   local w = uetorch.GetActorAngularVelocity(actor)
+   print(string.format('%f %f %f | %f %f %f',
+                       v.x, v.y, v.z,
+                       w.x, w.y, w.z))
+end
+
+
 local tests = {
-   --function(p) params_dynamic_ice(p) end,
+   function(p) params_dynamic_ice(p) end,
    function(p) params_dynamic_parabolic(p) end,
 }
 
@@ -78,14 +87,10 @@ function M.initialize()
 
    tick.add_hook(
       function()
-         if tick.get_counter() % 10 == 0 then
-            print('ice friction:' .. material.get_physical_properties(floor_actor).friction)
-         end
-
+         --print_velocity(actor)
          if tick.get_counter() == 15 then
             uetorch.SetActorStaticMesh(actor, actors.get_mesh('sphere'))
-         end
-   end, 'slow')
+         end end, 'slow')
 end
 
 
