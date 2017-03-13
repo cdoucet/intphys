@@ -283,8 +283,9 @@ function M.get_random_occluder_parameters(name, subblock)
    params.movement = 1
    params.rotation = 0
    params.start_position = 'down'
-   params.pause = {math.random(5), math.random(5)}
-   params.scale = {x = 0.5, y = 0.8, z = 0.8 - 0.2 * math.random()}
+   params.pause = {math.random(10), math.random(10)}
+   params.scale = {x = 0.6 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
+   --params.scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()}
 
    -- occluder's location depends on subblock
    if subblock:match('dynamic_2') then

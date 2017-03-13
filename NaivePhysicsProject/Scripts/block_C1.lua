@@ -106,12 +106,13 @@ function M.get_random_parameters(subblock, nactors)
          local p = params.actors['sphere_' .. i]
 
          p.material = material.random('actor')
-         p.scale = 0.9
+         p.scale = 0.7 + 0.5 * math.random()
 
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
-            p.scale = 1
+            p.scale = 0.7 + 0.5 * math.random()
+            p.location.z = 100 * p.scale / 2.0 + 20
 
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
@@ -124,10 +125,10 @@ function M.get_random_parameters(subblock, nactors)
                p.force.x = -1 * p.force.x
             end
          else
-
             assert(subblock:match('dynamic_2'))
             p.side = actors.random_side()
             p.location = {x = -350, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
+            p.scale = 0.7 + 0.5 * math.random()
             p.force = {
                x = 1.6e6, y = 0,
                z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}

@@ -62,9 +62,8 @@ end
 -- test scenes)
 function M.get_default_parameters()
    return {
-      location = {x = 150, y = 0, z = 170},
-      rotation = {pitch = -10, yaw = -90, roll = 0}
-   }
+      location = {x = 150, y = -100 * math.random(), z = 150 + math.random()},
+      rotation = {pitch = -10 * math.random() - 5, yaw = -90, roll = 0}}
 end
 
 
