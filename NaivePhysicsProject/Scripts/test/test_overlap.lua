@@ -39,8 +39,7 @@ local M = {}
 local function shot_a_ball_in_the_camera()
    local s = {
       material = material.random('actor'),
-      scale = 1,
-      is_static = false,
+      scale = 3,
       location = {x = 150, y = -550, z = 70},
       force = {x = 0, y = 2e6, z = 0}}
 
@@ -68,8 +67,8 @@ local function occluders_overlapping()
       movement = 2,
       pause = {10, 10, 10, 10},
       scale = {x = 1, y = 1, z = 1},
-      location = {x = 100, y = -500, z = 70},
-      rotation = 60,
+      location = {x = 300, y = -500, z = 70},
+      rotation = 90,
       start_position = 'up'}
 
    local o2 = {
@@ -77,8 +76,8 @@ local function occluders_overlapping()
       movement = 2,
       pause = {10, 10, 10, 10},
       scale = {x = 1, y = 1, z = 1},
-      location = {x = 100, y = -500, z = 70},
-      rotation = 150,
+      location = {x = 100, y = -200, z = 70},
+      rotation = -90,
       start_position = 'up'}
 
    return {occluder_1 = o1, occluder_2 = o2}
@@ -107,8 +106,8 @@ end
 
 
 local tests = {
-   function(p) p.actors = shot_a_ball_in_the_camera() end,
-   function(p) p.occluders = put_an_occluder_on_the_camera() end,
+   -- function(p) p.actors = shot_a_ball_in_the_camera() end,
+   -- function(p) p.occluders = put_an_occluder_on_the_camera() end,
    function(p) p.occluders = occluders_overlapping() end,
 }
 

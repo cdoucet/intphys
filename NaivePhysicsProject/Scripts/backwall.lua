@@ -53,7 +53,7 @@ local M = {}
 function M.get_random_parameters(is_active)
    local params = {}
 
-   is_active = is_active or (math.random() < 0.5)
+   is_active = true  -- is_active or (math.random() < 0.5)
    if is_active then
       params.xwidth = math.random() * 2500 + 1500
       params.ylocation = math.random() * 600 - 1500
