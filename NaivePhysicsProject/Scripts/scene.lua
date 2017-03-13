@@ -60,7 +60,7 @@ local function init_params(subblock)
    local params
    if config.is_first_iteration_of_block(iteration) then
       -- choose random parameters for the block actors
-      params = block.get_random_parameters(subblock)
+      params = block.get_random_parameters(subblock, iteration.nactors)
 
       -- choose random parameters for static actors
       params.floor = floor.get_random_parameters()

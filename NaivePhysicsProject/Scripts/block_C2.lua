@@ -86,9 +86,9 @@ end
 
 
 -- Return random parameters the the given subblock
-function M.get_random_parameters(subblock)
+function M.get_random_parameters(subblock, nactors)
    assert(is_valid_subblock(subblock))
-   local nactors = math.random(1, 3)
+   local nactors = nactors or math.random(1, 3)
 
    -- exclude cylinders for static tests because they can have a cube
    -- or sphere profile

@@ -247,8 +247,13 @@ end
 
 
 -- Add a new iteration in the iterations table
-local function add_iteration(b, t, i)
-   table.insert(iterations_table, {block = b, type = t, id = i})
+local function add_iteration(b, t, i, n)
+   local iteration = {block = b, type = t, id = i}
+   if n then
+      iteration.nactors = n
+   end
+
+   table.insert(iterations_table, iteration)
 end
 
 
@@ -271,13 +276,27 @@ local function add_test_iterations(block, case, subblocks)
    for subblock, nruns in pairs(subblocks) do
       local name = block .. '.' .. case .. '_' .. subblock
       local ntypes = 4 + M.get_check_occlusion_size({block = name})
-      for i = 1, nruns do
-         test_runs = test_runs + 1
-         for t = ntypes, 1, -1 do
-            add_iteration(name, t, test_runs)
+
+
+      if type(nruns) == 'table' then
+         for nactors, nruns_2 in pairs(nruns) do
+            for i = 1, nruns_2 do
+               test_runs = test_runs + 1
+               for t = ntypes, 1, -1 do
+                  add_iteration(name, t, test_runs, tonumber(nactors))
+               end
+            end
+            max_iteration = (max_iteration or 0) + ntypes * nruns_2
          end
+      else -- nruns is an integer -> random nactors in each scene
+         for i = 1, nruns do
+            test_runs = test_runs + 1
+            for t = ntypes, 1, -1 do
+               add_iteration(name, t, test_runs)
+            end
+         end
+         max_iteration = (max_iteration or 0) + ntypes * nruns
       end
-      max_iteration = (max_iteration or 0) + ntypes * nruns
    end
 end
 

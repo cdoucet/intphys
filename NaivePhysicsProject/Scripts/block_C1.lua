@@ -74,9 +74,9 @@ end
 
 
 -- Return random parameters the the given subblock
-function M.get_random_parameters(subblock)
+function M.get_random_parameters(subblock, nactors)
    assert(is_valid_subblock(subblock))
-   local nspheres = math.random(1, 3)
+   local nspheres = nactors or math.random(1, 3)
    local params = {}
 
    -- occluders
