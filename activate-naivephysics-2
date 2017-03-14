@@ -1,0 +1,14 @@
+#!/bin/bash
+#
+# Setup environment to run the NaivePhysics project.
+# Load torch and uetorch, update the Lua path.
+
+export NAIVEPHYSICS_ROOT=/opt/NaivePhysics
+export UNREALENGINE_ROOT=/opt/NaivePhysics/UnrealEngine
+
+source $NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
+source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
+
+LUA_PATH="$NAIVEPHYSICS_ROOT/NaivePhysics2/Scripts/?.lua;$LUA_PATH"
+
+export NAIVEPHYSICS_BINARY=$NAIVEPHYSICS_ROOT/NaivePhysics2/Package/LinuxNoEditor/NaivePhysics2/Binaries/Linux/NaivePhysics2
