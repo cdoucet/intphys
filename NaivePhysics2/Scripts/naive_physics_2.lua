@@ -55,6 +55,11 @@ function get_remaining_iterations()
 end
 
 
+function is_test_iteration()
+   return tostring(not config.is_train(config.get_current_iteration()))
+end
+
+
 function get_current_iteration_json()
    -- ticking for `nticks`, taking screenshot every `tick_interval` at
    -- a constant `tick rate`, setup the counter to 0
@@ -74,12 +79,26 @@ function get_current_iteration_json()
    -- prepare the scene for the current iteration
    scene.initialize(iteration)
 
-   print(scene.get_params())
    return json.encode(scene.get_params())
 end
 
-function terminate_iteration()
-   config.prepare_next_iteration(true)
+function run_iteration()
+   scene.run()
 end
+
+function terminate_iteration()
+   local is_valid = true -- scene.is_valid()
+--   scene.destroy()
+   local remaining = config.prepare_next_iteration(is_valid)
+   return tostring(remaining)
+end
+
+
+function terminate_program()
+   print('no more iterations, exiting')
+   uetorch.ExecuteConsoleCommand('Exit')
+   return
+end
+
 
 return {initialize = initialize}

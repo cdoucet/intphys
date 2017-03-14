@@ -22,7 +22,7 @@ local tick = require 'tick'
 local backwall = require 'backwall'
 -- local occluders = require 'occluders'
 -- local actors = require 'actors'
--- local floor = require 'floor'
+local floor = require 'floor'
 -- local light = require 'light'
 local camera = require 'camera'
 
@@ -63,17 +63,19 @@ local function init_params(subblock)
       -- params = block.get_random_parameters(subblock, iteration.nactors)
 
       -- -- choose random parameters for static actors
-      -- params.floor = floor.get_random_parameters()
+      params.floor = floor.get_random_parameters()
       -- params.light = light.get_random_parameters()
-      params.backwall = backwall.get_random_parameters()
+      if math.random() >= 0.5 then
+         params.backwall = backwall.get_random_parameters(true)
+      end
 
-      -- -- choose parameters for the camera with a fixed position in
-      -- -- test and a more variable one for training
-      -- if config.is_train(iteration) then
-      --    params.camera = camera.get_random_parameters()
-      -- else
-      --    params.camera = camera.get_default_parameters()
-      -- end
+      -- choose parameters for the camera with a fixed position in
+      -- test and a more variable one for training
+      if config.is_train(iteration) then
+         params.camera = camera.get_random_parameters()
+      else
+         params.camera = camera.get_default_parameters()
+      end
 
       utils.write_json(params, params_file)
    else
@@ -162,7 +164,7 @@ end
 
 
 function M.run()
-   actors.activate_physics()
+   --actors.activate_physics()
    tick.run()
 end
 
