@@ -20,10 +20,10 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 local backwall = require 'backwall'
--- local occluders = require 'occluders'
+--local occluders = require 'occluders'
 -- local actors = require 'actors'
 local floor = require 'floor'
--- local light = require 'light'
+local light = require 'light'
 local camera = require 'camera'
 
 -- local check_overlap = require 'check_overlap'
@@ -59,12 +59,12 @@ local function init_params(subblock)
    -- parameters and save them, otherwise load them
    local params = {}
    if config.is_first_iteration_of_block(iteration) then
-      -- -- choose random parameters for the block actors
-      -- params = block.get_random_parameters(subblock, iteration.nactors)
+      -- choose random parameters for the block actors
+      params = block.get_random_parameters(subblock, iteration.nactors)
 
       -- -- choose random parameters for static actors
       params.floor = floor.get_random_parameters()
-      -- params.light = light.get_random_parameters()
+      params.light = light.get_random_parameters()
       if math.random() >= 0.5 then
          params.backwall = backwall.get_random_parameters(true)
       end
@@ -163,17 +163,17 @@ function M.get_params()
 end
 
 
-function M.run()
-   --actors.activate_physics()
-   tick.run()
-end
+-- function M.run()
+--    --actors.activate_physics()
+--    tick.run()
+-- end
 
 
-function M.destroy()
-   backwall.destroy()
-   occluders.destroy()
-   actors.destroy()
-end
+-- function M.destroy()
+--    backwall.destroy()
+--    occluders.destroy()
+--    actors.destroy()
+-- end
 
 
 -- Return true is the scene has been validated (all checks successful)

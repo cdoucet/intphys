@@ -25,10 +25,10 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 
-local function get_mesh()
-   local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
-   return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
-end
+-- local function get_mesh()
+--    local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+--    return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+-- end
 
 
 -- This table registers the mobile (rotating) occluders. It is built in
@@ -39,45 +39,45 @@ local mobile_occluders
 local active_occluders, noccluders
 
 
--- Internal function handling occluder's rotation
-local function _occluder_move(o, dir, dt)
-   local angle_abs = (o.t_rotation - o.t_rotation_change) * 20 * 0.125
-   local angle_rel = angle_abs
-   if dir == 1 then --go up
-      angle_rel = 90 - angle_rel
-   end
+-- -- Internal function handling occluder's rotation
+-- local function _occluder_move(o, dir, dt)
+--    local angle_abs = (o.t_rotation - o.t_rotation_change) * 20 * 0.125
+--    local angle_rel = angle_abs
+--    if dir == 1 then --go up
+--       angle_rel = 90 - angle_rel
+--    end
 
-   local location = uetorch.GetActorLocation(o.mesh)
-   uetorch.SetActorLocation(
-      o.mesh, location.x, location.y,
-      20 + math.sin((angle_rel) * math.pi / 180) * o.box)
-   uetorch.SetActorRotation(o.mesh, 0, o.rotation, angle_rel)
+--    local location = uetorch.GetActorLocation(o.mesh)
+--    uetorch.SetActorLocation(
+--       o.mesh, location.x, location.y,
+--       20 + math.sin((angle_rel) * math.pi / 180) * o.box)
+--    uetorch.SetActorRotation(o.mesh, 0, o.rotation, angle_rel)
 
-   if angle_abs >= 90 then
-      table.remove(o.pause, 1)
-      o.movement = o.movement - 0.5
-      o.status = "pause"
-      o.t_rotation_change = o.t_rotation
-   end
+--    if angle_abs >= 90 then
+--       table.remove(o.pause, 1)
+--       o.movement = o.movement - 0.5
+--       o.status = "pause"
+--       o.t_rotation_change = o.t_rotation
+--    end
 
-   -- TODO make this a parameter
-   local speed_coef = 0.9
-   o.t_rotation = o.t_rotation + dt * speed_coef
-end
+--    -- TODO make this a parameter
+--    local speed_coef = 0.9
+--    o.t_rotation = o.t_rotation + dt * speed_coef
+-- end
 
 
--- Internal function handling pause steps between occluder's rotations
-local function _occluder_pause(o)
-   o.pause[1] = o.pause[1] - 1
-   if o.pause[1] <= 0 then
-      -- go to the next movement: if down, go up, if up, go down
-      if uetorch.GetActorRotation(o.mesh).roll >= 89.5 then
-         o.status = 'go_up'
-      else
-         o.status = 'go_down'
-      end
-   end
-end
+-- -- Internal function handling pause steps between occluder's rotations
+-- local function _occluder_pause(o)
+--    o.pause[1] = o.pause[1] - 1
+--    if o.pause[1] <= 0 then
+--       -- go to the next movement: if down, go up, if up, go down
+--       if uetorch.GetActorRotation(o.mesh).roll >= 89.5 then
+--          o.status = 'go_up'
+--       else
+--          o.status = 'go_down'
+--       end
+--    end
+-- end
 
 
 
@@ -85,7 +85,7 @@ local M = {}
 
 
 function M.get_random_parameters(noccluders, subblock)
-   noccluders = noccluders or math.random(0, 2)
+   noccluders = 2 --noccluders or math.random(0, 2)
    subblock = subblock or 'train'
 
    local params = {}
@@ -93,9 +93,14 @@ function M.get_random_parameters(noccluders, subblock)
    for i = 1, noccluders do
       local name = 'occluder_' .. tostring(i)
       params[name] = M.get_random_occluder_parameters(name, subblock)
+      --params[name].start_position = 'down'
    end
 
-   return params
+   if not next(params) then
+      return nil
+   else
+      return params
+   end
 end
 
 
@@ -134,7 +139,7 @@ function M.initialize(params, bounds)
       end
 
       -- spawn the occluder actor
-      local location = utils.location(p.location.x, p.location.y, 20)
+      local location = utils.location(p.location.x, p.location.y, p.location.z)
       local rotation = utils.rotation(0, 0, 0)
       local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), location, rotation))
 
@@ -254,10 +259,10 @@ function M.get_random_occluder_parameters(name, subblock)
    -- for train, occluders are fully random
    if subblock:match('train') then
       local shift = {0, 500}
-      params.location = {x = shift[idx] - 300, y = -150 - shift[idx]}
+      params.location = {x = shift[idx] - 300, y = -150 - shift[idx], z = 20}
 
       -- Rotation around the Z axis in degree
-      params.rotation = math.random(-45, 45)
+      params.rotation = math.random(-90, 90)
 
       params.scale = {x = math.random() + 0.5, y = 1, z = 1.5 - 0.3 * math.random()}
 
@@ -269,10 +274,12 @@ function M.get_random_occluder_parameters(name, subblock)
       -- trip and a half, 2 -> two round trips)
       params.movement = math.random(0, 4) / 2
 
+      params.rotation_speed = math.random()*20 + 5
+
       -- a brief pause between each movement steps
       params.pause = {}
       for i=1, params.movement*2 do
-         table.insert(params.pause, math.random(50))
+         table.insert(params.pause, math.random() * 2)
       end
 
       return params
@@ -280,6 +287,7 @@ function M.get_random_occluder_parameters(name, subblock)
 
    -- we are generating occluders for test iterations, with a more
    -- controlled variability
+   params.rotation_speed = 100
    params.movement = 1
    params.rotation = 0
    params.start_position = 'down'
@@ -290,13 +298,13 @@ function M.get_random_occluder_parameters(name, subblock)
    -- occluder's location depends on subblock
    if subblock:match('dynamic_2') then
       local x = {-100, 200}
-      params.location = {x = x[idx], y = -350}
+      params.location = {x = x[idx], y = -350, z = 20}
    elseif subblock:match('dynamic_1') then
-      params.location = {x = 50, y = -350}
+      params.location = {x = 50, y = -350, z = 20}
    else
       assert(subblock:match('static'))
       params.pause = {5 + math.random(20), math.random(20)}
-      params.location = {x = 100 - 200 * params.scale.x, y = -350}
+      params.location = {x = 100 - 200 * params.scale.x, y = -350, z = 20}
    end
 
    return params

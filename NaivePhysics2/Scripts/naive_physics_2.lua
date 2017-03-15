@@ -29,6 +29,8 @@ local scene = require 'scene'
 local json = require 'dkjson'
 
 
+local is_valid = true
+
 -- Called at module startup. This function is automatically called
 -- when the module is loaded within the level blueprint.
 function initialize()
@@ -61,6 +63,8 @@ end
 
 
 function get_current_iteration_json()
+   is_valid = true
+
    -- ticking for `nticks`, taking screenshot every `tick_interval` at
    -- a constant `tick rate`, setup the counter to 0
    tick.initialize(
@@ -79,25 +83,56 @@ function get_current_iteration_json()
    -- prepare the scene for the current iteration
    scene.initialize(iteration)
 
-   return json.encode(scene.get_params())
+   local params = scene.get_params()
+   -- params.occluders = {}
+   -- params.occluders.occluder_1 =
+   --    {
+   --       movement = 0,
+   --       pause = {0, 0},
+   --       location = {x = 0, y = -500, z = 20},
+   --       start_position = "up",
+   --       scale = {x = 1, y = 1, z = 1},
+   --       rotation_speed = 10,
+   --       material = "Wall/M_Brick_Cut_Stone",
+   --       rotation = 0
+   --    }
+   -- params.occluders.occluder_2 =
+   --    {
+   --       movement = 1,
+   --       pause = {0, 0},
+   --       location = {x = 450, y = -600, z = 20},
+   --       start_position = "up",
+   --       scale = {x = 1, y = 1, z = 1},
+   --       rotation_speed = 10,
+   --       material = "Wall/M_Brick_Cut_Stone",
+   --       rotation = 90
+   --    }
+   -- local camera = require 'camera'
+   -- params.camera = camera.get_default_parameters()
+
+   return json.encode(params)
 end
 
 function run_iteration()
-   scene.run()
+   tick.run()
 end
 
 function terminate_iteration()
-   local is_valid = true -- scene.is_valid()
---   scene.destroy()
    local remaining = config.prepare_next_iteration(is_valid)
    return tostring(remaining)
 end
 
 
+function invalid_scene(reason)
+   print('invalid scene: ' .. reason)
+   tick.set_ticks_remaining(0)
+   is_valid = false
+end
+
+
 function terminate_program()
    print('no more iterations, exiting')
-   uetorch.ExecuteConsoleCommand('Exit')
-   return
+   --uetorch.ExecuteConsoleCommand('Exit')
 end
 
 

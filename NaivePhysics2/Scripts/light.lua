@@ -30,11 +30,11 @@ local floor = require 'floor'
 local M = {}
 
 
-local sky_sphere = assert(uetorch.GetActor('Sky_Sphere'))
-local directional_lights = {
-   assert(uetorch.GetActor('LightSource_1')),
-   assert(uetorch.GetActor('LightSource_2'))
-}
+-- local sky_sphere = assert(uetorch.GetActor('Sky_Sphere'))
+-- local directional_lights = {
+--    assert(uetorch.GetActor('LightSource_1')),
+--    assert(uetorch.GetActor('LightSource_2'))
+-- }
 
 -- local function get_sky_sphere()
 --    local path = "Blueprint'/Game/EngineSky/BP_Sky_Sphere'"
@@ -73,30 +73,30 @@ end
 --- parameters locally
 local _params = nil
 function M.initialize(params)
-   if not params then return end
+   -- if not params then return end
 
-   -- setup the lights
-   for i = 1, params.nlights do
-      local p = params['directional_light_' .. i]
-      local a = directional_lights[i]
-      uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
-      uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
-      uetorch.SetActorVisible(a, true)
-   end
+   -- -- setup the lights
+   -- for i = 1, params.nlights do
+   --    local p = params['directional_light_' .. i]
+   --    local a = directional_lights[i]
+   --    uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
+   --    uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
+   --    uetorch.SetActorVisible(a, true)
+   -- end
 
-   -- desactivate any unused light
-   for i = params.nlights + 1, #directional_lights do
-      uetorch.SetActorVisible(directional_lights[i], false)
-   end
+   -- -- desactivate any unused light
+   -- for i = params.nlights + 1, #directional_lights do
+   --    uetorch.SetActorVisible(directional_lights[i], false)
+   -- end
 
-   -- setup the sky sphere
-   if params.is_sky then
-      uetorch.SetActorVisible(sky_sphere, true)
-   else
-      uetorch.SetActorVisible(sky_sphere, false)
-   end
+   -- -- setup the sky sphere
+   -- if params.is_sky then
+   --    uetorch.SetActorVisible(sky_sphere, true)
+   -- else
+   --    uetorch.SetActorVisible(sky_sphere, false)
+   -- end
 
-   _params = params
+   -- _params = params
 end
 
 
