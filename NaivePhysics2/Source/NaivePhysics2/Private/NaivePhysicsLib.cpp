@@ -18,3 +18,12 @@ UMaterialInterface* UNaivePhysicsLib::GetMaterialFromName(const FString& Name)
 
     return LoadObject<UMaterialInterface>(nullptr, Path.GetCharArray().GetData());
 }
+
+
+UStaticMesh* UNaivePhysicsLib::GetStaticMeshFromName(const FString& Name)
+{
+    FString Path = FString(TEXT("StaticMesh'/Game/Meshes/"))
+        + Name + FString(TEXT(".")) + Name + FString(TEXT("'"));
+
+    return LoadObject<UStaticMesh>(nullptr, Path.GetCharArray().GetData());
+}

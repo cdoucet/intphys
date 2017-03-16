@@ -49,10 +49,10 @@ local M = {}
 function M.get_random_parameters()
    local params = {}
 
-   params.nlights = math.random(1, 2)
-   for i = 1, params.nlights do
+   local nlights = math.random(1, 2)
+   for i = 1, nlights do
       local b = floor.get_status()
-      params['directional_light_' .. i] = {
+      params['light_' .. i] = {
          location = utils.location(
             math.random() * (b.maxx - b.minx) + b.minx,
             math.random() * (b.maxy - b.miny) + b.miny,

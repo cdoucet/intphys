@@ -110,6 +110,8 @@ function get_current_iteration_json()
    -- local camera = require 'camera'
    -- params.camera = camera.get_default_parameters()
 
+   print(params.actors)
+
    return json.encode(params)
 end
 
