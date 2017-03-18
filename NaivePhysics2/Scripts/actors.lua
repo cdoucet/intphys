@@ -31,10 +31,11 @@ local shapes_available = {'sphere', 'cube', 'cone', 'cylinder'}
 -- A table (name -> actor) of actors actually active in the scene
 local active_actors
 
+local normalized_names
+
+
 -- The length of active_actors
 local nactors
-
-local forces
 
 
 -- Return true if `shape` is an available shape, false otherwise
@@ -56,27 +57,15 @@ local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2
 local M = {}
 
 
--- Instanciate a UStaticMesh of `shape` and return a reference to it
---
--- return nil if `shape` is not a valid shape
-function M.get_mesh(shape)
-   if not is_valid_shape(shape) then return nil end
-
-   local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
-   local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
-   return assert(UE.LoadObject(StaticMesh.Class(), nil, path))
-end
-
-
 -- Return the list of available shapes for the physics actors
 function M.get_shapes()
    return shapes_available
 end
 
 
--- Return an actor name of another shape that the given actor
+-- Return a shape different of that of the given actor
 --
--- e.g. 'cylinder_1' -> 'cube_1'
+-- e.g. 'cylinder_1' -> 'cube'
 function M.get_other_shape_actor(name, shapes)
    shapes = shapes or M.get_shapes()
 
@@ -92,97 +81,35 @@ end
 
 -- Return a table of parameters for the given actors
 --
--- `t_actors` is a table of (shape -> n). For exemple, the table
---     {'sphere' = 2, 'cube' = 1}) will generate parameters for
---     sphere_1, sphere_2 and cube_3.
---
--- The returned table has the format (actor_name -> actor_params),
--- where actor_params is also a table with the following structure:
---    {material, scale, location={x, y, z}, force={x, y, z}}
-function M.get_random_parameters(t_actors)
+-- The returned table has the format (actor_name -> actor_params)
+function M.get_random_parameters(t_actors, t_shapes)
    local params = {}
 
-   for _, name in pairs(t_actors) do
-      assert(M.is_valid_name(name))
-      params[name] = M.get_random_actor_parameters(name)
+   for i, name in pairs(t_actors) do
+      params[name] = M.get_random_actor_parameters(name, t_shapes[i])
    end
 
    return params
 end
 
 
--- Initialize scene's physics actors given their parameters
---
--- Setup the location, scale, force and material of parametrized
--- actors, destroy the unused ones.
---
--- `params` is a table of (actor_name -> actor_params), for exemple as
---     returned by the get_random_parameters() method. Each actor name
---     must be valid and the actor params must have the following
---     structure (where the 'force' entry is optional):
---         {material, scale, location={x, y, z}, force={x, y, z}}
---
--- `bounds` is an optional table of scene boundaries structured as
---     {xmin, xmax, ymin, ymax}. When used, the actors location is
---     forced to be in thoses bounds.
-function M.initialize(params, bounds)
-   -- when params is empty we do nothing
-   if not params or next(params) == nil then return end
-
+-- Initialize scene's physics actors given their names
+function M.initialize(actors_name)
    active_actors = {}
-   forces = {}
+   normalized_names = {}
    nactors = 0
 
-   for actor_name, actor_params in pairs(params) do
-      local p = actor_params
+   for idx, name in ipairs(actors_name) do
+      local actor = uetorch.GetActor(name)
+      active_actors[name] = actor
 
-      -- stay in the bounds
-      if bounds then
-         p.location.x = math.max(bounds.xmin, p.location.x)
-         p.location.x = math.min(bounds.xmax, p.location.x)
-         p.location.y = math.max(bounds.ymin, p.location.y)
-         p.location.y = math.min(bounds.ymax, p.location.y)
-      end
-      if not p.rotation then
-         p.rotation = utils.rotation(0, 0, 0)
-      end
+      local n = name:gsub('C_.*$', ''):gsub('^%u', string.lower) .. idx
+      normalized_names[n] = actor
 
-      -- scale normalization factor
-      local scale = p.scale
-      if p.volume_normalization then
-         scale = scale * math.sqrt(volume_scale[actor_name:gsub('_.*$', '')])
-      end
-
-      local mesh = M.get_mesh(actor_name:gsub('_.*$', ''))
-      local actor = assert(uetorch.SpawnStaticMeshActor(mesh, p.location, p.rotation))
-      uetorch.SetActorScale3D(actor, scale, scale, scale)
-      material.set_actor_material(actor, actor_params.material)
-      if p.mass_scale then
-         uetorch.SetActorMassScale(actor, p.mass_scale)
-      end
-
-      --uetorch.SetActorSimulatePhysics(actor, false)
-      uetorch.SetActorVisible(actor, true)
-      uetorch.SetActorGenerateOverlapEvents(actor, true)
-
-      if p.force then
-         forces[actor_name] = p.force
-      end
-
-      -- register the new actor as active in the scene
-      active_actors[actor_name] = actor
       nactors = nactors + 1
    end
 end
 
-
-function M.activate_physics()
-   for n, a in pairs(active_actors or {}) do
-      uetorch.SetActorSimulatePhysics(a, true)
-      local f = forces[n]
-      if f then uetorch.AddForce(a, f.x, f.y, f.z) end
-   end
-end
 
 -- Destroy a single actor in the scene
 function M.destroy_actor(name)
@@ -190,27 +117,6 @@ function M.destroy_actor(name)
    uetorch.DestroyActor(a)
    active_actors[name] = nil
    nactors = nactors - 1
-end
-
-
--- Destroy all the actors in the scene
-function M.destroy()
-   for n, _ in pairs(active_actors or {}) do
-      M.destroy_actor(n)
-   end
-end
-
-
--- Return true if `name` is a valid name in the actors bank
-function M.is_valid_name(name)
-   local shape = name:gsub('_.*$', '')
-   local idx = name:gsub('^.*_', '')
-
-   if is_valid_shape(shape) then
-      return true
-   else
-      return false
-   end
 end
 
 
@@ -222,7 +128,22 @@ function M.get_active_actors()
 end
 
 
+function M.get_active_actors_normalized_names()
+   return normalized_names
+end
+
+
 function M.get_actor(name)
+   return active_actors[name]
+end
+
+
+-- Actors names have a suffix index, this method access actors by
+-- ordered indices
+function M.get_actor_by_order(idx)
+   local s2n = function(s) return tonumber(s:gsub('^.*_', '')) end
+   local name = utils.get_index_in_sorted_table(
+      M.get_active_actors(), idx, function(a,b) return s2n(a) < s2n(b) end)
    return active_actors[name]
 end
 
@@ -299,20 +220,32 @@ function M.random_force(side)
 end
 
 
+function M.random_shape()
+   return shapes_available[math.random(1, #shapes_available)]
+end
+
+
 -- Return random parameters for a single actor given its name
-function M.get_random_actor_parameters(name)
+function M.get_random_actor_parameters(name, shape)
    local p = {}
    local side = M.random_side()
 
+   p.mesh = (shape or M.random_shape()):gsub('^%l', string.upper)
    p.material = material.random('actor')
-   p.scale = math.random() + 1.5
+
+   local s = math.random() + 1.5
+   p.scale = {x = s, y = s, z = s}
+
    p.location = M.random_location(name, side)
    p.rotation = {
       pitch = math.random() * 360,
       yaw = math.random() * 360,
       roll = math.random() * 360}
+
    if M.random_static() then
       p.force = M.random_force(side)
+   else
+      p.force = {x = 0, y = 0, z = 0}
    end
 
    return p

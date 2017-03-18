@@ -36,7 +36,7 @@ local camera_actor
 -- Return the camera actor defined in the scene and it's trigger box
 function M.get_actor()
    if not camera_actor then
-      camera_actor = assert(uetorch.GetActor('Camera'))
+      camera_actor = assert(uetorch.GetActor('Camera_Blueprint_C_0'))
    end
 
    return camera_actor
@@ -67,45 +67,45 @@ function M.get_default_parameters()
 end
 
 
--- Setup the camera location and rotation
---
--- If params are not specified, use default parameters. `params` must
--- be a table structured as {location = {x, y, z}, rotation = {pitch,
--- yaw, roll}}
-function M.initialize(params)
-   if not params then
-      params = M.get_default_parameters()
-   end
+-- -- Setup the camera location and rotation
+-- --
+-- -- If params are not specified, use default parameters. `params` must
+-- -- be a table structured as {location = {x, y, z}, rotation = {pitch,
+-- -- yaw, roll}}
+-- function M.initialize(params)
+--    if not params then
+--       params = M.get_default_parameters()
+--    end
 
-   -- -- the trigger box follows the camera
-   -- local camera, box = M.get_actor()
-   -- for _, actor in ipairs({camera, box}) do
-   --    uetorch.SetActorLocation(
-   --       actor,
-   --       params.location.x,
-   --       params.location.y,
-   --       params.location.z)
+--    -- -- the trigger box follows the camera
+--    -- local camera, box = M.get_actor()
+--    -- for _, actor in ipairs({camera, box}) do
+--    --    uetorch.SetActorLocation(
+--    --       actor,
+--    --       params.location.x,
+--    --       params.location.y,
+--    --       params.location.z)
 
-   --    uetorch.SetActorRotation(
-   --       actor,
-   --       params.rotation.pitch,
-   --       params.rotation.yaw,
-   --       params.rotation.roll)
-   -- end
-   local actor = M.get_actor()
+--    --    uetorch.SetActorRotation(
+--    --       actor,
+--    --       params.rotation.pitch,
+--    --       params.rotation.yaw,
+--    --       params.rotation.roll)
+--    -- end
+--    local actor = M.get_actor()
 
-   uetorch.SetActorLocation(
-      actor,
-      params.location.x,
-      params.location.y,
-      params.location.z)
+--    uetorch.SetActorLocation(
+--       actor,
+--       params.location.x,
+--       params.location.y,
+--       params.location.z)
 
-   uetorch.SetActorRotation(
-      actor,
-      params.rotation.pitch,
-      params.rotation.yaw,
-      params.rotation.roll)
-end
+--    uetorch.SetActorRotation(
+--       actor,
+--       params.rotation.pitch,
+--       params.rotation.yaw,
+--       params.rotation.roll)
+-- end
 
 
 -- Return the camera location and rotation as a string

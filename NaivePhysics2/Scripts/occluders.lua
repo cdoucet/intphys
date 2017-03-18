@@ -25,67 +25,15 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 
--- local function get_mesh()
---    local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
---    return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
--- end
-
-
--- This table registers the mobile (rotating) occluders. It is built in
--- occluder.initialize() and used in occluder.tick()
-local mobile_occluders
-
 -- Registers the active occluders, mobile or not, and their number
 local active_occluders, noccluders
-
-
--- -- Internal function handling occluder's rotation
--- local function _occluder_move(o, dir, dt)
---    local angle_abs = (o.t_rotation - o.t_rotation_change) * 20 * 0.125
---    local angle_rel = angle_abs
---    if dir == 1 then --go up
---       angle_rel = 90 - angle_rel
---    end
-
---    local location = uetorch.GetActorLocation(o.mesh)
---    uetorch.SetActorLocation(
---       o.mesh, location.x, location.y,
---       20 + math.sin((angle_rel) * math.pi / 180) * o.box)
---    uetorch.SetActorRotation(o.mesh, 0, o.rotation, angle_rel)
-
---    if angle_abs >= 90 then
---       table.remove(o.pause, 1)
---       o.movement = o.movement - 0.5
---       o.status = "pause"
---       o.t_rotation_change = o.t_rotation
---    end
-
---    -- TODO make this a parameter
---    local speed_coef = 0.9
---    o.t_rotation = o.t_rotation + dt * speed_coef
--- end
-
-
--- -- Internal function handling pause steps between occluder's rotations
--- local function _occluder_pause(o)
---    o.pause[1] = o.pause[1] - 1
---    if o.pause[1] <= 0 then
---       -- go to the next movement: if down, go up, if up, go down
---       if uetorch.GetActorRotation(o.mesh).roll >= 89.5 then
---          o.status = 'go_up'
---       else
---          o.status = 'go_down'
---       end
---    end
--- end
-
-
+local normalized_names
 
 local M = {}
 
 
 function M.get_random_parameters(noccluders, subblock)
-   noccluders = 2 --noccluders or math.random(0, 2)
+   noccluders = noccluders or math.random(0, 2)
    subblock = subblock or 'train'
 
    local params = {}
@@ -93,7 +41,6 @@ function M.get_random_parameters(noccluders, subblock)
    for i = 1, noccluders do
       local name = 'occluder_' .. tostring(i)
       params[name] = M.get_random_occluder_parameters(name, subblock)
-      --params[name].start_position = 'down'
    end
 
    if not next(params) then
@@ -104,118 +51,33 @@ function M.get_random_parameters(noccluders, subblock)
 end
 
 
--- Initialize the occluders with given parameters.
---
--- Setup the location, scale, movement and material of
--- parametrized occluders, destroy the unused ones.
---
--- `params` is a table of (occluder_name -> occluder_params), for
---     exemple as returned by the get_random_parameters() method. Each
---     occluder name must be valid and the params must have the
---     following structure:
---         {material, movement, scale, location={x, y, z},
---          rotation, start_position, pause}
---
--- `bounds` is an optional table of scene boundaries structured as
---     {xmin, xmax, ymin, ymax}. When used, the occluders location is
---     forced to be in thoses bounds.
-function M.initialize(params, bounds)
-   -- when params is empty we do nothing
-   if not params or next(params) == nil then return end
-
-   mobile_occluders = {}
+-- Initialize the occluders with given names
+function M.initialize(actors_name)
    active_occluders = {}
+   normalized_names = {}
    noccluders = 0
 
-   for occluder_name, occluder_params in pairs(params or {}) do
-      local p = occluder_params
+   for idx, name in ipairs(actors_name) do
+      local actor = uetorch.GetActor(name)
+      active_occluders[name] = actor
 
-      -- stay in the bounds
-      if bounds then
-         p.location.x = math.max(bounds.xmin, p.location.x)
-         p.location.x = math.min(bounds.xmax, p.location.x)
-         p.location.y = math.max(bounds.ymin, p.location.y)
-         p.location.y = math.min(bounds.ymax, p.location.y)
-      end
+      local n = name:gsub('C_.*$', ''):gsub('^%u', string.lower) .. idx
+      normalized_names[n] = actor
 
-      -- spawn the occluder actor
-      local location = utils.location(p.location.x, p.location.y, p.location.z)
-      local rotation = utils.rotation(0, 0, 0)
-      local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), location, rotation))
-
-      -- the y bound box is used for occluder movement details
-      local box = uetorch.GetActorBounds(actor).boxY
-      if p.start_position == 'down' then
-         uetorch.SetActorRotation(actor, 0, p.rotation, 90)
-         uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20 + box)
-      else
-         uetorch.SetActorRotation(actor, 0, p.rotation, 0)
-         uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20)
-      end
-
-      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
-      material.set_actor_material(actor, p.material)
-      uetorch.SetActorVisible(actor, true)
-      uetorch.SetActorGenerateOverlapEvents(actor, true)
-
-      -- register the new occluder as active in the scene
-      active_occluders[occluder_name] = actor
       noccluders = noccluders + 1
-
-      -- register the occluder for motion (through the occluder.tick
-      -- method). If movement==0, the occluder remains static and do
-      -- nothing on ticks.
-      if p.movement > 0 then
-         table.insert(
-            mobile_occluders, {
-               id=occluder_name:gsub('^.*_', ''),
-               mesh=actor,
-               box=box,
-               scale=p.scale,
-               rotation=p.rotation,
-               movement=p.movement,
-               pause=p.pause,
-               status='pause',
-               t_rotation=0,
-               t_rotation_change=0})
-      end
-   end
-
-   -- register the tick method for occluders rotation (if we have
-   -- rotating occluders)
-   if mobile_occluders ~= {} then
-      tick.add_hook(M.tick, 'fast')
    end
 end
 
 
--- destroy the spawned occluders
-function M.destroy(name)
-   if name then
-      local a = active_occluders[name]
-      if not a then return end
+-- destroy a spawned occluder given its name
+function M.destroy_by_order(idx)
+   local s2n = function(s) return tonumber(s:gsub('^.*_', '')) end
+   local name = utils.get_index_in_sorted_table(
+      M.get_occluders(), idx, function(a,b) return s2n(a) < s2n(b) end)
 
-      for n, occ in ipairs(mobile_occluders) do
-         if occ.mesh == a then
-            table.remove(mobile_occluders, n)
-            break
-         end
-      end
-
-      uetorch.DestroyActor(a)
-      active_occluders[name] = nil
-
-      noccluders = noccluders - 1
-      return
-   end
-
-   for _, a in pairs(active_occluders or {}) do
-      uetorch.DestroyActor(a)
-   end
-
-   active_occluders = {}
-   mobile_occluders = {}
-   noccluders = 0
+   uetorch.DestroyActor(active_occluders[name])
+   active_occluders[name] = nil
+   noccluders = noccluders - 1
 end
 
 
@@ -227,24 +89,13 @@ function M.get_occluders()
 end
 
 
+function M.get_occluders_normalized_names()
+   return normalized_names or {}
+end
+
 -- Return the number of active occluders
 function M.get_noccluders()
    return noccluders or 0
-end
-
-
-function M.tick()
-   for _, occluder in pairs(mobile_occluders) do
-      if occluder.movement > 0 then
-         if occluder.status == 'pause' then
-            _occluder_pause(occluder)
-         elseif occluder.status == 'go_down' then
-            _occluder_move(occluder, -1, 1)
-         else -- 'go_up'
-            _occluder_move(occluder, 1, 1)
-         end
-      end
-   end
 end
 
 

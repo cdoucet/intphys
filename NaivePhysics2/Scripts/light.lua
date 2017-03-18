@@ -27,19 +27,16 @@ local utils = require 'utils'
 local floor = require 'floor'
 
 
+local nlights
+
 local M = {}
 
 
 -- local sky_sphere = assert(uetorch.GetActor('Sky_Sphere'))
--- local directional_lights = {
---    assert(uetorch.GetActor('LightSource_1')),
---    assert(uetorch.GetActor('LightSource_2'))
--- }
-
--- local function get_sky_sphere()
---    local path = "Blueprint'/Game/EngineSky/BP_Sky_Sphere'"
---    return assert(UE.LoadObject(Blueprint.Class(), nil, path))
--- end
+local directional_lights = {
+   assert(uetorch.GetActor('LightSource1')),
+   assert(uetorch.GetActor('LightSource2'))
+}
 
 
 -- Return random parameters for the scene illumination
@@ -49,7 +46,7 @@ local M = {}
 function M.get_random_parameters()
    local params = {}
 
-   local nlights = math.random(1, 2)
+   nlights = math.random(1, 2)
    for i = 1, nlights do
       local b = floor.get_status()
       params['light_' .. i] = {
@@ -58,7 +55,6 @@ function M.get_random_parameters()
             math.random() * (b.maxy - b.miny) + b.miny,
             math.random() * 200 + 100),
          rotation = utils.rotation(
-            -- math.random() * 40 - 25, math.random() * 120 + 150, math.random() * 360)
             math.random() * 80 - 90, math.random() * 360, 0)
       }
    end
@@ -69,45 +65,13 @@ function M.get_random_parameters()
 end
 
 
---- Setup the scene illumination with the given parameters, store the
---- parameters locally
-local _params = nil
-function M.initialize(params)
-   -- if not params then return end
-
-   -- -- setup the lights
-   -- for i = 1, params.nlights do
-   --    local p = params['directional_light_' .. i]
-   --    local a = directional_lights[i]
-   --    uetorch.SetActorLocation(a, p.location.x, p.location.y, p.location.z)
-   --    uetorch.SetActorRotation(a, p.rotation.pitch, p.rotation.yaw, p.rotation.roll)
-   --    uetorch.SetActorVisible(a, true)
-   -- end
-
-   -- -- desactivate any unused light
-   -- for i = params.nlights + 1, #directional_lights do
-   --    uetorch.SetActorVisible(directional_lights[i], false)
-   -- end
-
-   -- -- setup the sky sphere
-   -- if params.is_sky then
-   --    uetorch.SetActorVisible(sky_sphere, true)
-   -- else
-   --    uetorch.SetActorVisible(sky_sphere, false)
-   -- end
-
-   -- _params = params
-end
-
-
 -- Lights are directional, so only the rotation vector is reported in
 -- the status (location doesn't matter)
 function M.get_status()
    local status = {}
-   for i = 1, _params.nlights do
+   for i = 1, nlights do
       status['light_' .. i] = utils.coordinates_to_string(directional_lights[i])
    end
-
    return status
 end
 

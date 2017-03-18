@@ -25,7 +25,7 @@ local uetorch = require 'uetorch'
 local image = require 'image'
 local paths = require 'paths'
 
-local backwall = require 'backwall'
+--local backwall = require 'backwall'
 local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
@@ -79,9 +79,7 @@ end
 -- Push the raw scene, mask and depth screenshots to memory (will be
 -- post-processed and saved in the final tick).
 function M.push_data()
-   if not scene.is_valid() then
-      return
-   end
+   if not scene.is_valid() then return end
 
    local idx = tick.get_counter()
 
@@ -126,6 +124,7 @@ end
 -- Save scene images, normalized depth images, masks images (with
 -- bacwall actors merged in a single mask) and the status.json file
 function M.save_data()
+   print('saving...')
    if not scene.is_valid() then
       return
    end
@@ -136,20 +135,21 @@ function M.save_data()
    -- merge the backwall actors in a single mask and normalize in [0, 1]
    local ordered_actors = scene.get_ordered_actors()
    local nactors = #ordered_actors
-   if backwall.is_active() then
-      local ndiff = backwall.get_nactors()
-      local min_idx, max_idx = backwall.get_indices(ordered_actors)
-      t_masks[torch.cmul(t_masks:ge(min_idx), t_masks:le(max_idx))] = min_idx
-      t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - ndiff + 1
-      nactors = nactors - ndiff + 1
-   end
+   -- if backwall.is_active() then
+   --    local ndiff = backwall.get_nactors()
+   --    local min_idx, max_idx = backwall.get_indices(ordered_actors)
+   --    t_masks[torch.cmul(t_masks:ge(min_idx), t_masks:le(max_idx))] = min_idx
+   --    t_masks[t_masks:gt(max_idx)] = t_masks[t_masks:gt(max_idx)] - ndiff + 1
+   --    nactors = nactors - ndiff + 1
+   -- end
    t_masks = t_masks:float():div(nactors)
 
    -- map each mask to it's grayvalue index in the mask image
    local grayscale = {{0, 'sky'}}  -- sky is always black
    local mask_names = {}
    for _, a in pairs(ordered_actors) do table.insert(mask_names, a[1]) end
-   for idx, name in pairs(backwall.get_merged_actors_names(mask_names)) do
+   -- for idx, name in pairs(backwall.get_merged_actors_names(mask_names)) do
+   for idx, name in pairs(mask_names) do
       table.insert(grayscale, {math.floor(255 * idx / nactors), name})
    end
 
@@ -182,6 +182,8 @@ function M.save_data()
       'block', 'possible', 'floor', 'camera', 'lights',
       'max_depth', 'masks_grayscale', 'frames'}
    utils.write_json(s, iteration.path .. 'status.json', keyorder)
+
+   print('save done')
 end
 
 

@@ -20,17 +20,9 @@
 -- the spheres can collide to it.
 
 local uetorch = require 'uetorch'
-local utils = require 'utils'
 local material = require 'material'
-local floor = require 'floor'
 
-local wall = {}
-
-
-local function get_mesh()
-   local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
-   return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
-end
+local actor
 
 
 local M = {}
@@ -65,140 +57,33 @@ function M.get_random_parameters(is_active)
 end
 
 
--- Setup a background wall configuration from precomputed attributes
---
--- The params must be table structured as the one returned by
--- M.get_random_parameters()
-function M.initialize(params, is_train)
-   -- when params is empty we do nothing
-   if not params or next(params) == nil then return end
-
-   local setup = {}
-   setup.back = {
-      location = utils.location(-3140, params.ylocation, 0),
-      rotation = utils.rotation(0, 0, 0),
-      scale = utils.scale(15, 0.75, params.zscale)}
-
-   -- in test blocks, we don't want to have hits between backwall and
-   -- actors because it can make the occlusion check to fail
-   if is_train then
-      setup.left = {
-         location = utils.location(-params.xwidth / 2, params.ylocation - 200, 0),
-         rotation = utils.rotation(0, 90, 0),
-         scale = utils.scale(6, 0.75, params.zscale)}
-
-      setup.right = {
-         location = utils.location(params.xwidth / 2, params.ylocation - 200, 0),
-         rotation = utils.rotation(0, 90, 0),
-         scale = utils.scale(6, 0.75, params.zscale)}
+-- Initialize a background wall with a spawned actor
+function M.initialize(actor_name)
+   if not actor_name then
+      actor = nil
+   else
+      actor = uetorch.GetActor(actor_name)
    end
-
-   for n, p in pairs(setup) do
-      local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), p.location, p.rotation))
-      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
-      material.set_actor_material(actor, params.material)
-      uetorch.SetActorVisible(actor, true)
-
-      wall['wall_' .. n] = actor
-   end
-end
-
-
--- Destroy the background wall actor
-function M.destroy()
-   for _, w in pairs(wall) do
-      uetorch.DestroyActor(w)
-   end
-
-   wall = {}
 end
 
 
 function M.is_active()
-   return next(wall) ~= nil
+   return actor ~= nil
 end
 
 
--- return the boundary box the backwall, or nil if the backwall is not
--- active
-function M.get_actors()
-   return wall
+-- return the backwall, or nil if not active
+function M.get_actor()
+   return actor
 end
 
 
 function M.get_nactors()
-   local i = 0
-   for _, _ in pairs(M.get_actors()) do
-      i = i + 1
-   end
-   return i
-end
-
-
--- Return the backwall bounding box as a table {xmin, xmax, ymin, ymax}
-function M.get_bounds()
-   local b = {}
-   local fb = floor.get_status()
-
-   if wall.wall_left then
-      b.xmin = uetorch.GetActorLocation(wall.wall_left).x
+   if M.is_active() then
+      return 1
    else
-      b.xmin = fb.minx
+      return 0
    end
-
-   if wall.wall_right then
-      b.xmax = uetorch.GetActorLocation(wall.wall_right).x
-   else
-      b.xmax = fb.maxx
-   end
-
-   if wall.wall_back then
-      b.ymin = uetorch.GetActorLocation(wall.wall_back).y
-   else
-      b.ymin = fb.miny
-   end
-
-   b.ymax = fb.maxy
-
-   return b
-end
-
-
--- Return (min, max) indices of bacwall actors in a list of `{name, actor}` pairs
-function M.get_indices(actors)
-   -- get the indices of the backwall actors in the image (should be 2, 3, 4)
-   local min_idx, max_idx = 10e9, 0
-   for k, v in ipairs(actors) do
-      v = v[2]
-      if v == wall.wall_back or v == wall.wall_left or v == wall.wall_right then
-         if min_idx > k then
-            min_idx = k
-         end
-
-         if max_idx < k then
-            max_idx = k
-         end
-      end
-   end
-
-   return min_idx, max_idx
-end
-
-
-function M.get_merged_actors_names(names)
-   local new_names = {}
-   local is_done = false
-   for _, v in ipairs(names) do
-      if string.match(v, 'wall') then
-         if not is_done then
-            is_done = true
-            table.insert(new_names, 'wall')
-         end
-      else
-         table.insert(new_names, v)
-      end
-   end
-   return new_names
 end
 
 

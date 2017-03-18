@@ -20,15 +20,15 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 local backwall = require 'backwall'
---local occluders = require 'occluders'
--- local actors = require 'actors'
+local occluders = require 'occluders'
+local actors = require 'actors'
 local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
 -- local check_overlap = require 'check_overlap'
--- local check_occlusion = require 'check_occlusion'
--- local check_coordinates = require 'check_coordinates'
+local check_occlusion = require 'check_occlusion'
+local check_coordinates = require 'check_coordinates'
 
 
 -- The current iteration to run
@@ -102,7 +102,8 @@ end
 local M = {}
 
 
-function M.initialize(_iteration)
+
+function M.get_params(_iteration)
    iteration = _iteration
 
    local block_name = iteration.block:gsub('%..*$', '')
@@ -118,62 +119,48 @@ function M.initialize(_iteration)
    block = assert(require(block_name))
    params = init_params(subblock_name)
 
-   -- -- setup the camera and static actors. On test blocks, left and
-   -- -- right components of the backwall are disabled to avoid
-   -- -- unexpected collisions
-   -- camera.initialize(params.camera)
-   -- floor.initialize(params.floor)
-   -- light.initialize(params.light)
-   -- backwall.initialize(params.backwall, config.is_train(iteration))
+   return params
+end
 
-   -- -- setup the physics actors, the occluders and block's specific
-   -- -- tricks, retrieve the backwall boundaries to make sure all the
-   -- -- actors are within
-   -- local bounds = get_scene_bounds()
-   -- occluders.initialize(params.occluders, bounds)
-   -- actors.initialize(params.actors, bounds)
-   -- block.initialize(subblock_name, iteration, params)
 
-   -- -- initialize the overlap check. The scene will fail if any illegal
-   -- -- overlaping between actors is detected (eg some actor hit the
-   -- -- camera, two occluders are overlapping, etc...).
-   -- check_overlap.initialize()
 
-   -- -- on test blocks, we make sure the main actor coordinates
-   -- -- (location and rotation) are strictly comparable over the
-   -- -- different iterations. If not, the scene fails. This is to detect
-   -- -- an issue we have with the packaged game: some videos run slower
-   -- -- than others (seems to append only in packaged, not in editor)
-   -- if not config.is_train(iteration) then
-   --    check_coordinates.initialize(iteration, block.get_main_actor())
-   -- end
+function M.initialize(actors_name)
+   local p = {occluders = {}, objects = {}}
+   actors_name = actors_name .. ' '
+   local fields = {actors_name:match((actors_name:gsub("[^ ]* ", "([^ ]*) ")))}
+   for _, actor in ipairs(fields) do
+      if actor:match('Occluder') then
+         table.insert(p.occluders, actor)
+      elseif actor:match('Backwall') then
+         p.backwall = actor
+      else
+         assert(actor:match('Object'))
+         table.insert(p.objects, actor)
+      end
+   end
+
+   backwall.initialize(p.backwall)
+   occluders.initialize(p.occluders)
+   actors.initialize(p.objects)
+   block.initialize(subblock_name, iteration, params)
+
+   -- on test blocks, we make sure the main actor coordinates
+   -- (location and rotation) are strictly comparable over the
+   -- different iterations. If not, the scene fails. This is to detect
+   -- an issue we have with the packaged game: some videos run slower
+   -- than others (seems to append only in packaged, not in editor)
+   if not config.is_train(iteration) then
+      check_coordinates.initialize(iteration, block.get_main_object())
+   end
 
    -- -- in tests blocks with occlusion, we have to make sure the main
    -- -- actor is occluded before applying the magic trick.
    -- check_occlusion.initialize(
    --    iteration,
-   --    block.get_main_actor(),
+   --    block.get_main_object(),
    --    block.get_occlusion_check_iterations(),
    --    config.get_resolution())
 end
-
-
-function M.get_params()
-   return params
-end
-
-
--- function M.run()
---    --actors.activate_physics()
---    tick.run()
--- end
-
-
--- function M.destroy()
---    backwall.destroy()
---    occluders.destroy()
---    actors.destroy()
--- end
 
 
 -- Return true is the scene has been validated (all checks successful)
@@ -185,9 +172,7 @@ function M.is_valid()
    if string.match(iteration.block, 'test.test_') then
       return block.is_test_valid()
    else
-      return check_occlusion.is_valid()
-         and check_coordinates.is_valid()
-         and check_overlap.is_valid()
+      return check_occlusion.is_valid() and check_coordinates.is_valid()
    end
 end
 
@@ -200,7 +185,7 @@ end
 
 -- Return the main actor of the scene if defined, otherwise return nil
 function M.get_main_actor()
-   return block.get_main_actor()
+   return block.get_main_object()
 end
 
 
@@ -211,19 +196,19 @@ end
 
 
 function M.is_main_actor_active()
-   if block.is_main_actor_active then
-      return block.is_main_actor_active()
+   if block.is_main_object_active then
+      return block.is_main_object_active()
    else
       return true
    end
 end
 
 
-function M.get_active_actors()
-   if block.get_active_actors then
-      return block.get_active_actors()
+function M.get_active_actors_normalized_names()
+   if block.get_active_actors_normalized_names then
+      return block.get_active_actors_normalized_names()
    else
-      return actors.get_active_actors()
+      return actors.get_active_actors_normalized_names()
    end
 end
 
@@ -234,13 +219,14 @@ function M.get_ordered_actors()
    for name, actor in pairs(floor.get_actor()) do
       table.insert(ordered, {name, actor})
    end
-   for name, actor in pairs(backwall.get_actors()) do
+   if backwall.is_active() then
+      table.insert(ordered, {'backwall', backwall.get_actor()})
+   end
+
+   for name, actor in pairs(occluders.get_occluders_normalized_names()) do
       table.insert(ordered, {name, actor})
    end
-   for name, actor in pairs(occluders.get_occluders()) do
-      table.insert(ordered, {name, actor})
-   end
-   for name, actor in pairs(M.get_active_actors()) do
+   for name, actor in pairs(M.get_active_actors_normalized_names()) do
       table.insert(ordered, {name, actor})
    end
 
@@ -257,8 +243,8 @@ function M.get_status_header()
 
    status['possible'] = M.is_possible()
    status['floor'] = floor.get_status()
-   status['camera'] = camera.get_status()
-   status['lights'] = light.get_status()
+   -- status['camera'] = camera.get_status()
+   -- status['lights'] = light.get_status()
 
    return status
 end
@@ -272,7 +258,7 @@ function M.get_status()
    local status = {}
 
    -- the physics actors
-   for name, actor in pairs(M.get_active_actors()) do
+   for name, actor in pairs(actors.get_active_actors_normalized_names()) do
       -- don't register the main actor when hidden by a magic trick
       if actor ~= block.get_main_actor() or M.is_main_actor_active() then
          status[name] = utils.coordinates_to_string(actor)
@@ -280,7 +266,7 @@ function M.get_status()
    end
 
    -- the occluders
-   for name, actor in pairs(occluders.get_occluders()) do
+   for name, actor in pairs(occluders.get_occluders_normalized_names()) do
       status[name] = utils.coordinates_to_string(actor)
    end
 

@@ -135,4 +135,14 @@ function M.coordinates_to_string(actor)
 end
 
 
+-- Return the `n`th element in a sorted version of `t`
+function M.get_index_in_sorted_table(t, n, f)
+   if not f then f = function(a, b) return a < b end end
+   local tkeys = {}
+   for k, _ in pairs(t) do table.insert(tkeys, k) end
+   table.sort(tkeys, f)
+   return tkeys[idx]
+end
+
+
 return M

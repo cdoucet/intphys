@@ -14,9 +14,9 @@ class NAIVEPHYSICS2_API UNaivePhysicsLib : public UBlueprintFunctionLibrary
 	GENERATED_BODY()
 
 public:
-        UFUNCTION(BlueprintCallable, Category="Utils")
+        UFUNCTION(BlueprintCallable, Category="NaivePhysics")
         static UMaterialInterface* GetMaterialFromName(const FString& Name);
 
-        UFUNCTION(BlueprintCallable, Category="Utils")
+        UFUNCTION(BlueprintCallable, Category="NaivePhysics")
         static UStaticMesh* GetStaticMeshFromName(const FString& Name);
 };

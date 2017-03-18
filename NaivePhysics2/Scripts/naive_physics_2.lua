@@ -26,6 +26,7 @@ local config = require 'config'
 local tick = require 'tick'
 local utils = require 'utils'
 local scene = require 'scene'
+local saver = require 'saver'
 local json = require 'dkjson'
 
 
@@ -44,6 +45,12 @@ function initialize()
 
    -- parse the input json configuration file
    config.parse_config_file()
+end
+
+
+function get_resolution()
+   local res = config.get_resolution()
+   return res.x .. 'x' .. res.y
 end
 
 
@@ -80,61 +87,44 @@ function get_current_iteration_json()
    -- create a subdirectory for this iteration
    paths.mkdir(iteration.path)
 
-   -- prepare the scene for the current iteration
-   scene.initialize(iteration)
-
-   local params = scene.get_params()
-   -- params.occluders = {}
-   -- params.occluders.occluder_1 =
-   --    {
-   --       movement = 0,
-   --       pause = {0, 0},
-   --       location = {x = 0, y = -500, z = 20},
-   --       start_position = "up",
-   --       scale = {x = 1, y = 1, z = 1},
-   --       rotation_speed = 10,
-   --       material = "Wall/M_Brick_Cut_Stone",
-   --       rotation = 0
-   --    }
-   -- params.occluders.occluder_2 =
-   --    {
-   --       movement = 1,
-   --       pause = {0, 0},
-   --       location = {x = 450, y = -600, z = 20},
-   --       start_position = "up",
-   --       scale = {x = 1, y = 1, z = 1},
-   --       rotation_speed = 10,
-   --       material = "Wall/M_Brick_Cut_Stone",
-   --       rotation = 90
-   --    }
-   -- local camera = require 'camera'
-   -- params.camera = camera.get_default_parameters()
-
-   print(params.actors)
-
+   -- generate parameters for the current iteration and forward them
+   -- to the blueprint as a JSON string
+   local params = scene.get_params(iteration)
    return json.encode(params)
 end
 
-function run_iteration()
+function run_iteration(actors)
+   local iteration = config.get_current_iteration()
+
+   scene.initialize(actors)
+
+   -- initialize the saver to write status.json and take screenshots
+   local dry_run = (os.getenv('NAIVEPHYSICS_DRY') or config.is_check_occlusion(iteration))
+   if not dry_run then
+      saver.initialize(iteration, scene, config.get_nticks())
+   end
+
    tick.run()
 end
 
 function terminate_iteration()
+   tick.run_hooks('final')
    local remaining = config.prepare_next_iteration(is_valid)
    return tostring(remaining)
 end
 
 
 function invalid_scene(reason)
-   print('invalid scene: ' .. reason)
-   tick.set_ticks_remaining(0)
-   is_valid = false
+   if is_valid then
+      print(reason)
+      tick.set_ticks_remaining(0)
+      is_valid = false
+   end
 end
 
 
 function terminate_program()
    print('no more iterations, exiting')
-   --uetorch.ExecuteConsoleCommand('Exit')
 end
 
 

@@ -89,21 +89,22 @@ function M.get_random_parameters(subblock, nactors)
 
    -- physics actors
    if subblock:match('train') then
-      local t_actors = {}
+      local t_actors, t_shapes = {}, {}
       for i = 1, nspheres do
-         table.insert(t_actors, 'sphere_' .. i)
+         table.insert(t_actors, 'object_' .. i)
+         table.insert(t_shapes, 'sphere')
       end
 
-      params.actors = actors.get_random_parameters(t_actors)
+      params.objects = actors.get_random_parameters(t_actors, t_shapes)
    else  -- we are in a test subblock
       -- setup the sphere actors parameters and the main actor (on
       -- which the trick is done)
-      params.main_actor = 'sphere_' .. math.random(1, nspheres)
-      params.actors = {}
+      params.main_object = 'object_' .. math.random(1, nspheres)
+      params.objects = {}
 
       for i = 1, nspheres do
-         params.actors['sphere_' .. i] = {}
-         local p = params.actors['sphere_' .. i]
+         params.objects['object_' .. i] = {}
+         local p = params.objects['object_' .. i]
 
          p.material = material.random('actor')
          p.scale = 0.7 + 0.5 * math.random()
@@ -153,8 +154,8 @@ function M.get_random_parameters(subblock, nactors)
             -- length and start position (on the x axis) of the magic
             -- disparition/apparition of a sphere
             local trick_length = math.random() * 250 + 200
-            local main_actor_side = assert(params.actors[params.main_actor].side)
-            if main_actor_side == 'right' then
+            local main_object_side = assert(params.objects[params.main_object].side)
+            if main_object_side == 'right' then
                params.trick_start = math.random() * (400 - trick_length) + trick_length
                params.trick_stop = params.trick_start - trick_length
             else
@@ -174,7 +175,7 @@ function M.initialize(_subblock, _iteration, _params)
    iteration = _iteration
    params = _params
 
-   main_actor = nil
+   main_object = nil
    trick = nil
 
    if iteration.type == 1 then
@@ -189,7 +190,7 @@ function M.initialize(_subblock, _iteration, _params)
    elseif iteration.type == 4 then
       is_visible_start = true
       is_possible = false
-   else -- this includes iterations for train and occlusion checks
+   else  -- this includes iterations for train and occlusion checks
       is_visible_start = true
       is_possible = true
    end
@@ -199,20 +200,22 @@ function M.initialize(_subblock, _iteration, _params)
       return
    end
 
-   -- on test, setup the main actor
-   main_actor = actors.get_active_actors()[params.main_actor]
-   uetorch.SetActorVisible(main_actor, is_visible_start)
+   -- on test, setup the main actor. First retrieve it's name (eg from
+   -- 'object_2' to 'Object_C_52')
+   local idx = tonumber(params.main_object:gsub('^.*_', ''))
+   main_object = actors.get_actor_by_order(idx)
+   uetorch.SetActorVisible(main_object, is_visible_start)
 
    if subblock:match('dynamic_2') then
-      if iteration.type == 6 then occluders.destroy('occluder_1') end
-      if iteration.type == 5 then occluders.destroy('occluder_2') end
+      if iteration.type == 6 then occluders.destroy_by_order(1) end
+      if iteration.type == 5 then occluders.destroy_by_order(2) end
    end
 
    -- when we are in an occlusion test, remove all the actors excepted
    -- the main one TODO better not to spaw them
    if iteration.type == 5 or iteration.type == 6 then
-      for name, _ in pairs(actors.get_active_actors()) do
-         if name ~= params.main_actor then
+      for name, object in pairs(actors.get_active_actors()) do
+         if object ~= main_object then
             actors.destroy_actor(name)
          end
       end
@@ -228,17 +231,18 @@ function M.initialize(_subblock, _iteration, _params)
 
          if subblock:match('occluded') then
             local first, second = 5, 6
-            if (assert(params.actors[params.main_actor].side) == 'right') then
+            if (assert(params.objects[params.main_object].side) == 'right') then
                first, second = 6, 5
             end
 
             trick.can_do_1 = function() return check_occlusion.is_middle_of_occlusion(first) end
             trick.can_do_2 = function() return check_occlusion.is_middle_of_occlusion(second) end
+
          else  -- dynamic_2 visible
             trick.xdiff_start = nil
             trick.xdiff_stop = nil
             trick.xdiff = function(x)
-               return utils.sign(uetorch.GetActorLocation(main_actor).x - x)
+               return utils.sign(uetorch.GetActorLocation(main_object).x - x)
             end
             trick.can_do_1 = function()
                if not trick.xdiff_start then
@@ -263,7 +267,7 @@ function M.initialize(_subblock, _iteration, _params)
          else -- visible dynamic_1
             trick.init_xdiff = nil
             trick.xdiff = function()
-               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_actor).x)
+               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_object).x)
             end
             trick.can_do = function()
                if not trick.init_xdiff then
@@ -293,7 +297,7 @@ function M.get_occlusion_check_iterations(s)
 end
 
 
-function M.is_main_actor_active()
+function M.is_main_object_active()
    local p = M.is_possible()
    local v = is_visible_start
    if p and v then
@@ -318,15 +322,15 @@ function M.magic_trick()
    if subblock:match('dynamic_2') then
       if not trick.is_done_1 and trick.can_do_1() then
          trick.is_done_1 = true
-         uetorch.SetActorVisible(main_actor, not is_visible_start)
+         uetorch.SetActorVisible(main_object, not is_visible_start)
       elseif trick.is_done_1 and not trick.is_done_2 and trick.can_do_2() then
-         uetorch.SetActorVisible(main_actor, is_visible_start)
+         uetorch.SetActorVisible(main_object, is_visible_start)
          trick.is_done_2 = true
          -- assert(tick.remove_hook(M.magic_trick, 'slow'))
       end
    else  -- this is static or dynamic_1
       if not trick.is_done and trick.can_do() then
-         uetorch.SetActorVisible(main_actor, not is_visible_start)
+         uetorch.SetActorVisible(main_object, not is_visible_start)
          trick.is_done = true
          -- assert(tick.remove_hook(M.magic_trick, 'slow'))
       end

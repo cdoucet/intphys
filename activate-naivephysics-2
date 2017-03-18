@@ -12,3 +12,4 @@ source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
 LUA_PATH="$NAIVEPHYSICS_ROOT/NaivePhysics2/Scripts/?.lua;$LUA_PATH"
 
 export NAIVEPHYSICS_BINARY=$NAIVEPHYSICS_ROOT/NaivePhysics2/Package/LinuxNoEditor/NaivePhysics2/Binaries/Linux/NaivePhysics2
+export NAIVEPHYSICS_PROJECT=$NAIVEPHYSICS_ROOT/NaivePhysics2/NaivePhysics2.uproject
