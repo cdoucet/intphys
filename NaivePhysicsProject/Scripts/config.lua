@@ -197,6 +197,11 @@ function M.get_iteration(index)
 end
 
 
+function M.get_remaining_iterations()
+   return max_iteration - current_index + 1
+end
+
+
 -- Return a string briefly describing the current iteration
 function M.get_description(iteration)
    local _type = 'train ' .. iteration.id

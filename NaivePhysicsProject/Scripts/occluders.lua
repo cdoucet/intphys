@@ -25,9 +25,15 @@ local utils = require 'utils'
 local tick = require 'tick'
 
 
-local function get_mesh()
-   local mesh_path = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
-   return assert(UE.LoadObject(StaticMesh.Class(), nil, mesh_path))
+local function get_class()
+   --assert(OccluderActor)
+   --return OccluderActor.Class()
+
+   -- local mesh_class = "StaticMesh'/Game/Meshes/OccluderWall.OccluderWall'"
+   -- local mesh = UE.LoadObject(StaticMesh.Class(), nil, mesh_path)
+   -- return assert(mesh)
+
+   return UE.LoadObject(Class.Class())
 end
 
 
@@ -136,7 +142,7 @@ function M.initialize(params, bounds)
       -- spawn the occluder actor
       local location = utils.location(p.location.x, p.location.y, 20)
       local rotation = utils.rotation(0, 0, 0)
-      local actor = assert(uetorch.SpawnStaticMeshActor(get_mesh(), location, rotation))
+      local actor = assert(uetorch.SpawnActor(get_class(), location, rotation))
 
       -- the y bound box is used for occluder movement details
       local box = uetorch.GetActorBounds(actor).boxY
@@ -148,10 +154,10 @@ function M.initialize(params, bounds)
          uetorch.SetActorLocation(actor, p.location.x, p.location.y, 20)
       end
 
-      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
       material.set_actor_material(actor, p.material)
-      uetorch.SetActorVisible(actor, true)
+      uetorch.SetActorScale3D(actor, p.scale.x, p.scale.y, p.scale.z)
       uetorch.SetActorGenerateOverlapEvents(actor, true)
+      uetorch.SetActorVisible(actor, true)
 
       -- register the new occluder as active in the scene
       active_occluders[occluder_name] = actor

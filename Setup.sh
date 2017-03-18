@@ -45,11 +45,19 @@ echo "Step 2: setup Unreal Engine and UETorch"
 # clone only branch 4.8 to save space and bandwidth
 git clone --branch 4.8 --depth 1 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
 cd $UNREALENGINE_ROOT
+
+# clone and setup UETorch
 git clone git@github.com:bootphon/UETorch.git Engine/Plugins/UETorch
 Engine/Plugins/UETorch/Setup.sh
+
+# clone and setup JSONQuery plugin
+git clone https://github.com/marynate/JSONQuery_UE4.git Engine/Plugins/JSONQuery_UE4
+
+# setup and compile Unreal Engine (this takes a while...)
 ./Setup.sh
 ./GenerateProjectFiles.sh
-make  # this takes a while...
+make
+
 source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh
 cd $NAIVEPHYSICS_ROOT
 
@@ -70,6 +78,7 @@ source \$UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/nul
 LUA_PATH="\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Scripts/?.lua;\$LUA_PATH"
 
 export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
+export NAIVEPHYSICS_PROJECT=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/NaivePhysics.uproject
 
 EOF
 

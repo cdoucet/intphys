@@ -122,37 +122,37 @@ function M.initialize(_iteration)
    camera.initialize(params.camera)
    floor.initialize(params.floor)
    light.initialize(params.light)
-   backwall.initialize(params.backwall, config.is_train(iteration))
+   -- backwall.initialize(params.backwall, config.is_train(iteration))
 
-   -- setup the physics actors, the occluders and block's specific
-   -- tricks, retrieve the backwall boundaries to make sure all the
-   -- actors are within
-   local bounds = get_scene_bounds()
-   occluders.initialize(params.occluders, bounds)
-   actors.initialize(params.actors, bounds)
-   block.initialize(subblock_name, iteration, params)
+   -- -- setup the physics actors, the occluders and block's specific
+   -- -- tricks, retrieve the backwall boundaries to make sure all the
+   -- -- actors are within
+   -- local bounds = get_scene_bounds()
+   -- occluders.initialize(params.occluders, bounds)
+   -- actors.initialize(params.actors, bounds)
+   -- block.initialize(subblock_name, iteration, params)
 
-   -- initialize the overlap check. The scene will fail if any illegal
-   -- overlaping between actors is detected (eg some actor hit the
-   -- camera, two occluders are overlapping, etc...).
-   check_overlap.initialize()
+   -- -- initialize the overlap check. The scene will fail if any illegal
+   -- -- overlaping between actors is detected (eg some actor hit the
+   -- -- camera, two occluders are overlapping, etc...).
+   -- check_overlap.initialize()
 
-   -- on test blocks, we make sure the main actor coordinates
-   -- (location and rotation) are strictly comparable over the
-   -- different iterations. If not, the scene fails. This is to detect
-   -- an issue we have with the packaged game: some videos run slower
-   -- than others (seems to append only in packaged, not in editor)
-   if not config.is_train(iteration) then
-      check_coordinates.initialize(iteration, block.get_main_actor())
-   end
+   -- -- on test blocks, we make sure the main actor coordinates
+   -- -- (location and rotation) are strictly comparable over the
+   -- -- different iterations. If not, the scene fails. This is to detect
+   -- -- an issue we have with the packaged game: some videos run slower
+   -- -- than others (seems to append only in packaged, not in editor)
+   -- if not config.is_train(iteration) then
+   --    check_coordinates.initialize(iteration, block.get_main_actor())
+   -- end
 
-   -- in tests blocks with occlusion, we have to make sure the main
-   -- actor is occluded before applying the magic trick.
-   check_occlusion.initialize(
-      iteration,
-      block.get_main_actor(),
-      block.get_occlusion_check_iterations(),
-      config.get_resolution())
+   -- -- in tests blocks with occlusion, we have to make sure the main
+   -- -- actor is occluded before applying the magic trick.
+   -- check_occlusion.initialize(
+   --    iteration,
+   --    block.get_main_actor(),
+   --    block.get_occlusion_check_iterations(),
+   --    config.get_resolution())
 end
 
 
@@ -168,6 +168,10 @@ function M.destroy()
    actors.destroy()
 end
 
+
+function M.get_params()
+   return params
+end
 
 -- Return true is the scene has been validated (all checks successful)
 --

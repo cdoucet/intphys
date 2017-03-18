@@ -29,6 +29,7 @@ local scene = require 'scene'
 local tick = require 'tick'
 local utils = require 'utils'
 
+local json = require 'dkjson'
 
 
 -- Called at module startup. This function is automatically called
@@ -98,6 +99,46 @@ function run_current_iteration()
    tick.add_hook(terminate, 'final')
 
    scene.run()
+end
+
+
+--------------------------
+--------------------------
+
+function get_remaining_iterations()
+   print('remaining ' .. config.get_remaining_iterations())
+   return tostring(config.get_remaining_iterations())
+end
+
+
+function get_current_iteration_json()
+   -- retrieve the current iteration and display a little description
+   local iteration = config.get_current_iteration()
+   local description = 'running ' .. config.get_description(iteration)
+   print(description)
+
+   -- create a subdirectory for this iteration
+   paths.mkdir(iteration.path)
+
+   -- prepare the scene for the current iteration
+   scene.initialize(iteration)
+
+   tick.initialize(
+      config.get_nticks(),
+      config.get_ticks_interval(),
+      config.get_ticks_rate())
+
+   return json.encode(scene.get_params())
+end
+
+
+function terminate_iteration()
+   -- local is_valid = scene.is_valid()
+   -- scene.destroy()
+   local is_valid = true
+   local remaining_iterations = config.prepare_next_iteration(is_valid)
+   print('terminated, remaining ' .. remaining_iterations)
+   return tostring(remaining_iterations)
 end
 
 
