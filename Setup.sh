@@ -21,7 +21,7 @@
 
 export NAIVEPHYSICS_ROOT=$(readlink -f .)
 [ ! -f $NAIVEPHYSICS_ROOT/tools/build_package.sh ] \
-    && echo "Error: ./tools/build_package.sh not found, are you in the NaivePhysics directory?" \
+    && echo "Error: ./tools/build_package.sh not found, are you in the NaivePhysics root directory?" \
     && exit 1
 
 export UNREALENGINE_ROOT=$NAIVEPHYSICS_ROOT/UnrealEngine
@@ -75,10 +75,10 @@ export UNREALENGINE_ROOT=$UNREALENGINE_ROOT
 source \$NAIVEPHYSICS_ROOT/torch/install/bin/torch-activate
 source \$UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh > /dev/null
 
-LUA_PATH="\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Scripts/?.lua;\$LUA_PATH"
+LUA_PATH="\$NAIVEPHYSICS_ROOT/NaivePhysics/Scripts/?.lua;\$LUA_PATH"
 
-export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
-export NAIVEPHYSICS_PROJECT=\$NAIVEPHYSICS_ROOT/NaivePhysicsProject/NaivePhysics.uproject
+export NAIVEPHYSICS_BINARY=\$NAIVEPHYSICS_ROOT/NaivePhysics/Package/LinuxNoEditor/NaivePhysics/Binaries/Linux/NaivePhysics
+export NAIVEPHYSICS_PROJECT=\$NAIVEPHYSICS_ROOT/NaivePhysics/NaivePhysics.uproject
 
 EOF
 
