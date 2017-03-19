@@ -156,9 +156,9 @@ function M.get_random_occluder_parameters(name, subblock)
 
    else
       assert(subblock:match('static'))
+      params.scale = {x = 0.7 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
       params.location = {x = 100 - 200 * params.scale.x, y = -350, z = 20}
       params.pause = {math.random()*5, math.random()*5}
-      params.scale = {x = 0.7 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
       params.rotation_speed = math.random() * 5 + 10
    end
 

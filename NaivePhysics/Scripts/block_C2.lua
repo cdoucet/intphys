@@ -42,7 +42,7 @@ local iteration
 
 local params
 
-local main_actor
+local main_object
 
 local possible_shapes, current_shape_idx
 
@@ -67,7 +67,7 @@ local function swap_shapes()
    if new_idx == 3 then new_idx = 1 end
    current_shape_idx = new_idx
 
-   uetorch.SetActorStaticMesh(main_actor, actors.get_mesh(possible_shapes[current_shape_idx]))
+   uetorch.SetActorStaticMesh(main_object, actors.get_mesh(possible_shapes[current_shape_idx]))
 end
 
 
@@ -75,8 +75,8 @@ end
 local M = {}
 
 
-function M.get_main_actor()
-   return main_actor
+function M.get_main_object()
+   return main_object
 end
 
 
@@ -86,9 +86,9 @@ end
 
 
 -- Return random parameters the the given subblock
-function M.get_random_parameters(subblock, nactors)
+function M.get_random_parameters(subblock, nobjects)
    assert(is_valid_subblock(subblock))
-   local nactors = nactors or math.random(1, 3)
+   local nobjects = nobjects or math.random(1, 3)
 
    -- exclude cylinders for static tests because they can have a cube
    -- or sphere profile
@@ -102,12 +102,18 @@ function M.get_random_parameters(subblock, nactors)
       end
    end
 
-   local t_actors = {}
-   for i = 1, nactors do
-      table.insert(t_actors, t_shapes[math.random(1, #t_shapes)] .. '_' .. i)
+   local t_objects, t_meshes = {}, {}
+   for i = 1, nobjects do
+      table.insert(t_objects, 'object_' .. i)
+      table.insert(t_meshes, t_shapes[math.random(1, #t_shapes)])
    end
-   local main_actor = t_actors[math.random(1, nactors)]
-   local other_shape = actors.get_other_shape_actor(main_actor, t_shapes)
+   --print(t_objects, t_meshes)
+
+   local main_idx = math.random(1, nobjects)
+   local main_object = t_objects[main_idx]
+   local main_shape = t_meshes[main_idx]
+   local other_shape = actors.get_different_shape(main_shape, t_shapes)
+   print('main = ' .. main_shape .. ', shape = ' .. other_shape)
 
    local params = {}
 
@@ -119,27 +125,32 @@ function M.get_random_parameters(subblock, nactors)
       params.occluders = occluders.get_random_parameters(noccluders, subblock)
    end
 
-   -- physics actors
+   -- objects
    if subblock:match('train') then
-      params.actors = actors.get_random_parameters(t_actors)
+      params.objects = actors.get_random_parameters(t_objects, t_meshes)
    else
       -- setup the actors parameters and the main actor (on which the
       -- trick is done)
-      params.main_actor = main_actor
+      params.main_object = main_object
       params.other_shape = other_shape
-      params.actors = {}
+      params.objects = {}
 
-      for i = 1, nactors do
-         params.actors[t_actors[i]] = {}
-         local p = params.actors[t_actors[i]]
+      for i = 1, nobjects do
+         params.objects[t_objects[i]] = {}
+         local p = params.objects[t_objects[i]]
 
          p.material = material.random('actor')
-         p.scale = 1 --0.9
-
+         local s = 0.7 + 0.5 * math.random()
+         p.scale = {x = s, y = s, z = s}
+         p.mesh = actors.random_shape()
+         p.material = material.random('actor')
+         p.rotation = {pitch = 0, yaw = 0, roll = 0}
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
-            p.scale = 1
+            p.location.z = 100 * p.scale.x / 2.0 + 20
+            p.force = {x = 0, y = 0, z = 0}
+
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
@@ -171,11 +182,11 @@ end
 
 
 function M.initialize(_subblock, _iteration, _params)
-   subblock = _subblock
-   iteration = _iteration
-   params = _params
+   subblock = assert(_subblock)
+   iteration = assert(_iteration)
+   params = assert(_params)
 
-   main_actor = nil
+   main_object = nil
    trick = nil
 
    if iteration.type == 1 then
@@ -195,9 +206,22 @@ function M.initialize(_subblock, _iteration, _params)
    end
 
    -- on test, setup the main actor with the good shape
-   main_actor = actors.get_actor(params.main_actor)
-   local main_shape = params.main_actor:gsub('_.*', '')
+   s = 'objects:'
+   for n, _ in pairs(actors.get_active_actors_normalized_names()) do
+      s = s .. ' ' .. n
+      if n == params.main_object then
+         s = s .. '*'
+      end
+   end
+   print(s)
+
+   main_object = actors.get_active_actors_normalized_names()[params.main_object]
+   local main_shape = params.objects[params.main_object].mesh
    possible_shapes = {main_shape, params.other_shape}
+
+   print('possible shapes = ')
+   print(possible_shapes)
+
    current_shape_idx = 1
    if iteration.type % 2 == 1 then
       swap_shapes()
@@ -206,14 +230,14 @@ function M.initialize(_subblock, _iteration, _params)
    -- on check occlusion iterations, keep alive a single occluder and
    -- the main actor (in either the first or second possible shapes)
    if iteration.type > 4 and iteration.type <= 6 then
-      occluders.destroy('occluder_2')
+      occluders.destroy_normalized_name('occluder_2')
    elseif iteration.type > 6 and iteration.type <= 8 then
-      occluders.destroy('occluder_1')
+      occluders.destroy_normalized_name('occluder_1')
    end
 
    if iteration.type > 4 then
-      for name, _ in pairs(actors.get_active_actors()) do
-         if name ~= actors.get_name(main_actor) then
+      for name, object in pairs(actors.get_active_actors()) do
+         if object ~= main_object then
             actors.destroy_actor(name)
          end
       end
@@ -238,7 +262,7 @@ function M.initialize(_subblock, _iteration, _params)
          else -- visible dynamic_1
             trick.init_xdiff = nil
             trick.xdiff = function()
-               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_actor).x)
+               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_object).x)
             end
             trick.can_do = function()
                if not trick.init_xdiff then
@@ -277,9 +301,9 @@ function M.magic_trick()
    -- if subblock:match('dynamic_2') then
    --    -- if not trick.is_done_1 and trick.can_do_1() then
    --    --    trick.is_done_1 = true
-   --    --    uetorch.SetActorVisible(main_actor, not is_visible_start)
+   --    --    uetorch.SetActorVisible(main_object, not is_visible_start)
    --    -- elseif trick.is_done_1 and not trick.is_done_2 and trick.can_do_2() then
-   --    --    uetorch.SetActorVisible(main_actor, is_visible_start)
+   --    --    uetorch.SetActorVisible(main_object, is_visible_start)
    --    --    trick.is_done_2 = true
    --    --    tick.remove_hook(M.magic_trick, 'slow')
    --    -- end

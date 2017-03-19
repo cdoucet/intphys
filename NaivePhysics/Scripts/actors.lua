@@ -57,24 +57,35 @@ local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2
 local M = {}
 
 
+-- Instanciate a UStaticMesh of `shape` and return a reference to it
+--
+-- return nil if `shape` is not a valid shape
+function M.get_mesh(shape)
+   if not is_valid_shape(shape) then return nil end
+
+   local Shape = shape:gsub('^%l', string.upper)  -- 'sphere' -> 'Sphere'
+   local path = "StaticMesh'/Game/Meshes/" .. Shape .. "." .. Shape .. "'"
+   return assert(UE.LoadObject(StaticMesh.Class(), nil, path))
+end
+
+
 -- Return the list of available shapes for the physics actors
 function M.get_shapes()
    return shapes_available
 end
 
 
--- Return a shape different of that of the given actor
---
--- e.g. 'cylinder_1' -> 'cube'
-function M.get_other_shape_actor(name, shapes)
+-- Return a shape different of `shape` choosen among `shapes`
+function M.get_different_shape(shape, shapes)
    shapes = shapes or M.get_shapes()
+   --print(shapes)
 
-   local shape = name:gsub('_.*$', '')
    local other = shapes[math.random(1, #shapes)]
    while other == shape do
       other = shapes[math.random(1, #shapes)]
    end
 
+   --print('diff than ' .. shape .. ' = ' .. other)
    return other
 end
 
@@ -101,7 +112,7 @@ function M.initialize(actors_name)
    nactors = 0
 
    for idx, name in ipairs(actors_name) do
-      local actor = uetorch.GetActor(name)
+      local actor = assert(uetorch.GetActor(name))
       active_actors[name] = actor
 
       local n = name:gsub('C_.*$', ''):gsub('^%u', string.lower) .. idx
