@@ -31,27 +31,27 @@ local materials = {actor = {}, floor = {}, wall = {}}
 local physicals = {}
 
 
--- Return a reference to a UMaterialInterface instance given it's name
---
--- `name` must be formatted as 'Category/Name'
---     (e.g. 'Wall/M_BasicWall'). The available names are the keys of
---     table returned by the method material.get_materials()
-local function get_material(name)
-   local suffix = name:gsub('.*/', '')
-   local path = "Material'/Game/Materials/" .. name .. '.' .. suffix .. "'"
-   return assert(UE.LoadObject(Material.Class(), nil, path))
-end
+-- -- Return a reference to a UMaterialInterface instance given it's name
+-- --
+-- -- `name` must be formatted as 'Category/Name'
+-- --     (e.g. 'Wall/M_BasicWall'). The available names are the keys of
+-- --     table returned by the method material.get_materials()
+-- local function get_material(name)
+--    local suffix = name:gsub('.*/', '')
+--    local path = "Material'/Game/Materials/" .. name .. '.' .. suffix .. "'"
+--    return assert(UE.LoadObject(Material.Class(), nil, path))
+-- end
 
 
--- Return a reference to a UPhysicalMaterial instance given it's name
---
--- `name` must be formatted as 'Name'
---     (e.g. 'F0R1'). The available names are the keys of
---     table returned by the method material.get_physicals()
-local function get_physical(name)
-   local path = "PhysicalMaterial'/Game/PhysicalMaterials/" .. name .. '.' .. name .. "'"
-   return assert(UE.LoadObject(PhysicalMaterial.Class(), nil, path))
-end
+-- -- Return a reference to a UPhysicalMaterial instance given it's name
+-- --
+-- -- `name` must be formatted as 'Name'
+-- --     (e.g. 'F0R1'). The available names are the keys of
+-- --     table returned by the method material.get_physicals()
+-- local function get_physical(name)
+--    local path = "PhysicalMaterial'/Game/PhysicalMaterials/" .. name .. '.' .. name .. "'"
+--    return assert(UE.LoadObject(PhysicalMaterial.Class(), nil, path))
+-- end
 
 
 local M = {}
@@ -70,7 +70,7 @@ function M.get_materials(category)
 
       -- the directory where uasset material files are stored
       local directory = assert(os.getenv('NAIVEPHYSICS_ROOT'))
-         .. '/NaivePhysicsProject/Content/Materials/' .. Category
+         .. '/NaivePhysics2/Content/Materials/' .. Category
 
       for f in paths.files(directory, '%.uasset$') do
          table.insert(materials[category], Category .. '/' .. f:gsub('%.uasset$', ''))
@@ -81,37 +81,37 @@ function M.get_materials(category)
 end
 
 
-function M.get_physicals()
-   if not next(physicals) then
-      local directory = assert(os.getenv('NAIVEPHYSICS_ROOT'))
-         .. '/NaivePhysicsProject/Content/PhysicalMaterials'
+-- function M.get_physicals()
+--    if not next(physicals) then
+--       local directory = assert(os.getenv('NAIVEPHYSICS_ROOT'))
+--          .. '/NaivePhysics2/Content/PhysicalMaterials'
 
-      for f in paths.files(directory, '%.uasset$') do
-         table.insert(physicals, '' .. f:gsub('%.uasset$', ''))
-      end
-   end
+--       for f in paths.files(directory, '%.uasset$') do
+--          table.insert(physicals, '' .. f:gsub('%.uasset$', ''))
+--       end
+--    end
 
-   return physicals
-end
-
-
--- Change the material of an `actor` to be the one specified by `name`
---
--- `actor` is a reference to an actor object in the scene
--- `name` is the name of the material to setup
-function M.set_actor_material(actor, name)
-   uetorch.SetActorMaterial(actor, get_material(name))
-end
+--    return physicals
+-- end
 
 
-function M.set_physical(actor, name)
-   uetorch.SetActorPhysicalMaterial(actor, get_physical(name))
-end
+-- -- Change the material of an `actor` to be the one specified by `name`
+-- --
+-- -- `actor` is a reference to an actor object in the scene
+-- -- `name` is the name of the material to setup
+-- function M.set_actor_material(actor, name)
+--    uetorch.SetActorMaterial(actor, get_material(name))
+-- end
 
 
-function M.get_physical_properties(actor)
-   return uetorch.GetActorlPhysicalProperties(actor)
-end
+-- function M.set_physical(actor, name)
+--    uetorch.SetActorPhysicalMaterial(actor, get_physical(name))
+-- end
+
+
+-- function M.get_physical_properties(actor)
+--    return uetorch.GetActorlPhysicalProperties(actor)
+-- end
 
 
 -- category must be 'floor', 'wall' or 'actor'

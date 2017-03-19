@@ -27,7 +27,7 @@ local tick = require 'tick'
 
 -- Registers the active occluders, mobile or not, and their number
 local active_occluders, noccluders
-local normalized_names
+local normalized_names, normalized_actors
 
 local M = {}
 
@@ -55,6 +55,7 @@ end
 function M.initialize(actors_name)
    active_occluders = {}
    normalized_names = {}
+   normalized_actors = {}
    noccluders = 0
 
    for idx, name in ipairs(actors_name) do
@@ -63,20 +64,19 @@ function M.initialize(actors_name)
 
       local n = name:gsub('C_.*$', ''):gsub('^%u', string.lower) .. idx
       normalized_names[n] = actor
-
+      normalized_actors[actor] = n
       noccluders = noccluders + 1
    end
 end
 
 
 -- destroy a spawned occluder given its name
-function M.destroy_by_order(idx)
-   local s2n = function(s) return tonumber(s:gsub('^.*_', '')) end
-   local name = utils.get_index_in_sorted_table(
-      M.get_occluders(), idx, function(a,b) return s2n(a) < s2n(b) end)
-
-   uetorch.DestroyActor(active_occluders[name])
+function M.destroy_normalized_name(name)
+   local a = normalized_names[name]
+   uetorch.DestroyActor(a)
    active_occluders[name] = nil
+   normalized_names[normalized_actors[a]] = nil
+   normalized_actors[a] = nil
    noccluders = noccluders - 1
 end
 
@@ -136,26 +136,30 @@ function M.get_random_occluder_parameters(name, subblock)
       return params
    end
 
-   -- we are generating occluders for test iterations, with a more
-   -- controlled variability
-   params.rotation_speed = 100
+   -- we are generating occluders for test iterations
+   params.start_position = 'down'
    params.movement = 1
    params.rotation = 0
-   params.start_position = 'down'
-   params.pause = {math.random(10), math.random(10)}
-   params.scale = {x = 0.6 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
-   --params.scale = {x = 0.5, y = 1, z = 1 - 0.4 * math.random()}
 
-   -- occluder's location depends on subblock
    if subblock:match('dynamic_2') then
       local x = {-100, 200}
       params.location = {x = x[idx], y = -350, z = 20}
+      params.pause = {math.random(), math.random()}
+      params.scale = {x = 0.6 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
+      params.rotation_speed = math.random() * 5 + 15
+
    elseif subblock:match('dynamic_1') then
       params.location = {x = 50, y = -350, z = 20}
+      params.pause = {math.random(), math.random()}
+      params.scale = {x = 0.6 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
+      params.rotation_speed = math.random() * 5 + 15
+
    else
       assert(subblock:match('static'))
-      params.pause = {5 + math.random(20), math.random(20)}
       params.location = {x = 100 - 200 * params.scale.x, y = -350, z = 20}
+      params.pause = {math.random()*5, math.random()*5}
+      params.scale = {x = 0.7 - 0.2 * math.random(), y = 1, z = 1.0 - 0.4 * math.random()}
+      params.rotation_speed = math.random() * 5 + 10
    end
 
    return params

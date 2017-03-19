@@ -38,7 +38,6 @@ function M.get_actor()
    if not camera_actor then
       camera_actor = assert(uetorch.GetActor('Camera_Blueprint_C_0'))
    end
-
    return camera_actor
 end
 
@@ -65,47 +64,6 @@ function M.get_default_parameters()
       location = {x = 150, y = -100 * math.random(), z = 150 + math.random()},
       rotation = {pitch = -10 * math.random() - 5, yaw = -90, roll = 0}}
 end
-
-
--- -- Setup the camera location and rotation
--- --
--- -- If params are not specified, use default parameters. `params` must
--- -- be a table structured as {location = {x, y, z}, rotation = {pitch,
--- -- yaw, roll}}
--- function M.initialize(params)
---    if not params then
---       params = M.get_default_parameters()
---    end
-
---    -- -- the trigger box follows the camera
---    -- local camera, box = M.get_actor()
---    -- for _, actor in ipairs({camera, box}) do
---    --    uetorch.SetActorLocation(
---    --       actor,
---    --       params.location.x,
---    --       params.location.y,
---    --       params.location.z)
-
---    --    uetorch.SetActorRotation(
---    --       actor,
---    --       params.rotation.pitch,
---    --       params.rotation.yaw,
---    --       params.rotation.roll)
---    -- end
---    local actor = M.get_actor()
-
---    uetorch.SetActorLocation(
---       actor,
---       params.location.x,
---       params.location.y,
---       params.location.z)
-
---    uetorch.SetActorRotation(
---       actor,
---       params.rotation.pitch,
---       params.rotation.yaw,
---       params.rotation.roll)
--- end
 
 
 -- Return the camera location and rotation as a string

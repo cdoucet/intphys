@@ -40,12 +40,6 @@ function M.get_actor()
 end
 
 
--- -- Setup the floor with a random material
--- function M.initialize(floor_material)
---    material.set_actor_material(actor, floor_material or M.get_random_parameters())
--- end
-
-
 -- Return min/max coordinates for X and Y axes
 function M.get_status()
    status = {}

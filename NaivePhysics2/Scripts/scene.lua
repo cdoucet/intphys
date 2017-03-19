@@ -26,7 +26,6 @@ local floor = require 'floor'
 local light = require 'light'
 local camera = require 'camera'
 
--- local check_overlap = require 'check_overlap'
 local check_occlusion = require 'check_occlusion'
 local check_coordinates = require 'check_coordinates'
 
@@ -59,7 +58,7 @@ local function init_params(subblock)
    -- parameters and save them, otherwise load them
    local params = {}
    if config.is_first_iteration_of_block(iteration) then
-      -- choose random parameters for the block actors
+      -- choose random parameters for the block actors (occluders, objects)
       params = block.get_random_parameters(subblock, iteration.nactors)
 
       -- -- choose random parameters for static actors
@@ -124,7 +123,7 @@ end
 
 
 
-function M.initialize(actors_name)
+function M.initialize(actors_name, params)
    local p = {occluders = {}, objects = {}}
    actors_name = actors_name .. ' '
    local fields = {actors_name:match((actors_name:gsub("[^ ]* ", "([^ ]*) ")))}
@@ -142,6 +141,8 @@ function M.initialize(actors_name)
    backwall.initialize(p.backwall)
    occluders.initialize(p.occluders)
    actors.initialize(p.objects)
+
+   local subblock_name = iteration.block:gsub('^.*%.', '')
    block.initialize(subblock_name, iteration, params)
 
    -- on test blocks, we make sure the main actor coordinates
@@ -153,13 +154,13 @@ function M.initialize(actors_name)
       check_coordinates.initialize(iteration, block.get_main_object())
    end
 
-   -- -- in tests blocks with occlusion, we have to make sure the main
-   -- -- actor is occluded before applying the magic trick.
-   -- check_occlusion.initialize(
-   --    iteration,
-   --    block.get_main_object(),
-   --    block.get_occlusion_check_iterations(),
-   --    config.get_resolution())
+   -- in tests blocks with occlusion, we have to make sure the main
+   -- actor is occluded before applying the magic trick.
+   check_occlusion.initialize(
+      iteration,
+      block.get_main_object(),
+      block.get_occlusion_check_iterations(),
+      config.get_resolution())
 end
 
 
@@ -243,8 +244,8 @@ function M.get_status_header()
 
    status['possible'] = M.is_possible()
    status['floor'] = floor.get_status()
-   -- status['camera'] = camera.get_status()
-   -- status['lights'] = light.get_status()
+   status['camera'] = camera.get_status()
+   status['lights'] = light.get_status()
 
    return status
 end
@@ -260,7 +261,7 @@ function M.get_status()
    -- the physics actors
    for name, actor in pairs(actors.get_active_actors_normalized_names()) do
       -- don't register the main actor when hidden by a magic trick
-      if actor ~= block.get_main_actor() or M.is_main_actor_active() then
+      if actor ~= block.get_main_object() or M.is_main_actor_active() then
          status[name] = utils.coordinates_to_string(actor)
       end
    end

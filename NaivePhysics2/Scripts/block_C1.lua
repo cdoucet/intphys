@@ -41,7 +41,7 @@ local iteration
 
 local params
 
-local main_actor
+local main_object
 
 local is_possible
 
@@ -63,8 +63,8 @@ end
 local M = {}
 
 
-function M.get_main_actor()
-   return main_actor
+function M.get_main_object()
+   return main_object
 end
 
 
@@ -74,9 +74,10 @@ end
 
 
 -- Return random parameters the the given subblock
-function M.get_random_parameters(subblock, nactors)
+function M.get_random_parameters(subblock, nobjects)
    assert(is_valid_subblock(subblock))
-   local nspheres = nactors or math.random(1, 3)
+   nobjects = nobjects or math.random(1, 3)
+
    local params = {}
 
    -- occluders
@@ -87,33 +88,40 @@ function M.get_random_parameters(subblock, nactors)
       params.occluders = occluders.get_random_parameters(noccluders, subblock)
    end
 
-   -- physics actors
+   -- objects
    if subblock:match('train') then
-      local t_actors, t_shapes = {}, {}
-      for i = 1, nspheres do
-         table.insert(t_actors, 'object_' .. i)
+      local t_objects, t_shapes = {}, {}
+      for i = 1, nobjects do
+         table.insert(t_objects, 'object_' .. i)
          table.insert(t_shapes, 'sphere')
       end
+      params.objects = actors.get_random_parameters(t_objects, t_shapes)
 
-      params.objects = actors.get_random_parameters(t_actors, t_shapes)
    else  -- we are in a test subblock
-      -- setup the sphere actors parameters and the main actor (on
-      -- which the trick is done)
-      params.main_object = 'object_' .. math.random(1, nspheres)
+
+      -- setup the objects parameters and the main object (on which
+      -- the magic trick is applied)
+      params.main_object = 'object_' .. math.random(1, nobjects)
       params.objects = {}
 
-      for i = 1, nspheres do
+      for i = 1, nobjects do
          params.objects['object_' .. i] = {}
          local p = params.objects['object_' .. i]
 
+         -- scale, mesh, material and rotation are the same across all
+         -- subblocks
+         local s = 0.7 + 0.5 * math.random()
+         p.scale = {x = s, y = s, z = s}
+         p.mesh = 'Sphere'
          p.material = material.random('actor')
-         p.scale = 0.7 + 0.5 * math.random()
+         p.rotation = {pitch = 0, yaw = 0, roll = 0}
 
+         -- location an dofrce varies across subblocks
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
-            p.scale = 0.7 + 0.5 * math.random()
-            p.location.z = 100 * p.scale / 2.0 + 20
+            p.location.z = 100 * p.scale.x / 2.0 + 20
+            p.force = {x = 0, y = 0, z = 0}
 
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
@@ -127,9 +135,9 @@ function M.get_random_parameters(subblock, nactors)
             end
          else
             assert(subblock:match('dynamic_2'))
+
             p.side = actors.random_side()
             p.location = {x = -350, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
-            p.scale = 0.7 + 0.5 * math.random()
             p.force = {
                x = 1.6e6, y = 0,
                z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
@@ -171,9 +179,9 @@ end
 
 
 function M.initialize(_subblock, _iteration, _params)
-   subblock = _subblock
-   iteration = _iteration
-   params = _params
+   subblock = assert(_subblock)
+   iteration = assert(_iteration)
+   params = assert(_params)
 
    main_object = nil
    trick = nil
@@ -200,15 +208,13 @@ function M.initialize(_subblock, _iteration, _params)
       return
    end
 
-   -- on test, setup the main actor. First retrieve it's name (eg from
-   -- 'object_2' to 'Object_C_52')
-   local idx = tonumber(params.main_object:gsub('^.*_', ''))
-   main_object = actors.get_actor_by_order(idx)
+   -- on test, setup the main actor.
+   main_object = actors.get_active_actors_normalized_names()[params.main_object]
    uetorch.SetActorVisible(main_object, is_visible_start)
 
    if subblock:match('dynamic_2') then
-      if iteration.type == 6 then occluders.destroy_by_order(1) end
-      if iteration.type == 5 then occluders.destroy_by_order(2) end
+      if iteration.type == 6 then occluders.destroy_normalized_name('occluder_1') end
+      if iteration.type == 5 then occluders.destroy_normalized_name('occluder_2') end
    end
 
    -- when we are in an occlusion test, remove all the actors excepted

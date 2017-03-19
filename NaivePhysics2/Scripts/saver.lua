@@ -124,10 +124,7 @@ end
 -- Save scene images, normalized depth images, masks images (with
 -- bacwall actors merged in a single mask) and the status.json file
 function M.save_data()
-   print('saving...')
-   if not scene.is_valid() then
-      return
-   end
+   if not scene.is_valid() then return end
 
    -- normalize the depth in [0, 1]
    t_depth:div(max_depth)
@@ -182,8 +179,6 @@ function M.save_data()
       'block', 'possible', 'floor', 'camera', 'lights',
       'max_depth', 'masks_grayscale', 'frames'}
    utils.write_json(s, iteration.path .. 'status.json', keyorder)
-
-   print('save done')
 end
 
 

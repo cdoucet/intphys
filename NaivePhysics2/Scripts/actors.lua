@@ -31,7 +31,7 @@ local shapes_available = {'sphere', 'cube', 'cone', 'cylinder'}
 -- A table (name -> actor) of actors actually active in the scene
 local active_actors
 
-local normalized_names
+local normalized_names, normalized_actors
 
 
 -- The length of active_actors
@@ -97,6 +97,7 @@ end
 function M.initialize(actors_name)
    active_actors = {}
    normalized_names = {}
+   normalized_actors = {}
    nactors = 0
 
    for idx, name in ipairs(actors_name) do
@@ -105,6 +106,7 @@ function M.initialize(actors_name)
 
       local n = name:gsub('C_.*$', ''):gsub('^%u', string.lower) .. idx
       normalized_names[n] = actor
+      normalized_actors[actor] = n
 
       nactors = nactors + 1
    end
@@ -116,6 +118,8 @@ function M.destroy_actor(name)
    local a = assert(active_actors[name])
    uetorch.DestroyActor(a)
    active_actors[name] = nil
+   normalized_names[normalized_actors[a]] = nil
+   normalized_actors[a] = nil
    nactors = nactors - 1
 end
 

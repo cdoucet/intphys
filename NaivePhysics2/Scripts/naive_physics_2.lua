@@ -30,6 +30,7 @@ local saver = require 'saver'
 local json = require 'dkjson'
 
 
+local params
 local is_valid = true
 
 -- Called at module startup. This function is automatically called
@@ -89,14 +90,14 @@ function get_current_iteration_json()
 
    -- generate parameters for the current iteration and forward them
    -- to the blueprint as a JSON string
-   local params = scene.get_params(iteration)
+   params = scene.get_params(iteration)
+   --print(params)
    return json.encode(params)
 end
 
 function run_iteration(actors)
    local iteration = config.get_current_iteration()
-
-   scene.initialize(actors)
+   scene.initialize(actors, params)
 
    -- initialize the saver to write status.json and take screenshots
    local dry_run = (os.getenv('NAIVEPHYSICS_DRY') or config.is_check_occlusion(iteration))
@@ -109,6 +110,7 @@ end
 
 function terminate_iteration()
    tick.run_hooks('final')
+   is_valid = scene.is_valid()
    local remaining = config.prepare_next_iteration(is_valid)
    return tostring(remaining)
 end
