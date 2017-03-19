@@ -29,6 +29,7 @@ local scene = require 'scene'
 local saver = require 'saver'
 local json = require 'dkjson'
 
+local json = require 'dkjson'
 
 local params
 local is_valid = true
@@ -91,7 +92,6 @@ function get_current_iteration_json()
    -- generate parameters for the current iteration and forward them
    -- to the blueprint as a JSON string
    params = scene.get_params(iteration)
-   --print(params)
    return json.encode(params)
 end
 
@@ -128,6 +128,42 @@ end
 function terminate_program()
    print('no more iterations, exiting')
 end
+
+
+-- function get_remaining_iterations()
+--    return tostring(config.get_remaining_iterations())
+-- end
+
+
+-- function get_current_iteration_json()
+--    -- retrieve the current iteration and display a little description
+--    local iteration = config.get_current_iteration()
+--    local description = 'running ' .. config.get_description(iteration)
+--    print(description)
+
+--    -- create a subdirectory for this iteration
+--    paths.mkdir(iteration.path)
+
+--    -- prepare the scene for the current iteration
+--    scene.initialize(iteration)
+
+--    tick.initialize(
+--       config.get_nticks(),
+--       config.get_ticks_interval(),
+--       config.get_ticks_rate())
+
+--    return json.encode(scene.get_params())
+-- end
+
+
+-- function terminate_iteration()
+--    -- local is_valid = scene.is_valid()
+--    -- scene.destroy()
+--    local is_valid = true
+--    local remaining_iterations = config.prepare_next_iteration(is_valid)
+--    print('terminated, remaining ' .. remaining_iterations)
+--    return tostring(remaining_iterations)
+-- end
 
 
 return {initialize = initialize}

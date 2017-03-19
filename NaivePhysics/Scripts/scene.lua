@@ -117,7 +117,6 @@ function M.get_params(_iteration)
    -- load the scene parameters and the block module
    block = assert(require(block_name))
    params = init_params(subblock_name)
-
    return params
 end
 
