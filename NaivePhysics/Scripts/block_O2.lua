@@ -107,13 +107,11 @@ function M.get_random_parameters(subblock, nobjects)
       table.insert(t_objects, 'object_' .. i)
       table.insert(t_meshes, t_shapes[math.random(1, #t_shapes)])
    end
-   --print(t_objects, t_meshes)
 
    local main_idx = math.random(1, nobjects)
    local main_object = t_objects[main_idx]
    local main_shape = t_meshes[main_idx]
    local other_shape = actors.get_different_shape(main_shape, t_shapes)
-   print('main = ' .. main_shape .. ', shape = ' .. other_shape)
 
    local params = {}
 
@@ -142,7 +140,7 @@ function M.get_random_parameters(subblock, nobjects)
          p.material = material.random('actor')
          local s = 0.7 + 0.5 * math.random()
          p.scale = {x = s, y = s, z = s}
-         p.mesh = actors.random_shape()
+         p.mesh = t_meshes[i]
          p.material = material.random('actor')
          p.rotation = {pitch = 0, yaw = 0, roll = 0}
          if subblock:match('static') then
@@ -206,21 +204,9 @@ function M.initialize(_subblock, _iteration, _params)
    end
 
    -- on test, setup the main actor with the good shape
-   s = 'objects:'
-   for n, _ in pairs(actors.get_active_actors_normalized_names()) do
-      s = s .. ' ' .. n
-      if n == params.main_object then
-         s = s .. '*'
-      end
-   end
-   print(s)
-
    main_object = actors.get_active_actors_normalized_names()[params.main_object]
    local main_shape = params.objects[params.main_object].mesh
    possible_shapes = {main_shape, params.other_shape}
-
-   print('possible shapes = ')
-   print(possible_shapes)
 
    current_shape_idx = 1
    if iteration.type % 2 == 1 then
@@ -229,10 +215,12 @@ function M.initialize(_subblock, _iteration, _params)
 
    -- on check occlusion iterations, keep alive a single occluder and
    -- the main actor (in either the first or second possible shapes)
-   if iteration.type > 4 and iteration.type <= 6 then
-      occluders.destroy_normalized_name('occluder_2')
-   elseif iteration.type > 6 and iteration.type <= 8 then
-      occluders.destroy_normalized_name('occluder_1')
+   if subblock:match('_2$') then
+      if iteration.type > 4 and iteration.type <= 6 then
+         occluders.destroy_normalized_name('occluder_2')
+      elseif iteration.type > 6 and iteration.type <= 8 then
+         occluders.destroy_normalized_name('occluder_1')
+      end
    end
 
    if iteration.type > 4 then

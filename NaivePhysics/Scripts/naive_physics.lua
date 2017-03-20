@@ -110,7 +110,7 @@ end
 
 function terminate_iteration()
    tick.run_hooks('final')
-   is_valid = scene.is_valid()
+   is_valid = scene.is_valid() and is_valid
    local remaining = config.prepare_next_iteration(is_valid)
    return tostring(remaining)
 end

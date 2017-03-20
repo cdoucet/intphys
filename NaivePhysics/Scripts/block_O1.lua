@@ -204,9 +204,7 @@ function M.initialize(_subblock, _iteration, _params)
    end
 
    -- on train iteration we have no more job
-   if iteration.type == -1 then
-      return
-   end
+   if iteration.type == -1 then return end
 
    -- on test, setup the main actor.
    main_object = actors.get_active_actors_normalized_names()[params.main_object]
