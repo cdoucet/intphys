@@ -30,7 +30,11 @@ local M = {}
 
 -- Return a random material for the floor
 function M.get_random_parameters()
-   return material.random('floor')
+   return {
+      material = material.random('floor'),
+      friction = 0.7,
+      restitution = 0.3
+   }
 end
 
 

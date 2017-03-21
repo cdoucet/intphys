@@ -31,10 +31,13 @@ local config = require 'config'
 local utils = require 'utils'
 local tick = require 'tick'
 
---local check_overlap = require 'check_overlap'
-
 
 local M = {}
+
+
+local idx = 1
+
+local meshes = {'cube', 'sphere'}
 
 
 local function params_dynamic_ice(p)
@@ -49,69 +52,70 @@ end
 
 
 local function params_dynamic_parabolic(p)
+   local m = 1
+   if idx % 2 == 0 then m = 2 end
+
    local s = {
-      scale = 1,
+      scale = utils.location(1, 1, 1),
       material = material.random('actor'),
+      mesh = meshes[m],
       location = {x = -200, y = -550, z = 150},
+      rotation = utils.rotation(0, 0, 0),
       force = {x = 2.5e6, y = 0, z = 2.7e6}}
-   p.actors = {}
-   p.actors.cube_1 = s
+   p.objects = {}
+   p.objects.object_1 = s
 end
 
 
-local function print_velocity(actor)
-   local v = uetorch.GetActorVelocity(actor)
-   local w = uetorch.GetActorAngularVelocity(actor)
-   print(string.format('%f %f %f | %f %f %f',
-                       v.x, v.y, v.z,
-                       w.x, w.y, w.z))
-end
+-- local function print_velocity(actor)
+--    local v = uetorch.GetActorVelocity(actor)
+--    local w = uetorch.GetActorAngularVelocity(actor)
+--    print(string.format('%f %f %f | %f %f %f',
+--                        v.x, v.y, v.z,
+--                        w.x, w.y, w.z))
+-- end
 
 
 local tests = {
-   function(p) params_dynamic_ice(p) end,
+   --function(p) params_dynamic_ice(p) end,
    function(p) params_dynamic_parabolic(p) end,
 }
 
-local idx = 1
-
 
 function M.initialize()
-   camera.initialize(camera.get_default_parameters())
+   -- local floor_actor = floor.get_actor().floor
+   -- material.set_actor_material(floor_actor, 'M_Ice')
+   -- material.set_physical(floor_actor, 'Ice')
+   local actor = assert(actors.get_active_actors_normalized_names()['object_1'])
 
-   local floor_actor = floor.get_actor().floor
-   material.set_actor_material(floor_actor, 'M_Ice')
-   material.set_physical(floor_actor, 'Ice')
-
-   local actor = assert(actors.get_actor('cube_1'))
-
-   tick.add_hook(
-      function()
-         --print_velocity(actor)
-         if tick.get_counter() == 15 then
-            uetorch.SetActorStaticMesh(actor, actors.get_mesh('sphere'))
+   if idx % 2 == 0 then
+      tick.add_hook(
+         function()
+            --print_velocity(actor)
+            if tick.get_counter() == 15 then
+               local m = 'sphere'
+               if idx == 3 then m = 'cube' end
+               uetorch.SetActorStaticMesh(actor, actors.get_mesh(m))
          end end, 'slow')
+   end
 end
 
 
 function M.get_random_parameters()
-   local p = {backwall = backwall.get_random_parameters(),
-              floor = floor.get_random_parameters(),
-              light = light.get_random_parameters()}
+   local p = {}
 
-   if idx > #tests then
+   if idx > 4 then
       uetorch.ExecuteConsoleCommand('Exit')
-      print('failure !!')
-      return p
+      return {}
    else
-      tests[idx](p)
-      --idx = idx + 1
+      tests[1](p)
+      idx = idx + 1
       return p
    end
 end
 
 
-function M.get_main_actor() return nil end
+function M.get_main_object() return nil end
 function M.get_occlusion_check_iterations() return {} end
 function M.is_test_valid() return false end
 

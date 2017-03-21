@@ -16,7 +16,6 @@
 
 -- This module is entry point of the program, it is called from the
 -- packaged game.
-
 -- It configures the current iteration scene and run it, managing the
 -- random seed, the tick function and data saving (screen captures).
 
@@ -24,29 +23,18 @@ local uetorch = require 'uetorch'
 local paths = require 'paths'
 local config = require 'config'
 local tick = require 'tick'
-local utils = require 'utils'
 local scene = require 'scene'
 local saver = require 'saver'
-local json = require 'dkjson'
-
 local json = require 'dkjson'
 
 local params
 local is_valid = true
 
--- Called at module startup. This function is automatically called
--- when the module is loaded within the level blueprint.
-function initialize()
-   -- setup the random seed for parameters generation
+
+-- setup the random seed for parameters generation
+function set_random_seed()
    local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
    math.randomseed(seed)
-
-   -- setup the game resolution
-   local res = config.get_resolution()
-   uetorch.ExecuteConsoleCommand("r.setRes " .. res.x .. 'x' .. res.y)
-
-   -- parse the input json configuration file
-   config.parse_config_file()
 end
 
 
@@ -56,13 +44,23 @@ function get_resolution()
 end
 
 
+function parse_config_file()
+   return config.parse_config_file()
+end
+
+
 function get_remaining_ticks()
    return tick.get_ticks_remaining()
 end
 
 
-function get_remaining_iterations()
-   return config.get_remaining_iterations()
+function get_remaining_blocks()
+   return config.get_remaining_blocks()
+end
+
+
+function get_remaining_iterations_in_block()
+   return config.get_remaining_iterations_in_block()
 end
 
 
@@ -71,7 +69,10 @@ function is_test_iteration()
 end
 
 
-function get_current_iteration_json()
+-- Return random parameters for the current iteration
+--
+-- The returned string is formatted in JSON
+function get_iteration_parameters()
    is_valid = true
 
    -- ticking for `nticks`, taking screenshot every `tick_interval` at
@@ -95,6 +96,7 @@ function get_current_iteration_json()
    return json.encode(params)
 end
 
+
 function run_iteration(actors)
    local iteration = config.get_current_iteration()
    scene.initialize(actors, params)
@@ -108,11 +110,11 @@ function run_iteration(actors)
    tick.run()
 end
 
+
 function terminate_iteration()
    tick.run_hooks('final')
    is_valid = scene.is_valid() and is_valid
-   local remaining = config.prepare_next_iteration(is_valid)
-   return tostring(remaining)
+   config.prepare_next_iteration(is_valid)
 end
 
 
@@ -128,6 +130,3 @@ end
 function terminate_program()
    print('no more iterations, exiting')
 end
-
-
-return {initialize = initialize}
