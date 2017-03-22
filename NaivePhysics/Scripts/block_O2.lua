@@ -138,7 +138,7 @@ function M.get_random_parameters(subblock, nobjects)
          local p = params.objects[t_objects[i]]
 
          p.material = material.random('actor')
-         local s = 0.7 + 0.5 * math.random()
+         local s = 1--0.7 + 0.5 * math.random()
          p.scale = {x = s, y = s, z = s}
          p.mesh = t_meshes[i]
          p.material = material.random('actor')
@@ -151,9 +151,9 @@ function M.get_random_parameters(subblock, nobjects)
 
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
-            p.force = {
-               x = math.random(8e5, 1.1e6), y = 0,
-               z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+            p.force = {x = 2.5e6, y = 0, z = 2.7e6}-- {
+               -- x = math.random(8e5, 1.1e6), y = 0,
+               -- z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
 
             if actors.random_side() == 'right' then
                p.location.x = 500

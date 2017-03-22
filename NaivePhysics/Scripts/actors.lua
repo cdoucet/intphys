@@ -51,6 +51,16 @@ local function is_valid_shape(shape)
 end
 
 
+-- volume formula:
+--   sphere:   4/3*pi*r^3
+--   cube:     (2r)^3
+--   cylinder: 2*r*pi*r^2
+--   cone:     2*r*pi/3*r^2 = 1/3*V(cylinder)
+--
+-- With r = 100*scale/2
+-- TODO compare mass/volume ratios for each mesh
+
+
 local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2}
 
 

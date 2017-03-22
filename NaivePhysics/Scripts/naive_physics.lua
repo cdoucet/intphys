@@ -31,6 +31,10 @@ local params
 local is_valid = true
 
 
+function print_string(s)
+   print(s)
+end
+
 -- setup the random seed for parameters generation
 function set_random_seed()
    local seed = os.getenv('NAIVEPHYSICS_SEED') or os.time()
