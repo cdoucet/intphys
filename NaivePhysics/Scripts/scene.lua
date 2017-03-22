@@ -62,7 +62,9 @@ local function init_params(subblock)
       params = block.get_random_parameters(subblock, iteration.nactors)
 
       -- -- choose random parameters for static actors
-      params.floor = floor.get_random_parameters()
+      if not params.floor then
+         params.floor = floor.get_random_parameters()
+      end
       params.light = light.get_random_parameters()
       if math.random() >= 0.5 then
          params.backwall = backwall.get_random_parameters(true)
@@ -118,6 +120,10 @@ function M.get_params(_iteration)
    block = assert(require(block_name))
    params = init_params(subblock_name)
 
+   if iteration.block:match('^test.test') then
+      params.camera = camera.get_default_parameters()
+   end
+
    return params
 end
 
@@ -132,7 +138,7 @@ function M.initialize(actors_name, params)
          table.insert(p.occluders, actor)
       elseif actor:match('Backwall') then
          p.backwall = actor
-      else
+      elseif actor and not actor:match(' +') then
          assert(actor:match('Object'))
          table.insert(p.objects, actor)
       end

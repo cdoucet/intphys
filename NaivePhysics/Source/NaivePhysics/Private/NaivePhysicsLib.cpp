@@ -10,7 +10,7 @@ UMaterialInterface* UNaivePhysicsLib::GetMaterialFromName(const FString& Name)
     FString Suffix;
     if(! Name.Split(FString(TEXT("/")), &Prefix, &Suffix, ESearchCase::IgnoreCase, ESearchDir::FromEnd))
     {
-        return NULL;
+        Suffix = Name;
     }
 
     FString Path = FString(TEXT("Material'/Game/Materials/"))

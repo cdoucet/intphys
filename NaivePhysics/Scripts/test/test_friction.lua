@@ -34,25 +34,33 @@ local M = {}
 
 
 function M.get_random_parameters()
-   local p = {backwall = backwall.get_random_parameters(),
-              floor = floor.get_random_parameters(),
-              light = light.get_random_parameters()}
-   p.actors = {}
-   p.actors.sphere_1 = {
-      scale = 1,
+   local p = { --backwall = backwall.get_random_parameters(),
+      floor = 'Test/M_Ice',
+      light = light.get_random_parameters()}
+
+   p.objects = {}
+   p.objects.object_1 = {
+      scale = utils.location(1, 1, 1),
+      mesh = 'sphere',
       material = material.random('actor'),
       location = {x = 500, y = -320, z = 70},
-      force = {x = -1e6, y = 0, z = 0}}
+      rotation = {pitch = 0, roll = 0, yaw = 0},
+      force = {x = -1e6, y = 0, z = 0}
+   }
 
-   p.actors.cube_1 = {
-      scale = 1,
+   p.objects.object_2 = {
+      scale = utils.location(1, 1, 1),
+      mesh = 'cube',
       material = material.random('actor'),
       location = {x = 500, y = -200, z = 70},
-      force = {x = -1e6, y = 0, z = 0}}
+      rotation = {pitch = 0, roll = 0, yaw = 0},
+      force = {x = -1e6, y = 0, z = 0}
+   }
 
-   p.actors.cylinder_1 = {
-      scale = 1,
+   p.objects.object_3 = {
+      scale = utils.location(1, 1, 1),
       material = material.random('actor'),
+      mesh = 'cylinder',
       location = {x = 500, y = -440, z = 70},
       rotation = {pitch = 0, yaw = 0, roll = 90},
       force = {x = -1e6, y = 0, z = 0}}
@@ -64,29 +72,28 @@ function M.get_random_parameters()
    --    location = {x = 500, y = -80, z = 70},
    --    force = {x = -0.5e6, y = 0, z = 0}}
 
+   --print(p.floor)
+
    return p
 end
 
 
 function M.initialize()
-   -- camera in test position
-   camera.initialize(camera.get_default_parameters())
-
    local floor_actor = floor.get_actor().floor
-   material.set_actor_material(floor_actor, 'M_Ice')
+   --material.set_actor_material(floor_actor, 'M_Ice')
    material.set_physical(floor_actor, 'Ice')
 
    tick.add_hook(
       function()
-         if tick.get_counter() % 10 == 0 then
-            print('ice friction:' .. material.get_physical_properties(floor_actor).friction)
-         end
+         -- if tick.get_counter() % 10 == 0 then
+         --    print('ice friction:' .. material.get_physical_properties(floor_actor).friction)
+         -- end
 
-         if tick.get_counter() == 25 then
-            material.set_physical(floor_actor, 'F0R1')
-         end
+         -- if tick.get_counter() == 25 then
+         --    material.set_physical(floor_actor, 'F0R1')
+         -- end
 
-         if tick.get_counter() == 50 then
+         if tick.get_counter() == 20 then
             material.set_physical(floor_actor, 'F1R0')
          end
 
@@ -94,7 +101,7 @@ function M.initialize()
 end
 
 
-function M.get_main_actor() return nil end
+function M.get_main_object() return nil end
 function M.get_occlusion_check_iterations() return {} end
 function M.is_test_valid() return false end
 
