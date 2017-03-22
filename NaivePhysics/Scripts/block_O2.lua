@@ -68,6 +68,12 @@ local function swap_shapes()
    current_shape_idx = new_idx
 
    uetorch.SetActorStaticMesh(main_object, actors.get_mesh(possible_shapes[current_shape_idx]))
+
+   if tick.get_counter() <= 1 then
+      local f = params.objects[params.main_object].force
+      uetorch.AddForce(main_object, f.x, f.y, f.z, true)
+      --uetorch.AddForce(main_object, 0, 0, 0)
+   end
 end
 
 
@@ -143,6 +149,8 @@ function M.get_random_parameters(subblock, nobjects)
          p.mesh = t_meshes[i]
          p.material = material.random('actor')
          p.rotation = {pitch = 0, yaw = 0, roll = 0}
+         p.mass = 100  -- actors.mass_scale_normalization[p.mesh]
+
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
             p.location = {x = x_loc[i], y = -550, z = 70}
@@ -150,10 +158,10 @@ function M.get_random_parameters(subblock, nobjects)
             p.force = {x = 0, y = 0, z = 0}
 
          elseif subblock:match('dynamic_1') then
-            p.location = {x = -400, y = -350 - 150 * (i - 1), z = 70 + math.random(200)}
-            p.force = {x = 2.5e6, y = 0, z = 2.7e6}-- {
-               -- x = math.random(8e5, 1.1e6), y = 0,
-               -- z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+            p.location = {x = -400, y = -550 - 150 * (i - 1), z = 100}
+            p.force = {x = 2e4, y = 0, z = 1e4}-- {
+            -- x = math.random(8e5, 1.1e6), y = 0,
+            -- z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
 
             if actors.random_side() == 'right' then
                p.location.x = 500
@@ -211,11 +219,12 @@ function M.initialize(_subblock, _iteration, _params)
    current_shape_idx = 1
    if iteration.type % 2 == 1 then
       swap_shapes()
+      check_coordinates.set_reference_index(2)
    end
 
    -- on check occlusion iterations, keep alive a single occluder and
    -- the main actor (in either the first or second possible shapes)
-   if subblock:match('_2$') then
+   if subblock:match('occluded') and subblock:match('_2$') then
       if iteration.type > 4 and iteration.type <= 6 then
          occluders.destroy_normalized_name('occluder_2')
       elseif iteration.type > 6 and iteration.type <= 8 then
@@ -299,6 +308,14 @@ function M.magic_trick()
       if not trick.is_done and trick.can_do() then
          swap_shapes()
          trick.is_done = true
+
+         if subblock:match('dynamic_1') then
+            if iteration.type == 4 then
+               check_coordinates.set_reference_index(1)
+            elseif iteration.type == 3 then
+               check_coordinates.set_reference_index(2)
+            end
+         end
       end
    end
 end

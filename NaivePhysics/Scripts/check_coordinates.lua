@@ -41,8 +41,13 @@ local actor
 -- A tensor filled with actor coordinates of the current iteration
 local current_data
 
--- A tensor filled with actor coordinates of the previous iteration
-local previous_data
+-- A table of tensors filled with actor coordinates on reference iterations
+local reference_data
+
+-- The index where to read reference data for the current iteration,
+-- by default this is 1 as we need to store a single trajectory. But
+-- for block O2 we store 2 trajectories, one for each mesh.
+local reference_index = 1
 
 -- True is all coordinates are equal up to the current iteration and
 -- the current frame, false otherwise
@@ -61,7 +66,7 @@ local function save_current_coordinates()
    if is_valid then
       local n = tick.get_counter()
       local narrowed = current_data:narrow(1, 1, n)
-      previous_data = torch.Tensor(narrowed:size()):copy(narrowed)
+      reference_data[reference_index] = torch.Tensor(narrowed:size()):copy(narrowed)
    end
 end
 
@@ -74,10 +79,13 @@ local function push_and_check_coordinates()
    local index = tick.get_counter()
    push_current_coordinates()
 
-   if index <= previous_data:size(1) then
+   if reference_data[reference_index]
+      and index <= reference_data[reference_index]:size(1)
+   then
       -- euclidean distance of current/previous location
-      local dist = math.sqrt((current_data[index] - previous_data[index]):pow(2):sum())
-      if dist > 10e-6 then
+      local diff = current_data[index] - reference_data[idx][index]
+      local dist = math.sqrt(diff:pow(2):sum())
+      if dist > 10e-3 then
          tick.set_ticks_remaining(0)
          is_valid = false
 
@@ -97,9 +105,8 @@ function M.initialize(_iteration, _actor)
    iteration = _iteration
    actor = _actor
    is_valid = true
-
-
    current_data = torch.Tensor(config.get_nticks(), 3):fill(0)
+   reference_data = {}
 
    if config.is_first_iteration_of_block(iteration) then
       tick.add_hook(push_current_coordinates, 'slow')
@@ -117,6 +124,11 @@ function M.is_valid()
    else
       return is_valid
    end
+end
+
+
+function M.set_reference_index(idx)
+   reference_index = idx
 end
 
 

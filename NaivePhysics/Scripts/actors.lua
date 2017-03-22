@@ -67,6 +67,17 @@ local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2
 local M = {}
 
 
+-- coefficient to normalize meshes mass wrt scale. i.e. with this
+-- mass_scale and a physical scale of 1, all the meshes will have the
+-- mass of a sphere: 109.458389 kg
+M.mass_scale_normalization = {
+   sphere = 1,
+   cube = 0.6155297517867,
+   cone = 1.6962973279499,
+   cylinder = 0.74135697523419
+}
+
+
 -- Instanciate a UStaticMesh of `shape` and return a reference to it
 --
 -- return nil if `shape` is not a valid shape
@@ -257,6 +268,7 @@ function M.get_random_actor_parameters(name, shape)
 
    p.mesh = (shape or M.random_shape()):gsub('^%l', string.upper)
    p.material = material.random('actor')
+   p.mass = 100.0
 
    local s = math.random() + 1.5
    p.scale = {x = s, y = s, z = s}

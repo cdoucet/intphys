@@ -115,6 +115,7 @@ function M.get_random_parameters(subblock, nobjects)
          p.mesh = 'Sphere'
          p.material = material.random('actor')
          p.rotation = {pitch = 0, yaw = 0, roll = 0}
+         p.mass = 100.0
 
          -- location and force vary across subblocks
          if subblock:match('static') then
