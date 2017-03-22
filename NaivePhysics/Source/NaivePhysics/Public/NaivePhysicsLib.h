@@ -19,4 +19,7 @@ public:
 
         UFUNCTION(BlueprintCallable, Category="NaivePhysics")
         static UStaticMesh* GetStaticMeshFromName(const FString& Name);
+
+        UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+        static UPhysicalMaterial* GetPhysicalMaterial(const float& Friction, const float& Restitution);
 };

@@ -27,3 +27,13 @@ UStaticMesh* UNaivePhysicsLib::GetStaticMeshFromName(const FString& Name)
 
     return LoadObject<UStaticMesh>(nullptr, Path.GetCharArray().GetData());
 }
+
+
+UPhysicalMaterial* UNaivePhysicsLib::GetPhysicalMaterial(const float& Friction, const float& Restitution)
+{
+    UPhysicalMaterial* PhysicalMaterial = NewObject<UPhysicalMaterial>();
+    PhysicalMaterial->Friction = Friction;
+    PhysicalMaterial->Restitution = Restitution;
+    PhysicalMaterial->UpdatePhysXMaterial();
+    return PhysicalMaterial;
+}

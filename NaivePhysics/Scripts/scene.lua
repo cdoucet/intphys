@@ -61,7 +61,7 @@ local function init_params(subblock)
       -- choose random parameters for the block actors (occluders, objects)
       params = block.get_random_parameters(subblock, iteration.nactors)
 
-      -- -- choose random parameters for static actors
+      -- choose random parameters for static actors
       if not params.floor then
          params.floor = floor.get_random_parameters()
       end
@@ -72,7 +72,7 @@ local function init_params(subblock)
 
       -- choose parameters for the camera with a fixed position in
       -- test and a more variable one for training
-      if config.is_train(iteration) then
+      if config.is_train(iteration) and not iteration.block:match('test.test')then
          params.camera = camera.get_random_parameters()
       else
          params.camera = camera.get_default_parameters()

@@ -253,9 +253,7 @@ function M.initialize(_subblock, _iteration, _params)
                return utils.sign(params.trick_x - uetorch.GetActorLocation(main_object).x)
             end
             trick.can_do = function()
-               if not trick.init_xdiff then
-                  trick.init_xdiff = trick.xdiff()
-               end
+               if not trick.init_xdiff then trick.init_xdiff = trick.xdiff() end
                return trick.xdiff() ~= trick.init_xdiff
             end
          end
@@ -297,14 +295,10 @@ function M.magic_trick()
    --    -- end
    --    return
    -- else -- this is static or dynamic_1
-   if subblock:match('static') then
+   if not subblock:match('dynamic_2') then
       if not trick.is_done and trick.can_do() then
          swap_shapes()
          trick.is_done = true
-
-         -- TODO do not work: we have a black screenshot for the 3
-         -- images, only for C2
-         -- tick.remove_hook(M.magic_trick, 'slow')
       end
    end
 end

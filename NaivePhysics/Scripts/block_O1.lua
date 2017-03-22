@@ -228,59 +228,78 @@ function M.initialize(_subblock, _iteration, _params)
    -- initialize the ticking method that do the magic stuff
    if not M.is_possible() then
       tick.add_hook(M.magic_trick, 'slow')
+      trick = M.setup_magic_trick(subblock)
+   end
+end
 
-      -- setup the trick data
-      if subblock:match('dynamic_2') then
-         trick = {is_done_1 = false, is_done_2 = false}
 
-         if subblock:match('occluded') then
-            local first, second = 5, 6
-            if (assert(params.objects[params.main_object].side) == 'right') then
-               first, second = 6, 5
-            end
 
-            trick.can_do_1 = function() return check_occlusion.is_middle_of_occlusion(first) end
-            trick.can_do_2 = function() return check_occlusion.is_middle_of_occlusion(second) end
-
-         else  -- dynamic_2 visible
-            trick.xdiff_start = nil
-            trick.xdiff_stop = nil
-            trick.xdiff = function(x)
-               return utils.sign(uetorch.GetActorLocation(main_object).x - x)
-            end
-            trick.can_do_1 = function()
-               if not trick.xdiff_start then
-                  trick.xdiff_start = trick.xdiff(assert(params.trick_start))
-                  trick.xdiff_stop = trick.xdiff(assert(params.trick_stop))
-               end
-               return trick.xdiff(params.trick_start) ~= trick.xdiff_start
-            end
-            trick.can_do_2 = function()
-               return trick.xdiff(params.trick_stop) ~= trick.xdiff_stop
-            end
-         end
-      else  -- dynamic_1 or static
-         trick = {is_done = false}
-
-         if subblock:match('occluded') then
-            trick.can_do = function()
-               return check_occlusion.is_middle_of_occlusion(5) end
-         elseif subblock:match('static') then -- visible static
-            trick.can_do = function()
-               return tick.get_counter() == assert(params.trick_step) end
-         else -- visible dynamic_1
-            trick.init_xdiff = nil
-            trick.xdiff = function()
-               return utils.sign(params.trick_x - uetorch.GetActorLocation(main_object).x)
-            end
-            trick.can_do = function()
-               if not trick.init_xdiff then
-                  trick.init_xdiff = trick.xdiff()
-               end
-               return trick.xdiff() ~= trick.init_xdiff
-            end
-         end
+function M.setup_magic_trick(subblock)
+   if subblock == 'test_occluded_dynamic_2' then
+      local first, second = 5, 6
+      if assert(params.objects[params.main_object].side) == 'right' then
+         first, second = 6, 5
       end
+
+      return {
+         is_done_1 = false,
+         is_done_2 = false,
+         can_do_1 = function() return check_occlusion.is_middle_of_occlusion(first) end,
+         can_do_2 = function() return check_occlusion.is_middle_of_occlusion(second) end
+      }
+
+   elseif subblock == 'test_visible_dynamic_2' then
+      return {
+         is_done_1 = false,
+         is_done_2 = false,
+
+         xdiff_start = nil,
+         xdiff_stop = nil,
+         xdiff = function(x) return utils.sign(uetorch.GetActorLocation(main_object).x - x) end,
+
+         can_do_1 = function()
+         if not trick.xdiff_start then
+            trick.xdiff_start = trick.xdiff(assert(params.trick_start))
+            trick.xdiff_stop = trick.xdiff(assert(params.trick_stop))
+         end
+         return trick.xdiff(params.trick_start) ~= trick.xdiff_start end,
+         can_do_2 = function() return trick.xdiff(params.trick_stop) ~= trick.xdiff_stop end
+      }
+
+   elseif subblock == 'test_occluded_dynamic_1' then
+      return {
+         is_done = false,
+         can_do = function() return check_occlusion.is_middle_of_occlusion(5) end,
+      }
+
+   elseif subblock == 'test_visible_dynamic_1' then
+      return {
+         is_done = false,
+
+         init_xdiff = nil,
+         xdiff = function()
+            return utils.sign(params.trick_x - uetorch.GetActorLocation(main_object).x)
+         end,
+
+         can_do = function()
+            if not trick.init_xdiff then trick.init_xdiff = trick.xdiff() end
+            return trick.xdiff() ~= trick.init_xdiff
+         end
+      }
+
+   elseif subblock == 'test_occluded_static' then
+      return {
+         is_done = false,
+         can_do = function() return check_occlusion.is_middle_of_occlusion(5) end,
+      }
+
+   else
+      assert(subblock == 'test_visible_static')
+
+      return {
+         is_done = false,
+         can_do = function() return tick.get_counter() == assert(params.trick_step) end
+      }
    end
 end
 

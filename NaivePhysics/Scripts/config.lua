@@ -38,10 +38,6 @@ local function parse_resolution(r)
 end
 
 
-local M = {}
-
-
-
 -- A table of iterations registered in the configuration file
 local iterations_table
 
@@ -52,16 +48,23 @@ local max_iteration
 local current_index
 
 
+local max_block, current_block_index
+
+local train_runs, test_runs
+
+
 conf = {
    data_path = assert(os.getenv('NAIVEPHYSICS_DATA')),
    config_file = assert(os.getenv('NAIVEPHYSICS_JSON')),
    resolution = parse_resolution(assert(os.getenv('NAIVEPHYSICS_RESOLUTION'))),
-   load_params = false,
    ticks_interval = 2,
    ticks_rate = 1/8,
    nticks = 100,
 }
 
+
+
+local M = {}
 
 function M.get_data_path()
    return conf.data_path
@@ -69,10 +72,6 @@ end
 
 function M.get_resolution()
    return conf.resolution
-end
-
-function M.get_load_params()
-   return conf.load_params
 end
 
 function M.get_ticks_interval()
@@ -99,7 +98,7 @@ function M.get_check_occlusion_size(iteration)
       size = 1
    end
 
-   if name:match('C2') then
+   if name:match('O2') then
       size = size * 2
    end
 
@@ -197,8 +196,23 @@ function M.get_iteration(index)
 end
 
 
+function M.get_remaining_blocks()
+   if current_block_index == -1 then return 0 end
+   return max_block - current_block_index + 1
+end
+
+
 function M.get_remaining_iterations()
+   if current_index == -1 then return 0 end
    return max_iteration - current_index + 1
+end
+
+
+function M.get_remaining_iterations_in_block()
+   if current_index == -1 then return 0 end
+   local t = M.get_current_iteration().type
+   if t == -1 then return 1 end
+   return t
 end
 
 
@@ -222,11 +236,16 @@ end
 
 function M.prepare_next_iteration(was_valid)
    if was_valid and current_index == max_iteration then
-      return 0
-   end
+      -- no more iteration to run
+      current_index = -1
+      current_block_index = -1
 
-   if was_valid then
+   elseif was_valid then
       current_index = current_index + 1
+      if M.is_first_iteration_of_block(M.get_iteration(current_index)) then
+         current_block_index = current_block_index + 1
+      end
+
    else
       local iteration = M.get_iteration(current_index)
       -- delete the saved data because the scene is not valid
@@ -238,16 +257,6 @@ function M.prepare_next_iteration(was_valid)
          current_index = current_index - M.get_block_size(iteration) + iteration.type
       end
    end
-
-   -- the number of remaining iterations
-   local remaining = max_iteration - current_index + 1
-
-   if remaining > 0 then
-      -- ensure the iteration exists in the iterations table
-      assert(iterations_table[current_index])
-   end
-
-   return remaining
 end
 
 
@@ -262,7 +271,6 @@ local function add_iteration(b, t, i, n)
 end
 
 
-local train_runs, test_runs = 0, 0
 local function add_train_iteration(block, case, nruns)
    local name = block
    if case then
@@ -281,7 +289,6 @@ local function add_test_iterations(block, case, subblocks)
    for subblock, nruns in pairs(subblocks) do
       local name = block .. '.' .. case .. '_' .. subblock
       local ntypes = 4 + M.get_check_occlusion_size({block = name})
-
 
       if type(nruns) == 'table' then
          for nactors, nruns_2 in pairs(nruns) do
@@ -323,6 +330,10 @@ function M.parse_config_file()
    iterations_table = {}
    max_iteration = 0
    current_index = 1
+   max_block = 0
+   train_runs = 0
+   test_runs = 0
+   current_block_index = 1
 
    -- count the number of iterations both for train and test. Each
    -- train is always a single iteration, the number of test
@@ -344,6 +355,8 @@ function M.parse_config_file()
          end
       end
    end
+
+   max_block = test_runs + train_runs
 
    if max_iteration == 0 then
       print('no iterations specified, exiting')
