@@ -42,7 +42,7 @@ local actor
 local current_data
 
 -- A table of tensors filled with actor coordinates on reference iterations
-local reference_data
+local reference_data = {}
 
 -- The index where to read reference data for the current iteration,
 -- by default this is 1 as we need to store a single trajectory. But
@@ -79,11 +79,9 @@ local function push_and_check_coordinates()
    local index = tick.get_counter()
    push_current_coordinates()
 
-   if reference_data[reference_index]
-      and index <= reference_data[reference_index]:size(1)
-   then
+   if index <= reference_data[reference_index]:size(1) then
       -- euclidean distance of current/previous location
-      local diff = current_data[index] - reference_data[idx][index]
+      local diff = current_data[index] - reference_data[reference_index][index]
       local dist = math.sqrt(diff:pow(2):sum())
       if dist > 10e-3 then
          tick.set_ticks_remaining(0)
@@ -91,6 +89,13 @@ local function push_and_check_coordinates()
 
          print('bad actor coordinates (tick ' .. tick.get_counter() ..
                   '): distance = ' .. dist .. ' cm')
+
+         --print(reference_data[1] - reference_data[2])
+         -- print(reference_data[1][index])
+         -- print(reference_data[2][index])
+         -- print(current_data[index])
+         -- print('diff = ' .. tostring(diff))
+
          return
       end
    end
@@ -106,14 +111,21 @@ function M.initialize(_iteration, _actor)
    actor = _actor
    is_valid = true
    current_data = torch.Tensor(config.get_nticks(), 3):fill(0)
-   reference_data = {}
 
-   if config.is_first_iteration_of_block(iteration) then
+   if not (iteration.block:match('O2') and iteration.block:match('dynamic_1')) then
+   --    if iteration.type > 4 then
+   --       tick.add_hook(push_current_coordinates, 'slow')
+   --    else
+   --       tick.add_hook(push_and_check_coordinates, 'slow')
+   --    end
+   -- else
+      if config.is_first_iteration_of_block(iteration) then
       tick.add_hook(push_current_coordinates, 'slow')
-   else
-      tick.add_hook(push_and_check_coordinates, 'slow')
+      else
+         tick.add_hook(push_and_check_coordinates, 'slow')
+      end
+      tick.add_hook(save_current_coordinates, 'final')
    end
-   tick.add_hook(save_current_coordinates, 'final')
 end
 
 

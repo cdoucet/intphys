@@ -102,9 +102,9 @@ function M.get_check_occlusion_size(iteration)
       size = size * 2
    end
 
-   if name:match('O2') and name:match('visible') and name:match('dynamic_1') then
-      size = 2
-   end
+   -- if name:match('O2') and name:match('visible') and name:match('dynamic_1') then
+   --    size = 2
+   -- end
 
    return size
 end

@@ -31,7 +31,7 @@ local subblocks = {
    'test_visible_dynamic_1',
    -- 'test_visible_dynamic_2',
    'test_occluded_static',
-   -- 'test_occluded_dynamic_1',
+   'test_occluded_dynamic_1',
    -- 'test_occluded_dynamic_2'
 }
 
@@ -72,7 +72,6 @@ local function swap_shapes()
    if tick.get_counter() <= 1 then
       local f = params.objects[params.main_object].force
       uetorch.AddForce(main_object, f.x, f.y, f.z, true)
-      --uetorch.AddForce(main_object, 0, 0, 0)
    end
 end
 
@@ -144,12 +143,15 @@ function M.get_random_parameters(subblock, nobjects)
          local p = params.objects[t_objects[i]]
 
          p.material = material.random('actor')
-         local s = 1--0.7 + 0.5 * math.random()
+         local s = 0.7 + 0.5 * math.random()
          p.scale = {x = s, y = s, z = s}
          p.mesh = t_meshes[i]
+         p.mass = 100
          p.material = material.random('actor')
-         p.rotation = {pitch = 0, yaw = 0, roll = 0}
-         p.mass = 100  -- actors.mass_scale_normalization[p.mesh]
+         p.rotation = {
+            pitch = math.random()*360,
+            yaw = math.random()*360,
+            roll = math.random()*360}
 
          if subblock:match('static') then
             local x_loc = {150, 40, 260}
@@ -158,13 +160,11 @@ function M.get_random_parameters(subblock, nobjects)
             p.force = {x = 0, y = 0, z = 0}
 
          elseif subblock:match('dynamic_1') then
-            p.location = {x = -400, y = -550 - 150 * (i - 1), z = 100}
-            p.force = {x = 2e4, y = 0, z = 1e4}-- {
-            -- x = math.random(8e5, 1.1e6), y = 0,
-            -- z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+            p.location = {x = -400, y = -550 - 150 * (i - 1), z = math.random() * 100 + 70}
+            p.force = {x = math.random()*5e3 + 1.5e4, y = 0, z = math.random()*1e4 + 1.5e4}
 
             if actors.random_side() == 'right' then
-               p.location.x = 500
+               p.location.x = 600
                p.force.x = -1 * p.force.x
             end
          end
@@ -215,6 +215,8 @@ function M.initialize(_subblock, _iteration, _params)
    main_object = actors.get_active_actors_normalized_names()[params.main_object]
    local main_shape = params.objects[params.main_object].mesh
    possible_shapes = {main_shape, params.other_shape}
+
+   -- print(uetorch.GetActorLocation(main_object))
 
    current_shape_idx = 1
    if iteration.type % 2 == 1 then
@@ -308,15 +310,15 @@ function M.magic_trick()
       if not trick.is_done and trick.can_do() then
          swap_shapes()
          trick.is_done = true
-
-         if subblock:match('dynamic_1') then
-            if iteration.type == 4 then
-               check_coordinates.set_reference_index(1)
-            elseif iteration.type == 3 then
-               check_coordinates.set_reference_index(2)
-            end
-         end
       end
+      -- if subblock:match('dynamic_1') and trick.is_done and swap_coords == 1 then
+      --    swap_coord = true
+      --    if iteration.type == 4 then
+      --       check_coordinates.set_reference_index(1)
+      --    elseif iteration.type == 3 then
+      --       check_coordinates.set_reference_index(2)
+      --    end
+      -- end
    end
 end
 
