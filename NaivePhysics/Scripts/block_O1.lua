@@ -127,8 +127,8 @@ function M.get_random_parameters(subblock, nobjects)
          elseif subblock:match('dynamic_1') then
             p.location = {x = -400, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
-                  x = math.random(8e5, 1.1e6), y = 0,
-                  z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+                  x = math.random(8e3, 1.1e4), y = 0,
+                  z = math.random(8e3, 1e4) * (2 * math.random(2) - 3)}
 
             if actors.random_side() == 'right' then
                p.location.x = 500
@@ -140,8 +140,8 @@ function M.get_random_parameters(subblock, nobjects)
             p.side = actors.random_side()
             p.location = {x = -350, y = -550 - 150 * (i - 1), z = 70 + math.random(200)}
             p.force = {
-               x = 1.6e6, y = 0,
-               z = math.random(8e5, 1e6) * (2 * math.random(2) - 3)}
+               x = 1.6e4, y = 0,
+               z = math.random(8e3, 1e4) * (2 * math.random(2) - 3)}
 
             if p.side == 'right' then
                p.location.x = 750

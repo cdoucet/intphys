@@ -67,15 +67,15 @@ local volume_scale = {sphere = 1, cube = math.pi / 6, cylinder = 2 / 3, cone = 2
 local M = {}
 
 
--- coefficient to normalize meshes mass wrt scale. i.e. with this
--- mass_scale and a physical scale of 1, all the meshes will have the
--- mass of a sphere: 109.458389 kg
-M.mass_scale_normalization = {
-   sphere = 1,
-   cube = 0.6155297517867,
-   cone = 1.6962973279499,
-   cylinder = 0.74135697523419
-}
+-- -- coefficient to normalize meshes mass wrt scale. i.e. with this
+-- -- mass_scale and a physical scale of 1, all the meshes will have the
+-- -- mass of a sphere: 109.458389 kg
+-- M.mass_scale_normalization = {
+--    sphere = 1,
+--    cube = 0.6155297517867,
+--    cone = 1.6962973279499,
+--    cylinder = 0.74135697523419
+-- }
 
 
 -- Instanciate a UStaticMesh of `shape` and return a reference to it
@@ -243,9 +243,9 @@ function M.random_force(side)
    local sign_z = 2 * math.random(2) - 3 -- -1 or 1
 
    local f = {
-      x = math.random(5e5, 2e6),
-      y = math.random(-1e6, 5e5),
-      z = sign_z * math.random(8e5, 1e6)
+      x = math.random(5e3, 2e4),
+      y = math.random(-1e4, 5e3),
+      z = sign_z * math.random(8e3, 1e4)
    }
 
    if side == 'right' then

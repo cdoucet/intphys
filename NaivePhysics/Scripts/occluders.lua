@@ -162,6 +162,10 @@ function M.get_random_occluder_parameters(name, subblock)
       params.rotation_speed = math.random() * 5 + 10
    end
 
+   if subblock:match('O2') and subblock:match('dynamic_1') then
+      params.scale.z = 1
+   end
+
    return params
 end
 
