@@ -81,6 +81,9 @@ try:
     # been setup in activate-naivephysics)
     NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
 
+    # path to the NaivePhysics uproject file
+    NAIVEPHYSICS_PROJECT = os.environ['NAIVEPHYSICS_PROJECT']
+
     # path to the UnrealEngine directory
     UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
 
@@ -125,7 +128,7 @@ class LogNoStartupMessagesFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         return not (
-            'Importing uetorch.lua ...' in msg or
+            #'Importing uetorch.lua ...' in msg or
             'Using binned.' in msg or
             'per-process limit of core file size to infinity.' in msg or
             'depot+UE4-Releases' in msg)
@@ -404,7 +407,7 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
         raise IOError('Json file not found: {}'.format(config_file))
 
     print('running {}{}'.format(
-        os.path.basename(NAIVEPHYSICS_BINARY),
+        NAIVEPHYSICS_BINARY,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     if njobs == 1:
@@ -457,8 +460,7 @@ def RunEditor(output_dir, config_file, seed=None, dry=False,
     if not os.path.isfile(editor):
         raise IOError('No such file {}'.format(editor))
 
-    project = os.path.join(
-        NAIVEPHYSICS_ROOT, 'NaivePhysicsProject', 'NaivePhysics.uproject')
+    project = NAIVEPHYSICS_PROJECT
     if not os.path.isfile(project):
         raise IOError('No such file {}'.format(project))
 
@@ -520,6 +522,11 @@ def CleanDataDirectory(directory):
             shutil.rmtree(dirpath)
 
 
+def AtExit(output_dir):
+    if os.path.isdir(output_dir):
+        shutil.rmtree(output_dir)
+
+
 def Main():
     # parse command-line arguments
     args = ParseArgs()
@@ -529,7 +536,8 @@ def Main():
     if args.output_dir is None:
         dry_mode = True
         output_dir = tempfile.mkdtemp()
-        atexit.register(lambda: shutil.rmtree(output_dir))
+        atexit.register(lambda: AtExit(output_dir))
+
     else:
         output_dir = os.path.abspath(args.output_dir)
         if os.path.exists(output_dir):

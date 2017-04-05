@@ -1,3 +1,9 @@
+- reset the sky sphere rotation between scenes
+- implement events
+- include an actors field in status.json with mass, scale, physicals
+- include also a magic_trick entry for impossible cases (frame number,
+  nature of change)
+
 * Deadlines
 ** For 2017-03-15
 *** release of the challenge-1.0
