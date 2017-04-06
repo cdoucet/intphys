@@ -51,7 +51,7 @@ import time
 # an exemple of a config file to feed the NaivePhysics data generator
 JSON_EXEMPLE = '''
 {
-    "blockC1" :
+    "block_O1" :
     {
         "train" : 100,
         "test_visible" :
@@ -69,7 +69,8 @@ JSON_EXEMPLE = '''
     }
 }
 
-This generates 100 train videos and 30 test videos (5 for each variant).'''
+This generates 100 train videos and 30 test videos for the O1 block
+ (5 for each variant).'''
 
 
 # the default screen resolution (in pixels)
@@ -205,7 +206,7 @@ def ParseArgs():
         '-o', '--output-dir', metavar='<output-dir>', default=None, help='''
         directory where to write generated data, must be non-existing
         or used along with the --force option. If <output-dir> is not
-        specified, the programs run in "dry mode" and do not save any data.''')
+        specified, the program run in "dry mode" and do not save any data.''')
 
     parser.add_argument(
         '-v', '--verbose', action='store_true',
