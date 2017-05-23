@@ -62,7 +62,7 @@ source $UNREALENGINE_ROOT/Engine/Plugins/UETorch/uetorch_activate.sh
 cd $NAIVEPHYSICS_ROOT
 
 
-echo "Step 3: write the activate-naivephysics script and add it in your ~/.bashrc"
+echo "Step 3: write the activate-naivephysics script"
 cat > activate-naivephysics << EOF
 #!/bin/bash
 #
@@ -84,7 +84,6 @@ EOF
 
 
 source $NAIVEPHYSICS_ROOT/activate-naivephysics
-echo "source $NAIVEPHYSICS_ROOT/activate-naivephysics" >> ~/.bashrc
 
 echo "Successful installation of the Unreal Engine with UETorch,
 please package the NaivePhysics project within the UE editor (refer to

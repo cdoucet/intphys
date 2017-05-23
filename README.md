@@ -1,58 +1,40 @@
-# NaivePhysics
+# NaivePhysics #
 
-#### Data generation for the Naive Physics project using Unreal Engine
+#### Data generation for the Naive Physics project using Unreal Engine ####
 
-Developed
-with
+Developed with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
 4.8 and our [UETorch](https://github.com/bootphon/UETorch) fork.
 
 
-## Exemples
+## Video exemples ##
 
 
-#### Train samples
+#### Train samples ####
 
 Train samples are always physically possible and have high variability
 
-
-<img src="exemples/gif/train_1.gif" width="150">
-<img src="exemples/gif/train_2.gif" width="150">
-<img src="exemples/gif/train_3.gif" width="150">
-<img src="exemples/gif/train_4.gif" width="150">
+<img src="exemples/gif/train_1.gif" width="150"> <img src="exemples/gif/train_2.gif" width="150"> <img src="exemples/gif/train_3.gif" width="150"> <img src="exemples/gif/train_4.gif" width="150">
 
 
-#### Test samples
+#### Test samples ####
 
 Test samples have a constrained variability and come as quadruplets: 2
 possibles cases and 2 impossibles ones
 
-<img src="exemples/gif/test_1.gif" width="150">
-<img src="exemples/gif/test_2.gif" width="150">
-<img src="exemples/gif/test_3.gif" width="150">
-<img src="exemples/gif/test_4.gif" width="150">
+<img src="exemples/gif/test_1.gif" width="150"> <img src="exemples/gif/test_2.gif" width="150"> <img src="exemples/gif/test_3.gif" width="150"> <img src="exemples/gif/test_4.gif" width="150">
 
 
-#### Metadata
+#### Metadata ####
 
 Each video comes with it's associated depth field and object masking
 (each object have a unique id), along with a detailed status in JSON
 format.
 
-<img src="exemples/gif/meta_1.gif" width="150">
-<img src="exemples/gif/meta_2.gif" width="150">
-<img src="exemples/gif/meta_3.gif" width="150">
+<img src="exemples/gif/meta_1.gif" width="150"> <img src="exemples/gif/meta_2.gif" width="150"> <img src="exemples/gif/meta_3.gif" width="150">
 
 
-## Usage
-
-Once installed and packaged, use the `naivedata.py` program to
-generate data. To discover it, have a:
-
-    ./naivedata.py --help
-
-
-## Installation details
+## Installation details ##
 
 This installation process succeeded on Debian stable (Jessie) and
 Ubuntu 14.04. It may be fine for other Unices as well, but this have
@@ -64,6 +46,7 @@ not been tested.
   source distribution of UE4 in the version 4.8, not the binary
   download.
 
+
 * The clone the NaivePhysics repository from github, go in its root
   directory and run the `Setup.sh` script:
 
@@ -74,135 +57,85 @@ not been tested.
   This takes a while: it downloads and installs Lua, Torch, Unreal
   Engine and UETorch in the `NaivePhysics` directory. It finally
   generates a `activate-naivephysics` script that load the project
-  environment, and sources it in your `~/.bashrc`.
+  environment.
+
+* **Note for Ubuntu 16.04 users** The install is not working out of
+  the box because UE-4.8 was made for Ubuntu 14.04. Two problems to solve:
+
+    - in the file
+      `NaivePhysics/UnrealEngine/Engine/Build/BatchFiles/Linux/Setup.sh`
+      suppress the line 44 "libmono-corlib4.0-cil" and replace it by
+      "mono-reference-assemblies-4.0 mono-devel"
+
+    - ensure you are using clang-3.5 (the default is clang-3.8). A
+      dirty but simple way to do that is `sudo apt-get remove clang`
+      and then `sudo apt-get install clang-3.5` (you can make the
+      reverse operation after).
+
+* The NaivePhysics main executable is a Python script relying on
+  (joblib)[https://pythonhosted.org/joblib] to run
+  sub-processes. Install it, for exemple using pip:
+
+        [sudo] pip install joblib
+
 
 * The final step is to package the
   `NaivePhysics/NaivePhysics.uproject` project into a standalone
-  binary. We provide the `tools/build_package.sh` for doing that, but the
-  first time (i.e. right after a compilation from scratch) it seems
-  not to work.
+  binary. You need a manual intervention in the editor. Open it with:
 
-  So you need a manual intervention in the editor. Open it with:
+        ./naivedata.py exemple.json --editor --verbose
 
-        ./naivedata.py exemple.json ./data --editor --verbose
+  Answer *yes* if a pop-up asks you for rebuilding missing libraries.
 
   In the *File/Package Project* menu, select the *Linux* target and
-  `./NaivePhysicsProject/Package` as the package directory. This operation
-  takes a while.
+  `./NaivePhysics/Package` as the package directory. This operation
+  takes a while on the first time.
 
   ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
 
 
-## Potential issue
+* **Potential issue:** If the 3D scene generated seems to be frozen
+  (the spheres are moving but the wall remains in the 'down' position
+  for a while), there is a problem with the packaged binary.
 
-If the 3D scene generated seems to be frozen (the spheres are moving
-but the wall remains in the 'down' position for a while), there is a
-problem with the packaged binary.
+  Try to repackage it within the UnrealEngine editor.
 
-Try to repackage it with the `tools/build_package.sh` script or within the
-UnrealEngine editor.
-
-If the problem persists, launch the editor (with the *--editor* option
-of `naivedata.py`), click on the *Play* button (in the top panel) and
-repackage the game from the *File/Package Project* menu.
+  If the problem persists, launch the editor (with the *--editor*
+  option of `naivedata.py`), click on the *Play* button (in the top
+  panel) and, then, repackage the game.
 
 
-## Lua scripts in NaivePhysicsProject/Scripts
+## Usage ##
 
-The **naive_physics.lua** file contains the parts that are common to
-all different blocks, like setting the scenario and providing some
-functions that will be called from Unreal's blueprints through
-UETorch:
+* Go in your `NaivePhysics` directory and run:
 
-* **SetCurrentIteration**: gets the number of the iteration that will
-  be simulated and imports the corresponding block, and also deals
-  with some block-independent details like:
-  * make globally available the RunBlock function of the correponding
-    block so that it can be called from the blueprints.
-  * adding the hooks that are going to save the actors' data, screen
-    captures and final verification of the resulting scene.
-* **SaveData**: is called at the end of each iteration and records the
-  information accumulated during the simulation.
-* **GetCurrentIteration**: taken from utils.lua
-* **Tick**: replaces UETorch's Tick function, taken from utils.lua.
+        source activate-naivephysics
+
+* Then use the `naivedata.py` program to generate data. To discover
+  the arguments, have a:
+
+        ./naivedata.py --help
+
+* The basic usage is calling `naivedata.py config.json -o
+  ./output_data`. This reads the scenes to be generated from the
+  `config.json` file and write them in the folder `./output_data`.
 
 
-### Configuration script
-
-The **config.lua** file gives an easy way to configure the following
-properties of the simulations:
-
-* Location where the data will be stored (**data_path**)
-* A flag that can be enabled to generate an scene with previously
-  saved parameters (**loadParams**), can be useful to regenerate the
-  scene if something failed.
-* A flag that enables stitching of all the resulting images
-  (**stitch**)
-* Number of ticks between each screen capture (**captureInterval**)
-* Length of an scene in number of ticks (**sceneTicks**)
-* Number of visibility check steps for each block
-  (**visibilityCheckSize**)
-* Number of elements in the tuple for each block (**tupleSize**),
-  which can be useful when you want to generate multiple scenarios
-  with the same parameters.
-* Amount of iterations that will be generated for each block
-  (**blocks**), all the necessary folders will need to be created
-  previously.
-
-Also provides some functions that allow access to these properties.
-
-
-### Blocks' scripts
-
-Each block script independently sets the scenario for the simulation and should provide:
-
-* A **SetBlock()** function which will be called from the main script
-  and precalculate some parameters or load them if they have been
-  precalculated already.
-* A **RunBlock()** function which will be called from the Lua
-  blueprint in order to start running the scenario.
-* An **actors** table which contains the actors for which data will be
-  stored.
-* A **MainActor()** function which returns the main actor which should
-  be kept during the visibility check steps.
-* The functions **SaveCheckInfo()** and **Check()** which check the
-  integrity of scene after it has been generated.
-  * If the check function finds an error a new scene will be generated.
-  * The check function can fail and restart during any of the
-    different parts of the block, as done for example in
-    blockC1_dynamic_2
-  * **Warning**: this could cause an infinite loop if the loadParams
-    flag is true, but the scene generated with these parameters isn't
-    valid.
-* A **IsPossible()** function which says whether the sequence is
-  possible.
-
-
-### Utils' script (**utils.lua**)
-
-* **SetActorMaterial** sets the material of a given actor from a fixed
-  list of available materials.
-* **GetCurrentIteration** reads the iteration counter from a file.
-* **UpdateIterationsCounter** updates the iteration counter after the
-  **Check** function concluded and depending on the result decides
-  whether to go on or restart.
-* **Tick** replaces UETorch's Tick function, allowing to set the
-  maximum number of ticks in the scene and run some hooks at the end
-  of it.
-
-## Additional utils
+## Additional utils ##
 
 In the `tools` directory are stored few utility scripts:
 
+* **images2video.sh** : converts a sequence of images into a video or
+  a gif file. Used to postprocess the generated png images.
+
+* **clean.sh** : deletes the NaivePhysics build/binaries directories.
+
 * **build_package.sh** : builds the NaivePhysics project as a
-  standalone binary program.
-* **images2video.sh** : converts a sequence of generated images into a
-  video or a gif file.
-* **clean.sh** : deletes directories which aren't necessary to rebuild
-  the package.
+  standalone binary program. *Outdated, the prefered way to package
+  the game is using the editor*.
 
 
-## License
+## License ##
 
 **Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard**
 
