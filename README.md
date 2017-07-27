@@ -1,6 +1,6 @@
-# NaivePhysics #
+# intphys #
 
-#### Data generation for the Naive Physics project using Unreal Engine ####
+#### Data generation for the Intuitive Physics Challenge - http://www.intphys.com ####
 
 Developed with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
