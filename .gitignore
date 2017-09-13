@@ -3,6 +3,7 @@
 *.lo
 *.o
 *.obj
+*.pyc
 
 # Precompiled Headers
 *.gch
@@ -40,26 +41,18 @@ SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary and build files
-NaivePhysics/*
-!NaivePhysics/Config
-!NaivePhysics/Content
-!NaivePhysics/Scripts
-!NaivePhysics/Source
-!NaivePhysics/NaivePhysics.uproject
-
-# Installed dependencies
-UnrealEngine/*
-torch/*
-activate-naivephysics
+intphys/Binaries
+intphys/DerivedDataCache
+intphys/Intermediate
+intphys/Saved
+intphys/Content/Scripts/__pycache__
 
 # Data directory and json configuration files
 data*/*
 *.json
 !exemple.json
-!/exemples/config.json
 
 # Misc
 /exemples/data
 /exemples/html/
-/naivedata.pyc
 /core
