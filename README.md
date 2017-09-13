@@ -1,14 +1,17 @@
-# intphys #
+# intphys-2.0 #
 
 #### Data generation for the Intuitive Physics Challenge - http://www.intphys.com ####
 
 Developed with
 [Unreal Engine](https://www.unrealengine.com/what-is-unreal-engine-4)
-4.8 and our [UETorch](https://github.com/bootphon/UETorch) fork.
+4.17 and the [UnrealEnginePython](https://github.com/20tab/UnrealEnginePython)
+plugin.
+
+The 2.0 version of intphys is a reimplementation of intphys-1.0 based on UE-4.17 (was
+UE-4.8) using the Python scripting language (was Lua).
 
 
 ## Video exemples ##
-
 
 #### Train samples ####
 
@@ -37,59 +40,53 @@ format.
 ## Installation details ##
 
 This installation process succeeded on Debian stable (Jessie) and
-Ubuntu 14.04. It may be fine for other Unices as well, but this have
+Ubuntu 16.04. It may be fine for other Unices as well, but this have
 not been tested.
 
 * First of all setup an Epic Games account at
   https://github.com/EpicGames/Signup/, needed to clone the Unreal
-  Engine repository from github. UETorch currently only works with the
-  source distribution of UE4 in the version 4.8, not the binary
-  download.
+  Engine repository from github. The version 4.17 of Unreal Engine is
+  recommended but any version supported by UnrealEnginePython should
+  work (from 4.12 to 4.17).
 
+* Install Unreal Engine on your machine. We define the installation
+  directory, configure and compile it. This takes a while.
 
-* The clone the NaivePhysics repository from github, go in its root
-  directory and run the `Setup.sh` script:
-
-        git clone git@github.com:bootphon/NaivePhysics.git
-        cd NaivePhysics
+        UNREALENGINE_ROOT=~/dev/UnrealEngine  # change to whatever you like
+        git clone --branch 4.17 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
+        cd $UNREALENGINE_ROOT
         ./Setup.sh
+        ./GenerateProjectFiles.sh
+        make
 
-  This takes a while: it downloads and installs Lua, Torch, Unreal
-  Engine and UETorch in the `NaivePhysics` directory. It finally
-  generates a `activate-naivephysics` script that load the project
-  environment.
+* Install intphys. Clone the repository and its dependancies
+  from github, go in its root directory and run the `setup.sh` script:
 
-* **Note for Ubuntu 16.04 users** The install is not working out of
-  the box because UE-4.8 was made for Ubuntu 14.04. Two problems to solve:
+        git clone --recursive git@github.com:bootphon/intphys.git
+        cd intphys
+        ./setup.sh  # expect UNREALENGINE_ROOT to be defined
 
-    - in the file
-      `NaivePhysics/UnrealEngine/Engine/Build/BatchFiles/Linux/Setup.sh`
-      suppress the line 44 "libmono-corlib4.0-cil" and replace it by
-      "mono-reference-assemblies-4.0 mono-devel"
-
-    - ensure you are using clang-3.5 (the default is clang-3.8). A
-      dirty but simple way to do that is `sudo apt-get remove clang`
-      and then `sudo apt-get install clang-3.5` (you can make the
-      reverse operation after).
-
-* The NaivePhysics main executable is a Python script relying on
-  (joblib)[https://pythonhosted.org/joblib] to run
+* The NaivePhysics main executable is a Python script relying
+  on [joblib](https://pythonhosted.org/joblib) to run
   sub-processes. Install it, for exemple using pip:
 
         [sudo] pip install joblib
 
 
 * The final step is to package the
-  `NaivePhysics/NaivePhysics.uproject` project into a standalone
+  `intphys/intphys.uproject` project into a standalone
   binary. You need a manual intervention in the editor. Open it with:
 
         ./naivedata.py exemple.json --editor --verbose
 
-  Answer *yes* if a pop-up asks you for rebuilding missing libraries.
+  * Answer *no* if a pop-up complains the UnrealEnginePython plugin is
+    not compatible with the current engine version.
+
+  * Answer *yes* if a pop-up asks you for rebuilding missing libraries.
 
   In the *File/Package Project* menu, select the *Linux* target and
-  `./NaivePhysics/Package` as the package directory. This operation
-  takes a while on the first time.
+  `./intphys/Package` as the package directory. This operation takes a
+  while on the first time.
 
   ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
 
@@ -107,16 +104,16 @@ not been tested.
 
 ## Usage ##
 
-* Go in your `NaivePhysics` directory and run:
+* Go in your `intphys` directory and run:
 
-        source activate-naivephysics
+        source activate-intphys
 
 * Then use the `naivedata.py` program to generate data. To discover
   the arguments, have a:
 
-        ./naivedata.py --help
+        ./intphysdata.py --help
 
-* The basic usage is calling `naivedata.py config.json -o
+* The basic usage is calling `intphysdata.py config.json -o
   ./output_data`. This reads the scenes to be generated from the
   `config.json` file and write them in the folder `./output_data`.
 
@@ -130,25 +127,5 @@ In the `tools` directory are stored few utility scripts:
 
 * **clean.sh** : deletes the NaivePhysics build/binaries directories.
 
-* **build_package.sh** : builds the NaivePhysics project as a
-  standalone binary program. *Outdated, the prefered way to package
-  the game is using the editor*.
-
-
-## License ##
-
-**Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard**
-
-
-This program is free software: you can redistribute it and/or modify
-it under the terms of the GNU General Public License as published by
-the Free Software Foundation, either version 3 of the License, or
-(at your option) any later version.
-
-This program is distributed in the hope that it will be useful,
-but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-GNU General Public License for more details.
-
-You should have received a copy of the GNU General Public License
-along with this program. If not, see <http://www.gnu.org/licenses/>.
+In the `exemples` directory are stored scripts to generate few videos,
+extract them to gif pictures and embeed them in a html page.

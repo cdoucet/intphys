@@ -1,0 +1,16 @@
+{
+	"FileVersion": 3,
+	"EngineAssociation": "{1B780106-0B09-0B07-0038-0070A0F4A132}",
+	"Category": "",
+	"Description": "",
+	"Modules": [
+		{
+			"Name": "intphys",
+			"Type": "Runtime",
+			"LoadingPhase": "Default"
+		}
+	],
+	"TargetPlatforms": [
+		"LinuxNoEditor"
+	]
+}

@@ -1,31 +1,9 @@
-- reset the sky sphere rotation between scenes
-- implement events
-- include an actors field in status.json with mass, scale, physicals
-- include also a magic_trick entry for impossible cases (frame number,
-  nature of change)
+TODO list for intphys-2.0
 
-* Deadlines
-** For 2017-03-15
-*** release of the challenge-1.0
-    - A server with the benchmark (downloadable dataset)
-    - The 2 first blocks, with train set, dev set (with evaluation) and test set (no evaluation)
-    - An evaluation on the server (with registration)
-    - A script to build test set/dev set from raw tests
-*** release of a NaivePhysics-1.0 version as well
-*** if possible, release the block C2 (shape consistency)
-* Improvements
-** in status.json for tests
-   do we need to specify when an actor is hidden (ie after a trick)?
-   For now its coordinates are still registered even if it is no more
-   visible.
-** implement different classes of motion
-   static, sliding, rolling, falling, walking (agent)
-** run on a headless cluster
-*** The problem is remote openGl rendering
-- with DISPLAY=:0 that works remotely but corrupt the host's X server!
-- http://www.virtualgl.org can be a solution
-*** alternatively update to UE-4.14
-- https://www.unrealengine.com/blog/unreal-engine-4-14-released
-- New: Added "offscreen" video driver to SDL so the engine can now
-  create GL context on headless machines not running any display
-  servers (EGL is enough).
+* rewrite setup.sh [4/5]
+- [X] put UnrealEngine out of the project
+- [X] let the user feed a UNREALENGINE_ROOT to setup.sh
+- [X] make UnrealEnginePython a git submodule in intphys/Plugins
+- [X] update the README.md
+- [ ] create a python venv and a activate-intphys.sh in setup.sh
+* reimplement all the lua code in python

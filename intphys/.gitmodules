@@ -1,0 +1,3 @@
+[submodule "intphys/Plugins/UnrealEnginePython"]
+	path = intphys/Plugins/UnrealEnginePython
+	url = https://github.com/20tab/UnrealEnginePython.git
