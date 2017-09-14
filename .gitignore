@@ -35,24 +35,23 @@
 *.suo
 *.opensdf
 *.sdf
+core
 
 # Precompiled Assets
 SourceArt/**/*.png
 SourceArt/**/*.tga
 
 # Binary and build files
-intphys/Binaries
-intphys/DerivedDataCache
-intphys/Intermediate
-intphys/Saved
-intphys/Content/Scripts/__pycache__
+Binaries
+DerivedDataCache
+Intermediate
+Saved
+Content/Scripts/__pycache__
+Content/Scripts/*.uasset
 
 # Data directory and json configuration files
 data*/*
 *.json
-!exemple.json
-
-# Misc
-/exemples/data
-/exemples/html/
-/core
+!Exemples/*.json
+Exemples/data
+Exemples/html/

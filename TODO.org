@@ -7,3 +7,4 @@ TODO list for intphys-2.0
 - [X] update the README.md
 - [ ] create a python venv and a activate-intphys.sh in setup.sh
 * reimplement all the lua code in python
+- rename 'backwall' into 'wall'
