@@ -9,7 +9,7 @@ import os
 import sys
 
 
-# add the absolute path to .../Content/Scripts
+# add the absolute path to .../intphys/Content/Scripts
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
 # remove all paths that are not absolute/existing paths and a .zip

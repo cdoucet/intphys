@@ -17,7 +17,7 @@ UE-4.8) using the Python scripting language (was Lua).
 
 Train samples are always physically possible and have high variability
 
-<img src="exemples/gif/train_1.gif" width="150"> <img src="exemples/gif/train_2.gif" width="150"> <img src="exemples/gif/train_3.gif" width="150"> <img src="exemples/gif/train_4.gif" width="150">
+<img src="Exemples/gif/train_1.gif" width="150"> <img src="Exemples/gif/train_2.gif" width="150"> <img src="Exemples/gif/train_3.gif" width="150"> <img src="Exemples/gif/train_4.gif" width="150">
 
 
 #### Test samples ####
@@ -25,7 +25,7 @@ Train samples are always physically possible and have high variability
 Test samples have a constrained variability and come as quadruplets: 2
 possibles cases and 2 impossibles ones
 
-<img src="exemples/gif/test_1.gif" width="150"> <img src="exemples/gif/test_2.gif" width="150"> <img src="exemples/gif/test_3.gif" width="150"> <img src="exemples/gif/test_4.gif" width="150">
+<img src="Exemples/gif/test_1.gif" width="150"> <img src="Exemples/gif/test_2.gif" width="150"> <img src="Exemples/gif/test_3.gif" width="150"> <img src="Exemples/gif/test_4.gif" width="150">
 
 
 #### Metadata ####
@@ -34,7 +34,7 @@ Each video comes with it's associated depth field and object masking
 (each object have a unique id), along with a detailed status in JSON
 format.
 
-<img src="exemples/gif/meta_1.gif" width="150"> <img src="exemples/gif/meta_2.gif" width="150"> <img src="exemples/gif/meta_3.gif" width="150">
+<img src="Exemples/gif/meta_1.gif" width="150"> <img src="Exemples/gif/meta_2.gif" width="150"> <img src="Exemples/gif/meta_3.gif" width="150">
 
 
 ## Installation details ##
@@ -63,19 +63,17 @@ not been tested.
   from github, go in its root directory and run the `setup.sh` script:
 
         git clone --recursive git@github.com:bootphon/intphys.git
-        cd intphys
-        ./setup.sh  # expect UNREALENGINE_ROOT to be defined
 
-* The NaivePhysics main executable is a Python script relying
+* The intphys main executable is a Python script relying
   on [joblib](https://pythonhosted.org/joblib) to run
   sub-processes. Install it, for exemple using pip:
 
         [sudo] pip install joblib
 
 
-* The final step is to package the
-  `intphys/intphys.uproject` project into a standalone
-  binary. You need a manual intervention in the editor. Open it with:
+* The final step is to package the `intphys/intphys.uproject` project
+  into a standalone binary. You need a manual intervention in the
+  editor. Open it with:
 
         ./naivedata.py exemple.json --editor --verbose
 
@@ -98,7 +96,7 @@ not been tested.
   Try to repackage it within the UnrealEngine editor.
 
   If the problem persists, launch the editor (with the *--editor*
-  option of `naivedata.py`), click on the *Play* button (in the top
+  option of `intphysdata.py`), click on the *Play* button (in the top
   panel) and, then, repackage the game.
 
 
@@ -120,12 +118,12 @@ not been tested.
 
 ## Additional utils ##
 
-In the `tools` directory are stored few utility scripts:
+In the `Tools` directory are stored few utility scripts:
 
 * **images2video.sh** : converts a sequence of images into a video or
   a gif file. Used to postprocess the generated png images.
 
-* **clean.sh** : deletes the NaivePhysics build/binaries directories.
+* **clean.sh** : deletes the intphys build/binaries directories.
 
-In the `exemples` directory are stored scripts to generate few videos,
+In the `Exemples` directory are stored scripts to generate few videos,
 extract them to gif pictures and embeed them in a html page.

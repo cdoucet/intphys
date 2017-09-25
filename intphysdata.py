@@ -1,33 +1,19 @@
 #!/usr/bin/env python
-#
-# Copyright 2016, 2017 Mario Ynocente Castro, Mathieu Bernard
-#
-# You can redistribute this file and/or modify it under the terms of
-# the GNU General Public License as published by the Free Software
-# Foundation, either version 3 of the License, or (at your option) any
-# later version.
-#
-# This program is distributed in the hope that it will be useful, but
-# WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# General Public License for more details.
-#
-# You should have received a copy of the GNU General Public License
-# along with this program. If not, see <http://www.gnu.org/licenses/>.
-"""High-level wrapper for NaivePhysics data generation
 
-This programm wraps the NaivePhysics binary (as packaged by Unreal
-Engine) into a simple to use command-line interface. It defines few
+"""High-level wrapper for intphys data generation
+
+This programm wraps the intphys binary (as packaged by Unreal Engine)
+into a simple to use command-line interface. It defines few
 environment variables (namely input JSon configuration file, output
 directory and random seed), launch the binary and filter its log
 messages at runtime, keeping only relevant messages.
 
-The NAIVEPHYSICS_BINARY variable must be defined in your environment
+The INTPHYS_BINARY variable must be defined in your environment
 (this is done for you by the activate-naivephysics script).
 
 To see command-line arguments, have a::
 
-    ./naivedata.py --help
+    ./intphysdata.py --help
 
 """
 
@@ -48,7 +34,7 @@ import threading
 import time
 
 
-# an exemple of a config file to feed the NaivePhysics data generator
+# an exemple of a config file to feed the intphys data generator
 JSON_EXEMPLE = '''
 {
     "block_O1" :
@@ -78,18 +64,18 @@ default_resolution = '288x288'
 
 
 try:
-    # path to packaged the NaivePhysics binary (environment variable has
+    # path to packaged the intphys binary (environment variable has
     # been setup in activate-naivephysics)
-    NAIVEPHYSICS_BINARY = os.environ['NAIVEPHYSICS_BINARY']
+    INTPHYS_BINARY = os.environ['INTPHYS_BINARY']
 
-    # path to the NaivePhysics uproject file
-    NAIVEPHYSICS_PROJECT = os.environ['NAIVEPHYSICS_PROJECT']
+    # path to the intphys uproject file
+    INTPHYS_PROJECT = os.environ['INTPHYS_PROJECT']
 
     # path to the UnrealEngine directory
     UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
 
-    # path to the NaivePhysics directory
-    NAIVEPHYSICS_ROOT = os.environ['NAIVEPHYSICS_ROOT']
+    # path to the intphys directory
+    INTPHYS_ROOT = os.environ['INTPHYS_ROOT']
 except KeyError as err:
     print('Error: the environment variable {} is not defined, '
           'did you run "source activate-naivephysics" ?'
@@ -192,7 +178,7 @@ def ParseArgs():
         pass
 
     parser = argparse.ArgumentParser(
-        description='Data generator for the NaivePhysics project',
+        description='Data generator for the intphys project',
         epilog='An exemple of a json configuration file is:\n{}'
         .format(JSON_EXEMPLE),
         formatter_class=CustomFormatter)
@@ -233,7 +219,7 @@ def ParseArgs():
 
     parser.add_argument(
         '-e', '--editor', action='store_true',
-        help='launch the NaivePhysics project in the UnrealEngine editor')
+        help='launch the intphys project in the UnrealEngine editor')
 
     args = parser.parse_args()
     if not re.match('[0-9]+x[0-9]+', args.resolution):
@@ -328,16 +314,16 @@ def _Run(command, log, config_file, output_dir,
     `command` runs with the following environment variables, in top of
     the current environment:
 
-    NAIVEPHYSICS_JSON is the absolute path to `config_file`.
+    INTPHYS_JSON is the absolute path to `config_file`.
 
-    NAIVEPHYSICS_DATA is the absolute path to `output_dir` with a
+    INTPHYS_DATA is the absolute path to `output_dir` with a
        trailing slash added.
 
-    NAIVEPHYSICS_SEED is `seed`
+    INTPHYS_SEED is `seed`
 
-    NAIVEPHYSICS_DRY is `dry`
+    INTPHYS_DRY is `dry`
 
-    NAIVEPHYSICS_RESOLUTION is `resolution`
+    INTPHYS_RESOLUTION is `resolution`
 
     """
     # get the output directory as absolute path with a trailing /,
@@ -348,18 +334,18 @@ def _Run(command, log, config_file, output_dir,
 
     # setup the environment variables used in lua scripts
     environ = copy.deepcopy(os.environ)
-    environ['NAIVEPHYSICS_DATA'] = output_dir
-    environ['NAIVEPHYSICS_JSON'] = os.path.abspath(config_file)
-    environ['NAIVEPHYSICS_RESOLUTION'] = resolution
+    environ['INTPHYS_DATA'] = output_dir
+    environ['INTPHYS_JSON'] = os.path.abspath(config_file)
+    environ['INTPHYS_RESOLUTION'] = resolution
 
     if dry:
-        environ['NAIVEPHYSICS_DRY'] = 'true'
+        environ['INTPHYS_DRY'] = 'true'
         log.info('running in dry mode, dont save anything')
     else:
         log.info('write data to ' + output_dir)
 
     if seed is not None:
-        environ['NAIVEPHYSICS_SEED'] = str(seed)
+        environ['INTPHYS_SEED'] = str(seed)
 
     # run the command as a subprocess
     job = subprocess.Popen(
@@ -391,7 +377,7 @@ def _Run(command, log, config_file, output_dir,
 
 def RunBinary(output_dir, config_file, njobs=1, seed=None,
               dry=False, resolution=default_resolution, verbose=False):
-    """Run the NaivePhysics packaged binary as a subprocess
+    """Run the intphys packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
     into subparts of equivalent workload and run several jobs in
@@ -401,18 +387,18 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
     if type(njobs) is not int or njobs < 1:
         raise IOError('njobs argument must be a strictly positive integer')
 
-    if not os.path.isfile(NAIVEPHYSICS_BINARY):
-        raise IOError('No such file: {}'.format(NAIVEPHYSICS_BINARY))
+    if not os.path.isfile(INTPHYS_BINARY):
+        raise IOError('No such file: {}'.format(INTPHYS_BINARY))
 
     if not os.path.isfile(config_file):
         raise IOError('Json file not found: {}'.format(config_file))
 
     print('running {}{}'.format(
-        NAIVEPHYSICS_BINARY,
+        INTPHYS_BINARY,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     if njobs == 1:
-        _Run(NAIVEPHYSICS_BINARY,
+        _Run(INTPHYS_BINARY,
              GetLogger(verbose=verbose),
              config_file, output_dir, seed=seed, dry=dry,
              resolution=resolution)
@@ -446,14 +432,14 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
         # run the subprocesses
         joblib.Parallel(n_jobs=njobs, backend='threading')(
             joblib.delayed(_Run)(
-                NAIVEPHYSICS_BINARY, _log[i], _conf[i], _out[i],
+                INTPHYS_BINARY, _log[i], _conf[i], _out[i],
                 seed=_seed[i], dry=dry, resolution=resolution)
             for i in range(njobs))
 
 
 def RunEditor(output_dir, config_file, seed=None, dry=False,
               resolution=default_resolution, verbose=False):
-    """Run the NaivePhysics project within the UnrealEngine editor"""
+    """Run the intphys project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
     editor = os.path.join(
@@ -461,11 +447,11 @@ def RunEditor(output_dir, config_file, seed=None, dry=False,
     if not os.path.isfile(editor):
         raise IOError('No such file {}'.format(editor))
 
-    project = NAIVEPHYSICS_PROJECT
+    project = INTPHYS_PROJECT
     if not os.path.isfile(project):
         raise IOError('No such file {}'.format(project))
 
-    log.debug('running NaivePhysics in the Unreal Engine editor')
+    log.debug('running intphys in the Unreal Engine editor')
 
     _Run(editor + ' ' + project, log, config_file, output_dir,
          seed=seed, dry=dry, resolution=resolution)

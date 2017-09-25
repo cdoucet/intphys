@@ -49,6 +49,7 @@ Saved
 Content/Scripts/__pycache__
 Content/Scripts/*.uasset
 Content/*_BuiltData.uasset
+Build
 
 # Data directory and json configuration files
 data*/*
