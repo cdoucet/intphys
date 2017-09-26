@@ -20,7 +20,8 @@ class CameraPythonComponant:
     def __init__(self):
         ue.log('camera init...')
 
-    def get_train_parameters(self):
+    @staticmethod
+    def get_train_parameters():
         """Returns random coordinates for train scenes
 
         In train scenes, camera has a high variability. Only the roll
@@ -39,7 +40,8 @@ class CameraPythonComponant:
 
         return location, rotation
 
-    def get_test_parameters(self):
+    @staticmethod
+    def get_test_parameters():
         """Returns random coordinates for test scenes
 
         In test scenes, the camera has a constrained location, with
@@ -53,6 +55,7 @@ class CameraPythonComponant:
 
     def begin_play(self):
         ue.log('Camera begin play...')
+
 
     def on_actor_begin_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""

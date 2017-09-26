@@ -5,13 +5,11 @@ This module is attached to the MainPythonComponant PyActor in UE.
 """
 
 import unreal_engine as ue
-import mobile_object
-
 import os
 import png
 
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Actor
+from unreal_engine.classes import PyActor
 
 
 # the default screen resolution (in pixels)
@@ -39,14 +37,21 @@ class MainPythonComponant:
 
         # TODO spawn actors from here
 
-        # actor_class = ue.find_object('PysicsObject')
-        # ue.log('new actor class is {}'.format(actor_class))
+        actor_class = ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
+        ue.log('new actor class is {}'.format(actor_class))
 
-        # # spawn a new PyActor
-        # new_actor = self.world.actor_spawn(
-        #     Actor,
-        #     FVector(100, 0, 50),
-        #     FRotator(0, 0, 0))
+        # spawn a new PyActor
+        new_actor = self.world.actor_spawn(
+            actor_class,
+            FVector(200, 0, 50),
+            FRotator(0, 0, 0))
+
+        # spawn a new PyActor
+        new_actor2 = self.world.actor_spawn(
+            actor_class,
+            FVector(100, 0, 100),
+            FRotator(0, 0, 0))
+
 
         # # add a sphere component as the root one
         # static_mesh = new_actor.add_actor_root_component(

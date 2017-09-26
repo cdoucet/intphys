@@ -13,6 +13,7 @@ from unreal_engine import FVector
 
 class PhysicsObject:
     def __init__(self):
+        ue.log('Initializing a new PhysicsObject')
         self.mesh_name = '/Engine/EngineMeshes/Sphere.Sphere'
         self.material_name = None
         self.mass = 1.0
@@ -49,13 +50,13 @@ class PhysicsObject:
         self.total_time += delta_time
         done = 0
 
-        if self.total_time >= 1 and done < 1:
-            self.actor.SetActorHiddenInGame(True)
-            done = 1
-        if self.total_time >=2 and done < 2:
-            self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
-            self.actor.SetActorHiddenInGame(False)
-            done = 2
+        # if self.total_time >= 1 and done < 1:
+        #     self.actor.SetActorHiddenInGame(True)
+        #     done = 1
+        # if self.total_time >=2 and done < 2:
+        #     self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
+        #     self.actor.SetActorHiddenInGame(False)
+        #     done = 2
 
     def on_actor_hit(self, me, other, normal_impulse, hit_result):
         message = 'actor overlaping {}'.format(other.get_name())
