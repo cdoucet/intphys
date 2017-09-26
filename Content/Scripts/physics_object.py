@@ -13,11 +13,10 @@ from unreal_engine import FVector
 
 class PhysicsObject:
     def __init__(self):
-        ue.log('Initializing a new PhysicsObject')
         self.mesh_name = '/Engine/EngineMeshes/Sphere.Sphere'
         self.material_name = None
         self.mass = 1.0
-        self.force = FVector(1e7, 0.0, 0.0)
+        self.force = FVector(-1e7, 0.0, 0.0)
 
         self.total_time = 0
 
@@ -65,7 +64,6 @@ class PhysicsObject:
     def on_actor_begin_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
         message = 'Camera overlaping {}'.format(other.get_name())
-
         ue.log(message)
-        ue.log_error(message)
-        raise RuntimeError(message)
+        # ue.log_error(message)
+        # raise RuntimeError(message)

@@ -5,11 +5,8 @@ This module is attached to the MainPythonComponant PyActor in UE.
 """
 
 import unreal_engine as ue
-import os
-import png
 
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import PyActor
 
 
 # the default screen resolution (in pixels)
@@ -18,6 +15,9 @@ width, height = 288, 288
 
 ue.log('#' * 50)
 ue.log('Beginning new game')
+
+
+uclass = {'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')}
 
 
 class MainPythonComponant:
@@ -33,23 +33,12 @@ class MainPythonComponant:
 
     def begin_play(self):
         self.world = self.uobject.get_world()
-        ue.log('Raising new world {}'.format(self.world))
-
-        # TODO spawn actors from here
-
-        actor_class = ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
-        ue.log('new actor class is {}'.format(actor_class))
+        ue.log('Raising new world {}'.format(self.world.get_name()))
 
         # spawn a new PyActor
         new_actor = self.world.actor_spawn(
-            actor_class,
-            FVector(200, 0, 50),
-            FRotator(0, 0, 0))
-
-        # spawn a new PyActor
-        new_actor2 = self.world.actor_spawn(
-            actor_class,
-            FVector(100, 0, 100),
+            uclass['PhysicsObject'],
+            FVector(300, 0, 50),
             FRotator(0, 0, 0))
 
 

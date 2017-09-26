@@ -13,12 +13,14 @@ TODO implement this in Python
 import random
 
 from unreal_engine import FVector, FRotator
+from unreal_engine.classes import PyActor
 import unreal_engine as ue
 
 
 class CameraPythonComponant:
     def __init__(self):
         ue.log('camera init...')
+        self.location, self.rotation = self.get_train_parameters()
 
     @staticmethod
     def get_train_parameters():
@@ -29,13 +31,13 @@ class CameraPythonComponant:
 
         """
         location = FVector(
-            150 + random.uniform(-100, 100),
-            30 + random.uniform(200, 400),
-            80 + random.uniform(-10, 100))
+            random.uniform(-100, 100),
+            random.uniform(200, 400),
+            100 + random.uniform(-30, 80))
 
         rotation = FRotator(
-            random.uniform(-15, 10),
             -90 + random.uniform(-30, 30),
+            random.uniform(-15, 10),
             0)
 
         return location, rotation
@@ -54,16 +56,22 @@ class CameraPythonComponant:
         return location, rotation
 
     def begin_play(self):
-        ue.log('Camera begin play...')
+        # retrieve the camera object from its Python component
+        self.actor = self.uobject.get_owner()
 
+        # OnActorBeginOverlap events are redirected to the
+        # manage_overlap method
+        self.actor.bind_event(
+            'OnActorBeginOverlap', self.manage_overlap)
 
-    def on_actor_begin_overlap(self, me, other):
+        # place the camera at the desired coordinates
+        self.actor.set_actor_location(self.location)
+        self.actor.set_actor_rotation(self.rotation)
+
+    def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
         message = 'Camera overlaping {}'.format(other.get_name())
-
-        ue.log(message)
         ue.log_error(message)
-        raise RuntimeError(message)
 
     def get_status(self):
         """Returns the camera coordinates as a string"""
