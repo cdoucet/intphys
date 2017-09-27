@@ -20,7 +20,7 @@ import unreal_engine as ue
 class CameraPythonComponant:
     def __init__(self):
         ue.log('camera init...')
-        self.location, self.rotation = self.get_train_parameters()
+        self.location, self.rotation = self.get_test_parameters()
 
     @staticmethod
     def get_train_parameters():
@@ -36,7 +36,7 @@ class CameraPythonComponant:
             100 + random.uniform(-30, 80))
 
         rotation = FRotator(
-            -90 + random.uniform(-30, 30),
+            random.uniform(-30, 30),
             random.uniform(-15, 10),
             0)
 
@@ -50,8 +50,15 @@ class CameraPythonComponant:
         little variations along the y axis and pitch.
 
         """
-        location = FVector(150, -100 * random.random(), 150)
-        rotation = FRotator(-10 * random.random(), -90, 0)
+        location = FVector(
+            0,
+            -100 * random.random(),
+            150)
+
+        rotation = FRotator(
+            0,
+            -90 * random.random(),
+            0)
 
         return location, rotation
 

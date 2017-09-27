@@ -52,6 +52,7 @@ Content/Scripts/__pycache__
 Content/Scripts/*.uasset
 Content/*_BuiltData.uasset
 Build
+Package
 
 # Data directory and json configuration files
 data*/*
