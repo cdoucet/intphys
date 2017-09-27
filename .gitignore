@@ -35,6 +35,8 @@
 *.suo
 *.opensdf
 *.sdf
+
+# generated when the program crashes
 core
 
 # Precompiled Assets
