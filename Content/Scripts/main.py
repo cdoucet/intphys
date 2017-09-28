@@ -21,11 +21,8 @@ uclass = {'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')}
 
 
 class MainPythonComponant:
-    def get_x_resolution(self):
-        return str(width)
-
-    def get_y_resolution(self):
-        return str(height)
+    def get_resolution(self):
+        return str(width) + 'x' + str(height)
 
     def print_tick(self, delta_seconds):
         ue.log('ticking after {}'.format(float(delta_seconds)))

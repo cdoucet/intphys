@@ -2,68 +2,81 @@
 
 This is the Python componant of the PhysicsObject blueprint class.
 
-A physics object has a mesh (3D shape), a material (texture), a mass.
+A physics object is defined by a mesh (3D shape), a material (texture)
+and a mass. It obeys to physical laws. It can be spawn at any location
+in the world and a force vector can be applied to it.
 
 """
 
 import unreal_engine as ue
 
 from unreal_engine import FVector
+from unreal_engine.classes import Material, StaticMesh
+from unreal_engine.enums import ECollisionChannel
 
 
 class PhysicsObject:
     def __init__(self):
-        self.mesh_name = '/Engine/EngineMeshes/Sphere.Sphere'
-        self.material_name = None
-        self.mass = 1.0
-        self.force = FVector(-1e7, 0.0, 0.0)
+        ue.log('init PhysicsObject')
 
-        self.total_time = 0
+        # TODO mesh and material as uobjects, not strings
+        self.parameters = {
+            'mesh': '/Game/Meshes/Sphere.Sphere',
+            'material': '/Game/Materials/Actor/M_Tech_Panel.M_Tech_Panel',
+            'mass': 1.0,
+            'force': FVector(-1e5, 0.0, 0.0)
+        }
+
+        # self.materials = ue.get_assets('/Game/Materials/Actor')
+        # self.total_time = 0
 
     def begin_play(self):
-        # retrieve the actor (here we are in componant)
+        # retrieve the actor from its Python component
         self.actor = self.uobject.get_owner()
 
-        # retrieve
+        # manage OnActorBeginOverlap events
+        self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
+
+        # retrieve the actor's mesh component
         self.mesh = self.actor.get_actor_component_by_type(
             ue.find_class('StaticMeshComponent'))
 
-        # setup mesh and material TODO get them random
-        self.mesh.call('SetStaticMesh {}'.format(self.mesh_name))
-        self.mesh.call('SetMaterial {}'.format(self.material_name))
+        # setup physics
+        self.mesh.call('SetCollisionProfileName BlockAll')
+        self.mesh.SetCollisionObjectType(ECollisionChannel.PhysicsBody)
+        self.actor.SetActorEnableCollision(True)
+        self.mesh.set_simulate_physics()
 
-        # setup mass
+        # setup mesh, material, mass and force from parameters
+        self.mesh.SetStaticMesh(
+            ue.load_object(StaticMesh, self.parameters['mesh']))
+
+        self.mesh.set_material(
+            0, ue.load_object(Material, self.parameters['material']))
+
         self.mesh.SetMassScale(
             BoneName='None',
-            InMassScale=self.mass/self.mesh.GetMassScale())
+            InMassScale=self.parameters['mass'] / self.mesh.GetMassScale())
 
-        # setup force
-        self.mesh.add_force(self.force)
+        self.mesh.add_force(self.parameters['force'])
 
-        ue.log('{} begin play at {}{}'.format(
-            self.actor.get_name(),
-            self.actor.get_actor_location(),
-            self.actor.get_actor_rotation()))
 
-    def tick(self, delta_time):
-        self.total_time += delta_time
-        done = 0
+        ue.log('begin play {}'.format(self.actor.get_name()))
+        ue.print_string('Hello from python')
 
-        # if self.total_time >= 1 and done < 1:
-        #     self.actor.SetActorHiddenInGame(True)
-        #     done = 1
-        # if self.total_time >=2 and done < 2:
-        #     self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
-        #     self.actor.SetActorHiddenInGame(False)
-        #     done = 2
+    # def tick(self, delta_time):
+    #     self.total_time += delta_time
+    #     done = 0
 
-    def on_actor_hit(self, me, other, normal_impulse, hit_result):
-        message = 'actor overlaping {}'.format(other.get_name())
-        ue.log(message)
+    #     if self.total_time >= 1 and done < 1:
+    #         self.actor.SetActorHiddenInGame(True)
+    #         done = 1
+    #     if self.total_time >=2 and done < 2:
+    #         self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
+    #         self.actor.SetActorHiddenInGame(False)
+    #         done = 2
 
-    def on_actor_begin_overlap(self, me, other):
+    def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
-        message = 'Camera overlaping {}'.format(other.get_name())
+        message = '{} overlapping {}'.format(self.actor.get_name(), other.get_name())
         ue.log(message)
-        # ue.log_error(message)
-        # raise RuntimeError(message)

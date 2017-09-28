@@ -19,7 +19,6 @@ import unreal_engine as ue
 
 class CameraPythonComponant:
     def __init__(self):
-        ue.log('camera init...')
         self.location, self.rotation = self.get_test_parameters()
 
     @staticmethod
@@ -57,7 +56,7 @@ class CameraPythonComponant:
 
         rotation = FRotator(
             0,
-            -90 * random.random(),
+            -10 * random.random(),
             0)
 
         return location, rotation
@@ -77,7 +76,7 @@ class CameraPythonComponant:
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
-        message = 'Camera overlaping {}'.format(other.get_name())
+        message = 'Camera overlapping {}'.format(other.get_name())
         ue.log_error(message)
 
     def get_status(self):
