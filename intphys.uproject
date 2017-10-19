@@ -10,11 +10,8 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"Plugins": [
-		{
-			"Name": "NativizedAssets",
-			"Enabled": false
-		}
+	"AdditionalPluginDirectories": [
+		"Intermediate/Plugins"
 	],
 	"TargetPlatforms": [
 		"LinuxNoEditor"

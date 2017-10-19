@@ -1,0 +1,5 @@
+#!/bin/bash
+
+export INTPHYS_BINARY=$(readlink -f ./Package/LinuxNoEditor/intphys/Binaries/Linux/intphys-Linux-Shipping)
+export INTPHYS_PROJECT=$(readlink -f ./intphys.uproject)
+export UNREALENGINE_ROOT=$(readlink -f ../UnrealEngine-4.17)

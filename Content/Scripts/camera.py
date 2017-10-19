@@ -6,6 +6,7 @@ The other camera parameters are constant and fixed in UE:
 - a perspective projection,
 - a ratio heigth/width fixed at 1 (to nsure a square image),
 - an horizontal field of view of 90 degrees.
+
 TODO implement this in Python
 
 """
@@ -13,7 +14,6 @@ TODO implement this in Python
 import random
 
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import PyActor
 import unreal_engine as ue
 
 

@@ -8,6 +8,7 @@ in the world and a force vector can be applied to it.
 
 """
 
+import numpy as np
 import unreal_engine as ue
 
 from unreal_engine import FVector
@@ -27,8 +28,8 @@ class PhysicsObject:
             'force': FVector(-1e5, 0.0, 0.0)
         }
 
-        # self.materials = ue.get_assets('/Game/Materials/Actor')
-        # self.total_time = 0
+        self.materials = ue.get_assets('/Game/Materials/Actor')
+        self.total_time = 0
 
     def begin_play(self):
         # retrieve the actor from its Python component
@@ -43,7 +44,9 @@ class PhysicsObject:
 
         # setup physics
         self.mesh.call('SetCollisionProfileName BlockAll')
-        self.mesh.SetCollisionObjectType(ECollisionChannel.PhysicsBody)
+        # TODO not sure it works nor its usefull...
+        self.mesh.SetCollisionObjectType(
+            Channel=np.uint8(ECollisionChannel.PhysicsBody))
         self.actor.SetActorEnableCollision(True)
         self.mesh.set_simulate_physics()
 
@@ -60,9 +63,7 @@ class PhysicsObject:
 
         self.mesh.add_force(self.parameters['force'])
 
-
         ue.log('begin play {}'.format(self.actor.get_name()))
-        ue.print_string('Hello from python')
 
     # def tick(self, delta_time):
     #     self.total_time += delta_time
@@ -71,12 +72,14 @@ class PhysicsObject:
     #     if self.total_time >= 1 and done < 1:
     #         self.actor.SetActorHiddenInGame(True)
     #         done = 1
-    #     if self.total_time >=2 and done < 2:
-    #         self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
+    #     if self.total_time >= 2 and done < 2:
+    #         self.mesh.SetStaticMesh(
+    #             ue.load_object(StaticMesh, '/Engine/EngineMeshes/Cube.Cube'))
     #         self.actor.SetActorHiddenInGame(False)
     #         done = 2
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
-        message = '{} overlapping {}'.format(self.actor.get_name(), other.get_name())
+        message = '{} overlapping {}'.format(
+            self.actor.get_name(), other.get_name())
         ue.log(message)

@@ -9,7 +9,7 @@ directory and random seed), launch the binary and filter its log
 messages at runtime, keeping only relevant messages.
 
 The INTPHYS_BINARY variable must be defined in your environment
-(this is done for you by the activate-naivephysics script).
+(this is done for you by the activate-intphys script).
 
 To see command-line arguments, have a::
 
@@ -65,7 +65,7 @@ default_resolution = '288x288'
 
 try:
     # path to packaged the intphys binary (environment variable has
-    # been setup in activate-naivephysics)
+    # been setup in activate-intphys)
     INTPHYS_BINARY = os.environ['INTPHYS_BINARY']
 
     # path to the intphys uproject file
@@ -74,12 +74,12 @@ try:
     # path to the UnrealEngine directory
     UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
 
-    # path to the intphys directory
-    INTPHYS_ROOT = os.environ['INTPHYS_ROOT']
+    # # path to the intphys directory
+    # INTPHYS_ROOT = os.environ['INTPHYS_ROOT']
 except KeyError as err:
     print('Error: the environment variable {} is not defined, '
-          'did you run "source activate-naivephysics" ?'
-          .format(err.message))
+          'did you run "source activate-intphys" ?'
+          .format(err))
     sys.exit(-1)
 
 
@@ -115,7 +115,6 @@ class LogNoStartupMessagesFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         return not (
-            #'Importing uetorch.lua ...' in msg or
             'Using binned.' in msg or
             'per-process limit of core file size to infinity.' in msg or
             'depot+UE4-Releases' in msg)
@@ -326,16 +325,13 @@ def _Run(command, log, config_file, output_dir,
     INTPHYS_RESOLUTION is `resolution`
 
     """
-    # get the output directory as absolute path with a trailing /,
-    # this is required by lua scripts
+    # get the output directory as absolute path
     output_dir = os.path.abspath(output_dir)
-    if output_dir[-1] != '/':
-        output_dir += '/'
 
-    # setup the environment variables used in lua scripts
+    # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
     environ['INTPHYS_DATA'] = output_dir
-    environ['INTPHYS_JSON'] = os.path.abspath(config_file)
+    environ['INTPHYS_CONFIG'] = os.path.abspath(config_file)
     environ['INTPHYS_RESOLUTION'] = resolution
 
     if dry:
