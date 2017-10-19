@@ -49,33 +49,36 @@ not been tested.
   recommended but any version supported by UnrealEnginePython should
   work (from 4.12 to 4.17).
 
+* Choose a directory where to install Unreal Engine and defines it as
+  the `UE_ROOT` environment variable:
+
+        UE_ROOT=~/dev/UnrealEngine  # change to whatever you like
+
+  Because `intphys` needs this variable to be defined, we suggest you
+  to put it in your `~/.bashrc`:
+
+        echo "# root directory to Unreal Engine" >> ~/.bashrc
+        echo "export UE_ROOT=$UE_ROOT" >> ~/.bashrc
+
 * Install Unreal Engine on your machine. We define the installation
   directory, configure and compile it. This takes a while.
 
-        UNREALENGINE_ROOT=~/dev/UnrealEngine  # change to whatever you like
-        git clone --branch 4.17 git@github.com:EpicGames/UnrealEngine.git $UNREALENGINE_ROOT
-        cd $UNREALENGINE_ROOT
+        git clone --branch 4.17 git@github.com:EpicGames/UnrealEngine.git $UE_ROOT
+        cd $UE_ROOT
         ./Setup.sh
         ./GenerateProjectFiles.sh
         make
 
-* Install intphys. Clone the repository and its dependancies
-  from github, go in its root directory and run the `setup.sh` script:
+* Install intphys. Clone the repository and its submodules from
+  github. Do not forget the `recursive` option:
 
         git clone --recursive git@github.com:bootphon/intphys.git
 
-* The intphys main executable is a Python script relying
-  on [joblib](https://pythonhosted.org/joblib) to run
-  sub-processes. Install it, for exemple using pip:
-
-        [sudo] pip install joblib
-
-
-* The final step is to package the `intphys/intphys.uproject` project
+* We now need to package the `intphys/intphys.uproject` project
   into a standalone binary. You need a manual intervention in the
   editor. Open it with:
 
-        ./naivedata.py exemple.json --editor --verbose
+        ./intphys.py Exemples/exemple.json --editor --verbose
 
   * Answer *no* if a pop-up complains the UnrealEnginePython plugin is
     not compatible with the current engine version.

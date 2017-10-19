@@ -19,7 +19,7 @@ import unreal_engine as ue
 
 class CameraPythonComponant:
     def __init__(self):
-        self.location, self.rotation = self.get_test_parameters()
+        self.location, self.rotation = self.get_train_parameters()
 
     @staticmethod
     def get_train_parameters():
@@ -35,9 +35,9 @@ class CameraPythonComponant:
             100 + random.uniform(-30, 80))
 
         rotation = FRotator(
-            random.uniform(-30, 30),
+            0,
             random.uniform(-15, 10),
-            0)
+            random.uniform(-30, 30))
 
         return location, rotation
 

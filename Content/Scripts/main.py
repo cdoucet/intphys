@@ -11,7 +11,7 @@ import random
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import KismetSystemLibrary
+from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 
 
 # the default screen resolution (in pixels)
@@ -56,9 +56,17 @@ class MainPythonComponant:
             self.exit_ue()
             return
 
-        config = json.loads(open(config_file, 'r'))
+        config = json.loads(open(config_file, 'r').read())
         ue.log('configuration parsed is : {}'.format(json.dumps(config)))
 
+    # def init_viewport(self):
+    #     player_controller = GameplayStatics.GetPlayerController(self.world, 0)
+    #     ue.log('Player controller: {}'.format(player_controller))
+
+    #     camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
+    #     ue.log('Camera is: {}'.format(camera))
+
+    #     player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
 
     def exit_ue(self):
         KismetSystemLibrary.QuitGame(self.world)
@@ -67,15 +75,16 @@ class MainPythonComponant:
         self.world = self.uobject.get_world()
         ue.log('Raising new world {}'.format(self.world.get_name()))
 
+        # self.init_viewport()
         self.init_random_seed()
         self.init_resolution()
         self.init_config_file()
 
-        # # spawn a new PyActor
-        # new_actor = self.world.actor_spawn(
-        #     uclass['PhysicsObject'],
-        #     FVector(300, 0, 100),
-        #     FRotator(0, 0, 0))
+        # spawn a new PyActor
+        new_actor = self.world.actor_spawn(
+            uclass['PhysicsObject'],
+            FVector(300, 0, 100),
+            FRotator(0, 0, 0))
 
 
         # # add a sphere component as the root one
