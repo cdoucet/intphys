@@ -8,7 +8,7 @@ in the world and a force vector can be applied to it.
 
 """
 
-# import numpy as np
+import numpy as np
 import unreal_engine as ue
 
 from unreal_engine import FVector
@@ -25,7 +25,7 @@ class PhysicsObject:
             'mesh': '/Game/Meshes/Sphere.Sphere',
             'material': '/Game/Materials/Actor/M_Tech_Panel.M_Tech_Panel',
             'mass': 1.0,
-            'force': FVector(-1e5, 0.0, 0.0)
+            'force': FVector(-1e2, 0.0, 0.0)
         }
 
         self.materials = ue.get_assets('/Game/Materials/Actor')
@@ -45,8 +45,8 @@ class PhysicsObject:
         # setup physics
         self.mesh.call('SetCollisionProfileName BlockAll')
         # TODO not sure it works nor its usefull...
-        # self.mesh.SetCollisionObjectType(
-        #     Channel=np.uint8(ECollisionChannel.PhysicsBody))
+        self.mesh.SetCollisionObjectType(
+            Channel=np.uint8(ECollisionChannel.PhysicsBody))
         self.actor.SetActorEnableCollision(True)
         self.mesh.set_simulate_physics()
 
