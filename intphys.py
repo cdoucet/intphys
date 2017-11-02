@@ -31,11 +31,16 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
+# import time
 
 
-# absolute path to the dircetory containing this script
+# absolute path to the directory containing this script
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
+
+# absolute path to the packaged intphys program
+INTPHYS_BINARY = os.path.join(
+    INTPHYS_ROOT, 'Package/LinuxNoEditor',
+    'intphys/Binaries/Linux/intphys-Linux-Shipping')
 
 # the default screen resolution (in pixels)
 DEFAULT_RESOLUTION = '288x288'
@@ -314,7 +319,7 @@ def _Run(command, log, config_file, output_dir, cwd=None,
         with pipe:
             # NOTE: workaround read-ahead bug
             for line in iter(pipe.readline, b''):
-                consume(line)
+                consume(line.decode('utf8'))
             consume('\n')
 
     threading.Thread(

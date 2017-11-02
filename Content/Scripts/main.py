@@ -33,7 +33,10 @@ class MainPythonComponant:
             seed = os.environ['INTPHYS_SEED']
         except KeyError:
             seed = None
-        ue.log('init random numbers generator, seed is {}'.format(seed))
+
+        ue.log('init random numbers generator{}'.format(
+            '' if seed is None else ', seed is {}'.format(seed)))
+
         random.seed(seed)
 
     def init_resolution(self):
@@ -52,30 +55,36 @@ class MainPythonComponant:
         try:
             config_file = os.environ['INTPHYS_CONFIG']
         except KeyError:
-            ue.log_error('fatal error, INTPHYS_CONFIG not defined, exiting')
-            self.exit_ue()
+            self.exit_ue('fatal error, INTPHYS_CONFIG not defined, exiting')
             return
 
         config = json.loads(open(config_file, 'r').read())
-        ue.log('configuration parsed is : {}'.format(json.dumps(config)))
 
-    # def init_viewport(self):
-    #     player_controller = GameplayStatics.GetPlayerController(self.world, 0)
-    #     ue.log('Player controller: {}'.format(player_controller))
+    def init_viewport(self):
+        """Attach the viewport to the camera
 
-    #     camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
-    #     ue.log('Camera is: {}'.format(camera))
+        This initialization was present in the intphys-1.0 blueprint
+        but seems to be useless in UE-4.17. This is maybe done by
+        default.
 
-    #     player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
+        """
+        player_controller = GameplayStatics.GetPlayerController(self.world, 0)
+        camera = ue.find_object(
+            '/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
+        player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
 
-    def exit_ue(self):
+    def exit_ue(self, message=None):
+        """Quit the game, optionally displaying an error message"""
+        if message:
+            ue.log_error(message)
+
         KismetSystemLibrary.QuitGame(self.world)
 
     def begin_play(self):
         self.world = self.uobject.get_world()
         ue.log('Raising new world {}'.format(self.world.get_name()))
 
-        # self.init_viewport()
+        self.init_viewport()
         self.init_random_seed()
         self.init_resolution()
         self.init_config_file()

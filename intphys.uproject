@@ -10,8 +10,15 @@
 			"LoadingPhase": "Default"
 		}
 	],
-	"AdditionalPluginDirectories": [
-		"Intermediate/Plugins"
+	"Plugins": [
+		{
+			"Name": "NativizedAssets",
+			"Enabled": false
+		},
+		{
+			"Name": "UnrealEnginePython",
+			"Enabled": true
+		}
 	],
 	"TargetPlatforms": [
 		"LinuxNoEditor"

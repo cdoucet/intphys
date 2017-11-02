@@ -4,22 +4,26 @@ It defines and controls it's location and rotation.
 
 The other camera parameters are constant and fixed in UE:
 - a perspective projection,
-- a ratio heigth/width fixed at 1 (to nsure a square image),
+- a ratio heigth/width fixed at 1 (to ensure a square image),
 - an horizontal field of view of 90 degrees.
-
-TODO implement this in Python
 
 """
 
 import random
 
-from unreal_engine import FVector, FRotator
 import unreal_engine as ue
+from unreal_engine import FVector, FRotator
+from unreal_engine.classes import CameraComponent
+from unreal_engine.enums import ECameraProjectionMode
 
 
 class CameraPythonComponant:
     def __init__(self):
-        self.location, self.rotation = self.get_train_parameters()
+        self.field_of_view = 90
+        self.aspect_ratio = 1
+        self.projection_mode = ECameraProjectionMode.Perspective
+
+        self.location, self.rotation = self.get_test_parameters()
 
     @staticmethod
     def get_train_parameters():
@@ -69,6 +73,12 @@ class CameraPythonComponant:
         # manage_overlap method
         self.actor.bind_event(
             'OnActorBeginOverlap', self.manage_overlap)
+
+        # setup camera attributes
+        camera_component = self.actor.get_component_by_type(CameraComponent)
+        camera_component.SetFieldOfView(self.field_of_view)
+        camera_component.SetAspectRatio(self.aspect_ratio)
+        camera_component.SetProjectionMode(self.projection_mode)
 
         # place the camera at the desired coordinates
         self.actor.set_actor_location(self.location)
