@@ -8,7 +8,6 @@ It initializes the Python path with absolute paths only, and adds the
 import os
 import sys
 
-
 # add the absolute path to .../intphys/Content/Scripts
 sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 
