@@ -14,7 +14,6 @@ from unreal_engine import FVector
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 
-
 class PhysicsObject:
     def __init__(self):
         ue.log('init PhysicsObject')
