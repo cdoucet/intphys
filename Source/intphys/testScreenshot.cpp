@@ -9,217 +9,231 @@
 #include <dirent.h>
 #include <errno.h>
 #include <iostream>
-#include <fstream> 
+#include <fstream>
 #include <ctime>
 
-void	UtestScreenshot::salut(const TArray<AActor*>& objects)
+void UtestScreenshot::salut(const TArray<AActor*>& objects)
 {
   UE_LOG(LogTemp, Warning, TEXT("Salut !"));
 }
 
-AActor*	UtestScreenshot::GetCamera(UWorld* world)
+// AActor*	UtestScreenshot::GetCamera(UWorld* world)
+// {
+//   return (world->GetFirstPlayerController());
+// }
+
+
+// return a pointer to the current game viewport
+FViewport* GetViewport()
 {
-  return (world->GetFirstPlayerController());
+    if (GEngine == NULL)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
+        return NULL;
+    }
+
+    if (GEngine->GameViewport == NULL)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
+        return NULL;
+    }
+
+    if (GEngine->GameViewport->Viewport == NULL)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
+        return NULL;
+    }
+
+    return GEngine->GameViewport->Viewport;
 }
 
-static FSceneView*	GetSceneView(APlayerController* PlayerController, UWorld* World)
+
+
+bool UtestScreenshot::CaptureScreenshot(
+    const FIntSize& size, TArray<FColor>& Bitmap)
 {
-  if (GEngine == NULL)
+    FlushRenderingCommands();
+
+    // get the current viewport and make sure it has the expected size
+    FViewport* Viewport = GetViewport();
+    if (size.X != Viewport->GetSizeXY().X || size.Y != Viewport->GetSizeXY().Y)
     {
-      UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
-      return NULL;
-    }
-  if (GEngine->GameViewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
-      return NULL;
-    }
-  if (GEngine->GameViewport->Viewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
-      return NULL;
-    }
-  auto Viewport = GEngine->GameViewport->Viewport;
+        UE_LOG(
+            LogTemp, Warning,
+            TEXT("Wrong Viewport size : %dx%d (expected %dx%d)"),
+            Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y,
+            size.X, size.Y);
 
-  // Create a view family for the game viewport
-  FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport,
-									  World->Scene,
-									  GEngine->GameViewport->EngineShowFlags).SetRealtimeUpdate(true));
-
-  // Calculate a view where the player is to update the streaming from the players start location
-  FVector		ViewLocation;
-  FRotator		ViewRotation;
-  ULocalPlayer*		LocalPlayer = Cast<ULocalPlayer>(PlayerController->Player);
-  if (LocalPlayer == NULL)
-    return NULL;
-  FSceneView*		SceneView = LocalPlayer->CalcSceneView(&ViewFamily, /*out*/ ViewLocation,
-							       /*out*/ ViewRotation, Viewport);
-  return SceneView;
-}
-
-static void	FSceneView__SafeDeprojectFVector2D(const FSceneView* SceneView,
-						   const FVector2D& ScreenPos,
-						   FVector& out_WorldOrigin,
-						   FVector& out_WorldDirection)
-{
-  const FMatrix	InverseViewMatrix = SceneView->ViewMatrices.GetViewMatrix().Inverse();
-  const FMatrix	InvProjectionMatrix = SceneView->ViewMatrices.GetInvViewMatrix();
-
-  SceneView->DeprojectScreenToWorld(ScreenPos, SceneView->UnscaledViewRect,
-				    InverseViewMatrix, InvProjectionMatrix,
-				    out_WorldOrigin, out_WorldDirection);
-}
-
-bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
-					   int stride, AActor* origin,
-					   const TArray<AActor*>& objects,
-					   const TArray<AActor*>& ignoredObjects,
-					   TArray<FColor>& depth_data,
-					   TArray<FColor>& mask_data)
-{
-  if (origin == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("origin is null"));
-      return false;
-    }
-  UWorld*		World = origin->GetWorld();
-  FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
-  if (World == NULL || SceneView == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
-      return false;
-    }
-  float			HitResultTraceDistance = 100000.f;
-
-  FVector		PlayerLoc  = origin->GetActorLocation();
-  FRotator		PlayerRot = origin->GetActorRotation();
-  FRotationMatrix	PlayerRotMat(PlayerRot);
-  FVector		PlayerF = PlayerRotMat.GetScaledAxis(EAxis::X);
-  PlayerF.Normalize();
-
-  ECollisionChannel	TraceChannel = ECollisionChannel::ECC_Visibility;
-  bool			bTraceComplex = false;
-  FHitResult		HitResult;
-
-  FCollisionQueryParams	CollisionQueryParams("ClickableTrace", bTraceComplex);
-  for (auto& i : ignoredObjects)
-    CollisionQueryParams.AddIgnoredActor(i);
-
-  // Iterate over pixels
-  for (int y = 0; y < size.Y; y+=stride)
-    {
-      for (int x = 0; x < size.X; x+=stride)
-	{
-	  FVector2D	ScreenPosition(x, y);
-	  FVector	WorldOrigin, WorldDirection;
-	  FSceneView__SafeDeprojectFVector2D(SceneView, ScreenPosition,
-					     WorldOrigin, WorldDirection);
-	  bool		bHit = World->LineTraceSingleByChannel(HitResult, WorldOrigin,
-							       WorldOrigin + WorldDirection *
-							       HitResultTraceDistance,
-							       TraceChannel, CollisionQueryParams);
-
-	  mask_data.Add(FColor(0)); // no foreground object
-	  depth_data.Add(FColor(0));
-
-	  if (bHit)
-	    {
-	      // depth part
-	      const auto &HitLoc = HitResult.Location;
-	      AActor*	Actor = HitResult.GetActor();
-
-	      FVector	HitLocRel = HitLoc - PlayerLoc;
-	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
-	      depth_data.Add(FColor(DistToHit));
-
-	      // mask part
-	      if (Actor != NULL)
-		{
-		  for (int i = 0; i < objects.Num(); i++)
-		    {
-		      if (objects[i] == Actor)
-			{
-			  mask_data.Add(FColor(i + 1));
-			  break;
-			}
-		    }
-		}
-	    }
-	}
-    }
-  return true;
-}
-
-TArray<FColor>	UtestScreenshot::CaptureScreenshot(const FIntSize& size,
-							   TArray<FColor>& Bitmap)
-{
-  if (GEngine == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
-      return Bitmap;
-    }
-  if (GEngine->GameViewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
-      return Bitmap;
-    }
-  if (GEngine->GameViewport->Viewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
-      return Bitmap;
+        return false;
     }
 
-  FViewport*		Viewport = GEngine->GameViewport->Viewport;
+  bool bScreenshotSuccessful = false;
 
-  if (size.X != Viewport->GetSizeXY().X || size.Y != Viewport->GetSizeXY().Y)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Wrong Viewport size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y);
-      return Bitmap;
-    }
-  TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
-
-  bool			bScreenshotSuccessful = false;
-
+  TSharedPtr<SWindow> WindowPtr = GEngine->GameViewport->GetWindow();
   if (WindowPtr.IsValid() && FSlateApplication::IsInitialized())
     {
-      FIntVector	Size(size.X, size.Y, 0);
+      FIntVector Size;
       TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
-      bScreenshotSuccessful = FSlateApplication::Get().
-	TakeScreenshot(WindowRef, Bitmap, Size);
+      bScreenshotSuccessful = FSlateApplication::Get().TakeScreenshot(
+          WindowRef, Bitmap, Size);
     }
   else
     {
-      FIntRect		Rect(0, 0, size.X, size.Y);
+      FIntRect Rect(0, 0, size.X, size.Y);
       bScreenshotSuccessful = GetViewportScreenShot(Viewport, Bitmap, Rect);
-    }
+  }
   UE_LOG(LogTemp, Warning, TEXT("data size : %d"), Bitmap.GetAllocatedSize());
-  return Bitmap;
+
+  return bScreenshotSuccessful;
 }
 
-FString		UtestScreenshot::BuildFileName(int flag)
-{
-  time_t	rawtime;
-  struct tm *	timeinfo;
-  char		buffer[25];
 
-  time (&rawtime);
-  timeinfo = localtime(&rawtime);
-  strftime(buffer,sizeof(buffer),"%d-%m-%Y_%I:%M:%S.png",timeinfo);
-  std::string str(buffer);
-  switch (flag)
-    {
-    case 1:
-      str = "screenshot_" + str;
-      break;
-    case 2:
-      str = "depth_" + str;
-      break;
-    case 3:
-      str = "mask_" + str;
-      break;
-    }
-  return (UTF8_TO_TCHAR(str.c_str()));
-}
+
+// static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* World)
+// {
+//     auto Viewport = GetViewport();
+
+//     // Create a view family for the game viewport
+//     FSceneViewFamilyContext ViewFamily(
+//         FSceneViewFamily::ConstructionValues(
+//             Viewport,
+//             World->Scene,
+//             GEngine->GameViewport->EngineShowFlags).SetRealtimeUpdate(true));
+
+//     // Calculate a view where the player is to update the streaming from the players start location
+//     FVector		ViewLocation;
+//     FRotator		ViewRotation;
+//     ULocalPlayer*	LocalPlayer = Cast<ULocalPlayer>(PlayerController->Player);
+//     if (LocalPlayer == NULL)
+//         return NULL;
+
+//     FSceneView*		SceneView = LocalPlayer->CalcSceneView(
+//         &ViewFamily,
+//         /*out*/ ViewLocation,
+//         /*out*/ ViewRotation,
+//         Viewport);
+
+//   return SceneView;
+// }
+
+// static void	FSceneView__SafeDeprojectFVector2D(const FSceneView* SceneView,
+// 						   const FVector2D& ScreenPos,
+// 						   FVector& out_WorldOrigin,
+// 						   FVector& out_WorldDirection)
+// {
+//   const FMatrix	InverseViewMatrix = SceneView->ViewMatrices.GetViewMatrix().Inverse();
+//   const FMatrix	InvProjectionMatrix = SceneView->ViewMatrices.GetInvViewMatrix();
+
+//   SceneView->DeprojectScreenToWorld(ScreenPos, SceneView->UnscaledViewRect,
+// 				    InverseViewMatrix, InvProjectionMatrix,
+// 				    out_WorldOrigin, out_WorldDirection);
+// }
+
+// bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
+// 					   int stride, AActor* origin,
+// 					   const TArray<AActor*>& objects,
+// 					   const TArray<AActor*>& ignoredObjects,
+// 					   TArray<FColor>& depth_data,
+// 					   TArray<FColor>& mask_data)
+// {
+//   if (origin == NULL)
+//     {
+//       UE_LOG(LogTemp, Warning, TEXT("origin is null"));
+//       return false;
+//     }
+//   UWorld*		World = origin->GetWorld();
+//   FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
+//   if (World == NULL || SceneView == NULL)
+//     {
+//       UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
+//       return false;
+//     }
+//   float			HitResultTraceDistance = 100000.f;
+
+//   FVector		PlayerLoc  = origin->GetActorLocation();
+//   FRotator		PlayerRot = origin->GetActorRotation();
+//   FRotationMatrix	PlayerRotMat(PlayerRot);
+//   FVector		PlayerF = PlayerRotMat.GetScaledAxis(EAxis::X);
+//   PlayerF.Normalize();
+
+//   ECollisionChannel	TraceChannel = ECollisionChannel::ECC_Visibility;
+//   bool			bTraceComplex = false;
+//   FHitResult		HitResult;
+
+//   FCollisionQueryParams	CollisionQueryParams("ClickableTrace", bTraceComplex);
+//   for (auto& i : ignoredObjects)
+//     CollisionQueryParams.AddIgnoredActor(i);
+
+//   // Iterate over pixels
+//   for (int y = 0; y < size.Y; y+=stride)
+//     {
+//       for (int x = 0; x < size.X; x+=stride)
+// 	{
+// 	  FVector2D	ScreenPosition(x, y);
+// 	  FVector	WorldOrigin, WorldDirection;
+// 	  FSceneView__SafeDeprojectFVector2D(SceneView, ScreenPosition,
+// 					     WorldOrigin, WorldDirection);
+// 	  bool		bHit = World->LineTraceSingleByChannel(HitResult, WorldOrigin,
+// 							       WorldOrigin + WorldDirection *
+// 							       HitResultTraceDistance,
+// 							       TraceChannel, CollisionQueryParams);
+
+// 	  mask_data.Add(FColor(0)); // no foreground object
+// 	  depth_data.Add(FColor(0));
+
+// 	  if (bHit)
+// 	    {
+// 	      // depth part
+// 	      const auto &HitLoc = HitResult.Location;
+// 	      AActor*	Actor = HitResult.GetActor();
+
+// 	      FVector	HitLocRel = HitLoc - PlayerLoc;
+// 	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
+// 	      depth_data.Add(FColor(DistToHit));
+
+// 	      // mask part
+// 	      if (Actor != NULL)
+// 		{
+// 		  for (int i = 0; i < objects.Num(); i++)
+// 		    {
+// 		      if (objects[i] == Actor)
+// 			{
+// 			  mask_data.Add(FColor(i + 1));
+// 			  break;
+// 			}
+// 		    }
+// 		}
+// 	    }
+// 	}
+//     }
+//   return true;
+// }
+
+
+// FString		UtestScreenshot::BuildFileName(int flag)
+// {
+//   time_t	rawtime;
+//   struct tm *	timeinfo;
+//   char		buffer[25];
+
+//   time (&rawtime);
+//   timeinfo = localtime(&rawtime);
+//   strftime(buffer,sizeof(buffer),"%d-%m-%Y_%I:%M:%S.png",timeinfo);
+//   std::string str(buffer);
+//   switch (flag)
+//     {
+//     case 1:
+//       str = "screenshot_" + str;
+//       break;
+//     case 2:
+//       str = "depth_" + str;
+//       break;
+//     case 3:
+//       str = "mask_" + str;
+//       break;
+//     }
+//   return (UTF8_TO_TCHAR(str.c_str()));
+// }
 
 // static bool	SavePNG(const FIntSize& size, TArray<FColor>& data,
 // 			std::string& path, int flag)
@@ -267,7 +281,7 @@ FString		UtestScreenshot::BuildFileName(int flag)
 //   	}
 //     }
 //   image.write(path + "/" + filename);
-  
+
 //   // PNG WRITER
 //   // png_structp	png_ptr = NULL;
 //   // if ((png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,

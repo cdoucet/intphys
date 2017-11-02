@@ -41,23 +41,23 @@ public:
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
     static void salut(const TArray<AActor*>& objects);
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static AActor* GetCamera(UWorld* world);
+  // UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+  //   static AActor* GetCamera(UWorld* world);
+
+  // UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+  //   static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin,
+  //       			     const TArray<AActor*>& objects,
+  //       			     const TArray<AActor*>& ignoredObjects,
+  //       			     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
 
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin,
-				     const TArray<AActor*>& objects,
-				     const TArray<AActor*>& ignoredObjects,
-				     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
-
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static TArray<FColor> CaptureScreenshot(const FIntSize& size, TArray<FColor>& data);
+    static bool CaptureScreenshot(const FIntSize& size, TArray<FColor>& data);
 
   /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
   /*   static bool DoTheWholeStuff(const FIntSize& size, int stride, AActor* origin, */
   /* 				const TArray<AActor*>& objects, */
   /* 				const TArray<AActor*>& ignoredObjects); */
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static FString BuildFileName(int flag);
+  // UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+  //   static FString BuildFileName(int flag);
 };

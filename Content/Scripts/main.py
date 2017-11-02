@@ -105,7 +105,7 @@ class MainPythonComponant:
         # camera = testScreenshot.GetCamera(self.world)
         # camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
         # #screenshot.doTheWholeStuff(IntSize(288, 288), 1, camera, array, array2)
-        # screenshot.salut()
+        screenshot.salut()
 
         # # add a sphere component as the root one
         # static_mesh = new_actor.add_actor_root_component(
