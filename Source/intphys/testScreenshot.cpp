@@ -150,7 +150,7 @@ bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
   return true;
 }
 
-TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& size)
+TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
 {
   TArray<int>		Result;
   TArray<FColor>	Bitmap;
@@ -173,9 +173,9 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& size)
 
   FViewport*		Viewport = GEngine->GameViewport->Viewport;
 
-  if (size.X != Viewport->GetSizeXY().X || size.Y != Viewport->GetSizeXY().Y)
+  if (givenSize.X != Viewport->GetSizeXY().X || givenSize.Y != Viewport->GetSizeXY().Y)
     {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y; Size.X, Size.Y);
+      UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
       return Result;
     }
   TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
@@ -185,15 +185,15 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& size)
   if (WindowPtr.IsValid() && FSlateApplication::IsInitialized())
     {
       // going here
-      FIntVector	Size(size.X, size.Y, 0);
+      FIntVector	returnedSize(givenSize.X, givenSize.Y, 0);
       TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
       bScreenshotSuccessful = FSlateApplication::Get().
-  	TakeScreenshot(WindowRef, Bitmap, Size);
-      UE_LOG(LogTemp, Warning, TEXT("returned size : %d * %d"), Size.X, Size.Y);
+  	TakeScreenshot(WindowRef, Bitmap, returnedSize);
+      UE_LOG(LogTemp, Log, TEXT("returned size : %d * %d"), returnedSize.X, returnedSize.Y);
     }
   else
     {
-      FIntRect		Rect(0, 0, size.X, size.Y);
+      FIntRect		Rect(0, 0, givenSize.X, givenSize.Y);
       bScreenshotSuccessful = GetViewportScreenShot(Viewport, Bitmap, Rect);
     }
   for(FColor color : Bitmap) {
@@ -201,7 +201,7 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& size)
     Result.Add(color.G);
     Result.Add(color.B);
   }
-  UE_LOG(LogTemp, Warning, TEXT("number of pixels : %d"), Bitmap.Num());
+  UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), Bitmap.Num());
   return Result;
 }
 
