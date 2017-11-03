@@ -150,31 +150,33 @@ bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
   return true;
 }
 
-TArray<FColor>	UtestScreenshot::CaptureScreenshot(const FIntSize& size,
-							   TArray<FColor>& Bitmap)
+TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& size)
 {
+  TArray<int>		Result;
+  TArray<FColor>	Bitmap;
+
   if (GEngine == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
-      return Bitmap;
+      return Result;
     }
   if (GEngine->GameViewport == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
-      return Bitmap;
+      return Result;
     }
   if (GEngine->GameViewport->Viewport == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
-      return Bitmap;
+      return Result;
     }
 
   FViewport*		Viewport = GEngine->GameViewport->Viewport;
 
   if (size.X != Viewport->GetSizeXY().X || size.Y != Viewport->GetSizeXY().Y)
     {
-      UE_LOG(LogTemp, Warning, TEXT("Wrong Viewport size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y);
-      return Bitmap;
+      UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y; Size.X, Size.Y);
+      return Result;
     }
   TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
 
@@ -182,18 +184,25 @@ TArray<FColor>	UtestScreenshot::CaptureScreenshot(const FIntSize& size,
 
   if (WindowPtr.IsValid() && FSlateApplication::IsInitialized())
     {
+      // going here
       FIntVector	Size(size.X, size.Y, 0);
       TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
       bScreenshotSuccessful = FSlateApplication::Get().
-	TakeScreenshot(WindowRef, Bitmap, Size);
+  	TakeScreenshot(WindowRef, Bitmap, Size);
+      UE_LOG(LogTemp, Warning, TEXT("returned size : %d * %d"), Size.X, Size.Y);
     }
   else
     {
       FIntRect		Rect(0, 0, size.X, size.Y);
       bScreenshotSuccessful = GetViewportScreenShot(Viewport, Bitmap, Rect);
     }
-  UE_LOG(LogTemp, Warning, TEXT("data size : %d"), Bitmap.GetAllocatedSize());
-  return Bitmap;
+  for(FColor color : Bitmap) {
+    Result.Add(color.R);
+    Result.Add(color.G);
+    Result.Add(color.B);
+  }
+  UE_LOG(LogTemp, Warning, TEXT("number of pixels : %d"), Bitmap.Num());
+  return Result;
 }
 
 FString		UtestScreenshot::BuildFileName(int flag)
@@ -202,7 +211,7 @@ FString		UtestScreenshot::BuildFileName(int flag)
   struct tm *	timeinfo;
   char		buffer[25];
 
-  time (&rawtime);
+  time(&rawtime);
   timeinfo = localtime(&rawtime);
   strftime(buffer,sizeof(buffer),"%d-%m-%Y_%I:%M:%S.png",timeinfo);
   std::string str(buffer);

@@ -51,7 +51,7 @@ public:
 				     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
 
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static TArray<FColor> CaptureScreenshot(const FIntSize& size, TArray<FColor>& data);
+    static TArray<int> CaptureScreenshot(const FIntSize& size);
 
   /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
   /*   static bool DoTheWholeStuff(const FIntSize& size, int stride, AActor* origin, */

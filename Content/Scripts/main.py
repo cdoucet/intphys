@@ -6,8 +6,6 @@ This module is attached to the MainPythonComponant PyActor in UE.
 
 import unreal_engine as ue
 
-import screenshot
-#reload(screenshot)
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
@@ -40,13 +38,14 @@ class MainPythonComponant:
             FVector(300, 0, 50),
             FRotator(0, 0, 0))
 
-        array = []
-        array.append(new_actor)
-        array2 = []
-        camera = testScreenshot.GetCamera(self.world)
-        camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
+        #array = []
+        #array.append(new_actor)
+        #array2 = []
+        #camera = testScreenshot.GetCamera(self.world)
+        #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
         #screenshot.doTheWholeStuff(IntSize(288, 288), 1, camera, array, array2)
-        screenshot.salut()
+        #screenshot.salut()
+        
         # # add a sphere component as the root one
         # static_mesh = new_actor.add_actor_root_component(
         #     ue.find_class('StaticMeshComponent'), 'SphereMesh')
