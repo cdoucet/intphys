@@ -44,11 +44,21 @@ public:
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
     static AActor* GetCamera(UWorld* world);
 
+  /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
+  /*   static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin, */
+  /* 					    const TArray<AActor*>& objects, */
+  /* 					    const TArray<AActor*>& ignoredObjects, */
+  /* 					    TArray<FColor>& depth_data, TArray<FColor>& mask_data); */
+  
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin,
-				     const TArray<AActor*>& objects,
-				     const TArray<AActor*>& ignoredObjects,
-				     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
+    static TArray<int> CaptureDepth(const FIntSize& size, int stride, AActor* origin,
+				    const TArray<AActor*>& objects,
+				    const TArray<AActor*>& ignoredObjects);
+
+  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+    static TArray<int> CaptureMask(const FIntSize& size, int stride, AActor* origin,
+				    const TArray<AActor*>& objects,
+				    const TArray<AActor*>& ignoredObjects);
 
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
     static TArray<int> CaptureScreenshot(const FIntSize& size);

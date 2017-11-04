@@ -5,7 +5,8 @@ This module is attached to the MainPythonComponant PyActor in UE.
 """
 
 import unreal_engine as ue
-
+import screenshot
+reload(screenshot)
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
@@ -37,6 +38,22 @@ class MainPythonComponant:
             uclass['PhysicsObject'],
             FVector(300, 0, 50),
             FRotator(0, 0, 0))
+
+
+    #def tick(self, delta_time):
+        #print delta_time
+        size = IntSize(288, 288) # this line let size.X and size.Y with a null value... can't say why
+        size.X = 288
+        size.Y = 288
+        array = []
+        array.append(new_actor)
+        for o in ue.all_objects():
+            o.get_full_name()
+        #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_82')
+        array2 = []
+        #if screenshot.doTheWholeStuff(size, 1, camera, array, array2) == False:
+            #print "doTheWholeStuff failed"
+
 
         #array = []
         #array.append(new_actor)

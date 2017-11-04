@@ -70,24 +70,23 @@ static void	FSceneView__SafeDeprojectFVector2D(const FSceneView* SceneView,
 				    out_WorldOrigin, out_WorldDirection);
 }
 
-bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
-					   int stride, AActor* origin,
-					   const TArray<AActor*>& objects,
-					   const TArray<AActor*>& ignoredObjects,
-					   TArray<FColor>& depth_data,
-					   TArray<FColor>& mask_data)
+TArray<int>	UtestScreenshot::CaptureDepth(const FIntSize& size, int stride, AActor* origin,
+					      const TArray<AActor*>& objects,
+					      const TArray<AActor*>& ignoredObjects)
 {
+  TArray<int>		Result;
+  TArray<FColor>	depth_data;
   if (origin == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("origin is null"));
-      return false;
+      return Result;
     }
   UWorld*		World = origin->GetWorld();
   FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
   if (World == NULL || SceneView == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
-      return false;
+      return Result;
     }
   float			HitResultTraceDistance = 100000.f;
 
@@ -105,7 +104,6 @@ bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
   for (auto& i : ignoredObjects)
     CollisionQueryParams.AddIgnoredActor(i);
 
-  // Iterate over pixels
   for (int y = 0; y < size.Y; y+=stride)
     {
       for (int x = 0; x < size.X; x+=stride)
@@ -119,19 +117,83 @@ bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
 							       HitResultTraceDistance,
 							       TraceChannel, CollisionQueryParams);
 
-	  mask_data.Add(FColor(0)); // no foreground object
 	  depth_data.Add(FColor(0));
 
 	  if (bHit)
 	    {
-	      // depth part
 	      const auto &HitLoc = HitResult.Location;
 	      AActor*	Actor = HitResult.GetActor();
 
 	      FVector	HitLocRel = HitLoc - PlayerLoc;
 	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
 	      depth_data.Add(FColor(DistToHit));
+	    }
+	}
+    }
+  for(FColor color : depth_data) {
+    Result.Add(color.R);
+    Result.Add(color.G);
+    Result.Add(color.B);
+  }
+  UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), depth_data.Num());
+  return (Result);
+}
 
+TArray<int>	UtestScreenshot::CaptureMask(const FIntSize& size, int stride, AActor* origin,
+					      const TArray<AActor*>& objects,
+					      const TArray<AActor*>& ignoredObjects)
+{
+  TArray<int>		Result;
+  TArray<FColor>	mask_data;
+  if (origin == NULL)
+    {
+      UE_LOG(LogTemp, Warning, TEXT("origin is null"));
+      return Result;
+    }
+  UWorld*		World = origin->GetWorld();
+  FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
+  if (World == NULL || SceneView == NULL)
+    {
+      UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
+      return Result;
+    }
+  float			HitResultTraceDistance = 100000.f;
+
+  FVector		PlayerLoc  = origin->GetActorLocation();
+  FRotator		PlayerRot = origin->GetActorRotation();
+  FRotationMatrix	PlayerRotMat(PlayerRot);
+  FVector		PlayerF = PlayerRotMat.GetScaledAxis(EAxis::X);
+  PlayerF.Normalize();
+
+  ECollisionChannel	TraceChannel = ECollisionChannel::ECC_Visibility;
+  bool			bTraceComplex = false;
+  FHitResult		HitResult;
+
+  FCollisionQueryParams	CollisionQueryParams("ClickableTrace", bTraceComplex);
+  for (auto& i : ignoredObjects)
+    CollisionQueryParams.AddIgnoredActor(i);
+
+  for (int y = 0; y < size.Y; y+=stride)
+    {
+      for (int x = 0; x < size.X; x+=stride)
+	{
+	  FVector2D	ScreenPosition(x, y);
+	  FVector	WorldOrigin, WorldDirection;
+	  FSceneView__SafeDeprojectFVector2D(SceneView, ScreenPosition,
+					     WorldOrigin, WorldDirection);
+	  bool		bHit = World->LineTraceSingleByChannel(HitResult, WorldOrigin,
+							       WorldOrigin + WorldDirection *
+							       HitResultTraceDistance,
+							       TraceChannel, CollisionQueryParams);
+	  mask_data.Add(FColor(0)); // no foreground object
+
+	  if (bHit)
+	    {
+	      // depth part
+	      const auto &HitLoc = HitResult.Location;
+	      AActor*	Actor = HitResult.GetActor();
+	      FVector	HitLocRel = HitLoc - PlayerLoc;
+	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
 	      // mask part
 	      if (Actor != NULL)
 		{
@@ -147,7 +209,13 @@ bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
 	    }
 	}
     }
-  return true;
+  for(FColor color : mask_data) {
+    Result.Add(color.R);
+    Result.Add(color.G);
+    Result.Add(color.B);
+  }
+  UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), mask_data.Num());
+  return Result;
 }
 
 TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
@@ -191,7 +259,7 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
   	TakeScreenshot(WindowRef, Bitmap, returnedSize);
       UE_LOG(LogTemp, Log, TEXT("returned size : %d * %d"), returnedSize.X, returnedSize.Y);
     }
-  else
+  else // to be honnest I don't even know why this need to be here... As far as I know it's never used
     {
       FIntRect		Rect(0, 0, givenSize.X, givenSize.Y);
       bScreenshotSuccessful = GetViewportScreenShot(Viewport, Bitmap, Rect);
@@ -205,6 +273,7 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
   return Result;
 }
 
+// the filename format will be, for instance, screenshot_%day-%month-%year_%hour:%minute:%second
 FString		UtestScreenshot::BuildFileName(int flag)
 {
   time_t	rawtime;
@@ -213,22 +282,103 @@ FString		UtestScreenshot::BuildFileName(int flag)
 
   time(&rawtime);
   timeinfo = localtime(&rawtime);
-  strftime(buffer,sizeof(buffer),"%d-%m-%Y_%I:%M:%S.png",timeinfo);
+  strftime(buffer,sizeof(buffer),"%d-%m-%Y_%I:%M:%S",timeinfo);
   std::string str(buffer);
   switch (flag)
     {
     case 1:
-      str = "screenshot_" + str;
+      str = "screenshot_" + str + ".png";
       break;
     case 2:
-      str = "depth_" + str;
+      str = "depth_" + str + ".png";
       break;
     case 3:
-      str = "mask_" + str;
+      str = "mask_" + str + ".png";
       break;
     }
   return (UTF8_TO_TCHAR(str.c_str()));
 }
+
+
+// bool UtestScreenshot::CaptureDepthAndMasks(const FIntSize& size,
+// 					   int stride, AActor* origin,
+// 					   const TArray<AActor*>& objects,
+// 					   const TArray<AActor*>& ignoredObjects,
+// 					   TArray<FColor>& depth_data,
+// 					   TArray<FColor>& mask_data)
+// {
+//   if (origin == NULL)
+//     {
+//       UE_LOG(LogTemp, Warning, TEXT("origin is null"));
+//       return false;
+//     }
+//   UWorld*		World = origin->GetWorld();
+//   FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
+//   if (World == NULL || SceneView == NULL)
+//     {
+//       UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
+//       return false;
+//     }
+//   float			HitResultTraceDistance = 100000.f;
+
+//   FVector		PlayerLoc  = origin->GetActorLocation();
+//   FRotator		PlayerRot = origin->GetActorRotation();
+//   FRotationMatrix	PlayerRotMat(PlayerRot);
+//   FVector		PlayerF = PlayerRotMat.GetScaledAxis(EAxis::X);
+//   PlayerF.Normalize();
+
+//   ECollisionChannel	TraceChannel = ECollisionChannel::ECC_Visibility;
+//   bool			bTraceComplex = false;
+//   FHitResult		HitResult;
+
+//   FCollisionQueryParams	CollisionQueryParams("ClickableTrace", bTraceComplex);
+//   for (auto& i : ignoredObjects)
+//     CollisionQueryParams.AddIgnoredActor(i);
+
+//   // Iterate over pixels
+//   for (int y = 0; y < size.Y; y+=stride)
+//     {
+//       for (int x = 0; x < size.X; x+=stride)
+// 	{
+// 	  FVector2D	ScreenPosition(x, y);
+// 	  FVector	WorldOrigin, WorldDirection;
+// 	  FSceneView__SafeDeprojectFVector2D(SceneView, ScreenPosition,
+// 					     WorldOrigin, WorldDirection);
+// 	  bool		bHit = World->LineTraceSingleByChannel(HitResult, WorldOrigin,
+// 							       WorldOrigin + WorldDirection *
+// 							       HitResultTraceDistance,
+// 							       TraceChannel, CollisionQueryParams);
+
+// 	  mask_data.Add(FColor(0)); // no foreground object
+// 	  depth_data.Add(FColor(0));
+
+// 	  if (bHit)
+// 	    {
+// 	      // depth part
+// 	      const auto &HitLoc = HitResult.Location;
+// 	      AActor*	Actor = HitResult.GetActor();
+
+// 	      FVector	HitLocRel = HitLoc - PlayerLoc;
+// 	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
+// 	      depth_data.Add(FColor(DistToHit));
+
+// 	      // mask part
+// 	      if (Actor != NULL)
+// 		{
+// 		  for (int i = 0; i < objects.Num(); i++)
+// 		    {
+// 		      if (objects[i] == Actor)
+// 			{
+// 			  mask_data.Add(FColor(i + 1));
+// 			  break;
+// 			}
+// 		    }
+// 		}
+// 	    }
+// 	}
+//     }
+//   return true;
+// }
 
 // static bool	SavePNG(const FIntSize& size, TArray<FColor>& data,
 // 			std::string& path, int flag)
