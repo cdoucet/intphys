@@ -9,7 +9,7 @@ directory and random seed), launch the binary and filter its log
 messages at runtime, keeping only relevant messages.
 
 The INTPHYS_BINARY variable must be defined in your environment
-(this is done for you by the activate-naivephysics script).
+(this is done for you by the activate-intphys script).
 
 To see command-line arguments, have a::
 
@@ -20,7 +20,7 @@ To see command-line arguments, have a::
 import argparse
 import atexit
 import copy
-import joblib
+# import joblib
 import json
 import logging
 import os
@@ -31,55 +31,25 @@ import subprocess
 import sys
 import tempfile
 import threading
-import time
+# import time
 
 
-# an exemple of a config file to feed the intphys data generator
-JSON_EXEMPLE = '''
-{
-    "block_O1" :
-    {
-        "train" : 100,
-        "test_visible" :
-        {
-            "static" : 5,
-            "dynamic_1" : 5,
-            "dynamic_2" : 5
-        },
-        "test_occluded" :
-        {
-            "static" : 5,
-            "dynamic_1" : 5,
-            "dynamic_2" : 5
-        }
-    }
-}
+# absolute path to the directory containing this script
+INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-This generates 100 train videos and 30 test videos for the O1 block
- (5 for each variant).'''
-
+# absolute path to the packaged intphys program
+INTPHYS_BINARY = os.path.join(
+    INTPHYS_ROOT, 'Package/LinuxNoEditor',
+    'intphys/Binaries/Linux/intphys-Linux-Shipping')
 
 # the default screen resolution (in pixels)
-default_resolution = '288x288'
-
+DEFAULT_RESOLUTION = '288x288'
 
 try:
-    # path to packaged the intphys binary (environment variable has
-    # been setup in activate-naivephysics)
-    INTPHYS_BINARY = os.environ['INTPHYS_BINARY']
-
-    # path to the intphys uproject file
-    INTPHYS_PROJECT = os.environ['INTPHYS_PROJECT']
-
     # path to the UnrealEngine directory
-    UNREALENGINE_ROOT = os.environ['UNREALENGINE_ROOT']
-
-    # path to the intphys directory
-    INTPHYS_ROOT = os.environ['INTPHYS_ROOT']
+    UE_ROOT = os.environ['UE_ROOT']
 except KeyError as err:
-    print('Error: the environment variable {} is not defined, '
-          'did you run "source activate-naivephysics" ?'
-          .format(err.message))
+    print('Error: the environment variable UE_ROOT is not defined')
     sys.exit(-1)
 
 
@@ -115,7 +85,6 @@ class LogNoStartupMessagesFilter(logging.Filter):
     def filter(self, record):
         msg = record.getMessage()
         return not (
-            #'Importing uetorch.lua ...' in msg or
             'Using binned.' in msg or
             'per-process limit of core file size to infinity.' in msg or
             'depot+UE4-Releases' in msg)
@@ -169,24 +138,15 @@ def GetLogger(verbose=False, name=None):
 
 def ParseArgs():
     """Defines a commndline argument parser and returns the parsed arguments"""
-    # better display of the help message, do not format epilog but
-    # arguments only (see
-    # https://stackoverflow.com/questions/18462610)
-    class CustomFormatter(
-            argparse.ArgumentDefaultsHelpFormatter,
-            argparse.RawDescriptionHelpFormatter):
-        pass
 
     parser = argparse.ArgumentParser(
-        description='Data generator for the intphys project',
-        epilog='An exemple of a json configuration file is:\n{}'
-        .format(JSON_EXEMPLE),
-        formatter_class=CustomFormatter)
+        description='Data generator for the intphys project')
 
     parser.add_argument(
         'config_file', metavar='<json-file>', help='''
         json configuration file defining the number of test and train
-        runs for each block, see exemple below.''')
+        runs for each block, for an exemple configuration file see {}'''
+        .format(os.path.join(INTPHYS_ROOT, 'Exemples', 'exemple.json')))
 
     parser.add_argument(
         '-o', '--output-dir', metavar='<output-dir>', default=None, help='''
@@ -199,7 +159,7 @@ def ParseArgs():
         help='display all the UnrealEngine log messages')
 
     parser.add_argument(
-        '-r', '--resolution', default=default_resolution,
+        '-r', '--resolution', default=DEFAULT_RESOLUTION,
         metavar='<width>x<height>',
         help='resolution of the rendered images (in pixels)')
 
@@ -212,10 +172,10 @@ def ParseArgs():
         '-f', '--force', action='store_true',
         help='overwrite <output-dir>, any existing content is erased')
 
-    parser.add_argument(
-        '-j', '--njobs', type=int, default=1, metavar='<int>',
-        help='''number of data generation to run in parallel,
-        this option is ignored if --editor is specified''')
+    # parser.add_argument(
+    #     '-j', '--njobs', type=int, default=1, metavar='<int>',
+    #     help='''number of data generation to run in parallel,
+    #     this option is ignored if --editor is specified''')
 
     parser.add_argument(
         '-e', '--editor', action='store_true',
@@ -263,58 +223,58 @@ def _BalanceList(l, n):
     return balanced
 
 
-def _BalanceConfig(config, njobs):
-    """Split the `config` into `n` parts returned as list of dicts
+# def _BalanceConfig(config, njobs):
+#     """Split the `config` into `n` parts returned as list of dicts
 
-    Return a tuple (subconfigs, nruns, njobs) where subconfigs is a
-    list of JSON dicts, each one being the configuration of a
-    subjob. `nruns` is a list of the total number of runs in each
-    subjob. `njobs` can be modified and is returned as the third
-    element in the pair.
+#     Return a tuple (subconfigs, nruns, njobs) where subconfigs is a
+#     list of JSON dicts, each one being the configuration of a
+#     subjob. `nruns` is a list of the total number of runs in each
+#     subjob. `njobs` can be modified and is returned as the third
+#     element in the pair.
 
-    """
-    # compute the list of balanced subjobs (from nested nested dict to
-    # list of dicts or ints)
-    values = [v for vv in config.itervalues() for v in vv.itervalues()]
-    # from list of dicts or ints to nested list
-    values = [v.values() if isinstance(v, dict) else [v] for v in values]
-    # from nested list to list
-    values = sum(values, [])
+#     """
+#     # compute the list of balanced subjobs (from nested nested dict to
+#     # list of dicts or ints)
+#     values = [v for vv in config.itervalues() for v in vv.itervalues()]
+#     # from list of dicts or ints to nested list
+#     values = [v.values() if isinstance(v, dict) else [v] for v in values]
+#     # from nested list to list
+#     values = sum(values, [])
 
-    balanced = _BalanceList(values, njobs)
-    nruns = [sum(l) for l in balanced]
+#     balanced = _BalanceList(values, njobs)
+#     nruns = [sum(l) for l in balanced]
 
-    if njobs > len(balanced):
-        njobs = len(balanced)
-        print('reducing the number of jobs to {}'.format(njobs))
+#     if njobs > len(balanced):
+#         njobs = len(balanced)
+#         print('reducing the number of jobs to {}'.format(njobs))
 
-    # create subconfigs for each subjob (from list to nested nested dict)
-    subconfigs = [copy.deepcopy(config) for _ in range(njobs)]
-    for i in range(njobs):
-        for block_name, block_value in config.iteritems():
-            j = 0
-            for set_name, set_value in block_value.iteritems():
-                if isinstance(set_value, dict):  # test iteration
-                    for subset_name in set_value.iterkeys():
-                        subconfigs[i][block_name][set_name][subset_name] = (
-                            balanced[i][j])
-                        j += 1
-                else:  # train iteration
-                    subconfigs[i][block_name][set_name] = balanced[i][j]
-                    j += 1
+#     # create subconfigs for each subjob (from list to nested nested dict)
+#     subconfigs = [copy.deepcopy(config) for _ in range(njobs)]
+#     for i in range(njobs):
+#         for block_name, block_value in config.iteritems():
+#             j = 0
+#             for set_name, set_value in block_value.iteritems():
+#                 if isinstance(set_value, dict):  # test iteration
+#                     for subset_name in set_value.iterkeys():
+#                         subconfigs[i][block_name][set_name][subset_name] = (
+#                             balanced[i][j])
+#                         j += 1
+#                 else:  # train iteration
+#                     subconfigs[i][block_name][set_name] = balanced[i][j]
+#                     j += 1
 
-    return subconfigs, nruns, njobs
+#     return subconfigs, nruns, njobs
 
 
-def _Run(command, log, config_file, output_dir,
-         seed=None, dry=False, resolution=default_resolution):
+def _Run(command, log, config_file, output_dir, cwd=None,
+         seed=None, dry=False, resolution=DEFAULT_RESOLUTION):
     """Run `command` as a subprocess
 
     The `command` stdout and stderr are forwarded to `log`. The
     `command` runs with the following environment variables, in top of
     the current environment:
 
-    INTPHYS_JSON is the absolute path to `config_file`.
+    INTPHYS_CONFIG is the absolute path to `config_file`.
 
     INTPHYS_DATA is the absolute path to `output_dir` with a
        trailing slash added.
@@ -326,16 +286,13 @@ def _Run(command, log, config_file, output_dir,
     INTPHYS_RESOLUTION is `resolution`
 
     """
-    # get the output directory as absolute path with a trailing /,
-    # this is required by lua scripts
+    # get the output directory as absolute path
     output_dir = os.path.abspath(output_dir)
-    if output_dir[-1] != '/':
-        output_dir += '/'
 
-    # setup the environment variables used in lua scripts
+    # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
     environ['INTPHYS_DATA'] = output_dir
-    environ['INTPHYS_JSON'] = os.path.abspath(config_file)
+    environ['INTPHYS_CONFIG'] = os.path.abspath(config_file)
     environ['INTPHYS_RESOLUTION'] = resolution
 
     if dry:
@@ -353,6 +310,7 @@ def _Run(command, log, config_file, output_dir,
         stdin=None,
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
+        cwd=cwd,
         env=environ)
 
     # join the command output to log (from
@@ -361,7 +319,7 @@ def _Run(command, log, config_file, output_dir,
         with pipe:
             # NOTE: workaround read-ahead bug
             for line in iter(pipe.readline, b''):
-                consume(line)
+                consume(line.decode('utf8'))
             consume('\n')
 
     threading.Thread(
@@ -376,7 +334,7 @@ def _Run(command, log, config_file, output_dir,
 
 
 def RunBinary(output_dir, config_file, njobs=1, seed=None,
-              dry=False, resolution=default_resolution, verbose=False):
+              dry=False, resolution=DEFAULT_RESOLUTION, verbose=False):
     """Run the intphys packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
@@ -403,58 +361,58 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
              config_file, output_dir, seed=seed, dry=dry,
              resolution=resolution)
     else:
-        # split the json configuration file into balanced subparts
-        subconfigs, nruns, njobs = _BalanceConfig(
-            json.load(open(config_file, 'r')), njobs)
+        raise NotImplementedError('njobs option not yet implemented')
+        # # split the json configuration file into balanced subparts
+        # subconfigs, nruns, njobs = _BalanceConfig(
+        #     json.load(open(config_file, 'r')), njobs)
 
-        # increase artificially the nruns to have margin for retries
-        # (this can occur for test runs)
-        nruns = [10 * r for r in nruns]
+        # # increase artificially the nruns to have margin for retries
+        # # (this can occur for test runs)
+        # nruns = [10 * r for r in nruns]
 
-        # write them in subdirectories
-        for i, config in enumerate(subconfigs, 1):
-            path = os.path.join(output_dir, str(i))
-            os.makedirs(path)
-            open(os.path.join(path, 'config.json'), 'w').write(
-                json.dumps(config, indent=4))
+        # # write them in subdirectories
+        # for i, config in enumerate(subconfigs, 1):
+        #     path = os.path.join(output_dir, str(i))
+        #     os.makedirs(path)
+        #     open(os.path.join(path, 'config.json'), 'w').write(
+        #         json.dumps(config, indent=4))
 
-        # parallel must defines a different seed for each job
-        seed = int(round(time.time() * 1000)) if seed is None else seed
+        # # parallel must defines a different seed for each job
+        # seed = int(round(time.time() * 1000)) if seed is None else seed
 
-        # define arguments list for each jobs
-        _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
-        _conf = [os.path.join(output_dir, str(i), 'config.json')
-                 for i in range(1, njobs+1)]
-        _seed = [str(seed + sum(nruns[:i])) for i in range(njobs)]
-        _log = [GetLogger(name='job {}'.format(i))
-                for i in range(1, njobs+1)]
+        # # define arguments list for each jobs
+        # _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
+        # _conf = [os.path.join(output_dir, str(i), 'config.json')
+        #          for i in range(1, njobs+1)]
+        # _seed = [str(seed + sum(nruns[:i])) for i in range(njobs)]
+        # _log = [GetLogger(name='job {}'.format(i))
+        #         for i in range(1, njobs+1)]
 
-        # run the subprocesses
-        joblib.Parallel(n_jobs=njobs, backend='threading')(
-            joblib.delayed(_Run)(
-                INTPHYS_BINARY, _log[i], _conf[i], _out[i],
-                seed=_seed[i], dry=dry, resolution=resolution)
-            for i in range(njobs))
+        # # run the subprocesses
+        # joblib.Parallel(n_jobs=njobs, backend='threading')(
+        #     joblib.delayed(_Run)(
+        #         INTPHYS_BINARY, _log[i], _conf[i], _out[i],
+        #         seed=_seed[i], dry=dry, resolution=resolution)
+        #     for i in range(njobs))
 
 
 def RunEditor(output_dir, config_file, seed=None, dry=False,
-              resolution=default_resolution, verbose=False):
+              resolution=DEFAULT_RESOLUTION, verbose=False):
     """Run the intphys project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
-    editor = os.path.join(
-        UNREALENGINE_ROOT, 'Engine', 'Binaries', 'Linux', 'UE4Editor')
-    if not os.path.isfile(editor):
-        raise IOError('No such file {}'.format(editor))
+    editor_dir = os.path.join(UE_ROOT, 'Engine', 'Binaries', 'Linux')
+    if not os.path.isdir(editor_dir):
+        raise IOError('No such directory {}'.format(editor_dir))
 
-    project = INTPHYS_PROJECT
+    project = os.path.join(INTPHYS_ROOT, 'intphys.uproject')
     if not os.path.isfile(project):
         raise IOError('No such file {}'.format(project))
 
     log.debug('running intphys in the Unreal Engine editor')
 
-    _Run(editor + ' ' + project, log, config_file, output_dir,
-         seed=seed, dry=dry, resolution=resolution)
+    _Run('./UE4Editor ' + project, log, config_file, output_dir,
+         seed=seed, dry=dry, resolution=resolution, cwd=editor_dir)
 
 
 def FindDuplicates(directory):
@@ -552,7 +510,7 @@ def Main():
                   seed=args.seed, dry=dry_mode, resolution=args.resolution,
                   verbose=args.verbose)
     else:
-        RunBinary(output_dir, args.config_file, njobs=args.njobs,
+        RunBinary(output_dir, args.config_file, njobs=1,  # args.njobs,
                   seed=args.seed, dry=dry_mode, resolution=args.resolution,
                   verbose=args.verbose)
 

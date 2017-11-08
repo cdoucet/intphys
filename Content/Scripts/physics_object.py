@@ -42,7 +42,9 @@ class PhysicsObject:
 
         # setup physics
         self.mesh.call('SetCollisionProfileName BlockAll')
-        self.mesh.SetCollisionObjectType(ECollisionChannel.PhysicsBody)
+        # # TODO not sure it works nor its usefull...
+        # self.mesh.SetCollisionObjectType(
+        #     Channel=np.uint8(ECollisionChannel.PhysicsBody))
         self.actor.SetActorEnableCollision(True)
         self.mesh.set_simulate_physics()
 
@@ -59,9 +61,7 @@ class PhysicsObject:
 
         self.mesh.add_force(self.parameters['force'])
 
-
         ue.log('begin play {}'.format(self.actor.get_name()))
-        ue.print_string('Hello from python')
 
     # def tick(self, delta_time):
     #     self.total_time += delta_time
@@ -76,6 +76,7 @@ class PhysicsObject:
     #         done = 2
 
     def manage_overlap(self, me, other):
-        """Raises a Runtime error when some actor overlaps the camera"""
-        message = '{} overlapping {}'.format(self.actor.get_name(), other.get_name())
+        """Raises a Runtime error when some actor overlaps this object"""
+        message = '{} overlapping {}'.format(
+            self.actor.get_name(), other.get_name())
         ue.log(message)
