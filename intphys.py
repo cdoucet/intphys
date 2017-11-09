@@ -177,9 +177,14 @@ def ParseArgs():
     #     help='''number of data generation to run in parallel,
     #     this option is ignored if --editor is specified''')
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '-e', '--editor', action='store_true',
         help='launch the intphys project in the UnrealEngine editor')
+
+    group.add_argument(
+        '-g', '--standalone-game', action='store_true',
+        help='launch the project as a standalone game (relies on UE4Editor)')
 
     args = parser.parse_args()
     if not re.match('[0-9]+x[0-9]+', args.resolution):
@@ -397,7 +402,8 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
 
 
 def RunEditor(output_dir, config_file, seed=None, dry=False,
-              resolution=DEFAULT_RESOLUTION, verbose=False):
+              resolution=DEFAULT_RESOLUTION, verbose=False,
+              standalone_game=False):
     """Run the intphys project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
@@ -411,7 +417,11 @@ def RunEditor(output_dir, config_file, seed=None, dry=False,
 
     log.debug('running intphys in the Unreal Engine editor')
 
-    _Run('./UE4Editor ' + project, log, config_file, output_dir,
+    command = './UE4Editor ' + project
+    if standalone_game:
+        command += ' -game'
+
+    _Run(command, log, config_file, output_dir,
          seed=seed, dry=dry, resolution=resolution, cwd=editor_dir)
 
 
@@ -506,13 +516,20 @@ def Main():
     # run the simulation either in the editor or as a standalone
     # program
     if args.editor:
-        RunEditor(output_dir, args.config_file,
-                  seed=args.seed, dry=dry_mode, resolution=args.resolution,
-                  verbose=args.verbose)
+        RunEditor(
+            output_dir, args.config_file,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose)
+    elif args.standalone_game:
+        RunEditor(
+            output_dir, args.config_file,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose, standalone_game=True)
     else:
-        RunBinary(output_dir, args.config_file, njobs=1,  # args.njobs,
-                  seed=args.seed, dry=dry_mode, resolution=args.resolution,
-                  verbose=args.verbose)
+        RunBinary(
+            output_dir, args.config_file, njobs=1,  # args.njobs,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose)
 
     # check for duplicated scenes and warn if founded
     if not dry_mode:
