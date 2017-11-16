@@ -6,7 +6,8 @@ This module is attached to the MainPythonComponant PyActor in UE.
 
 import unreal_engine as ue
 import screenshot
-reload(screenshot)
+import importlib
+importlib.reload(screenshot)
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
@@ -22,6 +23,7 @@ uclass = {'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')}
 
 
 class MainPythonComponant:
+    
     def get_resolution(self):
         return str(width) + 'x' + str(height)
 
@@ -38,7 +40,7 @@ class MainPythonComponant:
             uclass['PhysicsObject'],
             FVector(300, 0, 50),
             FRotator(0, 0, 0))
-
+        camera = screenshot.getCamera(new_actor)
 
     #def tick(self, delta_time):
         #print delta_time
@@ -47,12 +49,11 @@ class MainPythonComponant:
         size.Y = 288
         array = []
         array.append(new_actor)
-        for o in ue.all_objects():
-            o.get_full_name()
         #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_82')
         array2 = []
-        #if screenshot.doTheWholeStuff(size, 1, camera, array, array2) == False:
-            #print "doTheWholeStuff failed"
+        
+        if screenshot.doTheWholeStuff(size, 1, camera, array, array2) == False:
+            print("doTheWholeStuff failed") # the capture is failing. Still invastigating
 
 
         #array = []

@@ -17,11 +17,6 @@ void	UtestScreenshot::salut(const TArray<AActor*>& objects)
   UE_LOG(LogTemp, Warning, TEXT("Salut !"));
 }
 
-AActor*	UtestScreenshot::GetCamera(UWorld* world)
-{
-  return (world->GetFirstPlayerController());
-}
-
 static FSceneView*	GetSceneView(APlayerController* PlayerController, UWorld* World)
 {
   if (GEngine == NULL)
@@ -241,11 +236,11 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
 
   FViewport*		Viewport = GEngine->GameViewport->Viewport;
 
-  if (givenSize.X != Viewport->GetSizeXY().X || givenSize.Y != Viewport->GetSizeXY().Y)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
-      return Result;
-    }
+  // if (givenSize.X != Viewport->GetSizeXY().X || givenSize.Y != Viewport->GetSizeXY().Y)
+  //   {
+  //     UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
+  //     return Result;
+  //   }
   TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
 
   bool			bScreenshotSuccessful = false;

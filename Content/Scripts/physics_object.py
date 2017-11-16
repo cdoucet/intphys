@@ -23,11 +23,11 @@ class PhysicsObject:
             'mesh': '/Game/Meshes/Sphere.Sphere',
             'material': '/Game/Materials/Actor/M_Tech_Panel.M_Tech_Panel',
             'mass': 1.0,
-            'force': FVector(-1e5, 0.0, 0.0)
+            'force': FVector(-1e2, 0.0, 0.0)
         }
 
-        # self.materials = ue.get_assets('/Game/Materials/Actor')
-        # self.total_time = 0
+        #self.materials = ue.get_assets('/Game/Materials/Actor')
+        #self.total_time = 0
 
     def begin_play(self):
         # retrieve the actor from its Python component
@@ -42,7 +42,7 @@ class PhysicsObject:
 
         # setup physics
         self.mesh.call('SetCollisionProfileName BlockAll')
-        self.mesh.SetCollisionObjectType(ECollisionChannel.PhysicsBody)
+        #self.mesh.SetCollisionObjectType(ECollisionChannel.PhysicsBody)
         self.actor.SetActorEnableCollision(True)
         self.mesh.set_simulate_physics()
 
