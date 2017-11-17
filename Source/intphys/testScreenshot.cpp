@@ -12,11 +12,6 @@
 #include <fstream> 
 #include <ctime>
 
-void	UtestScreenshot::salut(const TArray<AActor*>& objects)
-{
-  UE_LOG(LogTemp, Warning, TEXT("Salut !"));
-}
-
 static FSceneView*	GetSceneView(APlayerController* PlayerController, UWorld* World)
 {
   if (GEngine == NULL)
@@ -112,10 +107,10 @@ TArray<int>	UtestScreenshot::CaptureDepth(const FIntSize& size, int stride, AAct
 							       HitResultTraceDistance,
 							       TraceChannel, CollisionQueryParams);
 
-	  depth_data.Add(FColor(0));
 
 	  if (bHit)
 	    {
+	      UE_LOG(LogTemp, Warning, TEXT("SALUT CA VA???????"));
 	      const auto &HitLoc = HitResult.Location;
 	      AActor*	Actor = HitResult.GetActor();
 
@@ -123,6 +118,8 @@ TArray<int>	UtestScreenshot::CaptureDepth(const FIntSize& size, int stride, AAct
 	      float	DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
 	      depth_data.Add(FColor(DistToHit));
 	    }
+	  else
+	    depth_data.Add(FColor(0));
 	}
     }
   for(FColor color : depth_data) {
@@ -213,58 +210,48 @@ TArray<int>	UtestScreenshot::CaptureMask(const FIntSize& size, int stride, AActo
   return Result;
 }
 
+// I'm a little depressed about returning an array by copy... Really sorry about that
+// If you know how to do it differently, please do
 TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
 {
-  TArray<int>		Result;
   TArray<FColor>	Bitmap;
-
-  if (GEngine == NULL)
+  FViewport*		Viewport = NULL;
+  TSharedPtr<SWindow>	WindowPtr = NULL;
+  FIntVector		returnedSize;
+  FIntRect		Rect;
+  TArray<int>		Result;
+  
+  if (GEngine == NULL || GEngine->GameViewport == NULL ||
+      (Viewport = GEngine->GameViewport->Viewport) == NULL)
     {
-      UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
+      UE_LOG(LogTemp, Warning, TEXT("Something went NULL in screenshot initialization"));
       return Result;
     }
-  if (GEngine->GameViewport == NULL)
+  if (givenSize.X != Viewport->GetSizeXY().X || givenSize.Y != Viewport->GetSizeXY().Y)
     {
-      UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
+      UE_LOG(LogTemp, Warning, TEXT("Real viewport size and given size are different.\nViewport size : %d * %d\nSend size : %d * %d"),
+	     Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
       return Result;
     }
-  if (GEngine->GameViewport->Viewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
-      return Result;
-    }
-
-  FViewport*		Viewport = GEngine->GameViewport->Viewport;
-
-  // if (givenSize.X != Viewport->GetSizeXY().X || givenSize.Y != Viewport->GetSizeXY().Y)
-  //   {
-  //     UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
-  //     return Result;
-  //   }
-  TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
-
-  bool			bScreenshotSuccessful = false;
-
+  WindowPtr = GEngine->GameViewport->GetWindow();
   if (WindowPtr.IsValid() && FSlateApplication::IsInitialized())
     {
-      // going here
-      FIntVector	returnedSize(givenSize.X, givenSize.Y, 0);
-      TSharedRef<SWidget> WindowRef = WindowPtr.ToSharedRef();
-      bScreenshotSuccessful = FSlateApplication::Get().
-  	TakeScreenshot(WindowRef, Bitmap, returnedSize);
-      UE_LOG(LogTemp, Log, TEXT("returned size : %d * %d"), returnedSize.X, returnedSize.Y);
+      returnedSize = FIntVector(givenSize.X, givenSize.Y, 0);
+      FSlateApplication::Get().TakeScreenshot(WindowPtr.ToSharedRef(),
+					      Bitmap, returnedSize);
+      UE_LOG(LogTemp, Log, TEXT("Screenshot size : %d * %d"),
+	     returnedSize.X, returnedSize.Y);
     }
-  else // to be honnest I don't even know why this need to be here... As far as I know it's never used
+  else
     {
-      FIntRect		Rect(0, 0, givenSize.X, givenSize.Y);
-      bScreenshotSuccessful = GetViewportScreenShot(Viewport, Bitmap, Rect);
+      UE_LOG(LogTemp, Warning, TEXT("NULL window"));
+      return Result;
     }
   for(FColor color : Bitmap) {
     Result.Add(color.R);
     Result.Add(color.G);
     Result.Add(color.B);
   }
-  UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), Bitmap.Num());
   return Result;
 }
 
@@ -289,6 +276,10 @@ FString		UtestScreenshot::BuildFileName(int flag)
       break;
     case 3:
       str = "mask_" + str + ".png";
+      break;
+    default:
+      UE_LOG(LogTemp, Warning, TEXT("The flag send to build the filename is wrong."));
+      str = "WrongFlagInFileName.png";
       break;
     }
   return (UTF8_TO_TCHAR(str.c_str()));

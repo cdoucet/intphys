@@ -23,7 +23,6 @@ uclass = {'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')}
 
 
 class MainPythonComponant:
-    
     def get_resolution(self):
         return str(width) + 'x' + str(height)
 
@@ -36,24 +35,24 @@ class MainPythonComponant:
         ue.log('Raising new world {}'.format(self.world.get_name()))
 
         # spawn a new PyActor
-        new_actor = self.world.actor_spawn(
+        self.new_actor = self.world.actor_spawn(
             uclass['PhysicsObject'],
             FVector(300, 0, 50),
             FRotator(0, 0, 0))
-        camera = screenshot.getCamera(new_actor)
+        self.camera = screenshot.getCamera(self.new_actor)
 
-    #def tick(self, delta_time):
-        #print delta_time
+    def tick(self, delta_time): # put the screenshot screen in the begin play make the size of the screenshot wrong
         size = IntSize(288, 288) # this line let size.X and size.Y with a null value... can't say why
         size.X = 288
         size.Y = 288
         array = []
-        array.append(new_actor)
-        #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_82')
+        array.append(self.new_actor)
         array2 = []
-        
-        if screenshot.doTheWholeStuff(size, 1, camera, array, array2) == False:
-            print("doTheWholeStuff failed") # the capture is failing. Still invastigating
+        #if screenshot.takeDepth(size, 1, self.camera, array, array2) == False:
+            #print("depth failed")
+
+        if screenshot.takeScreenshot(size) == False:
+            print("screenshot failed")
 
 
         #array = []

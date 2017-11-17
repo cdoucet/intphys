@@ -38,9 +38,6 @@ class INTPHYS_API UtestScreenshot : public UBlueprintFunctionLibrary
 
 public:
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static void salut(const TArray<AActor*>& objects);
-
   /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
   /*   static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin, */
   /* 					    const TArray<AActor*>& objects, */

@@ -1,5 +1,6 @@
 import unreal_engine as ue
 import os
+# Beware: the png lib should be compatible with python3 
 import png
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
@@ -55,9 +56,9 @@ def takeMask(size, stride, origin, objects, ignoredObjects):
 
 def takeScreenshot(size):
     print("--> beginning of the screenshot script")
-    print("size = X->", size.X, " Y->", size.Y)
+    print("given size = X->", size.X, " Y->", size.Y)
     pixel_array = []
-    pixel_array = testScreenshot.CaptureScreenshot(size, pixel_array)
+    pixel_array = testScreenshot.CaptureScreenshot(size)
     if (len(pixel_array) == 0):
         print("takeScreenshot failed. The array of pixels is empty")
         return False
@@ -81,7 +82,7 @@ def salut(self):
     print("salut!")
 
 # You must give an unreal object as parameter (an Actor for instance)
-# The UnrealEnginePython documentation ("documentation" ... funny ... ) says that all_object() is a heavy method to use. So you should not spam it
+# The UnrealEnginePython documentation says that all_object() is a heavy method to use. So you should not spam it
 def getCamera(uobject):
     for o in uobject.all_objects():
         if (o.get_full_name()[:11] == "CameraActor"):
