@@ -9,17 +9,17 @@ The other camera parameters are constant and fixed in UE:
 
 """
 
-import os
-import png
+# import os
+# import png
 import random
 
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator, FColor
+from unreal_engine import FVector, FRotator  # , FColor
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
 
-from unreal_engine.classes import testScreenshot
-from unreal_engine.structs import IntSize
+# from unreal_engine.classes import testScreenshot
+# from unreal_engine.structs import IntSize
 
 
 class CameraPythonComponant:
@@ -91,6 +91,7 @@ class CameraPythonComponant:
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
+        # TODO the scene must fail here, this is a critical error
         message = 'Camera overlapping {}'.format(other.get_name())
         ue.log_error(message)
 
