@@ -14,6 +14,10 @@
 		{
 			"Name": "NativizedAssets",
 			"Enabled": false
+		},
+		{
+			"Name": "UnrealEnginePython",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

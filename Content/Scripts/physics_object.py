@@ -8,6 +8,7 @@ in the world and a force vector can be applied to it.
 
 """
 
+# import numpy as np
 import unreal_engine as ue
 
 from unreal_engine import FVector
@@ -24,11 +25,11 @@ class PhysicsObject:
             'mesh': '/Game/Meshes/Sphere.Sphere',
             'material': '/Game/Materials/Actor/M_Tech_Panel.M_Tech_Panel',
             'mass': 1.0,
-            'force': FVector(-1e5, 0.0, 0.0)
+            'force': FVector(-1e2, 0.0, 0.0)
         }
 
-        # self.materials = ue.get_assets('/Game/Materials/Actor')
-        # self.total_time = 0
+        self.materials = ue.get_assets('/Game/Materials/Actor')
+        self.total_time = 0
 
     def begin_play(self):
         # retrieve the actor from its Python component
@@ -71,8 +72,9 @@ class PhysicsObject:
     #     if self.total_time >= 1 and done < 1:
     #         self.actor.SetActorHiddenInGame(True)
     #         done = 1
-    #     if self.total_time >=2 and done < 2:
-    #         self.mesh.call('SetStaticMesh /Engine/EngineMeshes/Cube.Cube')
+    #     if self.total_time >= 2 and done < 2:
+    #         self.mesh.SetStaticMesh(
+    #             ue.load_object(StaticMesh, '/Engine/EngineMeshes/Cube.Cube'))
     #         self.actor.SetActorHiddenInGame(False)
     #         done = 2
 

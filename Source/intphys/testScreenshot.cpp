@@ -9,66 +9,28 @@
 #include <dirent.h>
 #include <errno.h>
 #include <iostream>
-#include <fstream> 
+#include <fstream>
 #include <ctime>
 
-void	UtestScreenshot::salut(const TArray<AActor*>& objects)
+void UtestScreenshot::salut(const TArray<AActor*>& objects)
 {
   UE_LOG(LogTemp, Warning, TEXT("Salut !"));
 }
 
-AActor*	UtestScreenshot::GetCamera(UWorld* world)
+// AActor*	UtestScreenshot::GetCamera(UWorld* world)
+// {
+//   return (world->GetFirstPlayerController());
+// }
+
+
+// return a pointer to the current game viewport
+FViewport* GetViewport()
 {
-  return (world->GetFirstPlayerController());
-}
-
-static FSceneView*	GetSceneView(APlayerController* PlayerController, UWorld* World)
-{
-  if (GEngine == NULL)
+    if (GEngine == NULL)
     {
-      UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
-      return NULL;
+        UE_LOG(LogTemp, Warning, TEXT("GEngine null"));
+        return NULL;
     }
-  if (GEngine->GameViewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("GameViewport null"));
-      return NULL;
-    }
-  if (GEngine->GameViewport->Viewport == NULL)
-    {
-      UE_LOG(LogTemp, Warning, TEXT("Viewport null"));
-      return NULL;
-    }
-  auto Viewport = GEngine->GameViewport->Viewport;
-
-  // Create a view family for the game viewport
-  FSceneViewFamilyContext ViewFamily(FSceneViewFamily::ConstructionValues(Viewport,
-									  World->Scene,
-									  GEngine->GameViewport->EngineShowFlags).SetRealtimeUpdate(true));
-
-  // Calculate a view where the player is to update the streaming from the players start location
-  FVector		ViewLocation;
-  FRotator		ViewRotation;
-  ULocalPlayer*		LocalPlayer = Cast<ULocalPlayer>(PlayerController->Player);
-  if (LocalPlayer == NULL)
-    return NULL;
-  FSceneView*		SceneView = LocalPlayer->CalcSceneView(&ViewFamily, /*out*/ ViewLocation,
-							       /*out*/ ViewRotation, Viewport);
-  return SceneView;
-}
-
-static void	FSceneView__SafeDeprojectFVector2D(const FSceneView* SceneView,
-						   const FVector2D& ScreenPos,
-						   FVector& out_WorldOrigin,
-						   FVector& out_WorldDirection)
-{
-  const FMatrix	InverseViewMatrix = SceneView->ViewMatrices.GetViewMatrix().Inverse();
-  const FMatrix	InvProjectionMatrix = SceneView->ViewMatrices.GetInvViewMatrix();
-
-  SceneView->DeprojectScreenToWorld(ScreenPos, SceneView->UnscaledViewRect,
-				    InverseViewMatrix, InvProjectionMatrix,
-				    out_WorldOrigin, out_WorldDirection);
-}
 
 TArray<int>	UtestScreenshot::CaptureDepth(const FIntSize& size, int stride, AActor* origin,
 					      const TArray<AActor*>& objects,
@@ -81,28 +43,17 @@ TArray<int>	UtestScreenshot::CaptureDepth(const FIntSize& size, int stride, AAct
       UE_LOG(LogTemp, Warning, TEXT("origin is null"));
       return Result;
     }
-  UWorld*		World = origin->GetWorld();
-  FSceneView*		SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World);
-  if (World == NULL || SceneView == NULL)
+
+    if (GEngine->GameViewport->Viewport == NULL)
     {
       UE_LOG(LogTemp, Warning, TEXT("SceneView or World are null"));
       return Result;
     }
-  float			HitResultTraceDistance = 100000.f;
 
-  FVector		PlayerLoc  = origin->GetActorLocation();
-  FRotator		PlayerRot = origin->GetActorRotation();
-  FRotationMatrix	PlayerRotMat(PlayerRot);
-  FVector		PlayerF = PlayerRotMat.GetScaledAxis(EAxis::X);
-  PlayerF.Normalize();
+    return GEngine->GameViewport->Viewport;
+}
 
-  ECollisionChannel	TraceChannel = ECollisionChannel::ECC_Visibility;
-  bool			bTraceComplex = false;
-  FHitResult		HitResult;
 
-  FCollisionQueryParams	CollisionQueryParams("ClickableTrace", bTraceComplex);
-  for (auto& i : ignoredObjects)
-    CollisionQueryParams.AddIgnoredActor(i);
 
   for (int y = 0; y < size.Y; y+=stride)
     {
@@ -246,10 +197,10 @@ TArray<int>		UtestScreenshot::CaptureScreenshot(const FIntSize& givenSize)
       UE_LOG(LogTemp, Warning, TEXT("Viewport size : %d * %d\nSend size : %d * %d"), Viewport->GetSizeXY().X, Viewport->GetSizeXY().Y, givenSize.X, givenSize.Y);
       return Result;
     }
-  TSharedPtr<SWindow>	WindowPtr = GEngine->GameViewport->GetWindow();
 
-  bool			bScreenshotSuccessful = false;
+  bool bScreenshotSuccessful = false;
 
+  TSharedPtr<SWindow> WindowPtr = GEngine->GameViewport->GetWindow();
   if (WindowPtr.IsValid() && FSlateApplication::IsInitialized())
     {
       // going here
@@ -426,7 +377,7 @@ FString		UtestScreenshot::BuildFileName(int flag)
 //   	}
 //     }
 //   image.write(path + "/" + filename);
-  
+
 //   // PNG WRITER
 //   // png_structp	png_ptr = NULL;
 //   // if ((png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING,

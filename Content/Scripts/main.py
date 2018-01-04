@@ -1,6 +1,7 @@
 """Main script interacting at world level with UE
 
-This module is attached to the MainPythonComponant PyActor in UE.
+This module is attached to the MainPythonComponant within the level
+blueprint in UE.
 
 """
 
@@ -16,6 +17,9 @@ from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 # from unreal_engine.structs import IntSize
 
 import screenshot
+
+import screenshot
+
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -34,7 +38,6 @@ uclass = {
     'Camera': ue.load_class('/Game/Camera.Camera_C'),
     'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
 }
-
 
 class MainPythonComponant:
     def init_random_seed(self):
@@ -88,14 +91,6 @@ class MainPythonComponant:
 
         KismetSystemLibrary.QuitGame(self.world)
 
-
-    # def get_resolution(self):
-    #     return str(width) + 'x' + str(height)
-
-    # def print_tick(self, delta_seconds):
-    #     ue.log('ticking after {}'.format(float(delta_seconds)))
-    #     print(ue.get_viewport_screenshot() == None)
-
     def begin_play(self):
         self.world = self.uobject.get_world()
         ue.log('Raising new world {}'.format(self.world.get_name()))
@@ -106,15 +101,13 @@ class MainPythonComponant:
 
         # spawn the camera and attach the viewport to it
         camera = self.world.actor_spawn(
-            uclass['Camera'])# ,
-            # FVector(0, 0, 10),
-            # FRotator(0, 0, 90))
+            uclass['Camera']) # , FVector(0, 0, 10), FRotator(0, 0, 90))
         self.init_viewport(camera)
 
-        # spawn a physical actor
+        # spawn a new PyActor
         new_actor = self.world.actor_spawn(
             uclass['PhysicsObject'],
-            FVector(300, 0, 50),
+            FVector(300, 0, 100),
             FRotator(0, 0, 0))
 
     #def tick(self, delta_time):
