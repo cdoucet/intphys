@@ -12,8 +12,8 @@ import sys
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
-from unreal_engine.classes import testScreenshot
-from unreal_engine.structs import IntSize
+# from unreal_engine.classes import testScreenshot
+# from unreal_engine.structs import IntSize
 
 import screenshot
 
@@ -28,7 +28,6 @@ ue.log('Python executable: {}'.format(sys.executable))
 ue.log('Python version: {}'.format(sys.version.replace('\n', ', ')))
 ue.log('Python path: {}'.format(', '.join(sys.path)))
 ue.log('#' * 50)
-
 
 
 uclass = {
