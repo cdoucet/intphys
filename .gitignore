@@ -59,4 +59,4 @@ data*/*
 *.json
 !Exemples/*.json
 Exemples/data
-Exemples/html/
+Exemples/html

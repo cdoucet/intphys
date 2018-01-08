@@ -4,12 +4,13 @@ It defines and controls it's location and rotation.
 
 The other camera parameters are constant and fixed in UE:
 - a perspective projection,
-- a ratio heigth/width fixed at 1 (to nsure a square image),
+- a ratio heigth/width fixed at 1 (to ensure a square image),
 - an horizontal field of view of 90 degrees.
-TODO implement this in Python
 
 """
 
+# import os
+# import png
 import random
 
 import unreal_engine as ue
@@ -40,8 +41,8 @@ class CameraPythonComponant:
 
         rotation = FRotator(
             0,
-            random.uniform(-30, 30),
-            random.uniform(-15, 10))
+            random.uniform(-15, 10),
+            random.uniform(-30, 30))
 
         return location, rotation
 
@@ -86,6 +87,7 @@ class CameraPythonComponant:
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps the camera"""
+        # TODO the scene must fail here, this is a critical error
         message = 'Camera overlapping {}'.format(other.get_name())
         ue.log_error(message)
 
@@ -97,3 +99,42 @@ class CameraPythonComponant:
         return ' '.join(
             location.x, location.y, location.z,
             rotation.pitch, rotation.yaw, rotation.roll)
+
+    # def savePNG(pixel_array, size, flag):
+    #     png_pixels = []
+    #     height = size.Y
+    #     width = size.X
+    #     for y in range(0, height):
+    #         line = []
+    #         for x in range(0, width):
+    #             index = y * width + x
+    #             print("index = ", pixel_array[index])
+    #             pixel = pixel_array[index]
+    #             line.append([pixel.r, pixel.g, pixel.b])
+    #         png_pixels.append(line)
+    #     path = os.environ['MYPROJECT'] + "/Test_pictures/"
+    #     if os.path.isdir(path) == False:
+    #         os.makedirs(path)
+    #         print("--> 'Test_pictures' directory created")
+    #     pic_name = testScreenshot.BuildFileName(flag)
+    #     png.from_array(png_pixels, 'RGB').save(path + pic_name)
+    #     print("--> picture saved in " + path)
+
+    # def takeScreenshot(size):
+    #     width, height = ue.get_viewport_size()
+    #     size.X = width
+    #     size.Y = height
+    #     print("size = X->", width , " Y->", height)
+    #     print("--> beginning of the screenshot script")
+    #     testScreenshot.salut() # it is important to be gentle with the user
+    #     pixel_array = []
+    #     pixel_array = testScreenshot.CaptureScreenshot(size, pixel_array)
+    #     savePNG(pixel_array, size, 1)
+    #     print("--> end of the screenshot script")
+    #     return res
+
+    # def doTheWholeStuff(size, stride, origin, objects, ignoredObjects):
+    #     takeScreenshot(size)
+
+    # def salut():
+    #     print("salut!")

@@ -1,6 +1,7 @@
 """Main script interacting at world level with UE
 
-This module is attached to the MainPythonComponant actor in UE.
+This module is attached to the MainPythonComponant within the level
+blueprint in UE.
 
 """
 
@@ -12,8 +13,10 @@ import sys
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
-from unreal_engine.classes import testScreenshot
-from unreal_engine.structs import IntSize
+# from unreal_engine.classes import testScreenshot
+# from unreal_engine.structs import IntSize
+
+# import screenshot
 
 import configuration
 import screenshot
@@ -36,6 +39,7 @@ ue.log('#' * 50)
 # (declared in the editor)
 uclass = {
     'Camera': ue.load_class('/Game/Camera.Camera_C'),
+    'Floor': ue.load_class('/Game/Floor.Floor_C'),
     'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
 }
 
@@ -89,6 +93,33 @@ class MainPythonComponant:
             ntrain=config.nruns_train,
             niterations=len(config.iterations)))
 
+    def load_scenes(self):
+        try:
+            scenes_file = os.environ['INTPHYS_SCENES']
+        except KeyError:
+            self.exit_ue('fatal error, INTPHYS_SCENES not defined, exiting')
+            return
+
+        scene_raw = json.loads(open(scenes_file, 'r').read())
+
+    def init_viewport(self, camera):
+        """Attach the viewport to the camera
+
+        This initialization was present in the intphys-1.0 blueprint
+        but seems to be useless in UE-4.17. This is maybe done by
+        default.
+
+        """
+        player_controller = GameplayStatics.GetPlayerController(self.world, 0)
+        player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
+
+    def exit_ue(self, message=None):
+        """Quit the game, optionally displaying an error message"""
+        if message:
+            ue.log_error(message)
+
+        KismetSystemLibrary.QuitGame(self.world)
+
     def begin_play(self):
         self.world = self.uobject.get_world()
         ue.log('Raising up new world {}'.format(self.world.get_name()))
@@ -101,14 +132,19 @@ class MainPythonComponant:
 
         # init the configuration
         config = self.init_configuration()
+        # scenes = self.load_scenes()
 
-        # spawn the camera
-        self.camera = self.world.actor_spawn(uclass['Camera'])
+        # spawn the camera and attach the viewport to it
+        camera = self.world.actor_spawn(uclass['Camera'])
+        self.init_viewport(camera)
 
-        # spawn a physical actor
+        # spawn the floor
+        floor = self.world.actor_spawn(uclass['Floor'])
+
+        # spawn a new PyActor
         new_actor = self.world.actor_spawn(
             uclass['PhysicsObject'],
-            FVector(300, 0, 50),
+            FVector(300, 0, 100),
             FRotator(0, 0, 0))
 
         # add a sphere component as the root one

@@ -18,9 +18,11 @@ def savePNG(pixel_array, size, flag):
     index = 0
     for y in range(0, size.Y):
         line = []
-        for x in range(0, size.X):
-            line.append([pixel_array[index], pixel_array[index + 1], pixel_array[index + 2]])
-            index += 3
+        for x in range(0, width):
+            index = y * width + x
+            print("index = ", pixel_array[index])
+            pixel = pixel_array[index]
+            line.append([pixel.r, pixel.g, pixel.b])
         png_pixels.append(line)
     path = os.environ['MYPROJECT'] + "/Test_pictures/"
     if os.path.isdir(path) == False:
@@ -77,5 +79,5 @@ def doTheWholeStuff(size, stride, origin, objects, ignoredObjects):
         return False
     return True
 
-def salut(self):
-    print("salut!")
+def salut():
+    print("salut depuis {}".format(__file__))
