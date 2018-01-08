@@ -1,6 +1,6 @@
 """Main script interacting at world level with UE
 
-This module is attached to the MainPythonComponant PyActor in UE.
+This module is attached to the MainPythonComponant actor in UE.
 
 """
 
@@ -15,7 +15,9 @@ from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
 
+import configuration
 import screenshot
+import utils
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -30,7 +32,8 @@ ue.log('Python path: {}'.format(', '.join(sys.path)))
 ue.log('#' * 50)
 
 
-
+# the list of blueprint classes with an attached Python component
+# (declared in the editor)
 uclass = {
     'Camera': ue.load_class('/Game/Camera.Camera_C'),
     'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
@@ -62,61 +65,59 @@ class MainPythonComponant:
             self.uobject.get_world(),
             'r.SetRes {}'.format(resolution))
 
-    def init_config_file(self):
+    def init_configuration(self):
         try:
-            config_file = os.environ['INTPHYS_CONFIG']
+            json_file = os.environ['INTPHYS_CONFIG']
         except KeyError:
-            self.exit_ue('fatal error, INTPHYS_CONFIG not defined, exiting')
-            return
+            utils.exit_ue(
+                'fatal error, INTPHYS_CONFIG not defined, exiting')
+        ue.log('loading configuration from {}'.format(json_file))
 
-        config = json.loads(open(config_file, 'r').read())
+        try:
+            output_dir = os.environ['INTPHYS_DATADIR']
+        except KeyError:
+            utils.exit_ue(
+                'fatal error, INTPHYS_DATADIR not defined, exiting')
+        ue.log('writing data to {}'.format(output_dir))
 
-    def init_viewport(self, camera):
-        """Attach the viewport to the camera
+        config = configuration.Configuration(json_file, output_dir)
 
-        This initialization was present in the intphys-1.0 blueprint
-        but seems to be useless in UE-4.17. This is maybe done by
-        default.
-
-        """
-        player_controller = GameplayStatics.GetPlayerController(self.world, 0)
-        player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
-
-    def exit_ue(self, message=None):
-        """Quit the game, optionally displaying an error message"""
-        if message:
-            ue.log_error(message)
-
-        KismetSystemLibrary.QuitGame(self.world)
-
-
-    # def get_resolution(self):
-    #     return str(width) + 'x' + str(height)
-
-    # def print_tick(self, delta_seconds):
-    #     ue.log('ticking after {}'.format(float(delta_seconds)))
-    #     print(ue.get_viewport_screenshot() == None)
+        ue.log('generation of {nscenes} scenes ({ntest} for test and '
+               '{ntrain} for train), total of {niterations} iterations'.format(
+            nscenes=config.nruns_test + config.nruns_train,
+            ntest=config.nruns_test,
+            ntrain=config.nruns_train,
+            niterations=len(config.iterations)))
 
     def begin_play(self):
         self.world = self.uobject.get_world()
-        ue.log('Raising new world {}'.format(self.world.get_name()))
+        ue.log('Raising up new world {}'.format(self.world.get_name()))
 
+        # inti the seed for random parameters generation
         self.init_random_seed()
-        self.init_resolution()
-        self.init_config_file()
 
-        # spawn the camera and attach the viewport to it
-        camera = self.world.actor_spawn(
-            uclass['Camera'])# ,
-            # FVector(0, 0, 10),
-            # FRotator(0, 0, 90))
-        self.init_viewport(camera)
+        # init the rendering resolution
+        self.init_resolution()
+
+        # init the configuration
+        config = self.init_configuration()
+
+        # spawn the camera
+        self.camera = self.world.actor_spawn(uclass['Camera'])
 
         # spawn a physical actor
         new_actor = self.world.actor_spawn(
             uclass['PhysicsObject'],
             FVector(300, 0, 50),
             FRotator(0, 0, 0))
+
+        # add a sphere component as the root one
+        static_mesh = new_actor.add_actor_root_component(
+            ue.find_class('StaticMeshComponent'), 'SphereMesh')
+        ue.log(static_mesh)
+
+    def tick(self, delta_time):
+        pass
 
     #def tick(self, delta_time):
         #print delta_time
@@ -139,17 +140,3 @@ class MainPythonComponant:
         #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
         #screenshot.doTheWholeStuff(IntSize(288, 288), 1, camera, array, array2)
         #screenshot.salut()
-
-        # add a sphere component as the root one
-        static_mesh = new_actor.add_actor_root_component(
-            ue.find_class('StaticMeshComponent'), 'SphereMesh')
-        ue.log(static_mesh)
-
-        # # set the mesh as the Sphere asset
-        # static_mesh.call('SetStaticMesh /Engine/EngineMeshes/Sphere.Sphere')
-        # # # set the python module
-        # # new_actor.set_property('PythonModule', 'mobile_object')
-        # # # set the python class
-        # # new_actor.set_property('PythonClass', 'MobileObjectPythonComponant')
-
-        # new_actor.bVisible = True

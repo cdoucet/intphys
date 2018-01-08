@@ -296,7 +296,7 @@ def _Run(command, log, config_file, output_dir, cwd=None,
 
     # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
-    environ['INTPHYS_DATA'] = output_dir
+    environ['INTPHYS_DATADIR'] = output_dir
     environ['INTPHYS_CONFIG'] = os.path.abspath(config_file)
     environ['INTPHYS_RESOLUTION'] = resolution
 

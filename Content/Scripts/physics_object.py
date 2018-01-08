@@ -16,8 +16,6 @@ from unreal_engine.enums import ECollisionChannel
 
 class PhysicsObject:
     def __init__(self):
-        ue.log('init PhysicsObject')
-
         # TODO mesh and material as uobjects, not strings
         self.parameters = {
             'mesh': '/Game/Meshes/Sphere.Sphere',

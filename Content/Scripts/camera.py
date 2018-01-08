@@ -12,12 +12,17 @@ TODO implement this in Python
 
 import random
 
-from unreal_engine import FVector, FRotator
-from unreal_engine.classes import PyActor
 import unreal_engine as ue
+from unreal_engine import FVector, FRotator
+from unreal_engine.classes import CameraComponent
+from unreal_engine.enums import ECameraProjectionMode
 
 class CameraPythonComponant:
     def __init__(self):
+        self.field_of_view = 90
+        self.aspect_ratio = 1
+        self.projection_mode = ECameraProjectionMode.Perspective
+
         self.location, self.rotation = self.get_test_parameters()
 
     @staticmethod
@@ -34,9 +39,9 @@ class CameraPythonComponant:
             100 + random.uniform(-30, 80))
 
         rotation = FRotator(
+            0,
             random.uniform(-30, 30),
-            random.uniform(-15, 10),
-            0)
+            random.uniform(-15, 10))
 
         return location, rotation
 
@@ -68,6 +73,12 @@ class CameraPythonComponant:
         # manage_overlap method
         self.actor.bind_event(
             'OnActorBeginOverlap', self.manage_overlap)
+
+        # setup camera attributes
+        camera_component = self.actor.get_component_by_type(CameraComponent)
+        camera_component.SetFieldOfView(self.field_of_view)
+        camera_component.SetAspectRatio(self.aspect_ratio)
+        camera_component.SetProjectionMode(self.projection_mode)
 
         # place the camera at the desired coordinates
         self.actor.set_actor_location(self.location)
