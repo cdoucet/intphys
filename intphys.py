@@ -13,7 +13,7 @@ The INTPHYS_BINARY variable must be defined in your environment
 
 To see command-line arguments, have a::
 
-    ./intphysdata.py --help
+    ./intphys.py --help
 
 """
 
@@ -36,9 +36,13 @@ import threading
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # absolute path to the packaged intphys program
-INTPHYS_BINARY = os.path.join(
-    INTPHYS_ROOT, 'Package/LinuxNoEditor',
-    'intphys/Binaries/Linux/intphys-Linux-Shipping')
+# INTPHYS_BINARY = /intphys-Linux-Shipping')
+
+def intphys_binaries():
+    """Returns the list of packaged intphys programs as absolute paths"""
+    path = os.path.join(
+        INTPHYS_ROOT, 'Package/LinuxNoEditor/intphys/Binaries/Linux')
+    return [os.path.join(path, bin) for bin in os.listdir(path)]
 
 # the default screen resolution (in pixels)
 DEFAULT_RESOLUTION = '288x288'
@@ -350,20 +354,22 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
 
     # overload binary if defined in the environment
     if 'INTPHYS_BINARY' in os.environ:
-        INTPHYS_BINARY = os.environ['INTPHYS_BINARY']
+        intphys_binary = os.environ['INTPHYS_BINARY']
+    else:
+        intphys_binary = intphys_binaries()[0]
 
-    if not os.path.isfile(INTPHYS_BINARY):
-        raise IOError('No such file: {}'.format(INTPHYS_BINARY))
+    if not os.path.isfile(intphys_binary):
+        raise IOError('No such file: {}'.format(intphys_binary))
 
     if not os.path.isfile(scenes_file):
         raise IOError('Json file not found: {}'.format(scenes_file))
 
     print('running {}{}'.format(
-        INTPHYS_BINARY,
+        intphys_binary,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     if njobs == 1:
-        _Run(INTPHYS_BINARY,
+        _Run(intphys_binary,
              GetLogger(verbose=verbose),
              scenes_file, output_dir, seed=seed, dry=dry,
              resolution=resolution)
@@ -542,6 +548,7 @@ def Main():
 
 
 if __name__ == '__main__':
+    print(intphys_binaries())
     try:
         Main()
     except IOError as err:

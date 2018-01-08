@@ -19,8 +19,8 @@ from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 # import screenshot
 
 import configuration
-import screenshot
-import utils
+# import screenshot
+
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -73,14 +73,14 @@ class MainPythonComponant:
         try:
             json_file = os.environ['INTPHYS_CONFIG']
         except KeyError:
-            utils.exit_ue(
+            self.exit_ue(
                 'fatal error, INTPHYS_CONFIG not defined, exiting')
         ue.log('loading configuration from {}'.format(json_file))
 
         try:
             output_dir = os.environ['INTPHYS_DATADIR']
         except KeyError:
-            utils.exit_ue(
+            self.exit_ue(
                 'fatal error, INTPHYS_DATADIR not defined, exiting')
         ue.log('writing data to {}'.format(output_dir))
 

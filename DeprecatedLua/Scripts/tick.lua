@@ -139,7 +139,7 @@ end
 
 -- This function must be called at each game loop by UETorch
 --
--- It increment the tick counter, calling each registerd hook until
+-- It increment the tick counter, calling each registered hook until
 -- the end of the scene.
 function M.tick(dt)
    -- dt not used here is the time since the last tick
