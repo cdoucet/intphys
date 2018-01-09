@@ -36,14 +36,17 @@ class INTPHYS_API UtestScreenshot : public UBlueprintFunctionLibrary
 {
   GENERATED_BODY()
 
+private:
+  
+
 public:
 
-  /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
-  /*   static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin, */
-  /* 					    const TArray<AActor*>& objects, */
-  /* 					    const TArray<AActor*>& ignoredObjects, */
-  /* 					    TArray<FColor>& depth_data, TArray<FColor>& mask_data); */
-  
+  /*  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
+    static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin,
+  					    const TArray<AActor*>& objects,
+  					    const TArray<AActor*>& ignoredObjects,
+  					    TArray<FColor>& depth_data, TArray<FColor>& mask_data);
+  */
   UFUNCTION(BlueprintCallable, Category="NaivePhysics")
     static TArray<int> CaptureDepth(const FIntSize& size, int stride, AActor* origin,
 				    const TArray<AActor*>& objects,
