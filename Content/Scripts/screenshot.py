@@ -5,11 +5,18 @@ from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
 from unreal_engine import FColor
 
+# pixel_array is an array of integers. Every group of 3 values is a pixel with R, G and B value
+# flag argument is an integer used to build the filename to know if it is a screenshot (1), a depth (2) or a mask (3)
 def savePNG(pixel_array, size, flag):
+    if (len(pixel_array) == 0):
+        print("savePNG failed. The array of pixel is empty")
+        return False
+    if (len(pixel_array) != size.X * size.Y * 3):
+        print("savePNG failed. The length of the array of pixel is wrong")
+        return False
     png_pixels = []
-    height = size.Y
-    width = size.X
-    for y in range(0, height):
+    index = 0
+    for y in range(0, size.Y):
         line = []
         for x in range(0, width):
             index = y * width + x
@@ -23,23 +30,54 @@ def savePNG(pixel_array, size, flag):
         print("--> 'Test_pictures' directory created")
     pic_name = testScreenshot.BuildFileName(flag)
     png.from_array(png_pixels, 'RGB').save(path + pic_name)
-    print("--> picture " + pic_name + " saved in " + path)
+    print("--> picture '" + pic_name + "' saved in " + path)
+    return True
+
+def takeDepth(size, stride, origin, objects, ignoredObjects):
+    print("--> beginning of the depth script")
+    pixel_array = []
+    pixel_array = testScreenshot.CaptureDepth(size, stride, origin, objects, ignoredObjects)
+    if (len(pixel_array) == 0):
+        print("takeDepth failed. The array of pixels is empty")
+        return False
+    savePNG(pixel_array, size, 2)
+    print("--> end of the depth script")
+    return True
+
+def takeMask(size, stride, origin, objects, ignoredObjects):
+    print("--> beginning of the mask script")
+    pixel_array = []
+    pixel_array = testScreenshot.CaptureMask(size, stride, origin, objects, ignoredObjects)
+    if (len(pixel_array) == 0):
+        print("takeMask failed. The array of pixels is empty")
+        return False
+    savePNG(pixel_array, size, 3)
+    print("--> end of the mask script")
+    return True
 
 def takeScreenshot(size):
-    width, height = ue.get_viewport_size()
-    size.X = width
-    size.Y = height
-    print("size = X->", width , " Y->", height)
     print("--> beginning of the screenshot script")
-    testScreenshot.salut() # it is important to be gentle with the user
+    print("size = X->", size.X, " Y->", size.Y)
     pixel_array = []
     pixel_array = testScreenshot.CaptureScreenshot(size, pixel_array)
+    if (len(pixel_array) == 0):
+        print("takeScreenshot failed. The array of pixels is empty")
+        return False
     savePNG(pixel_array, size, 1)
     print("--> end of the screenshot script")
-    return res
+    return True
 
 def doTheWholeStuff(size, stride, origin, objects, ignoredObjects):
-    takeScreenshot(size)
+    if takeScreenshot(size) == False:
+        print("takeScreenshot failed")
+        return False
+    if takeDepth(size, stride, origin, objects, ignoredObjects) == False:
+        print("takeDepth failed")
+        return False
+    if takeMask(size, stride, origin, objects, ignoredObjects) == False:
+        print("takeMask failed")
+        return False
+    return True
 
 def salut():
     print("salut depuis {}".format(__file__))

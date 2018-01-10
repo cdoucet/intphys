@@ -4,7 +4,7 @@
 
 This programm wraps the intphys binary (as packaged by Unreal Engine)
 into a simple to use command-line interface. It defines few
-environment variables (namely input JSon configuration file, output
+environment variables (namely input JSon scenes file, output
 directory and random seed), launch the binary and filter its log
 messages at runtime, keeping only relevant messages.
 
@@ -13,14 +13,13 @@ The INTPHYS_BINARY variable must be defined in your environment
 
 To see command-line arguments, have a::
 
-    ./intphysdata.py --help
+    ./intphys.py --help
 
 """
 
 import argparse
 import atexit
 import copy
-# import joblib
 import json
 import logging
 import os
@@ -31,16 +30,19 @@ import subprocess
 import sys
 import tempfile
 import threading
-# import time
 
 
 # absolute path to the directory containing this script
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # absolute path to the packaged intphys program
-INTPHYS_BINARY = os.path.join(
-    INTPHYS_ROOT, 'Package/LinuxNoEditor',
-    'intphys/Binaries/Linux/intphys-Linux-Shipping')
+# INTPHYS_BINARY = /intphys-Linux-Shipping')
+
+def intphys_binaries():
+    """Returns the list of packaged intphys programs as absolute paths"""
+    path = os.path.join(
+        INTPHYS_ROOT, 'Package/LinuxNoEditor/intphys/Binaries/Linux')
+    return [os.path.join(path, bin) for bin in os.listdir(path)]
 
 # the default screen resolution (in pixels)
 DEFAULT_RESOLUTION = '288x288'
@@ -143,9 +145,9 @@ def ParseArgs():
         description='Data generator for the intphys project')
 
     parser.add_argument(
-        'config_file', metavar='<json-file>', help='''
-        json configuration file defining the number of test and train
-        runs for each block, for an exemple configuration file see {}'''
+        'scenes_file', metavar='<json-file>', help='''
+        json configuration file defining the scenes to be rendered,
+        for an exemple configuration file see {}'''
         .format(os.path.join(INTPHYS_ROOT, 'Exemples', 'exemple.json')))
 
     parser.add_argument(
@@ -177,9 +179,14 @@ def ParseArgs():
     #     help='''number of data generation to run in parallel,
     #     this option is ignored if --editor is specified''')
 
-    parser.add_argument(
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument(
         '-e', '--editor', action='store_true',
         help='launch the intphys project in the UnrealEngine editor')
+
+    group.add_argument(
+        '-g', '--standalone-game', action='store_true',
+        help='launch the project as a standalone game (relies on UE4Editor)')
 
     args = parser.parse_args()
     if not re.match('[0-9]+x[0-9]+', args.resolution):
@@ -266,7 +273,7 @@ def _BalanceList(l, n):
 #     return subconfigs, nruns, njobs
 
 
-def _Run(command, log, config_file, output_dir, cwd=None,
+def _Run(command, log, scenes_file, output_dir, cwd=None,
          seed=None, dry=False, resolution=DEFAULT_RESOLUTION):
     """Run `command` as a subprocess
 
@@ -274,7 +281,7 @@ def _Run(command, log, config_file, output_dir, cwd=None,
     `command` runs with the following environment variables, in top of
     the current environment:
 
-    INTPHYS_CONFIG is the absolute path to `config_file`.
+    INTPHYS_SCENES is the absolute path to `SCENES_file`.
 
     INTPHYS_DATA is the absolute path to `output_dir` with a
        trailing slash added.
@@ -291,8 +298,8 @@ def _Run(command, log, config_file, output_dir, cwd=None,
 
     # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
-    environ['INTPHYS_DATA'] = output_dir
-    environ['INTPHYS_CONFIG'] = os.path.abspath(config_file)
+    environ['INTPHYS_DATADIR'] = output_dir
+    environ['INTPHYS_SCENES'] = os.path.abspath(scenes_file)
     environ['INTPHYS_RESOLUTION'] = resolution
 
     if dry:
@@ -333,7 +340,7 @@ def _Run(command, log, config_file, output_dir, cwd=None,
         sys.exit(job.returncode)
 
 
-def RunBinary(output_dir, config_file, njobs=1, seed=None,
+def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
               dry=False, resolution=DEFAULT_RESOLUTION, verbose=False):
     """Run the intphys packaged binary as a subprocess
 
@@ -345,20 +352,26 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
     if type(njobs) is not int or njobs < 1:
         raise IOError('njobs argument must be a strictly positive integer')
 
-    if not os.path.isfile(INTPHYS_BINARY):
-        raise IOError('No such file: {}'.format(INTPHYS_BINARY))
+    # overload binary if defined in the environment
+    if 'INTPHYS_BINARY' in os.environ:
+        intphys_binary = os.environ['INTPHYS_BINARY']
+    else:
+        intphys_binary = intphys_binaries()[0]
 
-    if not os.path.isfile(config_file):
-        raise IOError('Json file not found: {}'.format(config_file))
+    if not os.path.isfile(intphys_binary):
+        raise IOError('No such file: {}'.format(intphys_binary))
+
+    if not os.path.isfile(scenes_file):
+        raise IOError('Json file not found: {}'.format(scenes_file))
 
     print('running {}{}'.format(
-        INTPHYS_BINARY,
+        intphys_binary,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     if njobs == 1:
-        _Run(INTPHYS_BINARY,
+        _Run(intphys_binary,
              GetLogger(verbose=verbose),
-             config_file, output_dir, seed=seed, dry=dry,
+             scenes_file, output_dir, seed=seed, dry=dry,
              resolution=resolution)
     else:
         raise NotImplementedError('njobs option not yet implemented')
@@ -396,8 +409,9 @@ def RunBinary(output_dir, config_file, njobs=1, seed=None,
         #     for i in range(njobs))
 
 
-def RunEditor(output_dir, config_file, seed=None, dry=False,
-              resolution=DEFAULT_RESOLUTION, verbose=False):
+def RunEditor(output_dir, scenes_file, seed=None, dry=False,
+              resolution=DEFAULT_RESOLUTION, verbose=False,
+              standalone_game=False):
     """Run the intphys project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
@@ -411,7 +425,11 @@ def RunEditor(output_dir, config_file, seed=None, dry=False,
 
     log.debug('running intphys in the Unreal Engine editor')
 
-    _Run('./UE4Editor ' + project, log, config_file, output_dir,
+    command = './UE4Editor ' + project
+    if standalone_game:
+        command += ' -game'
+
+    _Run(command, log, scenes_file, output_dir,
          seed=seed, dry=dry, resolution=resolution, cwd=editor_dir)
 
 
@@ -495,24 +513,31 @@ def Main():
                     .format(output_dir))
         os.makedirs(output_dir)
 
-    # check the config_file is a correct JSON file
+    # check the scenes_file is a correct JSON file
     try:
-        json.load(open(args.config_file, 'r'))
+        json.load(open(args.scenes_file, 'r'))
     except ValueError:
         raise IOError(
-              'The configuration is not a valid JSON file: {}'
-              .format(args.config_file))
+              'The scenesuration is not a valid JSON file: {}'
+              .format(args.scenes_file))
 
     # run the simulation either in the editor or as a standalone
     # program
     if args.editor:
-        RunEditor(output_dir, args.config_file,
-                  seed=args.seed, dry=dry_mode, resolution=args.resolution,
-                  verbose=args.verbose)
+        RunEditor(
+            output_dir, args.scenes_file,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose)
+    elif args.standalone_game:
+        RunEditor(
+            output_dir, args.scenes_file,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose, standalone_game=True)
     else:
-        RunBinary(output_dir, args.config_file, njobs=1,  # args.njobs,
-                  seed=args.seed, dry=dry_mode, resolution=args.resolution,
-                  verbose=args.verbose)
+        RunBinary(
+            output_dir, args.scenes_file, njobs=1,  # args.njobs,
+            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            verbose=args.verbose)
 
     # check for duplicated scenes and warn if founded
     if not dry_mode:
@@ -523,6 +548,7 @@ def Main():
 
 
 if __name__ == '__main__':
+    print(intphys_binaries())
     try:
         Main()
     except IOError as err:
