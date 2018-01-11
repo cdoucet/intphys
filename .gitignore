@@ -35,6 +35,16 @@
 *.suo
 *.opensdf
 *.sdf
+*.pri
+
+.kdev4
+CMakeLists.txt
+Makefile
+intphys.kdev4
+intphys.pro
+intphys.workspace
+intphysCodeCompletionFolders.txt
+intphysCodeLitePreProcessor.txt
 
 # generated when the program crashes
 core

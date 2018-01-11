@@ -1,0 +1,10 @@
+#!/bin/bash
+#
+# Configuration script for the intphys package. Setup the Unreal
+# Engine and generate the project Makefile.
+
+set -e
+
+cd UnrealEngine
+./Setup.sh
+./GenerateProjectFiles.sh -project=$(readlink -f ../intphys.uproject) -game -engine

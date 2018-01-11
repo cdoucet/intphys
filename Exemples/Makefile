@@ -6,11 +6,11 @@ html: data gif
 
 # generate data as raw png files
 data: config.json
-	$(NAIVEPHYSICS_ROOT)/naivedata.py $< $@ -f
+	../intphys.py $< $@ -f
 
 # generate compressed gifs from raw png
 gif: data
-	$(NAIVEPHYSICS_ROOT)/tools/images2video.sh $< $@ $(COMPRESS_GIF_OPTIONS)
+	../Tools/images2video.sh $< $@ $(COMPRESS_GIF_OPTIONS)
 
 clean:
 	rm -rf html data
