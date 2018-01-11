@@ -6,8 +6,10 @@ from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
 from unreal_engine import FColor
 
-# pixel_array is an array of integers. Every group of 3 values is a pixel with R, G and B value
-# flag argument is an integer used to build the filename to know if it is a screenshot (1), a depth (2) or a mask (3)
+# pixel_array is an array of integers. Every group of 3 values is a
+# pixel with R, G and B value flag argument is an integer used to
+# build the filename to know if it is a screenshot (1), a depth (2) or
+# a mask (3)
 def savePNG(pixel_array, size, flag):
     if (len(pixel_array) == 0):
         print("savePNG failed. The array of pixel is empty")

@@ -15,9 +15,13 @@ from unreal_engine import FVector
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 
+from abstract_actor import MobileActor
 
-class PhysicsObject:
-    def __init__(self):
+
+class Object(MobileActor):
+    def __init__(self, params):
+        super(Object, self).__init__(params)
+
         # TODO mesh and material as uobjects, not strings
         self.parameters = {
             'mesh': '/Game/Meshes/Sphere.Sphere',

@@ -37,34 +37,40 @@ class INTPHYS_API UtestScreenshot : public UBlueprintFunctionLibrary
   GENERATED_BODY()
 
 private:
-  
+
 
 public:
 
-  /*  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static bool CaptureDepthAndMasks(const FIntSize& size, int stride, AActor* origin,
-  					    const TArray<AActor*>& objects,
-  					    const TArray<AActor*>& ignoredObjects,
-  					    TArray<FColor>& depth_data, TArray<FColor>& mask_data);
-  */
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static TArray<int> CaptureDepth(const FIntSize& size, int stride, AActor* origin,
-				    const TArray<AActor*>& objects,
-				    const TArray<AActor*>& ignoredObjects);
+  // UFUNCTION(BlueprintCallable, Category="IntPhys")
+  // static bool CaptureDepthAndMasks(
+  //     const FIntSize& size, int stride, AActor* origin,
+  //     const TArray<AActor*>& objects,
+  //     const TArray<AActor*>& ignoredObjects,
+  //     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static TArray<int> CaptureMask(const FIntSize& size, int stride, AActor* origin,
-				    const TArray<AActor*>& objects,
-				    const TArray<AActor*>& ignoredObjects);
+  UFUNCTION(BlueprintCallable, Category="InyPhys")
+  static TArray<int> CaptureDepth(
+      const FIntSize& size, int stride, AActor* origin,
+      const TArray<AActor*>& objects,
+      const TArray<AActor*>& ignoredObjects);
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static TArray<int> CaptureScreenshot(const FIntSize& size);
+  // UFUNCTION(BlueprintCallable, Category="IntPhys")
+  // static TArray<int> CaptureMask(
+  //     const FIntSize& size, int stride, AActor* origin,
+  //     const TArray<AActor*>& objects,
+  //     const TArray<AActor*>& ignoredObjects);
 
-  /* UFUNCTION(BlueprintCallable, Category="NaivePhysics") */
-  /*   static bool DoTheWholeStuff(const FIntSize& size, int stride, AActor* origin, */
-  /* 				const TArray<AActor*>& objects, */
-  /* 				const TArray<AActor*>& ignoredObjects); */
+  UFUNCTION(BlueprintCallable, Category="IntPhys")
+  static TArray<int> CaptureScreenshot(
+      const FIntSize& size);
 
-  UFUNCTION(BlueprintCallable, Category="NaivePhysics")
-    static FString BuildFileName(int flag);
+  // UFUNCTION(BlueprintCallable, Category="IntPhys")
+  // static bool DoTheWholeStuff(
+  //     const FIntSize& size, int stride, AActor* origin,
+  //     const TArray<AActor*>& objects,
+  //     const TArray<AActor*>& ignoredObjects);
+
+  UFUNCTION(BlueprintCallable, Category="IntPhys")
+  static FString BuildFileName(
+      int flag);
 };

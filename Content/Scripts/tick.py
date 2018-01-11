@@ -11,6 +11,9 @@
 A function f is registered to tick at a given level l using the
 function tick.add_hook(f, l), l being 'slow', 'fast' or 'final'.
 
+The 'slow' level is used for taking screenshots, the 'fast' one for
+scene animation.
+
 """
 
 

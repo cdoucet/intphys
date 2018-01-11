@@ -1,9 +1,9 @@
-"""Load of the configuration file and setup the iterations it includes.
+"""Load of the scenes file and setup the iterations it includes.
 
-Translates the configuration file (from JSON) into a list of
-iterations to render. Each block can be composed of several iterations
-(train blocks have a single iteration, test blocks have 4 iterations
-plus additionnal checks).
+Translates the scenes file (from JSON) into a list of iterations to
+render. Each scenario can be composed of several iterations (train
+scenarii have a single iteration, test ones have 4 iterations plus
+additionnal checks).
 
 An `iteration` is a table with the following fields:
   iteration.id is the index of the iteration in the table
