@@ -16,9 +16,8 @@ scene animation.
 
 """
 
-
-class Tick(object):
-    def __init__(nticks=100, tick_interval=2, ticks_rate=1.0/8.0):
+class Tick:
+    def __init__(self, nticks=100, tick_interval=2, ticks_rate=1.0/8.0):
         # Number of ticks to execute before calling the final hooks
         self.nticks = nticks
 
@@ -37,6 +36,7 @@ class Tick(object):
         # True when the game is ticking
         self._is_ticking = False
 
+
     def run(self):
         """Run the game and execute the tick hooks"""
         self._is_ticking = True
@@ -53,14 +53,14 @@ class Tick(object):
         """Return the number of slow ticks since the beginning of the scene"""
         return self._ticks_counter
 
-    def add_hook(func, level):
+    def add_hook(self, func, level):
         """Register a hook function `func` called at a given ticking `level`
 
         The function `func` should take a single argument and return nil.
         The level must be 'slow', 'fast', or 'final'.
 
         """
-        self.hooks[level].append(f)
+        self.hooks[level].append(func)
 
     def clear_hooks(self):
         """Clear all the registered hooks"""

@@ -86,7 +86,8 @@ def salut(self):
     print("salut!")
 
 # You must give an unreal object as parameter (an Actor for instance)
-# The UnrealEnginePython documentation says that all_object() is a heavy method to use. Therefore you should not spam it
+# The UnrealEnginePython documentation says that all_object() is a
+# heavy method to use. Therefore you should not spam it
 def getCamera(uobject):
     for o in uobject.all_objects():
         if (o.get_full_name()[:11] == "CameraActor"):

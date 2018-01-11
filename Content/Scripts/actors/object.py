@@ -15,73 +15,42 @@ from unreal_engine import FVector
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 
-from abstract_actor import MobileActor
+from abstract_actor import BaseActor
 
 
-class Object(MobileActor):
+class Object(BaseActor):
+    object_materials = ue.get_assets('/Game/Materials/Actor')
+
     def __init__(self, params):
         super(Object, self).__init__(params)
-
-        # TODO mesh and material as uobjects, not strings
-        self.parameters = {
-            'mesh': '/Game/Meshes/Sphere.Sphere',
-            'material': '/Game/Materials/Actor/M_Tech_Panel.M_Tech_Panel',
-            'mass': 1.0,
-            'force': FVector(-1e2, 0.0, 0.0)
-        }
-
-        self.materials = ue.get_assets('/Game/Materials/Actor')
-        self.total_time = 0
+        self.params['mass'] = 1.0
+        self.params['force'] = FVector(-1e2, 0.0, 0.0)
 
     def begin_play(self):
-        # retrieve the actor from its Python component
-        self.actor = self.uobject.get_owner()
+        super(Object, self).begin_play()
 
-        # manage OnActorBeginOverlap events
-        self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
-
-        # retrieve the actor's mesh component
-        self.mesh = self.actor.get_actor_component_by_type(
-            ue.find_class('StaticMeshComponent'))
-
-        # setup physics
-        self.mesh.call('SetCollisionProfileName BlockAll')
-        # # TODO not sure it works nor its usefull...
-        # self.mesh.SetCollisionObjectType(
-        #     Channel=np.uint8(ECollisionChannel.PhysicsBody))
-        self.actor.SetActorEnableCollision(True)
-        # self.mesh.set_simulate_physics()
-
-        # setup mesh, material, mass and force from parameters
-        self.mesh.SetStaticMesh(
-            ue.load_object(StaticMesh, self.parameters['mesh']))
-
-        self.mesh.set_material(
-            0, ue.load_object(Material, self.parameters['material']))
-
-        self.mesh.SetMassScale(
+        self.get_mesh().SetMassScale(
             BoneName='None',
-            InMassScale=self.parameters['mass'] / self.mesh.GetMassScale())
+            InMassScale=self.params['mass'] / self.get_mesh().GetMassScale())
 
-        ue.log('begin play {}'.format(self.actor.get_name()))
-        self.activate()
+    def activate_physics(self):
+        self.get_mesh().set_simulate_physics()
 
-    def activate(self):
-        self.mesh.set_simulate_physics()
-        self.mesh.add_force(self.parameters['force'])
+        if 'force' in self.params:
+            self.get_mesh().add_force(self.params['force'])
 
-    def tick(self, delta_time):
-        self.total_time += delta_time
-        done = 0
-        if self.total_time >= 2 and done < 1:
-            self.actor.SetActorHiddenInGame(True)
-            done = 1
-        if self.total_time >= 3 and done < 2:
-            self.actor.set_actor_scale(0.1, 0.1, 0.1)
-            # self.mesh.SetStaticMesh(
-            #     ue.load_object(StaticMesh, '/Engine/EngineMeshes/Cube.Cube'))
-            self.actor.SetActorHiddenInGame(False)
-            done = 2
+    # def tick(self, delta_time):
+    #     self.total_time += delta_time
+    #     done = 0
+    #     if self.total_time >= 2 and done < 1:
+    #         self.actor.SetActorHiddenInGame(True)
+    #         done = 1
+    #     if self.total_time >= 3 and done < 2:
+    #         self.actor.set_actor_scale(0.1, 0.1, 0.1)
+    #         # self.mesh.SetStaticMesh(
+    #         #     ue.load_object(StaticMesh, '/Engine/EngineMeshes/Cube.Cube'))
+    #         self.actor.SetActorHiddenInGame(False)
+    #         done = 2
 
 
     def manage_overlap(self, me, other):

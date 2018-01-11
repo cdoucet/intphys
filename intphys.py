@@ -35,24 +35,23 @@ import threading
 # absolute path to the directory containing this script
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
-# absolute path to the packaged intphys program
-# INTPHYS_BINARY = /intphys-Linux-Shipping')
+# path to the UnrealEngine directory
+UE_ROOT = os.path.join(INTPHYS_ROOT, 'UnrealEngine')
+
+# the default screen resolution (in pixels)
+DEFAULT_RESOLUTION = '288x288'
+
 
 def intphys_binaries():
     """Returns the list of packaged intphys programs as absolute paths"""
     path = os.path.join(
         INTPHYS_ROOT, 'Package/LinuxNoEditor/intphys/Binaries/Linux')
-    return [os.path.join(path, bin) for bin in os.listdir(path)]
 
-# the default screen resolution (in pixels)
-DEFAULT_RESOLUTION = '288x288'
-
-try:
-    # path to the UnrealEngine directory
-    UE_ROOT = os.environ['UE_ROOT']
-except KeyError as err:
-    print('Error: the environment variable UE_ROOT is not defined')
-    sys.exit(-1)
+    if os.path.isdir(path):
+        return [os.path.join(path, bin) for bin in os.listdir(path)]
+    else:
+        print('WARNING: intphys package not found')
+        return []
 
 
 class LogStripFormatter(logging.Formatter):

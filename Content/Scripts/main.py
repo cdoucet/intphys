@@ -5,25 +5,22 @@ blueprint in UE.
 
 """
 
+import importlib
 import json
 import os
 import random
 import sys
 
 import unreal_engine as ue
-import screenshot
-import importlib
-importlib.reload(screenshot)
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
-# from unreal_engine.classes import testScreenshot
 # from unreal_engine.structs import IntSize
-
-# import screenshot
 
 import configuration
 # import screenshot
 
+import tick
+importlib.reload(tick)
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -43,7 +40,8 @@ ue.log('#' * 50)
 uclass = {
     'Camera': ue.load_class('/Game/Camera.Camera_C'),
     'Floor': ue.load_class('/Game/Floor.Floor_C'),
-    'PhysicsObject': ue.load_class('/Game/PhysicsObject.PhysicsObject_C')
+    'Object': ue.load_class('/Game/Object.Object_C'),
+    'Wall': ue.load_class('/Game/Wall.Wall_C')
 }
 
 
@@ -96,14 +94,13 @@ class MainPythonComponant:
             ntrain=config.nruns_train,
             niterations=len(config.iterations)))
 
-    def load_scenes(self):
-        try:
-            scenes_file = os.environ['INTPHYS_SCENES']
-        except KeyError:
-            self.exit_ue('fatal error, INTPHYS_SCENES not defined, exiting')
-            return
-
-        scene_raw = json.loads(open(scenes_file, 'r').read())
+    # def load_scenes(self):
+    #     try:
+    #         scenes_file = os.environ['INTPHYS_SCENES']
+    #     except KeyError:
+    #         self.exit_ue('fatal error, INTPHYS_SCENES not defined, exiting')
+    #         return
+    #     scene_raw = json.loads(open(scenes_file, 'r').read())
 
     def init_viewport(self, camera):
         """Attach the viewport to the camera
@@ -127,52 +124,38 @@ class MainPythonComponant:
         self.world = self.uobject.get_world()
         ue.log('Raising up new world {}'.format(self.world.get_name()))
 
-        # inti the seed for random parameters generation
+        # init the seed for random parameters generation
         self.init_random_seed()
 
         # init the rendering resolution
         self.init_resolution()
 
-        # init the configuration
-        config = self.init_configuration()
-        # scenes = self.load_scenes()
-
         # spawn the camera and attach the viewport to it
         camera = self.world.actor_spawn(uclass['Camera'])
         self.init_viewport(camera)
 
+        # init the configuration
+        # config = self.init_configuration()
+        # scenes = [{'block': 'block_O1.train', 'path': '/tmp/train/01_block_O1_train', 'type': -1, 'id': 1}]
+        # for scene_params in scenes:
+        #     scene = Scene(camera, scene_params)
+
         # spawn the floor
         floor = self.world.actor_spawn(uclass['Floor'])
 
-        # spawn a new PyActor
-        self.new_actor = self.world.actor_spawn(
-            uclass['PhysicsObject'],
-            FVector(300, 0, 100),
-            FRotator(0, 0, 0))
-        self.camera = screenshot.getCamera(self.new_actor)
+        # # spawn an actor
+        # self.actor = self.world.actor_spawn(uclass['Object'])
 
-        # add a sphere component as the root one
-        static_mesh = new_actor.add_actor_root_component(
-            ue.find_class('StaticMeshComponent'), 'SphereMesh')
-        ue.log(static_mesh)
+        # register the tick for taking screenshots
+        # ticker = tick.Tick()
+        self.ticker = tick.Tick()
+        # # ticker.add_hook(
+        # #     lambda: screenshot.takeScreenshot(IntSize(width, height)), 'slow')
 
-    def tick(self, delta_time): # put the screenshot screen in the begin play make the size of the screenshot wrong
-        size = IntSize(288, 288) # this line let size.X and size.Y with a null value... can't say why
-        size.X = 288
-        size.Y = 288
-        array = []
-        array.append(self.new_actor)
-        array2 = []
-        #if screenshot.takeDepth(size, 1, self.camera, array, array2) == False:
-            #print("depth failed")
+        # self.ticker.add_hook(
+        #     lambda: ue.log('tick {}'.format(self.ticker.get_counter())), 'slow')
+        self.ticker.add_hook(self.exit_ue, 'final')
+        self.ticker.run()
 
-        if screenshot.takeScreenshot(size) == False:
-            print("screenshot failed")
-
-        #array = []
-        #array.append(new_actor)
-        #array2 = []
-        #camera = testScreenshot.GetCamera(self.world)
-        #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_81')
-        #screenshot.doTheWholeStuff(IntSize(288, 288), 1, camera, array, array2)
-        #screenshot.salut()
+    def tick(self, dt):
+        self.ticker.tick(dt)

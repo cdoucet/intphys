@@ -1,6 +1,6 @@
 {
 	"FileVersion": 3,
-	"EngineAssociation": "{1B8D65CB-2609-010D-001A-021BDCE322F5}",
+	"EngineAssociation": "{19C4559C-2E01-140B-0031-013767B58B8A}",
 	"Category": "",
 	"Description": "",
 	"Modules": [
@@ -9,18 +9,5 @@
 			"Type": "Runtime",
 			"LoadingPhase": "Default"
 		}
-	],
-	"Plugins": [
-		{
-			"Name": "NativizedAssets",
-			"Enabled": false
-		},
-		{
-			"Name": "UnrealEnginePython",
-			"Enabled": true
-		}
-	],
-	"TargetPlatforms": [
-		"LinuxNoEditor"
 	]
 }

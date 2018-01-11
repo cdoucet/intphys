@@ -1,29 +1,28 @@
-"""The scene's floor"""
+"""The scene's floor has a fixed mesh, position and scale, with a
+random material
+
+"""
 
 import random
 import unreal_engine as ue
 
-from abstract_actor import BaseActor
+from actors.abstract_actor import BaseActor
+from unreal_engine import FVector, FRotator
 
 
 class Floor(BaseActor):
+    # TODO cannot use get_assets() since it works only in the editor,
+    # try with ue.load_class for each file in the directory
     floor_materials = ue.get_assets('/Game/Materials/Floor')
 
     def __init__(self):
-        super(Floor, self).__init__(params)
-        self.params['mesh'] = '/Game/Meshes/Floor_400x400'
-        self.params['material'] = random.shuffle(self.floor_materials)[0]
+        super(Floor, self).__init__()
+        random.shuffle(self.floor_materials)
 
-    def begin_play(self):
-        super(Floor, self).begin_play()
-
-        actor = self.get_actor()
-        actor.set_actor_location(0, -720, 0)
-        actor.set_actor_scale(5, 5, 1)
-        actor.set_actor_rotation(0, 0, 0)
-
-        mesh = actor.get_actor_component_by_type(
-            ue.find_class('StaticMeshComponent'))
-        mesh.SetStaticMesh(
-            ue.load_object(StaticMesh, ))
-        mesh.set_material(0, self.material)
+        self.params = {
+            'mesh': '/Game/Meshes/Floor_400x400',
+            'material': self.floor_materials[0],
+            'location': FVector(-200, -720, 0),
+            'rotation': FRotator(0, 0, 0),
+            'scale': FVector(10, 10, 1)
+        }

@@ -112,3 +112,30 @@ In the `Tools` directory are stored few utility scripts:
 
 In the `Exemples` directory are stored scripts to generate few videos,
 extract them to gif pictures and embeed them in a html page.
+
+
+## How to make a new project
+
+Steps to duplicate the intphys project nto a fresh one in
+UnrealEngine. This may be needed for debug or development or when
+upgrading to a new engine version.
+
+1. Open UE4Editor and create a new C++ blank project called `intphys`
+   in the `new` directory, open the project a first time and
+   close it just after.
+
+2. Clone UnrealEnginePython in `new/intphys/Plugins`.
+
+3. Copy the following files and folders from `old` to `new`:
+
+    - Content
+    - Source/intphys
+    - DeprecatedLua
+    - Exemples
+    - Tools
+    - .git
+    - and all the top-level files in the git repo (.gitignore,
+      configure, etc...)
+
+4. Reopen the project. In Project Settings / Maps & Mods, set up the
+   default map to intphysMap.

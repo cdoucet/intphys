@@ -2,6 +2,7 @@
 
 import unreal_engine as ue
 
+from unreal_engine import FVector
 from unreal_engine.classes import Material, StaticMesh
 
 
@@ -9,7 +10,10 @@ class BaseActor(object):
     def __init__(self):
         self.params = {
             'mesh': None,
-            'material': None
+            'material': None,
+            'location': FVector(0, 0, 0),
+            'rotation': FVector(0, 0, 0),
+            'scale': FVector(1, 1, 1)
         }
 
     def get_actor(self):
@@ -35,27 +39,14 @@ class BaseActor(object):
 
         # setup mesh and material
         mesh.SetStaticMesh(ue.load_object(StaticMesh, self.params['mesh']))
-        mesh.set_material(0, ue.load_object(Material, self.params['material']))
+        # mesh.set_material(0, ue.load_object(Material, self.params['material']))
+        mesh.set_material(0, self.params['material'])
+
+        # setup position
+        actor.set_actor_location(self.params['location'])
+        actor.set_actor_rotation(self.params['rotation'])
+        actor.set_actor_scale(self.params['scale'])
+
 
     def manage_overlap(self, me, other):
         pass
-
-    @staticmethod
-    def get_random_parameters(self):
-        raise NotImplementedError
-
-
-class MobileActor(BaseActor):
-    def __init__(self, params):
-        super(MobileActor, self).__init__(params)
-
-    def activate_physics(self):
-        self.get_mesh().set_simulate_physics()
-        if 'force' in self.params:
-            self.get_mesh().add_force(self.params['force'])
-
-    def tick(self, dt):
-        raise NotImplementedError
-
-    def get_status(self):
-        raise NotImplementedError
