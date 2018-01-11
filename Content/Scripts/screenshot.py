@@ -1,5 +1,6 @@
 import unreal_engine as ue
 import os
+# Beware: the png lib must be compatible with python3
 import png
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
@@ -30,41 +31,41 @@ def savePNG(pixel_array, size, flag):
         print("--> 'Test_pictures' directory created")
     pic_name = testScreenshot.BuildFileName(flag)
     png.from_array(png_pixels, 'RGB').save(path + pic_name)
-    print("--> picture '" + pic_name + "' saved in " + path)
+    #print("--> picture '" + pic_name + "' saved in " + path)
     return True
 
 def takeDepth(size, stride, origin, objects, ignoredObjects):
-    print("--> beginning of the depth script")
+    #print("--> beginning of the depth script")
     pixel_array = []
     pixel_array = testScreenshot.CaptureDepth(size, stride, origin, objects, ignoredObjects)
     if (len(pixel_array) == 0):
         print("takeDepth failed. The array of pixels is empty")
         return False
     savePNG(pixel_array, size, 2)
-    print("--> end of the depth script")
+    #print("--> end of the depth script")
     return True
 
 def takeMask(size, stride, origin, objects, ignoredObjects):
-    print("--> beginning of the mask script")
+    #print("--> beginning of the mask script")
     pixel_array = []
     pixel_array = testScreenshot.CaptureMask(size, stride, origin, objects, ignoredObjects)
     if (len(pixel_array) == 0):
         print("takeMask failed. The array of pixels is empty")
         return False
     savePNG(pixel_array, size, 3)
-    print("--> end of the mask script")
+    #print("--> end of the mask script")
     return True
 
 def takeScreenshot(size):
-    print("--> beginning of the screenshot script")
-    print("size = X->", size.X, " Y->", size.Y)
+    #print("--> beginning of the screenshot script")
+    #print("given size = X->", size.X, " Y->", size.Y)
     pixel_array = []
-    pixel_array = testScreenshot.CaptureScreenshot(size, pixel_array)
+    pixel_array = testScreenshot.CaptureScreenshot(size)
     if (len(pixel_array) == 0):
         print("takeScreenshot failed. The array of pixels is empty")
         return False
     savePNG(pixel_array, size, 1)
-    print("--> end of the screenshot script")
+    #print("--> end of the screenshot script")
     return True
 
 def doTheWholeStuff(size, stride, origin, objects, ignoredObjects):
@@ -79,5 +80,13 @@ def doTheWholeStuff(size, stride, origin, objects, ignoredObjects):
         return False
     return True
 
-def salut():
-    print("salut depuis {}".format(__file__))
+def salut(self):
+    print("salut!")
+
+# You must give an unreal object as parameter (an Actor for instance)
+# The UnrealEnginePython documentation says that all_object() is a heavy method to use. Therefore you should not spam it
+def getCamera(uobject):
+    for o in uobject.all_objects():
+        if (o.get_full_name()[:11] == "CameraActor"):
+            print("Camera name: " + o.get_full_name())
+            return o

@@ -11,6 +11,9 @@ import random
 import sys
 
 import unreal_engine as ue
+import screenshot
+import importlib
+importlib.reload(screenshot)
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 # from unreal_engine.classes import testScreenshot
@@ -142,32 +145,29 @@ class MainPythonComponant:
         floor = self.world.actor_spawn(uclass['Floor'])
 
         # spawn a new PyActor
-        new_actor = self.world.actor_spawn(
+        self.new_actor = self.world.actor_spawn(
             uclass['PhysicsObject'],
             FVector(300, 0, 100),
             FRotator(0, 0, 0))
+        self.camera = screenshot.getCamera(self.new_actor)
 
         # add a sphere component as the root one
         static_mesh = new_actor.add_actor_root_component(
             ue.find_class('StaticMeshComponent'), 'SphereMesh')
         ue.log(static_mesh)
 
-    def tick(self, delta_time):
-        pass
+    def tick(self, delta_time): # put the screenshot screen in the begin play make the size of the screenshot wrong
+        size = IntSize(288, 288) # this line let size.X and size.Y with a null value... can't say why
+        size.X = 288
+        size.Y = 288
+        array = []
+        array.append(self.new_actor)
+        array2 = []
+        #if screenshot.takeDepth(size, 1, self.camera, array, array2) == False:
+            #print("depth failed")
 
-    #def tick(self, delta_time):
-        #print delta_time
-        # size = IntSize(288, 288) # this line let size.X and size.Y with a null value... can't say why
-        # size.X = 288
-        # size.Y = 288
-        # array = []
-        # array.append(new_actor)
-        # for o in ue.all_objects():
-        #     o.get_full_name()
-        # #camera = ue.find_object('/Game/UEDPIE_0_TestMap.TestMap:PersistentLevel.Camera_82')
-        # array2 = []
-        #if screenshot.doTheWholeStuff(size, 1, camera, array, array2) == False:
-            #print "doTheWholeStuff failed"
+        if screenshot.takeScreenshot(size) == False:
+            print("screenshot failed")
 
         #array = []
         #array.append(new_actor)
