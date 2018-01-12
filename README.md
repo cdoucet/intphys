@@ -54,11 +54,12 @@ not been tested.
 
         git clone --recursive git@github.com:bootphon/intphys.git
 
-* Compile the UnrealEngine and the intphys program:
+* Compile the UnrealEngine:
 
-        ./configure
-         make
-         make intphys
+        cd UnrealEngine
+        ./Setup.sh
+        ./GenerateProjectFiles.sh
+        make
 
 * We now need to package the `intphys/intphys.uproject` project
   into a standalone binary. You need a manual intervention in the
