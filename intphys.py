@@ -297,6 +297,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
 
     # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
+    environ['INTPHYS_ROOT'] = INTPHYS_ROOT
     environ['INTPHYS_DATADIR'] = output_dir
     environ['INTPHYS_SCENES'] = os.path.abspath(scenes_file)
     environ['INTPHYS_RESOLUTION'] = resolution

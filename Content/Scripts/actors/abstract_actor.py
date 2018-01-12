@@ -39,8 +39,7 @@ class BaseActor(object):
 
         # setup mesh and material
         mesh.SetStaticMesh(ue.load_object(StaticMesh, self.params['mesh']))
-        # mesh.set_material(0, ue.load_object(Material, self.params['material']))
-        mesh.set_material(0, self.params['material'])
+        mesh.set_material(0, ue.load_object(Material, self.params['material']))
 
         # setup position
         actor.set_actor_location(self.params['location'])
