@@ -36,7 +36,12 @@ import threading
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 
 # path to the UnrealEngine directory
-UE_ROOT = os.path.join(INTPHYS_ROOT, 'UnrealEngine')
+try:
+    UE_ROOT = os.environ['UE_ROOT']
+except:
+    print(
+        'The UE_ROOT environment variable is undefined. '
+        'Please set it as the absolute path to your Unreal Engine directory')
 
 # the default screen resolution (in pixels)
 DEFAULT_RESOLUTION = '288x288'
@@ -94,17 +99,14 @@ class LogNoStartupMessagesFilter(logging.Filter):
 class LogInhibitUnrealFilter(logging.Filter):
     """Inhibits some unrelevant Unreal log messages
 
-    Messages containing 'Error:' or 'LogScriptPlugin' are kept, other
-    are removed from the Unreal Engine log (messages like
+    Messages containing 'Error' or 'LogPython' are kept, other are
+    removed from the Unreal Engine log (messages like
     "[data][id]message")
 
     """
     def filter(self, record):
         msg = record.getMessage()
-        return (not re.search('\[.*\]\[.*\]', msg) or
-                'Error:' in msg or
-                'LogScriptPlugin' in msg)
-
+        return 'LogPython' in msg or 'Error' in msg
 
 def GetLogger(verbose=False, name=None):
     """Returns a logger configured to filter Unreal log messages
@@ -162,7 +164,8 @@ def ParseArgs():
     parser.add_argument(
         '-r', '--resolution', default=DEFAULT_RESOLUTION,
         metavar='<width>x<height>',
-        help='resolution of the rendered images (in pixels)')
+        help=('resolution of the rendered images (in pixels), '
+              'default is %(default)s'))
 
     parser.add_argument(
         '-s', '--seed', default=None, metavar='<int>', type=int,
@@ -189,8 +192,9 @@ def ParseArgs():
 
     args = parser.parse_args()
     if not re.match('[0-9]+x[0-9]+', args.resolution):
-        raise IOError('resolution is not in <width>x<height> format'
-                      '(e.g. "800x600"): {}'.format(args.resolution))
+        raise ValueError(
+            'resolution is not in <width>x<height> format'
+            '(e.g. "800x600"): {}'.format(args.resolution))
 
     return args
 
@@ -427,7 +431,8 @@ def RunEditor(output_dir, scenes_file, seed=None, dry=False,
 
     command = './UE4Editor ' + project
     if standalone_game:
-        command += ' -game'
+        res = resolution.split('x')
+        command += ' -game -windowed ResX={} ResY={}'.format(res[0], res[1])
 
     _Run(command, log, scenes_file, output_dir,
          seed=seed, dry=dry, resolution=resolution, cwd=editor_dir)
@@ -548,7 +553,6 @@ def Main():
 
 
 if __name__ == '__main__':
-    print(intphys_binaries())
     try:
         Main()
     except IOError as err:
