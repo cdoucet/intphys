@@ -14,25 +14,22 @@ import sys
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
-# from unreal_engine.structs import IntSize
 
 import configuration
-# import screenshot
-
-import tick
-importlib.reload(tick)
+from screenshot import Screenshot
+from tick import Tick
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
 
 
-ue.log('#' * 50)
-ue.log('Beginning new game')
-ue.log('#' * 50)
-ue.log('Python executable: {}'.format(sys.executable))
-ue.log('Python version: {}'.format(sys.version.replace('\n', ', ')))
-ue.log('Python path: {}'.format(', '.join(sys.path)))
-ue.log('#' * 50)
+# ue.log('#' * 50)
+# ue.log('Beginning new game')
+# ue.log('#' * 50)
+# ue.log('Python executable: {}'.format(sys.executable))
+# ue.log('Python version: {}'.format(sys.version.replace('\n', ', ')))
+# ue.log('Python path: {}'.format(', '.join(sys.path)))
+# ue.log('#' * 50)
 
 
 # the list of blueprint classes with an attached Python component
@@ -46,6 +43,11 @@ uclass = {
 
 
 class MainPythonComponant:
+    # def __init__(self):
+    #     self.world = None
+    #     self.ticker = None
+    #     self.screenshot = None
+
     def init_random_seed(self):
         # init random number generator with a seed
         try:
@@ -146,15 +148,17 @@ class MainPythonComponant:
         # # spawn an actor
         # self.actor = self.world.actor_spawn(uclass['Object'])
 
-        # register the tick for taking screenshots
-        # ticker = tick.Tick()
-        self.ticker = tick.Tick()
-        # # ticker.add_hook(
-        # #     lambda: screenshot.takeScreenshot(IntSize(width, height)), 'slow')
+        # setup the sceenshots
+        self.screenshot = Screenshot(width, height)
+        output_dir = './screenshots'
 
-        # self.ticker.add_hook(
-        #     lambda: ue.log('tick {}'.format(self.ticker.get_counter())), 'slow')
+        # register the tick for taking screenshots
+        self.ticker = Tick()
+        self.ticker.add_hook(self.screenshot.take_screenshot, 'slow')
+        self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
         self.ticker.add_hook(self.exit_ue, 'final')
+
+        # run the scene
         self.ticker.run()
 
     def tick(self, dt):
