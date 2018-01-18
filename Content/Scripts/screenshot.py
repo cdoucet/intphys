@@ -48,8 +48,8 @@ class Screenshot:
         for y in range(0, self.size.Y):
             line = []
             for x in range(0, self.size.X):
-                pixel = img[y * self.size.X + x]
-                line.append([pixel.r, pixel.g, pixel.b])
+                pixel = (y * self.size.X + x) * 3
+                line.append([img[pixel], img[pixel + 1], img[pixel + 2]])
             png_pixels.append(line)
 
         png.from_array(png_pixels, 'RGB').save(filename)
