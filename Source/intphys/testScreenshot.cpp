@@ -63,95 +63,100 @@ static void FSceneView__SafeDeprojectFVector2D(
 }
 
 TArray<int> UtestScreenshot::CaptureDepth(
-    const FIntSize& size, int stride,
+    const FIntSize& size,
+    int stride,
     AActor* origin,
     const TArray<AActor*>& objects,
     const TArray<AActor*>& ignoredObjects)
 {
-  TArray<int>		Result;
-  UWorld*		World = NULL;
-  FSceneView*		SceneView = NULL;
-  FVector		PlayerLoc, PlayerF, WorldOrigin, WorldDirection;
-  FHitResult		HitResult;
-  FCollisionQueryParams	*CollisionQueryParams = NULL;
-  bool			DidItWork = false;
+    TArray<int>		Result;
+    UWorld*		World = NULL;
+    FSceneView*		SceneView = NULL;
+    FVector		PlayerLoc, PlayerF, WorldOrigin, WorldDirection;
+    FHitResult		HitResult;
+    FCollisionQueryParams	*CollisionQueryParams = NULL;
+    bool			DidItWork = false;
 
-  if (origin == NULL || (World = origin->GetWorld()) == NULL ||
-      (SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World)) == NULL)
-  {
-      UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView or World are null"));
-      return Result;
-  }
-  PlayerLoc = origin->GetActorLocation();
-  PlayerF = FRotationMatrix(origin->GetActorRotation()).GetScaledAxis(EAxis::X);
-  PlayerF.Normalize();
-
-  if ((CollisionQueryParams = new FCollisionQueryParams("ClickableTrace", false)) == NULL)
+    if (origin == NULL || (World = origin->GetWorld()) == NULL ||
+        (SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World)) == NULL)
     {
-      UE_LOG(LogTemp, Warning, TEXT("CollisionQueryParams is null"));
-      return Result;
+        UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView or World are null"));
+        return Result;
     }
-  for (auto& i : ignoredObjects)
-    CollisionQueryParams->AddIgnoredActor(i);
+    // UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView and World setup"));
+    PlayerLoc = origin->GetActorLocation();
+    UE_LOG(LogTemp, Log, TEXT("Camera location is %f, %f, %f"),
+           PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z)
 
-  for (float y = 0; y < size.Y; y += stride)
+    PlayerF = FRotationMatrix(origin->GetActorRotation()).GetScaledAxis(EAxis::X);
+    PlayerF.Normalize();
+
+    if ((CollisionQueryParams = new FCollisionQueryParams("ClickableTrace", false)) == NULL)
     {
-      for (float x = 0; x < size.X; x += stride)
+        UE_LOG(LogTemp, Warning, TEXT("CollisionQueryParams is null"));
+        return Result;
+    }
+    for (auto& i : ignoredObjects)
+        CollisionQueryParams->AddIgnoredActor(i);
+
+    for (float y = 0; y < size.Y; y += stride)
+    {
+        for (float x = 0; x < size.X; x += stride)
 	{
-	  FSceneView__SafeDeprojectFVector2D(
-              SceneView, FVector2D(x, y),
-              WorldOrigin, WorldDirection);
+            FSceneView__SafeDeprojectFVector2D(
+                SceneView, FVector2D(x, y),
+                WorldOrigin, WorldDirection);
 
-	  // DrawDebugLine( // draw a line
-	  // 		World,
-	  // 		WorldOrigin, // from here
-	  // 		WorldOrigin + WorldDirection, // to here
-	  // 		FColor(255,0,0),
-	  // 		true, -1, 0,
-	  // 		12.333
-	  // 		);
+            // DrawDebugLine( // draw a line
+            // 		World,
+            // 		WorldOrigin, // from here
+            // 		WorldOrigin + WorldDirection, // to here
+            // 		FColor(255,0,0),
+            // 		true, -1, 0,
+            // 		12.333
+            // 		);
 
-	  if (World->LineTraceSingleByChannel(
-                  HitResult, WorldOrigin,
-                  WorldOrigin + WorldDirection * 1000000.f,
-                  ECollisionChannel::ECC_Visibility,
-                  *CollisionQueryParams))
-          {
-	      const auto &HitLoc = HitResult.Location;
+            if (World->LineTraceSingleByChannel(
+                    HitResult, WorldOrigin,
+                    WorldOrigin + WorldDirection * 1000000.f,
+                    ECollisionChannel::ECC_Visibility,
+                    *CollisionQueryParams))
+            {
+                const auto &HitLoc = HitResult.Location;
 
-              // distance between camera and actor (irrelevant because
-              // not bind to each different pixel)
-	      double distance = sqrt(
-                  pow(PlayerLoc.X - HitLoc.X, 2) +
-                  pow(PlayerLoc.Y - HitLoc.Y, 2) +
-                  pow(PlayerLoc.Z - HitLoc.Z, 2));
+                // distance between camera and actor (irrelevant because
+                // not bind to each different pixel)
+                double distance = sqrt(
+                    pow(PlayerLoc.X - HitLoc.X, 2) +
+                    pow(PlayerLoc.Y - HitLoc.Y, 2) +
+                    pow(PlayerLoc.Z - HitLoc.Z, 2));
 
-	      double dotProduct = FVector::DotProduct(HitLoc, PlayerF);
+                double dotProduct = FVector::DotProduct(HitLoc, PlayerF);
 
-              // UE_LOG(LogTemp, Log, TEXT("dotproduct: %f"), dotProduct);
-	      // UE_LOG(LogTemp, Log, TEXT("distance: %f"), distance);
-	      for (int i = 0; i != 3; i += 1)
-                  // the formula make the dotProduct be between 0 and
-                  // 254 (base value being between -1 and 1)
-                  Result.Add((FVector::DotProduct(HitLoc - PlayerLoc, PlayerF) + 1) * 127);
-	      //Result.Add(dotProduct);
-	      DidItWork = true;
-          }
-	  else
-	      for (int i = 0; i != 3; i += 1)
-                  Result.Add(0);
-	  // UE_LOG(LogTemp, Log, TEXT("\nWorldOrigin:%f/%f/%f\nWorldDirection:%f/%f/%f"),
-          //        WorldOrigin.X, WorldOrigin.Y, WorldOrigin.Z,
-          //        WorldDirection.X, WorldDirection.Y, WorldDirection.Z);
+                // UE_LOG(LogTemp, Log, TEXT("dotproduct: %f"), dotProduct);
+                // UE_LOG(LogTemp, Log, TEXT("distance: %f"), distance);
+                for (int i = 0; i != 3; i += 1)
+                    // the formula make the dotProduct be between 0 and
+                    // 254 (base value being between -1 and 1)
+                    Result.Add((FVector::DotProduct(HitLoc - PlayerLoc, PlayerF) + 1) * 127);
+                //Result.Add(dotProduct);
+                DidItWork = true;
+            }
+            else
+                for (int i = 0; i != 3; i += 1)
+                    Result.Add(0);
+            // UE_LOG(LogTemp, Log, TEXT("\nWorldOrigin:%f/%f/%f\nWorldDirection:%f/%f/%f"),
+            //        WorldOrigin.X, WorldOrigin.Y, WorldOrigin.Z,
+            //        WorldDirection.X, WorldDirection.Y, WorldDirection.Z);
 	}
     }
 
-  //UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), Result.Num() / 3);
+    //UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), Result.Num() / 3);
 
-  if (DidItWork == false)
-    Result.Empty();
+    if (DidItWork == false)
+        Result.Empty();
 
-  return (Result);
+    return (Result);
 }
 
 

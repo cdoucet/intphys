@@ -16,6 +16,8 @@ scene animation.
 
 """
 
+import unreal_engine as ue
+
 class Tick:
     def __init__(self, nticks=100, tick_interval=2, ticks_rate=1.0/8.0):
         # Number of ticks to execute before calling the final hooks
@@ -70,7 +72,11 @@ class Tick:
     def run_hooks(self, level):
         """Run all the registerd at a given ticking level"""
         for hook in self.hooks[level]:
-            hook()
+            try:
+                hook()
+            except Exception as err:
+                ue.log('error in tick {}, hook {}: {}'
+                       .format(self.get_counter(), hook.__name__, err))
 
     def tick(self, dt):
         """This function must be called at each game loop by the engine

@@ -42,9 +42,12 @@ class BaseActor(object):
         mesh.set_material(0, ue.load_object(Material, self.params['material']))
 
         # setup position
-        actor.set_actor_location(self.params['location'])
-        actor.set_actor_rotation(self.params['rotation'])
-        actor.set_actor_scale(self.params['scale'])
+        if 'location' in self.params:
+            actor.set_actor_location(self.params['location'])
+        if 'rotation' in self.params:
+            actor.set_actor_rotation(self.params['rotation'])
+        if 'scale' in self.params:
+            actor.set_actor_scale(self.params['scale'])
 
 
     def manage_overlap(self, me, other):

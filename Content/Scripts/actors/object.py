@@ -11,20 +11,29 @@ in the world and a force vector can be applied to it.
 # import numpy as np
 import unreal_engine as ue
 
-from unreal_engine import FVector
+from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 
-from abstract_actor import BaseActor
+from actors.abstract_actor import BaseActor
+from materials import load_materials, get_random_material
 
 
 class Object(BaseActor):
-    object_materials = ue.get_assets('/Game/Materials/Actor')
+    object_materials = load_materials('Materials/Actor')
 
-    def __init__(self, params):
-        super(Object, self).__init__(params)
-        self.params['mass'] = 1.0
-        self.params['force'] = FVector(-1e2, 0.0, 0.0)
+    def __init__(self):
+        super(Object, self).__init__()
+
+        self.params = {
+            'mesh': '/Game/Meshes/Sphere',
+            'material': get_random_material(self.object_materials),
+            'mass': 1.0,
+            'force': FVector(-1e2, 0.0, 0.0),
+            'location': FVector(0, -100, 0),
+            'rotation': FRotator(0, 0, 0),
+
+        }
 
     def begin_play(self):
         super(Object, self).begin_play()

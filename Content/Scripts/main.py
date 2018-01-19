@@ -146,17 +146,24 @@ class MainPythonComponant:
         floor = self.world.actor_spawn(uclass['Floor'])
 
         # # spawn an actor
-        # self.actor = self.world.actor_spawn(uclass['Object'])
+        self.actor = self.world.actor_spawn(uclass['Object'])
 
         # setup the sceenshots
-        self.screenshot = Screenshot(width, height)
-        output_dir = './screenshots'
+        self.screenshot = Screenshot(width, height, camera, [floor], [])
+        output_dir = os.path.abspath('./screenshots')
 
         # register the tick for taking screenshots
-        self.ticker = Tick()
-        self.ticker.add_hook(self.screenshot.take_screenshot, 'slow')
-        self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
-        self.ticker.add_hook(self.exit_ue, 'final')
+        # self.ticker = Tick()
+        self.ticker = Tick(nticks=5)
+
+        self.ticker.add_hook(self.screenshot.capture, 'slow')
+        # self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
+
+        # for debug
+        self.ticker.add_hook(
+            lambda: ue.log(camera), 'final')
+
+        # self.ticker.add_hook(self.exit_ue, 'final')
 
         # run the scene
         self.ticker.run()
