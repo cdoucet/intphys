@@ -1,6 +1,10 @@
 // Mathieu Bernard, Mario Ynocente Castro, Erwan Simon
 
 #include "testScreenshot.h"
+
+#include "Kismet/KismetSystemLibrary.h"
+// #include "DrawDebugHelpers.h"
+
 #include <string.h>
 #include <memory>
 #include <sstream>
@@ -12,19 +16,45 @@
 #include <fstream>
 #include <ctime>
 #include <cmath>
-#include "DrawDebugHelpers.h"
 
-static FSceneView* GetSceneView(
-    APlayerController* PlayerController,
-    UWorld* World)
+
+
+bool IsEngineViewport()
 {
-    if (GEngine == NULL || GEngine->GameViewport == NULL || GEngine->GameViewport->Viewport == NULL)
+    if(GEngine == NULL)
     {
-        UE_LOG(LogTemp, Warning, TEXT("Viewport creation problem"));
+        UE_LOG(LogTemp, Error, TEXT("GEngine null"));
+        return false;
+    }
+
+    if(GEngine->GameViewport == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("GameViewport null"));
+        return false;
+    }
+
+    if(GEngine->GameViewport->Viewport == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Viewport null"));
+        return false;
+    }
+
+    return true;
+}
+
+
+
+// Looks up the player's SceneView object modeled after
+// APlayerController::GetHitResultAtScreenPosition. From UETorch
+static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* World)
+{
+    if (not IsEngineViewport())
+    {
         return NULL;
     }
 
     auto Viewport = GEngine->GameViewport->Viewport;
+
     // Create a view family for the game viewport
     FSceneViewFamilyContext ViewFamily(
         FSceneViewFamily::ConstructionValues(
@@ -47,6 +77,60 @@ static FSceneView* GetSceneView(
     return SceneView;
 }
 
+// // Looks up common UE objects necessary for capturing segmentation, etc.
+// // From UETorch
+// bool InitCapture(
+//     UObject* _this,
+//     const FIntSize& size,
+//     FViewport** pViewport,
+//     APlayerController** pPlayerController,
+//     UWorld** pWorld,
+//     FSceneView** pSceneView)
+// {
+//     FlushRenderingCommands();
+
+//     if(GEngine == NULL){
+//         printf("GEngine null\n");
+//         return false;
+//     }
+//     if(GEngine->GameViewport == NULL){
+//         printf("GameViewport null\n");
+//         return false;
+//     }
+//     if(GEngine->GameViewport->Viewport == NULL){
+//         printf("Viewport null\n");
+//         return false;
+//     }
+
+//     *pViewport = GEngine->GameViewport->Viewport;
+
+//     if (size.X != (*pViewport)->GetSizeXY().X || size.Y != (*pViewport)->GetSizeXY().Y) {
+//         printf("Wrong size\n");
+//         return false;
+//     }
+
+//     *pPlayerController = UGameplayStatics::GetPlayerController(_this, 0);
+//     if(*pPlayerController == NULL) {
+//         printf("PlayerController null\n");
+//         return false;
+//     }
+
+//     *pWorld = GEngine->GetWorldFromContextObjectChecked(_this);
+//     if(*pWorld == NULL) {
+//         printf("World null\n");
+//         return false;
+//     }
+
+//     *pSceneView = GetSceneView(*pPlayerController, *pWorld);
+//     if(*pSceneView == NULL) {
+//         printf("SceneView null\n");
+//         return false;
+//     }
+
+//     return true;
+// }
+
+
 static void FSceneView__SafeDeprojectFVector2D(
     const FSceneView* SceneView,
     const FVector2D& ScreenPos,
@@ -62,19 +146,51 @@ static void FSceneView__SafeDeprojectFVector2D(
         WorldOrigin, WorldDirection);
 }
 
-TArray<int> UtestScreenshot::CaptureDepth(
+
+bool UtestScreenshot::JustARay(UWorld* World, const FVector& From, const FVector& To)
+{
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+    FHitResult HitResult;
+    bool bHit = World->LineTraceSingleByChannel(
+        HitResult, From, To,
+        ECollisionChannel::ECC_Visibility,
+        CollisionQueryParams);
+
+    if (bHit)
+    {
+        const auto &HitLoc = HitResult.Location;
+        UE_LOG(LogTemp, Warning, TEXT("Collision at %f %f %f"), HitLoc.X, HitLoc.Y, HitLoc.Z);
+    }
+
+    return bHit;
+}
+
+TArray<float> UtestScreenshot::CaptureDepth(
     const FIntSize& size,
     int stride,
     AActor* origin,
     const TArray<AActor*>& objects,
     const TArray<AActor*>& ignoredObjects)
 {
-    TArray<int>		Result;
-    UWorld*		World = NULL;
-    FSceneView*		SceneView = NULL;
-    FVector		PlayerLoc, PlayerF, WorldOrigin, WorldDirection;
-    FHitResult		HitResult;
-    FCollisionQueryParams	*CollisionQueryParams = NULL;
+
+    // TODO DEBUG
+    // stride = 144;
+
+
+    FViewport*          Viewport = nullptr;
+    APlayerController*  PlayerController = nullptr;
+    UWorld*             World = nullptr;
+    FSceneView*         SceneView = nullptr;
+    TArray<float>         Result;
+
+    // bool bOk = InitCapture(_this, size, &Viewport, &PlayerController, &World, &SceneView);
+    // if(!bOk) {
+    //     UE_LOG(LogTemp, Error, TEXT("Failed to init capture"));
+    //     return Result;
+    // }
+
+    FVector                     PlayerLoc, PlayerF;  //, WorldOrigin, WorldDirection;
+    FHitResult                  HitResult;
     bool			DidItWork = false;
 
     if (origin == NULL || (World = origin->GetWorld()) == NULL ||
@@ -83,78 +199,89 @@ TArray<int> UtestScreenshot::CaptureDepth(
         UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView or World are null"));
         return Result;
     }
-    // UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView and World setup"));
+
     PlayerLoc = origin->GetActorLocation();
-    UE_LOG(LogTemp, Log, TEXT("Camera location is %f, %f, %f"),
-           PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z)
+    UE_LOG(LogTemp, Log,
+           TEXT("Camera location is %f, %f, %f. Viewport size is %dx%d. Stride is %d."),
+           PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z, size.X, size.Y, stride);
 
     PlayerF = FRotationMatrix(origin->GetActorRotation()).GetScaledAxis(EAxis::X);
     PlayerF.Normalize();
 
-    if ((CollisionQueryParams = new FCollisionQueryParams("ClickableTrace", false)) == NULL)
-    {
-        UE_LOG(LogTemp, Warning, TEXT("CollisionQueryParams is null"));
-        return Result;
-    }
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
     for (auto& i : ignoredObjects)
-        CollisionQueryParams->AddIgnoredActor(i);
+        CollisionQueryParams.AddIgnoredActor(i);
 
-    for (float y = 0; y < size.Y; y += stride)
+    for (int y = 0; y < size.Y; y += stride)
     {
-        for (float x = 0; x < size.X; x += stride)
+        for (int x = 0; x < size.X; x += stride)
 	{
+            FVector2D ScreenPosition(x, y);
+            FVector WorldOrigin, WorldDirection;
             FSceneView__SafeDeprojectFVector2D(
-                SceneView, FVector2D(x, y),
-                WorldOrigin, WorldDirection);
+                SceneView,
+                ScreenPosition,
+                WorldOrigin,
+                WorldDirection);
 
-            // DrawDebugLine( // draw a line
-            // 		World,
-            // 		WorldOrigin, // from here
-            // 		WorldOrigin + WorldDirection, // to here
-            // 		FColor(255,0,0),
-            // 		true, -1, 0,
-            // 		12.333
-            // 		);
+            // UE_LOG(LogTemp, Log, TEXT("%f %f %f %f %f %f"),
+            //        WorldOrigin.X, WorldOrigin.Y, WorldOrigin.Z,
+            //        WorldDirection.X, WorldDirection.Y, WorldDirection.Z);
 
-            if (World->LineTraceSingleByChannel(
-                    HitResult, WorldOrigin,
-                    WorldOrigin + WorldDirection * 1000000.f,
-                    ECollisionChannel::ECC_Visibility,
-                    *CollisionQueryParams))
+            bool bHit = World->LineTraceSingleByChannel(
+                HitResult,
+                WorldOrigin,
+                WorldOrigin + WorldDirection * 1000000.f,
+                ECollisionChannel::ECC_Visibility,
+                CollisionQueryParams);
+
+            if (bHit)
             {
-                const auto &HitLoc = HitResult.Location;
+                const FVector &HitLoc = HitResult.Location;
+                const FString HitActorName = HitResult.GetActor()->GetName();
 
-                // distance between camera and actor (irrelevant because
-                // not bind to each different pixel)
-                double distance = sqrt(
-                    pow(PlayerLoc.X - HitLoc.X, 2) +
-                    pow(PlayerLoc.Y - HitLoc.Y, 2) +
-                    pow(PlayerLoc.Z - HitLoc.Z, 2));
+                FVector HitLocRel = HitLoc - PlayerLoc;
+                float DistToHit = FVector::DotProduct(HitLoc - PlayerLoc, PlayerF);
+                UE_LOG(LogTemp, Warning, TEXT("actor: %s, distance: %f"), *HitActorName, DistToHit);
+                Result.Add(DistToHit);
 
-                double dotProduct = FVector::DotProduct(HitLoc, PlayerF);
+                // // UE_LOG(LogTemp, Warning, TEXT("Collision\n"));
+                // const auto &HitLoc = HitResult.Location;
 
-                // UE_LOG(LogTemp, Log, TEXT("dotproduct: %f"), dotProduct);
-                // UE_LOG(LogTemp, Log, TEXT("distance: %f"), distance);
-                for (int i = 0; i != 3; i += 1)
-                    // the formula make the dotProduct be between 0 and
-                    // 254 (base value being between -1 and 1)
-                    Result.Add((FVector::DotProduct(HitLoc - PlayerLoc, PlayerF) + 1) * 127);
-                //Result.Add(dotProduct);
+                // // // distance between camera and actor (irrelevant because
+                // // // not bind to each different pixel)
+                // // double distance = sqrt(
+                // //     pow(PlayerLoc.X - HitLoc.X, 2) +
+                // //     pow(PlayerLoc.Y - HitLoc.Y, 2) +
+                // //     pow(PlayerLoc.Z - HitLoc.Z, 2));
+
+                // // double dotProduct = FVector::DotProduct(HitLoc, PlayerF);
+
+                // // UE_LOG(LogTemp, Log, TEXT("dotproduct: %f"), dotProduct);
+                // // UE_LOG(LogTemp, Log, TEXT("distance: %f"), distance);
+                // // for (int i = 0; i != 3; i += 1)
+                //     // the formula make the dotProduct be between 0 and
+                //     // 254 (base value being between -1 and 1)
+                // Result.Add((FVector::DotProduct(HitLoc - PlayerLoc, PlayerF) + 1) * 127);
+                // //Result.Add(dotProduct);
+
                 DidItWork = true;
             }
             else
-                for (int i = 0; i != 3; i += 1)
-                    Result.Add(0);
+            {
+                Result.Add(0);
+            }
             // UE_LOG(LogTemp, Log, TEXT("\nWorldOrigin:%f/%f/%f\nWorldDirection:%f/%f/%f"),
             //        WorldOrigin.X, WorldOrigin.Y, WorldOrigin.Z,
             //        WorldDirection.X, WorldDirection.Y, WorldDirection.Z);
-	}
+        }
     }
 
-    //UE_LOG(LogTemp, Log, TEXT("number of pixels : %d"), Result.Num() / 3);
-
     if (DidItWork == false)
-        Result.Empty();
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Depth capture empty"));
+        // Result.Empty();
+    }
 
     return (Result);
 }

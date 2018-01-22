@@ -136,6 +136,9 @@ class MainPythonComponant:
         camera = self.world.actor_spawn(uclass['Camera'])
         self.init_viewport(camera)
 
+        camera_pos = camera.get_actor_location()
+        ue.log('camera position is {}'.format(camera_pos))
+
         # init the configuration
         # config = self.init_configuration()
         # scenes = [{'block': 'block_O1.train', 'path': '/tmp/train/01_block_O1_train', 'type': -1, 'id': 1}]
@@ -145,7 +148,7 @@ class MainPythonComponant:
         # spawn the floor
         floor = self.world.actor_spawn(uclass['Floor'])
 
-        # # spawn an actor
+        # spawn an actor
         self.actor = self.world.actor_spawn(uclass['Object'])
 
         # setup the sceenshots
@@ -154,16 +157,10 @@ class MainPythonComponant:
 
         # register the tick for taking screenshots
         # self.ticker = Tick()
-        self.ticker = Tick(nticks=5)
-
+        self.ticker = Tick(nticks=1)
         self.ticker.add_hook(self.screenshot.capture, 'slow')
-        # self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
-
-        # for debug
-        self.ticker.add_hook(
-            lambda: ue.log(camera), 'final')
-
-        # self.ticker.add_hook(self.exit_ue, 'final')
+        self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
+        self.ticker.add_hook(self.exit_ue, 'final')
 
         # run the scene
         self.ticker.run()

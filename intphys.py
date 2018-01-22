@@ -106,7 +106,14 @@ class LogInhibitUnrealFilter(logging.Filter):
     """
     def filter(self, record):
         msg = record.getMessage()
-        return 'LogPython' in msg or 'Error' in msg
+
+        # filter out empty messages
+        if not msg.strip():
+            return False
+
+        # keep only messages with Error, logPython and LogTemp
+        return 'LogPython' in msg or 'Error' in msg or (
+            'LogTemp' in msg and 'Display: Loaded TP' not in msg)
 
 def GetLogger(verbose=False, name=None):
     """Returns a logger configured to filter Unreal log messages

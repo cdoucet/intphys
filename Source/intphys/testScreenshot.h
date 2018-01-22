@@ -38,7 +38,6 @@ class INTPHYS_API UtestScreenshot : public UBlueprintFunctionLibrary
 
 private:
 
-
 public:
 
   // UFUNCTION(BlueprintCallable, Category="IntPhys")
@@ -49,8 +48,10 @@ public:
   //     TArray<FColor>& depth_data, TArray<FColor>& mask_data);
 
   UFUNCTION(BlueprintCallable, Category="InyPhys")
-  static TArray<int> CaptureDepth(
-      const FIntSize& size, int stride, AActor* origin,
+  static TArray<float> CaptureDepth(
+      const FIntSize& size,
+      int stride,
+      AActor* origin,
       const TArray<AActor*>& objects,
       const TArray<AActor*>& ignoredObjects);
 
@@ -63,6 +64,9 @@ public:
   UFUNCTION(BlueprintCallable, Category="IntPhys")
   static TArray<int> CaptureScreenshot(
       const FIntSize& size);
+
+  UFUNCTION(BlueprintCallable, Category="IntPhys")
+  static bool JustARay(UWorld* World, const FVector& From, const FVector& To);
 
   // UFUNCTION(BlueprintCallable, Category="IntPhys")
   // static bool DoTheWholeStuff(

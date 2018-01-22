@@ -6,7 +6,7 @@ import png
 import unreal_engine as ue
 from unreal_engine.classes import testScreenshot
 from unreal_engine.structs import IntSize
-from unreal_engine import FColor
+from unreal_engine import FColor, FVector
 
 
 class Screenshot:
@@ -28,6 +28,11 @@ class Screenshot:
         # self.images['scene'].append(self._capture_scene())
         self.images['depth'].append(self._capture_depth())
         # # self.images['masks'].append(self._capture_masks())
+
+    def test(self):
+        testScreenshot.JustARay(
+            self.camera.get_world(),
+            FVector(0, 0, 100), FVector(0, 0, -100))
 
     def save(self, path):
         """Save the captured images as PNG in `path`"""
