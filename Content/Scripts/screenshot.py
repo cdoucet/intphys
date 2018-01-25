@@ -25,14 +25,25 @@ class Screenshot:
 
     def capture(self):
         """Takes scene, masks and depth screenshots of the scene"""
+        self._capture_location()
         # self.images['scene'].append(self._capture_scene())
-        self.images['depth'].append(self._capture_depth())
-        # # self.images['masks'].append(self._capture_masks())
+        # self.images['depth'].append(self._capture_depth())
+        # self.images['masks'].append(self._capture_masks())
 
-    def test(self):
-        testScreenshot.JustARay(
-            self.camera.get_world(),
-            FVector(0, 0, 100), FVector(0, 0, -100))
+    # def just_a_ray(self):
+    #     world = self.camera.get_world()
+    #     location_from = FVector(0, 0, 100),
+    #     location_to = FVector(0, 0, -100)
+    #     # collision_query = FCollisionQueryParams('clickableTrace', False)
+    #     world.call_function(
+    #         'LineTraceSingleByChannel',
+    #         location_from, location_to,
+    #         ECollisionChannel.ECC_Visibility)# ,
+    #         # collision_query)
+
+        # testScreenshot.JustARay(
+        #     self.camera.get_world(),
+        #     FVector(0, 0, 100), FVector(0, 0, -100))
 
     def save(self, path):
         """Save the captured images as PNG in `path`"""
@@ -61,7 +72,7 @@ class Screenshot:
             self._save_png(image, os.path.join(
                 path, '{}_{}.png'.format(name, n)), format)
 
-    def _check_image(self, image, format):
+    def _valid_image(self, image, format):
         """Return True if the image has the expected size
 
         The image `format` must be 'RGB' or 'grayscale'.
@@ -69,7 +80,7 @@ class Screenshot:
         """
         if len(image) == 0:
             ue.log_error("screenshot: empty image")
-            return False
+            return []
 
         expected_size = self.size.X * self.size.Y
         if format == 'RGB':
@@ -79,28 +90,26 @@ class Screenshot:
             ue.log_error(
                 "screenshot: bad image size {} (must be {})"
                 .format(len(image), expected_size))
-            return False
+            return []
 
-        return True
+        return image
+
+    def _capture_location(self):
+        image = []
+        image = testScreenshot.CaptureHitLocation(self.size, 1, self.camera)
+        ue.log('pixel 0: {}'.format(image[0]))
+        return []
 
     def _capture_scene(self):
         image = []
         image = testScreenshot.CaptureScreenshot(self.size)
-
-        if self._check_image(image, 'RGB'):
-            return image
-        else:
-            return []
+        return self._valid_image(image, 'RGB')
 
     def _capture_depth(self):
         image = []
         image = testScreenshot.CaptureDepth(
             self.size, 1, self.camera, self.objects, self.ignored_objects)
-
-        if self._check_image(image, 'grayscale'):
-            return image
-        else:
-            return []
+        return self._valid_image(image, 'grayscale')
 
     def _get_pixel(self, image, x, y, mode):
         """Return the pixel (x, y) from the image"""

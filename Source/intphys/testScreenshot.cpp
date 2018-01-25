@@ -165,6 +165,85 @@ bool UtestScreenshot::JustARay(UWorld* World, const FVector& From, const FVector
     return bHit;
 }
 
+
+TArray<FVector> UtestScreenshot::CaptureHitLocation(const FIntSize& size, int stride, AActor* origin)
+{
+    FViewport*          Viewport = nullptr;
+    APlayerController*  PlayerController = nullptr;
+    UWorld*             World = nullptr;
+    FSceneView*         SceneView = nullptr;
+    TArray<FVector>         Result;
+
+    FVector             PlayerLoc, PlayerF;  //, WorldOrigin, WorldDirection;
+    FHitResult          HitResult;
+    bool		DidItWork = false;
+
+    if (origin == NULL || (World = origin->GetWorld()) == NULL ||
+        (SceneView = GetSceneView(UGameplayStatics::GetPlayerController(origin, 0), World)) == NULL)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Origin, SceneView or World are null"));
+        return Result;
+    }
+
+    PlayerLoc = origin->GetActorLocation();
+    UE_LOG(LogTemp, Log,
+           TEXT("Camera location is %f, %f, %f. Viewport size is %dx%d. Stride is %d."),
+           PlayerLoc.X, PlayerLoc.Y, PlayerLoc.Z, size.X, size.Y, stride);
+
+    PlayerF = FRotationMatrix(origin->GetActorRotation()).GetScaledAxis(EAxis::X);
+    PlayerF.Normalize();
+
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+
+    bool log_done = false;
+    for (int y = 0; y < size.Y; y += stride)
+    {
+        for (int x = 0; x < size.X; x += stride)
+	{
+            FVector2D ScreenPosition(x, y);
+            FVector WorldOrigin, WorldDirection;
+            FSceneView__SafeDeprojectFVector2D(
+                SceneView,
+                ScreenPosition,
+                WorldOrigin,
+                WorldDirection);
+
+            if(not log_done)
+            {
+                UE_LOG(LogTemp, Log, TEXT("%f %f %f %f %f %f"),
+                       WorldOrigin.X, WorldOrigin.Y, WorldOrigin.Z,
+                       WorldDirection.X, WorldDirection.Y, WorldDirection.Z);
+                log_done = true;
+            }
+
+            bool bHit = World->LineTraceSingleByChannel(
+                HitResult,
+                WorldOrigin,
+                WorldOrigin + WorldDirection * 1000000.f,
+                ECollisionChannel::ECC_Visibility,
+                CollisionQueryParams);
+
+            if (bHit)
+            {
+                Result.Add(HitResult.Location);
+                DidItWork = true;
+            }
+            else
+            {
+                Result.Add(FVector());
+            }
+        }
+    }
+
+    if (DidItWork == false)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("No object hit"));
+    }
+
+    return Result;
+}
+
+
 TArray<float> UtestScreenshot::CaptureDepth(
     const FIntSize& size,
     int stride,
@@ -172,11 +251,6 @@ TArray<float> UtestScreenshot::CaptureDepth(
     const TArray<AActor*>& objects,
     const TArray<AActor*>& ignoredObjects)
 {
-
-    // TODO DEBUG
-    // stride = 144;
-
-
     FViewport*          Viewport = nullptr;
     APlayerController*  PlayerController = nullptr;
     UWorld*             World = nullptr;

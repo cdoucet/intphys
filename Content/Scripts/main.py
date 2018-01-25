@@ -158,6 +158,7 @@ class MainPythonComponant:
         # register the tick for taking screenshots
         # self.ticker = Tick()
         self.ticker = Tick(nticks=1)
+
         self.ticker.add_hook(self.screenshot.capture, 'slow')
         self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
         self.ticker.add_hook(self.exit_ue, 'final')

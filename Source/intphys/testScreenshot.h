@@ -55,6 +55,12 @@ public:
       const TArray<AActor*>& objects,
       const TArray<AActor*>& ignoredObjects);
 
+  UFUNCTION(BlueprintCallable, Category="InyPhys")
+  static TArray<FVector> CaptureHitLocation(
+      const FIntSize& size,
+      int stride,
+      AActor* origin);
+
   // UFUNCTION(BlueprintCallable, Category="IntPhys")
   // static TArray<int> CaptureMask(
   //     const FIntSize& size, int stride, AActor* origin,
