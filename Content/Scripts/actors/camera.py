@@ -4,60 +4,65 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
+from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from baseActor import BaseActor
 
 class Camera(BaseActor):
-    def __init__(self, rotation = None, location = None):
+    def __init__(self, world = None, rotation = None, location = None):
         self.field_of_view = 90
         self.aspect_ratio = 1
         self.projection_mode = ECameraProjectionMode.Perspective
         if (rotation == None or location == None):
             location, rotation = self.get_test_parameters()
-        BaseActor.__init__(self, location, rotation)
+        self.set_actor(None)
+        if (world != None):
+            self.set_actor(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            self.set_location(location)
+            self.set_rotation(rotation)
+            """Attach the viewport to the camera
+            This initialization was present in the intphys-1.0 blueprint
+            but seems to be useless in UE-4.17. This is maybe done by
+            default.
+            """
+            player_controller = GameplayStatics.GetPlayerController(world, 0)
+            player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
+        BaseActor.__init__(self, self.actor, location, rotation)
 
     @staticmethod
     def get_train_parameters():
         """Returns random coordinates for train scenes
-
         In train scenes, camera has a high variability. Only the roll
         is forced to 0.
-
         """
         location = FVector(
             random.uniform(-100, 100),
             random.uniform(200, 400),
             100 + random.uniform(-30, 80))
-
         rotation = FRotator(
             0,
             random.uniform(-15, 10),
             random.uniform(-30, 30))
-
         return location, rotation
 
     @staticmethod
     def get_test_parameters():
         """Returns random coordinates for test scenes
-
         In test scenes, the camera has a constrained location, with
         little variations along the y axis and pitch.
-
         """
         location = FVector(
             0,
             -100 * random.random(),
             150)
-
         rotation = FRotator(
             0,
             -10 * random.random(),
             0)
-
         return location, rotation
 
     def begin_play(self):
         # retrieve the camera object from its Python component
-        self.actor = self.uobject.get_owner()
+        self.set_actor(self.uobject.get_owner())
 
         # OnActorBeginOverlap events are redirected to the
         # manage_overlap method
@@ -80,11 +85,10 @@ class Camera(BaseActor):
         message = 'Camera overlapping {}'.format(other.get_name())
         ue.log_error(message)
 
-    def get_status(self):
-        """Returns the camera coordinates as a string"""
-        location = self.uobject.get_actor_location()
-        rotation = self.uobject.get_actor_rotation()
-
-        return ' '.join(
-            location.x, location.y, location.z,
-            rotation.pitch, rotation.yaw, rotation.roll)
+    #def get_status(self):
+    #    """Returns the camera coordinates as a string"""
+    #    location = self.uobject.get_actor_location()
+    #    rotation = self.uobject.get_actor_rotation()
+    #    return ' '.join(
+    #        location.x, location.y, location.z,
+    #        rotation.pitch, rotation.yaw, rotation.roll)

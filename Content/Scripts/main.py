@@ -9,6 +9,7 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 
 from object import Object
+from camera import Camera
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -79,11 +80,9 @@ class Main:
 
     def init_viewport(self, camera):
         """Attach the viewport to the camera
-
         This initialization was present in the intphys-1.0 blueprint
         but seems to be useless in UE-4.17. This is maybe done by
         default.
-
         """
         player_controller = GameplayStatics.GetPlayerController(self.world, 0)
         player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
@@ -106,8 +105,9 @@ class Main:
         self.init_resolution()
 
         # spawn the camera and attach the viewport to it
-        camera = self.world.actor_spawn(uclass['Camera'])
-        self.init_viewport(camera)
+        # camera = self.world.actor_spawn(uclass['Camera'])
+        camera = Camera()
+        self.init_viewport(camera.get_actor())
 
         # spawn an actor
         # self.actor = self.world.actor_spawn(uclass['Object'], FVector(0, 0, 0), FRotator(0, 0, 0))

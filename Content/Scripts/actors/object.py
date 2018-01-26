@@ -19,35 +19,29 @@ from baseActor import BaseActor
 
 class Object(BaseActor):
     def __init__(self, world = None, location = FVector(0, 0, 0), rotation = FRotator(0, 0, 0)):
-        BaseActor.__init__(self, location, rotation)
         self.mesh = '/Engine/EngineMeshes/Sphere.Sphere'
         self.material = None
         self.scale = FVector(1, 1, 1)
         self.mass = 1.0
         self.force = FVector(-1e2, 0.0, 0.0)
+        self.set_actor(None)
         if (world != None):
-            self.actor = world.actor_spawn(ue.load_class('/Game/Object.Object_C'))
+            self.set_actor(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
             # self.amIComponentb = False
             self.set_location(location)
             self.set_rotation(rotation)
+            
+        BaseActor.__init__(self, self.actor, location, rotation)
         #else:
         #    self.amIComponentb = True
-        
     
-    def get_actor(self):
-        #"""retrieve the actor from its Python component"""
-        #if (self.amIComponent == True):
-        #    return self.uobject.get_owner()
-        return self.actor
-
     def get_mesh(self):
         """retrieve the StaticMeshComponent of the actor"""
         return self.get_actor().get_actor_component_by_type(
             ue.find_class('StaticMeshComponent'))
 
-
     def begin_play(self):
-        self.actor = self.uobject.get_owner()
+        self.set_actor(self.uobject.get_owner())
         mesh = self.get_mesh()
         ue.log('begin play {}'.format(self.actor.get_name()))
 
