@@ -110,4 +110,5 @@ class Main:
         self.init_viewport(camera)
 
         # spawn an actor
-        self.actor = self.world.actor_spawn(uclass['Object'])
+        # self.actor = self.world.actor_spawn(uclass['Object'], FVector(0, 0, 0), FRotator(0, 0, 0))
+        object = Object(self.world, FVector(500, 0, 0), FRotator(0, 0, 0))
