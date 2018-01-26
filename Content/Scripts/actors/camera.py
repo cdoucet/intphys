@@ -7,26 +7,32 @@ from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from baseActor import BaseActor
 
+
+# Warning : if you don't send either the location and the rotation
+# or if you send them filled with 0, during the camera instantiation, 
+# the __init__ function will change it on its own
+
 class Camera(BaseActor):
-    def __init__(self, world = None, rotation = None, location = None):
+    def __init__(self, world = None, location = FVector(0, 0, 0), rotation = FRotator(0, 0, 0)):
         self.field_of_view = 90
         self.aspect_ratio = 1
         self.projection_mode = ECameraProjectionMode.Perspective
-        if (rotation == None or location == None):
+        if (location == FVector(0, 0, 0) and rotation == FRotator(0, 0, 0)):
             location, rotation = self.get_test_parameters()
-        self.set_actor(None)
         if (world != None):
-            self.set_actor(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            BaseActor.__init__(self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
+                               location, rotation)
             self.set_location(location)
             self.set_rotation(rotation)
-            """Attach the viewport to the camera
-            This initialization was present in the intphys-1.0 blueprint
-            but seems to be useless in UE-4.17. This is maybe done by
-            default.
-            """
             player_controller = GameplayStatics.GetPlayerController(world, 0)
             player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
-        BaseActor.__init__(self, self.actor, location, rotation)
+        else:
+            BaseActor.__init__(self)
+        """Attach the viewport to the camera
+        This initialization was present in the intphys-1.0 blueprint
+        but seems to be useless in UE-4.17. This is maybe done by
+        default.
+        """
 
     @staticmethod
     def get_train_parameters():
@@ -74,21 +80,6 @@ class Camera(BaseActor):
         camera_component.SetFieldOfView(self.field_of_view)
         camera_component.SetAspectRatio(self.aspect_ratio)
         camera_component.SetProjectionMode(self.projection_mode)
-
         # place the camera at the desired coordinates
-        self.actor.set_actor_location(self.location)
-        self.actor.set_actor_rotation(self.rotation)
-
-    def manage_overlap(self, me, other):
-        """Raises a Runtime error when some actor overlaps the camera"""
-        # TODO the scene must fail here, this is a critical error
-        message = 'Camera overlapping {}'.format(other.get_name())
-        ue.log_error(message)
-
-    #def get_status(self):
-    #    """Returns the camera coordinates as a string"""
-    #    location = self.uobject.get_actor_location()
-    #    rotation = self.uobject.get_actor_rotation()
-    #    return ' '.join(
-    #        location.x, location.y, location.z,
-    #        rotation.pitch, rotation.yaw, rotation.roll)
+        #self.actor.set_actor_location(self.location)
+        #self.actor.set_actor_rotation(self.rotation)

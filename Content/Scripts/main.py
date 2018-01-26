@@ -5,8 +5,8 @@ import random
 import sys
 
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
+from unreal_engine import FVector, FRotator
 
 from object import Object
 from camera import Camera
@@ -78,20 +78,10 @@ class Main:
     #         return
     #     scene_raw = json.loads(open(scenes_file, 'r').read())
 
-    def init_viewport(self, camera):
-        """Attach the viewport to the camera
-        This initialization was present in the intphys-1.0 blueprint
-        but seems to be useless in UE-4.17. This is maybe done by
-        default.
-        """
-        player_controller = GameplayStatics.GetPlayerController(self.world, 0)
-        player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
-
     def exit_ue(self, message=None):
         """Quit the game, optionally displaying an error message"""
         if message:
             ue.log_error(message)
-
         KismetSystemLibrary.QuitGame(self.world)
 
     def begin_play(self):
@@ -106,9 +96,10 @@ class Main:
 
         # spawn the camera and attach the viewport to it
         # camera = self.world.actor_spawn(uclass['Camera'])
-        camera = Camera()
-        self.init_viewport(camera.get_actor())
+        camera = Camera(self.world, FVector(-1000, 0, 0), FRotator(0, 0, 0))
 
         # spawn an actor
         # self.actor = self.world.actor_spawn(uclass['Object'], FVector(0, 0, 0), FRotator(0, 0, 0))
-        object = Object(self.world, FVector(500, 0, 0), FRotator(0, 0, 0))
+        object = Object('/Engine/EngineMeshes/Sphere.Sphere', self.world, FVector(500, 0, 0), FRotator(0, 0, 0))
+        object2 = Object('/Engine/EngineMeshes/Sphere.Sphere', self.world, FVector(500, 300, 0), FRotator(0, 0, 0))
+
