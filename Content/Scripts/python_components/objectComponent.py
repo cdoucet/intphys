@@ -5,20 +5,6 @@ from unreal_engine.enums import ECollisionChannel
 from baseActor import BaseActor
 
 class Object(BaseActor):
-    def __init__(self, location, rotation):
-        BaseActor.__init__(self, location, rotation)
-        self.params = {
-            'mesh': '/Engine/EngineMeshes/Sphere.Sphere',
-            'material': None,
-            'location': FVector(200, 0, 0),
-            'rotation': FRotator(0, 0, 0),
-            'scale': FVector(1, 1, 1)
-        }
-
-        self.params['mass'] = 1.0
-        self.params['force'] = FVector(-1e2, 0.0, 0.0)
-
-
     def get_actor(self):
         """retrieve the actor from its Python component"""
         return self.uobject.get_owner()
@@ -42,23 +28,23 @@ class Object(BaseActor):
         actor.SetActorEnableCollision(True)
 
         # setup mesh and material
-        mesh.SetStaticMesh(ue.load_object(StaticMesh, self.params['mesh']))
-        #mesh.set_material(0, ue.load_object(Material, self.params['material']))
+        mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh))
+        #mesh.set_material(0, ue.load_object(Material, self.material))
 
         # setup position
-        actor.set_actor_location(self.params['location'])
-        actor.set_actor_rotation(self.params['rotation'])
-        actor.set_actor_scale(self.params['scale'])
+        actor.set_actor_location(self.location)
+        actor.set_actor_rotation(self.rotation)
+        actor.set_actor_scale(self.scale)
 
         self.get_mesh().SetMassScale(
             BoneName='None',
-            InMassScale=self.params['mass'] / self.get_mesh().GetMassScale())
+            InMassScale=self.mass / self.get_mesh().GetMassScale())
 
     def activate_physics(self):
         self.get_mesh().set_simulate_physics()
 
         if 'force' in self.params:
-            self.get_mesh().add_force(self.params['force'])
+            self.get_mesh().add_force(self.force)
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps this object"""
