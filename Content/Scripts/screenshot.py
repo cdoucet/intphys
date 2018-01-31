@@ -10,6 +10,22 @@ from unreal_engine import FColor, FVector
 
 
 class Screenshot:
+    """Capture screenshots of a scene and save them to disk
+
+    This class exposes two methods: capture() takes screenshots and
+    push them in memory (call it during the game ticks), and save()
+    saves the captured images to disk (call it once on final tick).
+
+    Parameters
+    ----------
+    res_x, res_y : int
+        Screen resolution in pixels
+    camera: actor
+        The camera actor from which to take screenshots
+    ignored_objects: list of actors, optional
+        A list of actors to ignore when capturing depth and mask
+
+    """
     def __init__(self, res_x, res_y, camera, ignored_objects=[]):
         # size of the captured images (in pixels)
         self.size = Vector2D()
@@ -21,7 +37,11 @@ class Screenshot:
         self.images = {'scene': [], 'depth': [], 'masks': []}
 
     def capture(self):
-        """Takes scene, masks and depth screenshots of the scene"""
+        """Takes scene, masks and depth screenshots of the scene
+
+        Push the captured images to memory.
+
+        """
         img_scene = []
         img_scene = ScreenCapture.CaptureScene()
         self.images['scene'].append(self._valid_image(img_scene))
@@ -37,6 +57,13 @@ class Screenshot:
             self._valid_image([p.Mask for p in img_depth_mask]))
 
     def save(self, path):
+        """Save the captured images in `path`
+
+        Write 'depth', 'mask' and 'depth' subdirectories in `path`, or
+        overwrite them if existing. The created images are numbered
+        and in PNG format, e.g. `path`/depth/depth_012.png.
+
+        """
         ue.log('saving {} screenshots to {}...'.format(
             sum(len(v) for v in self.images.values()), path))
 
@@ -67,9 +94,12 @@ class Screenshot:
 
         # map a unique color code to each actor in the images (sorted
         # by names, from 0 to 255)
-        offset = int(256 / len(actors))
+        offset = int(255 / len(actors))
         actor_code = {a: int((n+1)*offset) for n, a in enumerate(sorted(actors)) if a}
         actor_code[''] = 0
+
+        if len(actor_code) == 1:
+            ue.log('no masks, empty scene?')
 
         # replace the actor name by its color code
         for n, image in enumerate(masks):
@@ -84,8 +114,12 @@ class Screenshot:
     def _save_depth(self, path):
         images = self.images['depth']
 
-        # depth images quantification in [0, 255]
+        # extract global max depth (on all images)
         max_depth = max((max(image) for image in images))
+        if max_depth == 0.0:
+            ue.log('max depth is 0, empty scene?')
+
+        # depth images quantification in [0, 255]
         quantifier = 255.0 / max_depth
         for n, image in enumerate(images):
             images[n] = [int(pixel * quantifier) for pixel in image]
@@ -116,11 +150,8 @@ class Screenshot:
         if mode == 'RGB':
             pixel = image[int(y * self.size.X + x)]
             return [pixel.r, pixel.g, pixel.b]
-        elif mode == 'grayscale':
-            return image[int(y * self.size.X + x)]
         else:
-            ue.log_error(
-                'unknown mode {}, must be RGB or grayscale'.format(mode))
+            return image[int(y * self.size.X + x)]
 
     def _save_png(self, image, filename, format):
         """Save the `image` as a PNG file to `filename`"""

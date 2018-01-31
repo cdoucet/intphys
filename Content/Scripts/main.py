@@ -151,7 +151,7 @@ class MainPythonComponant:
         self.actor = self.world.actor_spawn(uclass['Object'])
 
         # setup the sceenshots
-        self.screenshot = Screenshot(width, height, camera, [floor], [])
+        self.screenshot = Screenshot(width, height, camera)
         output_dir = os.path.abspath('./screenshots')
 
         # register the tick for taking screenshots
