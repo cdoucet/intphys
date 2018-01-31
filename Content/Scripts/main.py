@@ -10,16 +10,11 @@ from unreal_engine import FVector, FRotator
 
 from object import Object
 from camera import Camera
+from floor import Floor
+from wall import Wall
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
-
-uclass = {
-    'Camera': ue.load_class('/Game/Camera.Camera_C'),
-    'Floor': ue.load_class('/Game/Floor.Floor_C'),
-    'Object': ue.load_class('/Game/Object.Object_C'),
-    'Wall': ue.load_class('/Game/Wall.Wall_C')
-}
 
 class Main:    
     def init_random_seed(self):
@@ -95,11 +90,8 @@ class Main:
         self.init_resolution()
 
         # spawn the camera and attach the viewport to it
-        # camera = self.world.actor_spawn(uclass['Camera'])
-        camera = Camera(self.world, FVector(-1000, 0, 0), FRotator(0, 0, 0))
+        camera = Camera(self.world, FVector(0, 0, 50), FRotator(0, 0, 0))
 
         # spawn an actor
-        # self.actor = self.world.actor_spawn(uclass['Object'], FVector(0, 0, 0), FRotator(0, 0, 0))
-        object = Object('/Engine/EngineMeshes/Sphere.Sphere', self.world, FVector(500, 0, 0), FRotator(0, 0, 0))
-        object2 = Object('/Engine/EngineMeshes/Sphere.Sphere', self.world, FVector(500, 300, 0), FRotator(0, 0, 0))
-
+        floor = Floor(self.world)
+        object = Object(Object.shape['Sphere'], self.world, FVector(1000, 0, 200), FRotator(0, 0, 0))

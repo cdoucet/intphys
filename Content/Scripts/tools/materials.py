@@ -6,7 +6,7 @@ import random
 import unreal_engine as ue
 from unreal_engine.classes import Material
 
-from utils import intphys_root_directory
+from tools.utils import intphys_root_directory
 
 
 def get_material_path(path):
@@ -27,7 +27,6 @@ def load_materials(path):
 
     return [get_material_path(os.path.join(materials_dir, f))
             for f in os.listdir(materials_dir) if f.endswith('.uasset')]
-
 
 def get_random_material(materials):
     """Return a random element from a list"""

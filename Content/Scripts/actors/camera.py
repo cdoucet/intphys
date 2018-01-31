@@ -7,16 +7,17 @@ from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from baseActor import BaseActor
 
-
-# Warning : if you don't send either the location and the rotation
-# or if you send them filled with 0, during the camera instantiation, 
-# the __init__ function will change it on its own
+"""
+Warning : if you don't send either the location and the rotation
+or if you send them filled with 0, during the camera instantiation, 
+the __init__ function will change it on its own
+"""
 
 class Camera(BaseActor):
-    def __init__(self, world = None, location = FVector(0, 0, 0), rotation = FRotator(0, 0, 0)):
-        self.field_of_view = 90
-        self.aspect_ratio = 1
-        self.projection_mode = ECameraProjectionMode.Perspective
+    def __init__(self, world = None, location = FVector(0, 0, 0), rotation = FRotator(0, 0, 0), field_of_view = 90, aspect_ratio = 1, projection_mode = ECameraProjectionMode.Perspective):
+        self.field_of_view = field_of_view
+        self.aspect_ratio = aspect_ratio
+        self.projection_mode = projection_mode
         if (location == FVector(0, 0, 0) and rotation == FRotator(0, 0, 0)):
             location, rotation = self.get_test_parameters()
         if (world != None):
@@ -24,15 +25,15 @@ class Camera(BaseActor):
                                location, rotation)
             self.set_location(location)
             self.set_rotation(rotation)
+            """Attach the viewport to the camera
+            This initialization was present in the intphys-1.0 blueprint
+            but seems to be useless in UE-4.17. This is maybe done by
+            default.
+            """
             player_controller = GameplayStatics.GetPlayerController(world, 0)
             player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
         else:
             BaseActor.__init__(self)
-        """Attach the viewport to the camera
-        This initialization was present in the intphys-1.0 blueprint
-        but seems to be useless in UE-4.17. This is maybe done by
-        default.
-        """
 
     @staticmethod
     def get_train_parameters():
@@ -80,6 +81,3 @@ class Camera(BaseActor):
         camera_component.SetFieldOfView(self.field_of_view)
         camera_component.SetAspectRatio(self.aspect_ratio)
         camera_component.SetProjectionMode(self.projection_mode)
-        # place the camera at the desired coordinates
-        #self.actor.set_actor_location(self.location)
-        #self.actor.set_actor_rotation(self.rotation)
