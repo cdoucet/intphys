@@ -3,6 +3,7 @@ import json
 import os
 import random
 import sys
+import math
 
 import unreal_engine as ue
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
@@ -90,8 +91,10 @@ class Main:
         self.init_resolution()
 
         # spawn the camera and attach the viewport to it
-        camera = Camera(self.world, FVector(0, 0, 50), FRotator(0, 0, 0))
+        camera = Camera(self.world, FVector(0, 0, 2000), FRotator(-90, 0, 0))
 
         # spawn an actor
-        floor = Floor(self.world)
-        object = Object(Object.shape['Sphere'], self.world, FVector(1000, 0, 200), FRotator(0, 0, 0))
+        floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
+        object = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 0), FRotator(0, 0, 0), "/Game/Materials/Object/BlackMaterial")
+        object2 = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 0), FRotator(0, 0, 0), "/Game/Materials/Object/GreenMaterial")
+        #wall = Wall(self.world, "/Game/Materials/Object/BlackMaterial")
