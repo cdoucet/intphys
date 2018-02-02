@@ -59,8 +59,6 @@ class Floor(BaseMesh):
                               FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
                               FRotator(0, 0, 0),
                               ue.load_object(Material, material),
-                              scale,
-                              1.0,
-                              FVector(0, 0, 0))
+                              scale)
         else:
             BaseMesh.__init__(self)

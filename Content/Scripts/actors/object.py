@@ -74,12 +74,33 @@ class Object(BaseMesh):
                               location,
                               rotation,
                               ue.load_object(Material, material),
-                              scale,
-                              mass,
-                              force)
-            # Enable physic on that object
+                              scale)
+            self.set_mass(mass)
+            self.set_force(force)
             self.get_mesh().set_simulate_physics()
-            self.get_mesh().add_force(self.force)
 
         else:
             BaseMesh.__init__(self)
+
+    """
+    set the mass of the mesh
+    to be honnest I don't really know what the second line do
+    """
+    def set_mass(self, mass):
+        self.mass = mass
+        self.mesh.SetMassScale(
+            BoneName='None',
+            InMassScale=self.mass / self.mesh.GetMassScale())
+            
+    def get_mass(self):
+        return self.mass
+
+    """
+    Apply force to the mesh
+    """
+    def set_force(self, force):
+        self.force = force
+        self.get_mesh().add_force(self.force)
+
+    def get_force(self):
+        return self.force

@@ -11,6 +11,6 @@ import tools.materials
 class Occluder(BaseMesh):
     def __init__(self, world = None, location = FVector(0, 0, 0), rotation(0, 0, 0), scale = FVector(1, 1, 1)):
         if (world != None):
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')), '/Game/Meshes/Floor_400x400', location, rotation, tools.materials.load_materials('Materials/Floor'), scale = scale, 1.0, FVector(0, 0.0, 0.0))
+            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')), '/Game/Meshes/Floor_400x400', location, rotation, tools.materials.load_materials('Materials/Floor'), scale = scale)
         else:
             BaseMesh.__init__(self)

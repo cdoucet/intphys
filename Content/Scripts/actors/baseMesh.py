@@ -52,14 +52,10 @@ class BaseMesh(BaseActor):
                  location = FVector(0, 0, 0),
                  rotation = FRotator(0, 0, 0),
                  material = None,
-                 scale = FVector(1, 1, 1),
-                 mass = 1.0,
-                 force = FVector(0.0, 0.0, 0.0)):
+                 scale = FVector(1, 1, 1)):
         self.mesh_str = mesh_str
         self.material = material
         self.scale = scale
-        self.mass = mass
-        self.force = force
         if (mesh_str != None):
             BaseActor.__init__(self, actor, location, rotation)
             self.set_location(location)
@@ -81,21 +77,36 @@ class BaseMesh(BaseActor):
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
         self.mesh.set_material(0, self.material)
         self.actor.set_actor_scale(self.scale)
-        # Got an error when uncommenting this
-        """
-        self.mesh.SetMassScale(
-            BoneName='None',
-            InMassScale=self.mass / self.mesh.GetMassScale())
-        """
 
-    """
-    get_mesh returns the mesh
-    """
     def get_mesh(self):
         #"""retrieve the StaticMeshComponent of the actor"""
         #return self.get_actor().get_actor_component_by_type(
         #    ue.find_class('StaticMeshComponent'))
         return self.mesh
+
+    """
+    set_mesh_str change the current mesh by another
+    """
+    def set_mesh_str(self, mesh_str):
+        self.mesh_str = mesh_str
+        self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
+    
+    def get_mesh_str(self):
+        return self.mesh_str
+
+    def set_material(self, material):
+        self.material = material
+        self.mesh.set_material(0, self.material)
+
+    def get_material(self):
+        return self.material
+
+    def set_scale(self, scale):
+        self.scale = scale
+        self.actor.set_actor_scale(self.scale)
+        
+    def get_scale(self):
+        return self.scale
 
     """
     begin_play is called when actor_spawn is called.
@@ -111,14 +122,3 @@ class BaseMesh(BaseActor):
         # setup position
         self.actor.set_actor_location(self.location)
         self.actor.set_actor_rotation(self.rotation)
-
-    """
-    activate_physics... activate the physic ?
-    Anyway the floor and the occluder don't need physics, otherwise they would fall
-    (and we don't want them to do that, do we ?)
-    """
-    def activate_physics(self):
-        self.get_mesh().set_simulate_physics()
-
-        if 'force' in self.params:
-            self.get_mesh().add_force(self.force)

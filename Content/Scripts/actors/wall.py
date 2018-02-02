@@ -33,7 +33,7 @@ Et voilà !
 """
 
 """
-Wall is the plane thing around the scene. It is a wall on the left, the front and the right (but not on the back).
+Wall is the vertical plane thing
 It inherits from BaseMesh.
 """
 
@@ -52,36 +52,41 @@ class Wall(BaseMesh):
     formula = 'the place where you want it to be' - (('size of the mesh' * 'scale') / 2
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
-
     def __init__(self, world = None,
+                 side = 'Front',
+                 scale = FVector(10, 1, 10),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
-        scale = FVector(1, 1, 1)
+        self.side = {
+            'Back': self.back,
+            'Front': self.front,
+            'Left': self.left,
+            'Right': self.right
+        }
+        self.location = FVector(0, 0, 0)
+        self.rotation = FRotator(0, 0, 0)
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
-                              '/Game/Meshes/Wall_500x500',
-                              FVector(250, -250, 0),
-                              FRotator(0, 0, 0),
+                              '/Game/Meshes/Wall_400x400',
+                              self.location,
+                              self.rotation,
                               ue.load_object(Material, material),
-                              scale,
-                              1.0,
-                              FVector(0, 0, 0))
-            """
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
-                              '/Game/Meshes/Wall_500x500',
-                              FVector(0 - (500 * scale.x) / 2, 0 - (500 * scale.y) / 2, 0),
-                              FRotator(0, 0, 0),
-                              ue.load_object(Material, material),
-                              scale,
-                              1.0,
-                              FVector(0, 0, 0))
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
-                              '/Game/Meshes/Wall_500x500',
-                              FVector(0 - (500 * scale.x) / 2, 0 + (500 * scale.y), 0),
-                              FRotator(0, 0, 0),
-                              ue.load_object(Material, material),
-                              scale,
-                              1.0,
-                              FVector(0, 0, 0))
-            """
+                              scale)
+            self.side[side]()
         else:
             BaseMesh.__init__(self)
+
+    def front(self):
+        self.set_location(FVector(2000, -2000, 0))
+        self.set_rotation(FRotator(0, 0, 90))
+
+    def back(self):
+        self.set_location(FVector(-2000, -2000, 0))
+        self.set_rotation(FRotator(0, 0, 90))
+
+    def left(self):
+        self.set_location(FVector(-2000, -2000, 0))
+        self.set_rotation(FRotator(0, 0, 0))
+
+    def right(self):
+        self.set_location(FVector(-2000, 2000, 0))
+        self.set_rotation(FRotator(0, 0, 0))
