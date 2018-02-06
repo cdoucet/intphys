@@ -63,8 +63,8 @@ class Object(BaseMesh):
                  mesh_str = shape['Sphere'],
                  location = FVector(0, 0, 0),
                  rotation = FRotator(0, 0, 0),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  scale = FVector(1, 1, 1),
+                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  mass = 1.0,
                  force = FVector(0.0, 0.0, 0.0)):
         if (world != None):

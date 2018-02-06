@@ -13,6 +13,7 @@ from object import Object
 from camera import Camera
 from floor import Floor
 from wall import Wall
+from occluder import Occluder
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -92,15 +93,16 @@ class Main:
 
         # spawn the camera and attach the viewport to it
         #from_above = Camera(self.world, FVector(0, 0, 2500), FRotator(-90, 0, 0))
-        front = Camera(self.world, FVector(-1500, 0, 100), FRotator(0, 0, 0))
+        #front = Camera(self.world, FVector(-1500, 0, 100), FRotator(0, 0, 0))
         #back = Camera(self.world, FVector(1500, 0, 100), FRotator(0, 0, 180))
         #left = Camera(self.world, FVector(-1500, -1500, 100), FRotator(0, 0, 90))
         #right = Camera(self.world, FVector(1500, 1500, 100), FRotator(0, 0, 270))
-
+        perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
         # spawn an actor
-        floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
-        #object = Object(self.world, Object.shape['Sphere'], FVector(300, 0, 150), FRotator(0, 0, 0), "/Game/Materials/Object/BlackMaterial")
-        object2 = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 150), FRotator(0, 0, 0), "/Game/Materials/Object/GreenMaterial")
+        floor1 = Floor(self.world, FVector(10, 10, 1), "/Game/Materials/Floor/M_Ground_Gravel")
+        object = Object(self.world, Object.shape['Cube'], FVector(0, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial")
+        #object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
         wall_front = Wall(self.world, 'Front', FVector(10, 1, 5))
         wall_left = Wall(self.world, 'Left', FVector(10, 1, 5))
         wall_right = Wall(self.world, 'Right', FVector(10, 1, 5))
+        occluder = Occluder(self.world, FVector(1000, 0, 150), FRotator(0, 0, 0), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")

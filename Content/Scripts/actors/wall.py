@@ -6,8 +6,6 @@ from unreal_engine.enums import ECollisionChannel
 from baseMesh import BaseMesh
 import tools.materials
 
-# TODO : find the correct mesh, actor, materials,...
-
 """
 Ok here we go:
 This is a recursive instantiate class.
@@ -62,31 +60,30 @@ class Wall(BaseMesh):
             'Left': self.left,
             'Right': self.right
         }
-        self.location = FVector(0, 0, 0)
-        self.rotation = FRotator(0, 0, 0)
         if (world != None):
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
+            self.side[side]()            
+            BaseMesh.__init__(self,
+                              world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
                               '/Game/Meshes/Wall_400x400',
                               self.location,
                               self.rotation,
                               ue.load_object(Material, material),
                               scale)
-            self.side[side]()
         else:
             BaseMesh.__init__(self)
 
     def front(self):
-        self.set_location(FVector(2000, -2000, 0))
-        self.set_rotation(FRotator(0, 0, 90))
+        self.location = FVector(2000, -2000, 0)
+        self.rotation = FRotator(0, 0, 90)
 
     def back(self):
-        self.set_location(FVector(-2000, -2000, 0))
-        self.set_rotation(FRotator(0, 0, 90))
+        self.location = FVector(-2000, -2000, 0)
+        self.rotation = FRotator(0, 0, 90)
 
     def left(self):
-        self.set_location(FVector(-2000, -2000, 0))
-        self.set_rotation(FRotator(0, 0, 0))
+        self.location = FVector(-2000, -2000, 0)
+        self.rotation = FRotator(0, 0, 0)
 
     def right(self):
-        self.set_location(FVector(-2000, 2000, 0))
-        self.set_rotation(FRotator(0, 0, 0))
+        self.location = FVector(-2000, 2000, 0)
+        self.rotation = FRotator(0, 0, 0)

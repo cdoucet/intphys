@@ -71,8 +71,6 @@ class Camera(BaseActor):
         # retrieve the camera object from its Python component
         self.set_actor(self.uobject.get_owner())
 
-        # OnActorBeginOverlap events are redirected to the
-        # manage_overlap method
         self.actor.bind_event(
             'OnActorBeginOverlap', self.manage_overlap)
 

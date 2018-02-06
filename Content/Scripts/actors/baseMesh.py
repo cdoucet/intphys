@@ -118,7 +118,3 @@ class BaseMesh(BaseActor):
 
         # manage OnActorBeginOverlap events
         self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
-
-        # setup position
-        self.actor.set_actor_location(self.location)
-        self.actor.set_actor_rotation(self.rotation)

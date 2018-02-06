@@ -51,10 +51,11 @@ class Floor(BaseMesh):
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self, world = None,
+                 scale = FVector(10, 10, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
-        scale = FVector(10, 10, 1)
         if (world != None):
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
+            BaseMesh.__init__(self,
+                              world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
                               '/Game/Meshes/Floor_400x400',
                               FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
                               FRotator(0, 0, 0),
