@@ -45,5 +45,6 @@ public:
     static TArray<FDepthAndMask> CaptureDepthAndMask(
         AActor* OriginActor,
         const FVector2D& ScreenResolution,
-        const TArray<AActor*>& IgnoredActors);
+        const TArray<AActor*>& IgnoredActors,
+        bool verbose = false);
 };

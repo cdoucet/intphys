@@ -39,12 +39,17 @@ static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* Wor
     FRotator ViewRotation;
     ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->Player);
     if (LocalPlayer == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Local Player null"));
         return NULL;
+    }
 
     FSceneView* SceneView = LocalPlayer->CalcSceneView(
         &ViewFamily,
         /*out*/ ViewLocation,
-        /*out*/ ViewRotation, Viewport);
+        /*out*/ ViewRotation,
+        Viewport);
+
     return SceneView;
 }
 
@@ -70,10 +75,12 @@ TArray<FColor> UScreenCapture::CaptureScene()
 TArray<FDepthAndMask> UScreenCapture::CaptureDepthAndMask(
     AActor* OriginActor,
     const FVector2D& ScreenResolution,
-    const TArray<AActor*>& IgnoredActors)
+    const TArray<AActor*>& IgnoredActors,
+    bool verbose)
 {
     UWorld* World = OriginActor->GetWorld();
-    FSceneView* SceneView = GetSceneView(UGameplayStatics::GetPlayerController(OriginActor, 0), World);
+    FSceneView* SceneView = GetSceneView(
+        UGameplayStatics::GetPlayerController(OriginActor, 0), World);
 
     if (World == NULL || SceneView == NULL)
     {
@@ -91,9 +98,12 @@ TArray<FDepthAndMask> UScreenCapture::CaptureDepthAndMask(
     for (auto& i : IgnoredActors)
         CollisionQueryParams.AddIgnoredActor(i);
 
-    FHitResult HitResult;
+    // the returned image
     TArray<FDepthAndMask> Image;
 
+    // for each pixel of the view, cast a ray in the scene and get the
+    // resulting hit actor and hit distance
+    FHitResult HitResult;
     for (int y = 0; y < ScreenResolution.Y; ++y)
     {
         for (int x = 0; x < ScreenResolution.X; ++x)
@@ -115,7 +125,34 @@ TArray<FDepthAndMask> UScreenCapture::CaptureDepthAndMask(
                 Image.Add(FDepthAndMask());
             }
 
+            // log a debug message with ray coordinates of the first
+            // pixel only
+            if(verbose)
+            {
+                UE_LOG(
+                    LogTemp, Log,
+                    TEXT("Capture: camera origin = (%f, %f, %f), rotation = (%f, %f, %f)"),
+                    OriginLoc.X, OriginLoc.Y, OriginLoc.Z,
+                    OriginRot.X, OriginRot.Y, OriginRot.Z);
+
+                FVector ViewLoc = SceneView->ViewLocation;
+                FRotator ViewRot = SceneView->ViewRotation;
+                UE_LOG(
+                    LogTemp, Log,
+                    TEXT("Capture: view origin = (%f, %f, %f), rotation = (%f, %f, %f)"),
+                    ViewLoc.X, ViewLoc.Y, ViewLoc.Z,
+                    ViewRot.Pitch, ViewRot.Roll, ViewRot.Yaw);
+
+                UE_LOG(
+                    LogTemp, Log,
+                    TEXT("Capture: ray origin = (%f, %f, %f), direction = (%f, %f, %f)"),
+                    RayOrigin.X, RayOrigin.Y, RayOrigin.Z,
+                    RayDirection.X, RayDirection.Y, RayDirection.Z);
+
+                verbose = false;
+            }
         }
     }
+
     return Image;
 }

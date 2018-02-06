@@ -151,15 +151,14 @@ class MainPythonComponant:
         self.actor = self.world.actor_spawn(uclass['Object'])
 
         # setup the sceenshots
-        self.screenshot = Screenshot(width, height, camera)
         output_dir = os.path.abspath('./screenshots')
+        self.screenshot = Screenshot(output_dir, width, height, camera)
 
         # register the tick for taking screenshots
         # self.ticker = Tick()
         self.ticker = Tick(nticks=1)
-
         self.ticker.add_hook(self.screenshot.capture, 'slow')
-        self.ticker.add_hook(lambda: self.screenshot.save(output_dir), 'final')
+        self.ticker.add_hook(self.screenshot.save, 'final')
         self.ticker.add_hook(self.exit_ue, 'final')
 
         # run the scene
