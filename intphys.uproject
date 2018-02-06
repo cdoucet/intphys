@@ -119,11 +119,11 @@
 		},
 		{
 			"Name": "OnlineSubsystemNull",
-			"Enabled": false
+			"Enabled": true
 		},
 		{
 			"Name": "OnlineSubsystemUtils",
-			"Enabled": false
+			"Enabled": true
 		},
 		{
 			"Name": "OnlineSubsystemIOS",
@@ -135,7 +135,7 @@
 		},
 		{
 			"Name": "OnlineSubsystem",
-			"Enabled": false
+			"Enabled": true
 		},
 		{
 			"Name": "SteamVR",

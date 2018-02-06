@@ -379,11 +379,17 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
         intphys_binary,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
+    # on packaged game, UnrealEnginePython expect the script to be in
+    # ../../../intphys/Content/Scripts. Here we go to a dircetory
+    # where that relative path works.
+    cwd = os.path.join(INTPHYS_ROOT, 'Package/LinuxNoEditor')
+
     if njobs == 1:
-        _Run(intphys_binary,
+        res = resolution.split('x')
+        _Run(intphys_binary + ' -windowed ResX={} ResY={}'.format(res[0], res[1]),
              GetLogger(verbose=verbose),
              scenes_file, output_dir, seed=seed, dry=dry,
-             resolution=resolution)
+             resolution=resolution, cwd=cwd)
     else:
         raise NotImplementedError('njobs option not yet implemented')
         # # split the json configuration file into balanced subparts
