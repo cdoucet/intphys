@@ -40,6 +40,8 @@ class Wall(BaseMesh):
     __init__ instantiate the class
     parameters ->
     world: UEngine world instance
+    side: the wall you wanna build compared to the floor
+    (either "Back, "Front", "Left" or "Right"). Default: "Front"
     material: material of the actor (UObject). Default value: a random one in the relevant directory
     
     You can't pass the location, direction and so on of the wall as parameter
@@ -52,7 +54,6 @@ class Wall(BaseMesh):
     """
     def __init__(self, world = None,
                  side = 'Front',
-                 scale = FVector(10, 1, 10),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
         self.side = {
             'Back': self.back,
@@ -68,22 +69,22 @@ class Wall(BaseMesh):
                               self.location,
                               self.rotation,
                               ue.load_object(Material, material),
-                              scale)
+                              FVector(10, 1, 5))
         else:
             BaseMesh.__init__(self)
 
     def front(self):
-        self.location = FVector(2000, -2000, 0)
         self.rotation = FRotator(0, 0, 90)
+        self.location = FVector(2000, -2000, 0)
 
     def back(self):
-        self.location = FVector(-2000, -2000, 0)
         self.rotation = FRotator(0, 0, 90)
+        self.location = FVector(-2000, -2000, 10)
 
     def left(self):
-        self.location = FVector(-2000, -2000, 0)
         self.rotation = FRotator(0, 0, 0)
+        self.location = FVector(-2000, -2000, 10)
 
     def right(self):
-        self.location = FVector(-2000, 2000, 0)
         self.rotation = FRotator(0, 0, 0)
+        self.location = FVector(-2000, 2000, 0)

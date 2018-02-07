@@ -48,16 +48,18 @@ class Floor(BaseMesh):
     of the location is the center of the mesh, not the corner in the left back
     formula = 'the place where you want it to be' - (('size of the mesh' * 'scale') / 2
     so by default = 0 - (400 * 10) / 2
+    the "- 10" for the yaw is because I want the reference point to be at the top side of the mesh,
+    not in the middle of it.
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self, world = None,
-                 scale = FVector(10, 10, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
+        scale = FVector(10, 10, 1)
         if (world != None):
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
                               '/Game/Meshes/Floor_400x400',
-                              FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
+                              FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0 - (10 * scale.z)),
                               FRotator(0, 0, 0),
                               ue.load_object(Material, material),
                               scale)

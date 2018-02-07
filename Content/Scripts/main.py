@@ -92,7 +92,7 @@ class Main:
         # init the rendering resolution
         self.init_resolution()
 
-        # spawn the camera and attach the viewport to it
+        # spawn the camera
         #self.from_above = Camera(self.world, FVector(0, 0, 2500), FRotator(0, -90, 0))
         #self.front = Camera(self.world, FVector(-1500, 0, 100), FRotator(0, 0, 0))
         #self.back = Camera(self.world, FVector(1500, 0, 100), FRotator(0, 0, 180))
@@ -100,13 +100,13 @@ class Main:
         #self.right = Camera(self.world, FVector(1500, 1500, 100), FRotator(0, 0, 270))
         self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
         # spawn an actor
-        self.floor1 = Floor(self.world, FVector(10, 10, 1), "/Game/Materials/Floor/M_Ground_Gravel")
-        #self.object = Object(self.world, Object.shape['Cube'], FVector(0, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial")
+        self.floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
+        self.object = Object(self.world, Object.shape['Cube'], FVector(1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial")
         #self.object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
-        self.wall_front = Wall(self.world, 'Front', FVector(10, 1, 5))
-        self.wall_left = Wall(self.world, 'Left', FVector(10, 1, 5))
-        self.wall_right = Wall(self.world, 'Right', FVector(10, 1, 5))
-        self.occluder = Occluder(self.world, FVector(1000, 0, 150), FRotator(0, 0, 90), FVector(10, 10, 10), "/Game/Materials/Object/GreenMaterial")
+        self.wall_front = Wall(self.world, 'Front')
+        self.wall_left = Wall(self.world, 'Left')
+        self.wall_right = Wall(self.world, 'Right')
+        self.occluder = Occluder(self.world, FVector(500, 0, 0), FRotator(0, 0, 90), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial")
 
         #self.ticker = Tick()
         #self.ticker.add_hook(self.screenshot.capture, 'slow')

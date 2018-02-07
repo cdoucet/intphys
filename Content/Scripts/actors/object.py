@@ -54,8 +54,8 @@ class Object(BaseMesh):
     mesh_str: the path of the mesh/shape of the actor (str). Default value: a sphere
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    material: material of the actor (UObject). Default value: a random one in the relevant directory
     scale: scale of the actor (FVector). Default value: 1, 1, 1
+    material: material of the actor (str). Default value: a random one in the relevant directory
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
@@ -84,7 +84,7 @@ class Object(BaseMesh):
 
     """
     set the mass of the mesh
-    to be honnest I don't really know what the second line do
+    to be honnest I don't really know what the second line does
     """
     def set_mass(self, mass):
         self.mass = mass
