@@ -26,7 +26,7 @@ class BaseActor():
         
     def set_rotation(self, rotation):
         self.rotation = rotation
-        print(self.actor.set_actor_rotation(self.rotation, True))
+        self.actor.set_actor_rotation(self.rotation, True)
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps this object"""

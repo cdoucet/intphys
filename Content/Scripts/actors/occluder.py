@@ -50,3 +50,29 @@ class Occluder(BaseMesh):
                               scale)
         else:
             BaseMesh.__init__(self)
+        self.moving = False
+        self.up = True
+
+    def move(self):
+        rotation = self.rotation
+        if (self.moving == False):
+            self.moving = True
+            if (self.up == False):
+                rotation.roll += 1
+            else:
+                rotation.roll -= 1
+        else:
+            if (self.up == True):
+                if (rotation.roll == 91):
+                    self.moving = False
+                    self.up = False
+                else:
+                    rotation.roll += 1
+            else:
+                if (rotation.roll == -1):
+                    self.moving = False
+                    self.up = True
+                else:
+                    rotation.roll -= 1
+        self.set_rotation(rotation)
+
