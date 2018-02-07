@@ -32,35 +32,22 @@ Et voilà !
 """
 
 """
-Floor is the plane thing which is the ground of the magic tricks.
+Occluder is the vertical plane thing that sometimes fall and sometimes get up by itself.
+Sounds weird, it is.
 It inherits from BaseMesh.
 """
 
-class Floor(BaseMesh):
-    """
-    __init__ instantiate the class
-    parameters ->
-    world: UEngine world instance
-    material: material of the actor (UObject). Default value: a random one in the relevant directory
-
-    You can't pass the location, direction and so on of the floor as parameter
-    because it is not needed, I gess
-    If you need it anyway, help yourself
-    Just for you to know, there is a formula in the location to make that the reference point
-    of the location is the center of the mesh, not the corner in the left back
-    formula = 'the place where you want it to be' - (('size of the mesh' * 'scale') / 2
-    so by default = 0 - (400 * 10) / 2
-    Disclaimer: if you change the size of the mesh, think about changing the formula
-    """
+class Occluder(BaseMesh):
     def __init__(self, world = None,
-                 scale = FVector(10, 10, 1),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
+                 location = FVector(0, 0, 0),
+                 rotation = FRotator(0, 0, 0),
+                 scale = FVector(1, 1, 1),
+                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
         if (world != None):
-            BaseMesh.__init__(self,
-                              world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
-                              '/Game/Meshes/Floor_400x400',
-                              FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
-                              FRotator(0, 0, 0),
+            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
+                              '/Game/Meshes/OccluderWall',
+                              location,
+                              rotation,
                               ue.load_object(Material, material),
                               scale)
         else:

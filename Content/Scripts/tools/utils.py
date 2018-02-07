@@ -14,13 +14,10 @@ def intphys_root_directory():
         root_dir = os.environ['INTPHYS_ROOT']
     except:
         root_dir = os.path.join(os.path.dirname(__file__), '../..')
-
     # make sure the directory is the good one
     assert os.path.isdir(root_dir)
     assert 'intphys.py' in os.listdir(root_dir)
-
     return os.path.abspath(root_dir)
-
 
 def exit_ue(world, message=None):
     """Quit the game, optionally displaying an error message

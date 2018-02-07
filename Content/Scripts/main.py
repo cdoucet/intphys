@@ -1,52 +1,26 @@
-"""Main script interacting at world level with UE
-
-This module is attached to the MainPythonComponant within the level
-blueprint in UE.
-
-"""
-
+import importlib
 import json
 import os
 import random
 import sys
+import math
 
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
+from unreal_engine import FVector, FRotator
 
-import configuration
-from screenshot import Screenshot
-from tick import Tick
+from actors.object import Object
+from actors.camera import Camera
+from actors.floor import Floor
+from actors.wall import Wall
+from actors.occluder import Occluder
+from tools.tick import Tick
+from tools.screenshot import Screenshot
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
 
-
-# ue.log('#' * 50)
-# ue.log('Beginning new game')
-# ue.log('#' * 50)
-# ue.log('Python executable: {}'.format(sys.executable))
-# ue.log('Python version: {}'.format(sys.version.replace('\n', ', ')))
-# ue.log('Python path: {}'.format(', '.join(sys.path)))
-# ue.log('#' * 50)
-
-
-# the list of blueprint classes with an attached Python component
-# (declared in the editor)
-uclass = {
-    'Camera': ue.load_class('/Game/Camera.Camera_C'),
-    'Floor': ue.load_class('/Game/Floor.Floor_C'),
-    'Object': ue.load_class('/Game/Object.Object_C'),
-    'Wall': ue.load_class('/Game/Wall.Wall_C')
-}
-
-
-class MainPythonComponant:
-    # def __init__(self):
-    #     self.world = None
-    #     self.ticker = None
-    #     self.screenshot = None
-
+class Main:
     def init_random_seed(self):
         # init random number generator with a seed
         try:
@@ -68,8 +42,7 @@ class MainPythonComponant:
 
         ue.log('set screen resolution to {}'.format(resolution))
         KismetSystemLibrary.ExecuteConsoleCommand(
-            self.uobject.get_world(),
-            'r.SetRes {}'.format(resolution))
+            self.uobject.get_world(), 'r.SetRes {}'.format(resolution))
 
     def init_configuration(self):
         try:
@@ -103,22 +76,10 @@ class MainPythonComponant:
     #         return
     #     scene_raw = json.loads(open(scenes_file, 'r').read())
 
-    def init_viewport(self, camera):
-        """Attach the viewport to the camera
-
-        This initialization was present in the intphys-1.0 blueprint
-        but seems to be useless in UE-4.17. This is maybe done by
-        default.
-
-        """
-        player_controller = GameplayStatics.GetPlayerController(self.world, 0)
-        player_controller.SetViewTargetWithBlend(NewViewTarget=camera)
-
     def exit_ue(self, message=None):
         """Quit the game, optionally displaying an error message"""
         if message:
             ue.log_error(message)
-
         KismetSystemLibrary.QuitGame(self.world)
 
     def begin_play(self):
@@ -132,11 +93,8 @@ class MainPythonComponant:
         self.init_resolution()
 
         # spawn the camera and attach the viewport to it
-        camera = self.world.actor_spawn(uclass['Camera'])
-        self.init_viewport(camera)
-
-        camera_pos = camera.get_actor_location()
-        ue.log('camera position is {}'.format(camera_pos))
+        camera = Camera(self.world, FVector(0, 0, 150), FRotator(0, -5, 0))
+        ue.log('camera position is {}'.format(camera.location))
 
         # init the configuration
         # config = self.init_configuration()
@@ -144,15 +102,28 @@ class MainPythonComponant:
         # for scene_params in scenes:
         #     scene = Scene(camera, scene_params)
 
-        # spawn the floor
-        floor = self.world.actor_spawn(uclass['Floor'])
-
         # spawn an actor
-        self.actor = self.world.actor_spawn(uclass['Object'])
+        floor = Floor(self.world, FVector(10, 10, 1), "/Game/Materials/Floor/M_Ground_Gravel")
+
+        object_1 = Object(
+            self.world, Object.shape['Cube'],
+            FVector(300, 0, 200), FRotator(0, 0, 45), FVector(1, 1, 1),
+            "/Game/Materials/Actor/M_Metal_Steel")
+
+        # #object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
+
+        # wall_front = Wall(self.world, 'Front', FVector(10, 1, 5))
+        # wall_left = Wall(self.world, 'Left', FVector(10, 1, 5))
+        # wall_right = Wall(self.world, 'Right', FVector(10, 1, 5))
+
+        # occluder = Occluder(
+        #     self.world,
+        #     FVector(1000, 0, 150), FRotator(0, 0, 0), FVector(1, 1, 1),
+        #     "/Game/Materials/Object/GreenMaterial")
 
         # setup the sceenshots
         output_dir = os.path.abspath('./screenshots')
-        self.screenshot = Screenshot(output_dir, width, height, camera)
+        self.screenshot = Screenshot(output_dir, width, height, camera.get_actor())
 
         # register the tick for taking screenshots
         # self.ticker = Tick()
