@@ -1,7 +1,11 @@
+# coding: utf-8
+
 """Provides the Screenshot class to manage screen captures"""
 
 import os
-import png
+import time
+import numpy as np
+from PIL import Image
 
 import unreal_engine as ue
 from unreal_engine.classes import ScreenCapture
@@ -9,14 +13,19 @@ from unreal_engine.structs import Vector2D, DepthAndMask
 from unreal_engine import FColor, FVector
 
 
+def _tuple2vector2d(t):
+    v = Vector2D()
+    v.X = t[0]
+    v.Y = t[1]
+    return v
+
+
 class Screenshot:
     """Capture screenshots of a scene and save them to disk.
 
     This class exposes two methods:
-
     * capture() is called during game ticks and takes screenshots and
       push them in memory,
-
     * save() is called on final tick. It does post-processing and
       saves the captured images to disk.
 
@@ -27,147 +36,153 @@ class Screenshot:
         'depth', 'mask' and 'depth' subdirectories in it, or overwrite
         them if existing. The created images are numbered and in PNG
         format, e.g. `output_dir`/depth/depth_012.png.
-
-    res_x, res_y : int
-        Screen resolution in pixels
-
+    size : 3-tuple of int
+        Screen resolution in pixels per number of images as (nimages,
+        width, height).
     camera: actor
         The camera actor from which to take screenshots
-
-    ignored_objects: list of actors, optional
+    ignored_actors: list of actors, optional
         A list of actors to ignore when capturing depth and mask
 
     """
-    def __init__(self, output_dir, res_x, res_y, camera, ignored_objects=[]):
+    def __init__(self, output_dir, size, camera, ignored_actors=[]):
         self.output_dir = output_dir
         self.camera = camera
-        self.ignored_objects = ignored_objects
+        self.ignored_actors = ignored_actors
 
-        # size of the captured images (in pixels)
-        self.size = Vector2D()
-        self.size.X = res_x
-        self.size.Y = res_y
+        # the size is (width, height)
+        self.size = (size[1], size[2])
+        self.nimages = size[0]
 
-        # store the captured images
-        self.images = {'scene': [], 'depth': [], 'masks': []}
+        # preallocate the captured images
+        self.images = {
+            'scene': np.zeros((size[0], size[1], size[2], 4), dtype=np.uint8),
+            'depth': np.zeros(size, dtype=np.float16),
+            'masks': np.zeros(size, dtype='U64')  # max 64 chars in actor names
+        }
+        self._index = 0
+        self._capture_time = 0
 
     def capture(self):
-        """Takes scene, masks and depth screenshots of the scene"""
-        img_scene = []
-        img_scene = ScreenCapture.CaptureScene()
-        self.images['scene'].append(self._valid_image(img_scene))
+        """Take screenshots and push them to memory"""
+        t1 = time.time()
 
-        img_depth_mask = []
-        img_depth_mask = ScreenCapture.CaptureDepthAndMask(
-            self.camera, self.size, self.ignored_objects)
+        # scene screenshot
+        img = ScreenCapture.CaptureScene()
 
-        self.images['depth'].append(
-            self._valid_image([p.Depth for p in img_depth_mask]))
+        if self._is_valid_image(img):
+            # we have FColor RGBA pixels
+            array = np.asarray(img).reshape(self.size[0], self.size[1], 4)
+            self.images['scene'][self._index][:] = array
 
-        self.images['masks'].append(
-            self._valid_image([p.Mask for p in img_depth_mask]))
+        # depth and masks screenshots
+        img = ScreenCapture.CaptureDepthAndMask(
+            self.camera, _tuple2vector2d(self.size), self.ignored_actors)
+
+        if self._is_valid_image(img):
+            # extract masks
+            array = np.asarray([p.Mask for p in img]).reshape(self.size)
+            self.images['masks'][self._index][:] = array
+
+            # extract depth
+            array = np.asarray([p.Depth for p in img]).reshape(self.size)
+            self.images['depth'][self._index][:] = array
+
+        self._index +=1
+        self._capture_time += time.time() - t1
 
     def save(self):
         """Save the captured images in the output directory"""
         ue.log('saving {} screenshots to {}...'.format(
             sum(len(v) for v in self.images.values()), self.output_dir))
 
-        self._save_images(self.images['scene'], 'scene', self.output_dir, 'RGB')
-        masks = self._save_masks(self.output_dir)
-        max_depth = self._save_depth(self.output_dir)
+        # create the subdirectory 'scene', 'depth' or 'masks'
+        for name in ('scene', 'depth', 'masks'):
+            path = os.path.join(self.output_dir, name)
+            if not os.path.isdir(path):
+                os.makedirs(path)
 
+        t1 = time.time()
+        self._save_scenes()
+        t2 = time.time()
+        masks = self._save_masks()
+        t3 = time.time()
+        max_depth = self._save_depth()
+        t4 = time.time()
+
+        ue.log('capture time: {}s'.format(self._capture_time))
+        ue.log('saving time: scenes={}s, mask={}s, depth={}s'.format(t2-t1, t3-t2, t4-t3))
         return {'masks': masks, 'max_depth': max_depth}
 
-    def _valid_image(self, image):
-        """Return the image if it has the expected size, elsewise return []"""
-        if len(image) == 0:
-            ue.log_error("screenshot: empty image")
-            return []
+    def _is_valid_image(self, image):
+        """Return True if the `image` has the expected size, False otherwise"""
+        if not len(image):
+            ue.log_error("screenshot: empty image detected")
+            return False
 
-        expected_size = int(self.size.X * self.size.Y)
+        expected_size = self.size[0] * self.size[1]
         if len(image) != expected_size:
-            ue.log_error(
-                "screenshot: bad image size {} (must be {})"
-                .format(len(image), expected_size))
-            return []
+            ue.log_error("screenshot: bad image size {} (must be {})"
+                         .format(len(image), expected_size))
+            return False
 
-        return image
+        return True
 
-    def _save_masks(self, path):
-        masks = self.images['masks']
-        actors = {pixel for image in masks for pixel in image}
+    def _get_filename(self, name, index):
+        """Return the filename `output_dir`/`name`/`name`_`index`.png"""
+        # filename index is padded with zeros: 1 -> '001'
+        n = '0' * (len(str(self.nimages)) - len(str(index))) + str(index)
+        return os.path.join(self.output_dir, name, '{}_{}.png'.format(name, n))
 
+    def _save_scenes(self):
+        images = self.images['scene'][:, :, :, :3]
+        for n, image in enumerate(images):
+            filename = self._get_filename('scene', n)
+            self._write_png(image, filename, 'RGB')
+
+    def _save_masks(self):
+        # the masks are actor names, we are mapping a unique color
+        # code to each actor (sorted by names, from 0 to 255)
+        actors = set(self.images['masks'].flatten())
+        actor_code = {'': 0}
         if len(actors) == 0:
             ue.log_warning('no masks, empty scene?')
         else:
-            # map a unique color code to each actor in the images (sorted
-            # by names, from 0 to 255)
+            # build the color code
             offset = int(255 / len(actors))
-            actor_code = {a: int((n+1) * offset) for n, a in enumerate(sorted(actors)) if a}
-            actor_code[''] = 0
+            for n, a in enumerate(sorted(actors)):
+                if a:
+                    actor_code[a] = (n+1) * offset
 
-            # replace the actor name by its color code
-            for n, image in enumerate(masks):
-                masks[n] = [actor_code[p] for p in image]
+        # replace the actor name by its color code
+        im = np.zeros(self.size, dtype=np.uint8)
+        for n, image in enumerate(self.images['masks']):
+            im[:] = np.vectorize(lambda p: actor_code[p])(image)
+            filename = self._get_filename('masks', n)
+            self._write_png(im, filename, 'L')
 
-            self._save_images(masks, 'masks', path, 'grayscale')
+        # replace the empty name (ie no hit during the raycast) by Sky
+        actor_code['Sky'] = 0
+        del actor_code['']
 
-            actor_code['Sky'] = 0
-            del actor_code['']
-            return actor_code
+        return actor_code
 
-    def _save_depth(self, path):
+    def _save_depth(self):
         images = self.images['depth']
 
         # extract global max depth (on all images)
-        max_depth = max((max(image) for image in images))
+        max_depth = images.max()
         if max_depth == 0.0:
             ue.log_warning('max depth is 0, empty scene?')
-
         else:
-            # depth images quantification in [0, 255]
-            quantifier = 255.0 / max_depth
+            # depth images quantification in [0, 1]
+            images *= (255 / max_depth)
             for n, image in enumerate(images):
-                images[n] = [int(pixel * quantifier) for pixel in image]
+                filename = self._get_filename('depth', n)
+                self._write_png(image, filename, 'L')
 
-        self._save_images(images, 'depth', path, 'grayscale')
         return max_depth
 
-    def _save_images(self, images, name, path, format):
-        if not images:
-            ue.log_warning('no {} image to save'.format(name))
-            return
-
-        # write images in the 'scene', 'depth' or 'masks' subdirectory
-        path = os.path.join(path, name)
-        if not os.path.isdir(path):
-            os.makedirs(path)
-
-        nimages = len(str(len(images)))
-        for n, image in enumerate(images):
-            # 1 -> '001'
-            n = '0' * (nimages - len(str(n))) + str(n)
-
-            self._save_png(image, os.path.join(
-                path, '{}_{}.png'.format(name, n)), format)
-
-    def _get_pixel(self, image, x, y, mode='grayscale'):
-        """Return the pixel (x, y) from the image"""
-        pixel = image[int(y * self.size.X + x)]
-        if mode == 'RGB':
-            return [pixel.r, pixel.g, pixel.b]
-        else:
-            return pixel
-
-    def _save_png(self, image, filename, format):
-        """Save the `image` as a PNG file to `filename`"""
-        # convert the raw image to a nested list of rows
-        array = [[self._get_pixel(image, x, y, format)
-                  for x in range(int(self.size.X))]
-                 for y in range(int(self.size.Y))]
-
-        if format == 'grayscale':
-            format = 'L'  # grayscale code for png
-
-        # save the image
-        png.from_array(array, format).save(filename)
+    @staticmethod
+    def _write_png(image, filename, mode):
+        Image.fromarray(image.astype(np.uint8, copy=False), mode).save(filename)

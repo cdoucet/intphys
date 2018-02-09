@@ -2,6 +2,7 @@ import importlib
 import json
 import os
 import random
+import shutil
 import sys
 import math
 
@@ -123,11 +124,15 @@ class Main:
 
         # setup the sceenshots
         output_dir = os.path.abspath('./screenshots')
-        self.screenshot = Screenshot(output_dir, width, height, camera.get_actor())
+        # delete the dir if existing
+        if os.path.isdir(output_dir):
+            ue.log('overwrite {}'.format(output_dir))
+            shutil.rmtree(output_dir)
+        self.screenshot = Screenshot(output_dir, (100, width, height), camera.get_actor())
 
         # register the tick for taking screenshots
         # self.ticker = Tick()
-        self.ticker = Tick(nticks=1)
+        self.ticker = Tick(nticks=100)
         self.ticker.add_hook(self.screenshot.capture, 'slow')
         self.ticker.add_hook(self.screenshot.save, 'final')
         self.ticker.add_hook(self.exit_ue, 'final')
