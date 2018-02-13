@@ -31,8 +31,8 @@ private:
 
     TArray<FImageScene> m_Scene;
     TArray<FImageDepth> m_Depth;
-//     TArray<FImageMasks> m_Masks;
-//     TMap<FString, uint8> m_MasksMap;
+    TArray<FImageMasks> m_Masks;
+    TMap<FString, uint8> m_MasksMap;
 
     FString ZeroPadding(uint Index) const;
 

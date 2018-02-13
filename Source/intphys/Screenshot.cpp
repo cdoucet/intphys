@@ -1,9 +1,9 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
-
 #include "Screenshot.h"
 #include "ImageUtils.h"
 #include "Runtime/Core/Public/HAL/PlatformFilemanager.h"
+#include "Runtime/Core/Public/GenericPlatform/GenericPlatformMath.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 
 
@@ -125,7 +125,12 @@ FScreenshotManager::FScreenshotManager(
     for (auto& Picture : m_Depth)
         Picture.SetNum(Size.X * Size.Y);
 
+    m_Masks.SetNum(Size.Z);
+    for (auto& Picture : m_Masks)
+        Picture.SetNum(Size.X * Size.Y);
+
     m_WriteBuffer.SetNum(Size.X * Size.Y);
+    m_CompressedWriteBuffer.SetNum(Size.X * Size.Y);
 }
 
 
@@ -169,13 +174,20 @@ bool FScreenshotManager::Save()
     TArray<float> MaxDepthArray;
     for (const auto& Image : m_Depth)
     {
-        MaxDepthArray.Add(Image.Max());
+        MaxDepthArray.Add(FMath::Max(Image));
     }
-    float MaxDepth = MaxDepthArray.Max();
+    float MaxDepth = FMath::Max(MaxDepthArray);
 
     if (m_Verbose)
     {
         UE_LOG(LogTemp, Log, TEXT("Max depth is %f"), MaxDepth);
+
+        FString Map;
+        for (const auto& Elem : m_MasksMap)
+        {
+            Map +=
+        }
+        UE_LOG(LogTemp, Log, TEXT("Masks are %s"))
     }
 
     for (uint i = 0; i < m_Size.Z; ++i)
@@ -198,6 +210,12 @@ bool FScreenshotManager::Save()
             m_WriteBuffer[j] = FColor(Pixel, Pixel, Pixel, 255);
         }
         FScreenshotManager::WritePng(m_WriteBuffer, Filename);
+
+        // save the normalized masks
+        Filename = FPaths::Combine(
+            m_OutputDirectory, TEXT("masks"),
+            FString::Printf(TEXT("masks_%s.png"), *FileIndex));
+
     }
 
     return true;
@@ -261,8 +279,20 @@ bool FScreenshotManager::CaptureDepthAndMasks()
 
             if(bHit)
             {
+                uint PixelIndex = y * m_Size.X + x;
+
+                // compute depth
                 float HitDistance = FVector::DotProduct(HitResult.Location - OriginLoc, OriginRot);
-                m_Depth[m_ImageIndex][y * m_Size.X + x] = HitDistance;
+                m_Depth[m_ImageIndex][PixelIndex] = HitDistance;
+
+                // compute mask
+                FString HitActorName = HitResult.GetActor()->GetName();
+                uint8& HitActorId = m_MasksMap.FindOrAdd(HitActorName);
+                if (HitActorId == 0)  // the actor is not yet in the map, add it
+                {
+                    HitActorId = m_MasksMap.Num() + 1;
+                }
+                m_Masks[m_ImageIndex][PixelIndex] = HitActorId;
             }
 
             // // log a debug message with ray coordinates
@@ -303,12 +333,7 @@ void FScreenshotManager::WritePng(TArray<FColor>& Bitmap, const FString& Filenam
         Pixel.A = 255;
     }
 
-    // if (m_Verbose)
-    // {
-    //     UE_LOG(LogTemp, Log, TEXT("Writing %s"), *Filename);
-    // }
-
-    // Write RGBA image
+    // Write RGBA PNG image
     FImageUtils::CompressImageArray(m_Size.X, m_Size.Y, Bitmap, m_CompressedWriteBuffer);
     FFileHelper::SaveArrayToFile(m_CompressedWriteBuffer, *Filename);
 }
