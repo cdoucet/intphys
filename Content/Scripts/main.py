@@ -10,13 +10,15 @@ import unreal_engine as ue
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine import FVector, FRotator
 
+from unreal_engine.classes import Screenshot
+
 from actors.object import Object
 from actors.camera import Camera
 from actors.floor import Floor
 from actors.wall import Wall
 from actors.occluder import Occluder
 from tools.tick import Tick
-from tools.screenshot import Screenshot
+#from tools.screenshot import Screenshot
 
 # the default screen resolution (in pixels)
 width, height = 288, 288
@@ -128,13 +130,16 @@ class Main:
         if os.path.isdir(output_dir):
             ue.log('overwrite {}'.format(output_dir))
             shutil.rmtree(output_dir)
-        self.screenshot = Screenshot(output_dir, (100, width, height), camera.get_actor())
+
+        # self.screenshot = Screenshot(output_dir, (100, width, height), camera.get_actor())
+        Screenshot.Initialize(output_dir, width, height, 100, camera.get_actor(), True)
 
         # register the tick for taking screenshots
         # self.ticker = Tick()
         self.ticker = Tick(nticks=100)
-        self.ticker.add_hook(self.screenshot.capture, 'slow')
-        self.ticker.add_hook(self.screenshot.save, 'final')
+        self.ticker.add_hook(Screenshot.Capture, 'slow')
+        # self.ticker.add_hook(self.screenshot.capture, 'slow')
+        self.ticker.add_hook(Screenshot.Save, 'final')
         self.ticker.add_hook(self.exit_ue, 'final')
 
         # run the scene

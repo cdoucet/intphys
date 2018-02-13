@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ImageUtils.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "Runtime/Engine/Classes/Kismet/GameplayStatics.h"
 #include "ScreenCapture.generated.h"

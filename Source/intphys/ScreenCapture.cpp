@@ -54,6 +54,34 @@ static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* Wor
 }
 
 
+void TestWriteImage(TArray<FColor>& Bitmap, const FIntVector& Size)
+{
+    // Force no transparency
+    for (FColor& Pixel : Bitmap)
+    {
+        Pixel.A = 255;
+    }
+
+    // Write color image
+    TArray<uint8> CompressedBitmap;
+    FString ScreenShotName = TEXT("out_color.png");
+    FImageUtils::CompressImageArray(Size.X, Size.Y, Bitmap, CompressedBitmap);
+    FFileHelper::SaveArrayToFile(CompressedBitmap, *ScreenShotName);
+
+    // Write grayscale image
+    ScreenShotName = TEXT("out_ndg.png");
+    for (FColor& Pixel : Bitmap)
+    {
+        uint8 Mean = (Pixel.R + Pixel.G + Pixel.B) / 3;
+        Pixel.R = Mean;
+        Pixel.G = Mean;
+        Pixel.B = Mean;
+    }
+    FImageUtils::CompressImageArray(Size.X, Size.Y, Bitmap, CompressedBitmap);
+    FFileHelper::SaveArrayToFile(CompressedBitmap, *ScreenShotName);
+}
+
+
 TArray<FColor> UScreenCapture::CaptureScene()
 {
     TSharedPtr<SWindow> WindowPtr = GEngine->GameViewport->GetWindow();
@@ -62,6 +90,9 @@ TArray<FColor> UScreenCapture::CaptureScene()
         FIntVector OutSize;
         TArray<FColor> Bitmap;
         FSlateApplication::Get().TakeScreenshot(WindowPtr.ToSharedRef(), Bitmap, OutSize);
+
+        TestWriteImage(Bitmap, OutSize);
+
         return Bitmap;
     }
     else
