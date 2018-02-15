@@ -9,11 +9,11 @@ import unreal_engine as ue
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine import FVector, FRotator
 
-from object import Object
-from camera import Camera
-from floor import Floor
-from wall import Wall
-from occluder import Occluder
+from actors.object import Object
+from actors.camera import Camera
+from actors.floor import Floor
+from actors.wall import Wall
+from actors.occluder import Occluder
 from tools.tick import Tick
 
 # the default screen resolution (in pixels)
@@ -93,29 +93,33 @@ class Main:
         self.init_resolution()
 
         # spawn the camera
-        #self.from_above = Camera(self.world, FVector(0, 0, 2500), FRotator(0, -90, 0))
+        #self.from_above = Camera(self.world, FVector(0, 0, 10000), FRotator(0, -90, 0))
         #self.front = Camera(self.world, FVector(-1500, 0, 100), FRotator(0, 0, 0))
         #self.back = Camera(self.world, FVector(1500, 0, 100), FRotator(0, 0, 180))
         #self.left = Camera(self.world, FVector(-1500, -1500, 100), FRotator(0, 0, 90))
         #self.right = Camera(self.world, FVector(1500, 1500, 100), FRotator(0, 0, 270))
-        self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
+        #self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
+        self.random_camera = Camera(self.world)
         # spawn an actor
         self.floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
         self.object = Object(self.world, Object.shape['Cube'], FVector(1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial")
         #self.object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
-        self.wall_front = Wall(self.world, 'Front')
-        self.wall_left = Wall(self.world, 'Left')
-        self.wall_right = Wall(self.world, 'Right')
-        self.occluder = Occluder(self.world, FVector(500, 0, 0), FRotator(0, 0, 90), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial")
+        #self.wall_front = Wall(self.world, 'Front')
+        #self.wall_left = Wall(self.world, 'Left')
+        #self.wall_right = Wall(self.world, 'Right')
+        #self.occluder = Occluder(self.world)#, FVector(500, 0, 0), FRotator(0, 0, 0), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial")*
+        location, rotation = self.random_camera.get_status()
+        print(location)
+        
 
         #self.ticker = Tick()
         #self.ticker.add_hook(self.screenshot.capture, 'slow')
         #self.ticker.add_hook(self.screenshot.save, 'final')
         #self.ticker.add_hook(self.occluder.move(), 'slow')
         #self.ticker.add_hook(self.exit_ue, 'final')
-        # run the scene
+         # run the scene
         #self.ticker.run()
 
-    def tick(self, dt):
+    #def tick(self, dt):
         #self.ticker.tick(dt)
-        self.occluder.move()
+        #self.occluder.move()

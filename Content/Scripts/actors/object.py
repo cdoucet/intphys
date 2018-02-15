@@ -52,8 +52,8 @@ class Object(BaseMesh):
     parameters ->
     world: UEngine world instance
     mesh_str: the path of the mesh/shape of the actor (str). Default value: a sphere
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
+    location: location of the actor (FVector). Default value: 0, 0, -42
+    rotation: rotation of the actor (FRotator). Default value: 0, 0, -42
     scale: scale of the actor (FVector). Default value: 1, 1, 1
     material: material of the actor (str). Default value: a random one in the relevant directory
     mass: mass of the actor (float). Default value: 1.0
@@ -61,8 +61,8 @@ class Object(BaseMesh):
     """
     def __init__(self, world = None,
                  mesh_str = shape['Sphere'],
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
+                 location = FVector(0, 0, -42),
+                 rotation = FRotator(0, 0, -42),
                  scale = FVector(1, 1, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  mass = 1.0,
@@ -78,7 +78,6 @@ class Object(BaseMesh):
             self.set_mass(mass)
             self.set_force(force)
             self.get_mesh().set_simulate_physics()
-
         else:
             BaseMesh.__init__(self)
 

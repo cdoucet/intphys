@@ -49,15 +49,18 @@ class BaseMesh(BaseActor):
     def __init__(self,
                  actor = None,
                  mesh_str = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
+                 location = FVector(0, 0, -42),
+                 rotation = FRotator(0, 0, -42),
                  material = None,
                  scale = FVector(1, 1, 1)):
         self.mesh_str = mesh_str
         self.material = material
         self.scale = scale
+        # The second part of the condition doesn't work can't figure it out
         if (mesh_str != None):
             BaseActor.__init__(self, actor, location, rotation)
+            if (location == FVector(0.0, 0.0, -42.0)):# and rotation == FRotator(0.0, 0.0, -42.0)):
+                location, rotation = self.get_test_parameters()
             self.set_location(location)
             self.set_rotation(rotation)
             self.set_mesh()

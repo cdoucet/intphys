@@ -1,4 +1,5 @@
 import unreal_engine as ue
+import random
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
@@ -18,7 +19,7 @@ class BaseActor():
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
     """
-    def __init__(self, actor = None, location = FVector(0, 0, 0), rotation = FRotator(0, 0, 0)):
+    def __init__(self, actor = None, location = FVector(0, 0, -42), rotation = FRotator(0, 0, -42)):
         self.actor = actor
         self.location = location
         self.rotation = rotation
@@ -42,8 +43,40 @@ class BaseActor():
         if (self.actor.set_actor_rotation(self.rotation, True) == False):
             print("Failed to set the rotation of an actor")
 
+    """Raises a Runtime error when some actor overlaps this object"""
     def manage_overlap(self, me, other):
-        """Raises a Runtime error when some actor overlaps this object"""
         message = '{} overlapping {}'.format(
             self.actor.get_name(), other.get_name())
         ue.log_error(message)
+
+    """
+    Returns random coordinates for train scenes
+    In train scenes, camera has a high variability. Only the roll
+    is forced to 0.
+    """
+    def get_train_parameters(self):
+        location = FVector(
+            random.uniform(-100, 100),
+            random.uniform(200, 400),
+            100 + random.uniform(-30, 80))
+        rotation = FRotator(
+            0,
+            random.uniform(-15, 10),
+            random.uniform(-30, 30))
+        return location, rotation
+
+    """
+    Returns random coordinates for test scenes
+    In test scenes, the camera has a constrained location, with
+    little variations along the y axis and pitch.
+    """
+    def get_test_parameters(self):
+        location = FVector(
+            0,
+            -100 * random.random(),
+            150)
+        rotation = FRotator(
+            0,
+            -10 * random.random(),
+            0)
+        return location, rotation

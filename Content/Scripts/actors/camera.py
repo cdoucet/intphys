@@ -7,8 +7,6 @@ from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from baseActor import BaseActor
 
-
-
 class Camera(BaseActor):
     """
     __init__ instantiate the class
@@ -21,26 +19,25 @@ class Camera(BaseActor):
     projection mode: I redirect you to the Unreal Engine Doc
 
     Warning !
-    If you don't send either the location and the rotation
-    or if you send them filled with 0, during the camera instantiation, 
+    If you don't send either the location and the rotation during the camera instantiation, 
     the __init__ function will change it on its own
     """
     def __init__(self,
                  world = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
+                 location = FVector(0, 0, -42),
+                 rotation = FRotator(0, 0, -42),
                  field_of_view = 90,
                  aspect_ratio = 1,
                  projection_mode = ECameraProjectionMode.Perspective):
         self.field_of_view = field_of_view
         self.aspect_ratio = aspect_ratio
         self.projection_mode = projection_mode
-        if (location == FVector(0, 0, 0) and rotation == FRotator(0, 0, 0)):
-            location, rotation = self.get_test_parameters()
         if (world != None):
             BaseActor.__init__(self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
                                location,
                                rotation)
+            if (location == FVector(0, 0, -42)):# and rotation == FRotator(0, 0, -42)):
+                location, rotation = self.get_test_parameters()
             self.set_location(location)
             self.set_rotation(rotation)
             """Attach the viewport to the camera
@@ -52,40 +49,6 @@ class Camera(BaseActor):
             player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
         else:
             BaseActor.__init__(self)
-
-    """
-    Returns random coordinates for train scenes
-    In train scenes, camera has a high variability. Only the roll
-    is forced to 0.
-    """
-    @staticmethod
-    def get_train_parameters():
-        location = FVector(
-            random.uniform(-100, 100),
-            random.uniform(200, 400),
-            100 + random.uniform(-30, 80))
-        rotation = FRotator(
-            0,
-            random.uniform(-15, 10),
-            random.uniform(-30, 30))
-        return location, rotation
-
-    """
-    Returns random coordinates for test scenes
-    In test scenes, the camera has a constrained location, with
-    little variations along the y axis and pitch.
-    """
-    @staticmethod
-    def get_test_parameters():
-        location = FVector(
-            0,
-            -100 * random.random(),
-            150)
-        rotation = FRotator(
-            0,
-            -10 * random.random(),
-            0)
-        return location, rotation
 
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())

@@ -50,8 +50,8 @@ class Occluder(BaseMesh):
     The location is precisely from the point at the bottom center of the mesh
     """
     def __init__(self, world = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
+                 location = FVector(0, 0, -42),
+                 rotation = FRotator(0, 0, -42),
                  scale = FVector(5, 5, 5),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
         if (world != None):

@@ -54,7 +54,7 @@ class Floor(BaseMesh):
     """
     def __init__(self, world = None,
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
-        scale = FVector(10, 10, 1)
+        scale = FVector(1000, 1000, 1)
         if (world != None):
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
