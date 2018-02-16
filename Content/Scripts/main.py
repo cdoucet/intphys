@@ -8,6 +8,7 @@ import math
 import unreal_engine as ue
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine import FVector, FRotator
+from unreal_engine.classes import PhysicalMaterial, StaticMesh
 
 from actors.object import Object
 from actors.camera import Camera
@@ -94,24 +95,25 @@ class Main:
         self.init_resolution()
 
         # spawn the camera
-        #self.from_above = Camera(self.world, FVector(0, 0, 10000), FRotator(0, -90, 0))
-        #self.front = Camera(self.world, FVector(-1500, 0, 100), FRotator(0, 0, 0))
+        self.from_above = Camera(self.world, FVector(0, 0, 2000), FRotator(0, -90, 0))
+        #self.front = Camera(self.world, FVector(-3000, 0, 100), FRotator(0, 0, 0))
         #self.back = Camera(self.world, FVector(1500, 0, 100), FRotator(0, 0, 180))
         #self.left = Camera(self.world, FVector(-1500, -1500, 100), FRotator(0, 0, 90))
         #self.right = Camera(self.world, FVector(1500, 1500, 100), FRotator(0, 0, 270))
         #self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
-        self.random_camera = Camera(self.world)
+        #self.random_camera = Camera(self.world)
         # spawn an actor
         self.floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
-        self.object = Object(self.world, Object.shape['Cube'], FVector(1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial")
+        # La ligne ci-dessous parvient load un PhysicalMaterial. Reste plus qu'à l'appliquer sur un material/mesh/actor
+        #ue.load_object(PhysicalMaterial, "/Game/Materials/Floor/test")
+        self.object = Object(self.world, Object.shape['Sphere'], FVector(1000, 0, 900), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial", 100, FVector(10000, 0, 0))
         #self.object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
         #self.wall_front = Wall(self.world, 'Front')
         #self.wall_left = Wall(self.world, 'Left')
         #self.wall_right = Wall(self.world, 'Right')
-        #self.occluder = Occluder(self.world)#, FVector(500, 0, 0), FRotator(0, 0, 0), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial")*
+        #self.occluder = Occluder(self.world, FVector(500, 0, 0), FRotator(0, 0, 0), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial", 1)
         #self.walls = Walls(self.world)
-        self.wall_front = Wall(self.world)
-
+        #self.wall_front = Wall(self.world)
         #self.ticker = Tick()
         #self.ticker.add_hook(self.screenshot.capture, 'slow')
         #self.ticker.add_hook(self.screenshot.save, 'final')
@@ -119,7 +121,12 @@ class Main:
         #self.ticker.add_hook(self.exit_ue, 'final')
         # run the scene
         #self.ticker.run()
+        self.count = 0
 
     #def tick(self, dt):
+        #self.count = self.count + 1
+        #if (self.count % 100 == 0):
+            #self.object.set_material("/Game/Materials/Object/GreenMaterial")
+            #self.object.set_mesh_str("/Engine/EngineMeshes/Cube.Cube")
         #self.ticker.tick(dt)
         #self.occluder.move()

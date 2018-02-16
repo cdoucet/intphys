@@ -51,11 +51,35 @@ class Camera(BaseActor):
         else:
             BaseActor.__init__(self)
 
+    def get_field_of_view(self):
+        return (self.field_of_view)
+
+    def set_field_of_view(self, field_of_view):
+        self.field_of_view = field_of_view
+        self.camera_component.SetFieldOfView(self.field_of_view)
+
+    def get_component(self):
+        return (self.camera_component)
+
+    def get_aspect_ratio(self):
+        return (self.aspect_ratio)
+
+    def set_aspect_ratio(self, aspect_ratio):
+        self.aspect_ratio = aspect_ratio
+        self.camera_component.SetAspectRatio(self.aspect_ratio)
+
+    def set_projection_mode(self, projection_mode):
+        self.projection_mode = projection_mode;
+        self.camera_component.SetProjectionMode(self.projection_mode)
+
+    def get_projection_mode(self):
+        return (self.projection_mode)
+
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
         self.actor.bind_event(
             'OnActorBeginOverlap', self.manage_overlap)
-        camera_component = self.actor.get_component_by_type(CameraComponent)
-        camera_component.SetFieldOfView(self.field_of_view)
-        camera_component.SetAspectRatio(self.aspect_ratio)
-        camera_component.SetProjectionMode(self.projection_mode)
+        self.camera_component = self.actor.get_component_by_type(CameraComponent)
+        self.camera_component.SetFieldOfView(self.field_of_view)
+        self.camera_component.SetAspectRatio(self.aspect_ratio)
+        self.camera_component.SetProjectionMode(self.projection_mode)

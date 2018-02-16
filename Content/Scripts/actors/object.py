@@ -4,6 +4,7 @@ from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from baseMesh import BaseMesh
 import tools.materials
+import random
 
 """
 Ok here we go:
@@ -65,7 +66,7 @@ class Object(BaseMesh):
                  rotation = FRotator(0, 0, -42),
                  scale = FVector(1, 1, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
-                 mass = 1.0,
+                 mass = 100,
                  force = FVector(0.0, 0.0, 0.0)):
         if (world != None):
             BaseMesh.__init__(self,

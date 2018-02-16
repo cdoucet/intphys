@@ -24,8 +24,11 @@ class BaseActor():
         self.location = location
         self.rotation = rotation
 
-    def get_status(self):
-        return self.location, self.rotation
+    def get_location(self):
+        return self.location
+
+    def get_rotation(self):
+        return self.rotation
 
     def get_actor(self):
         return self.actor

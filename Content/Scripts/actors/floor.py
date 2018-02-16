@@ -1,5 +1,5 @@
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
+from unreal_engine import FVector, FRotator, FLinearColor
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from baseMesh import BaseMesh
@@ -63,5 +63,13 @@ class Floor(BaseMesh):
                               FRotator(0, 0, 0),
                               ue.load_object(Material, material),
                               scale)
+            #self.material.SetPhysMaterial()
+            #self.material.SetVectorParameterValue("BodyColor", FLinearColor(255, 0, 0, 0))
+            #mid = self.material.create_material_instance_dynamic(self.material)
+            #print(mid.get_material_scalar_parameter('Friction'))
+            #mid.set_material_scalar_parameter('Friction', 0.0)
+            #phys = mid.GetPhysicalMaterial()
+            #phys.Friction = 0.0
+            #phys.ljqsdlkqsdljk = 0
         else:
             BaseMesh.__init__(self)

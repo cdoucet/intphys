@@ -4,6 +4,7 @@ from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from baseMesh import BaseMesh
 import tools.materials
+import random
 
 """
 Ok here we go:
@@ -53,7 +54,8 @@ class Occluder(BaseMesh):
                  location = FVector(0, 0, -42),
                  rotation = FRotator(0, 0, -42),
                  scale = FVector(5, 5, 5),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
+                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')),
+                 speed = random.uniform(1, 10)):
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
                               '/Game/Meshes/OccluderWall',
@@ -65,6 +67,7 @@ class Occluder(BaseMesh):
             BaseMesh.__init__(self)
         self.moving = False
         self.up = True
+        self.speed = speed
 
     """
     move make the Occluder fall and get up when called
@@ -74,22 +77,22 @@ class Occluder(BaseMesh):
         if (self.moving == False):
             self.moving = True
             if (self.up == False):
-                rotation.roll += 1
+                rotation.roll += self.speed
             else:
-                rotation.roll -= 1
+                rotation.roll -= self.speed
         else:
             if (self.up == True):
-                if (rotation.roll == 91):
+                if (rotation.roll + self.speed >= 90):
                     self.moving = False
                     self.up = False
                     return
                 else:
-                    rotation.roll += 1
+                    rotation.roll += self.speed
             else:
-                if (rotation.roll == -1):
+                if (rotation.roll + self.speed <= 0):
                     self.moving = False
                     self.up = True
                     return
                 else:
-                    rotation.roll -= 1
+                    rotation.roll -= self.speed
         self.set_rotation(rotation)

@@ -58,6 +58,7 @@ class BaseMesh(BaseActor):
         self.scale = scale
         # The second part of the condition doesn't work can't figure it out
         if (mesh_str != None):
+            
             BaseActor.__init__(self, actor, location, rotation)
             if (location == FVector(0.0, 0.0, -42.0)):# and rotation == FRotator(0.0, 0.0, -42.0)):
                 location, rotation = self.get_test_parameters()
@@ -97,8 +98,8 @@ class BaseMesh(BaseActor):
     def get_mesh_str(self):
         return self.mesh_str
 
-    def set_material(self, material):
-        self.material = material
+    def set_material(self, material_str):
+        self.material = ue.load_object(Material, material_str)
         self.mesh.set_material(0, self.material)
 
     def get_material(self):
