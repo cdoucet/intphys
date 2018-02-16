@@ -36,6 +36,7 @@ class Camera(BaseActor):
             BaseActor.__init__(self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
                                location,
                                rotation)
+            # The second part of the condition doesn't work can't figure it out
             if (location == FVector(0, 0, -42)):# and rotation == FRotator(0, 0, -42)):
                 location, rotation = self.get_test_parameters()
             self.set_location(location)

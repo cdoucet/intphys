@@ -13,6 +13,7 @@ from actors.object import Object
 from actors.camera import Camera
 from actors.floor import Floor
 from actors.wall import Wall
+from actors.walls import Walls
 from actors.occluder import Occluder
 from tools.tick import Tick
 
@@ -108,16 +109,15 @@ class Main:
         #self.wall_left = Wall(self.world, 'Left')
         #self.wall_right = Wall(self.world, 'Right')
         #self.occluder = Occluder(self.world)#, FVector(500, 0, 0), FRotator(0, 0, 0), FVector(5, 5, 5), "/Game/Materials/Object/GreenMaterial")*
-        location, rotation = self.random_camera.get_status()
-        print(location)
-        
+        #self.walls = Walls(self.world)
+        self.wall_front = Wall(self.world)
 
         #self.ticker = Tick()
         #self.ticker.add_hook(self.screenshot.capture, 'slow')
         #self.ticker.add_hook(self.screenshot.save, 'final')
         #self.ticker.add_hook(self.occluder.move(), 'slow')
         #self.ticker.add_hook(self.exit_ue, 'final')
-         # run the scene
+        # run the scene
         #self.ticker.run()
 
     #def tick(self, dt):
