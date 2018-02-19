@@ -17,5 +17,5 @@ sys.path.insert(0, os.path.abspath(os.path.dirname(__file__)))
 #             if os.path.isabs(p) and os.path.isdir(p)
 #             and not p.endswith('zip')]
 
-# Display the Python path in the UE output log
-print('The Python path is: {}'.format(', '.join(sys.path)))
+# # Display the Python path in the UE output log
+# print('The Python path is: {}'.format(', '.join(sys.path)))

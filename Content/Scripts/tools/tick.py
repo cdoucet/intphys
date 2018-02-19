@@ -38,6 +38,11 @@ class Tick:
         # True when the game is ticking
         self._is_ticking = False
 
+    def reset(self):
+        """Reset the ticker to it's initial state"""
+        self._is_ticking = False
+        self._t_tick, self._t_last_tick = 0, 0
+        self._ticks_counter = 0
 
     def run(self):
         """Run the game and execute the tick hooks"""
@@ -96,5 +101,5 @@ class Tick:
 
             self._t_tick += 1
         elif self._is_ticking:
-            self.run_hooks('final')
             self._is_ticking = False
+            self.run_hooks('final')
