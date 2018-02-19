@@ -40,7 +40,6 @@ class Tick:
 
     def reset(self):
         """Reset the ticker to it's initial state"""
-        self._is_ticking = False
         self._t_tick, self._t_last_tick = 0, 0
         self._ticks_counter = 0
 
@@ -101,5 +100,5 @@ class Tick:
 
             self._t_tick += 1
         elif self._is_ticking:
-            self._is_ticking = False
             self.run_hooks('final')
+            self.reset()
