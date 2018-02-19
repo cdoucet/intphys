@@ -1,5 +1,5 @@
 {
-    "block_O1" :
+    "scenario_O1" :
     {
         "train" : 10,
         "test_visible" :

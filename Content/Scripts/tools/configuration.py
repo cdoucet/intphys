@@ -1,4 +1,4 @@
-"""Load of the scenes file and setup the iterations it includes.
+"""Load of the scenes configuration file and setup the iterations it includes.
 
 Translates the scenes file (from JSON) into a list of iterations to
 render. Each scenario can be composed of several iterations (train
@@ -14,20 +14,23 @@ An `iteration` is a table with the following fields:
 """
 
 # TODO make a class Iteration.
-# TODO Once block classes are implemeted, link
+# TODO Once block classes are implemented, link
 # them to here (for occlusion checks size and so on...)
 
 import json
 import os
+import unreal_engine as ue
+
 
 class Configuration(object):
     def __init__(self, json_file, output_dir):
         self.nruns_train = 0
         self.nruns_test = 0
-        self.current_iteration = 0
+        # self.current_iteration = 0
         self.iterations = []
 
         # loading the JSON file
+        ue.log('loading scenes configuration from {}'.format(json_file))
         raw_json = json.loads(open(json_file, 'r').read())
 
         # build the iterations list from the JSON (this populates
@@ -35,12 +38,19 @@ class Configuration(object):
         self._parse_config_file(raw_json)
 
         # now that we know the total number of iterations, we add the
-        # path were the screenshots are metadata will be stored.
+        # output path were screenshots and metadata will be stored
         for iteration in self.iterations:
             self._set_iteration_path(iteration, output_dir)
 
-    def get_current_iteration(self):
-        return self.iterations[self.current_iteration]
+        ue.log('generation of {nscenes} scenes ({ntest} for test and '
+               '{ntrain} for train), total of {niterations} iterations'.format(
+            nscenes=self.nruns_test + self.nruns_train,
+            ntest=self.nruns_test,
+            ntrain=self.nruns_train,
+            niterations=len(self.iterations)))
+
+    # def get_current_iteration(self):
+    #     return self.iterations[self.current_iteration]
 
     def _parse_config_file(self, raw_json):
         # iterate on the blocks defined in the configuration

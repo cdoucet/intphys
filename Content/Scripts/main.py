@@ -1,3 +1,5 @@
+# coding: utf-8
+
 import importlib
 import json
 import os
@@ -7,9 +9,8 @@ import sys
 import math
 
 import unreal_engine as ue
-from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine import FVector, FRotator
-
+from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from unreal_engine.classes import Screenshot
 
 from actors.object import Object
@@ -17,101 +18,93 @@ from actors.camera import Camera
 from actors.floor import Floor
 from actors.wall import Wall
 from actors.occluder import Occluder
-from tools.tick import Tick
-#from tools.screenshot import Screenshot
 
-# the default screen resolution (in pixels)
-width, height = 288, 288
+from tools.tick import Tick
+from tools.configuration import Configuration
+from tools.scheduler import Scheduler
+
+
+# the default game resolution, for both scene rendering and saved
+# images (width * height in pixels)
+DEFAULT_RESOLUTION = (288, 288)
+
+
+# TODO Does not exit the game immediately, find better
+def exit_ue(world, message=None):
+    """Quit the game, optionally displaying an error message"""
+    if message:
+        ue.log_error(message)
+    KismetSystemLibrary.QuitGame(world)
+    sys.exit(1 if message else 0)
+
 
 class Main:
-    def init_random_seed(self):
-        # init random number generator with a seed
+    def begin_play(self):
+        # get the world from the attached component
+        world = uobject.get_world()
+
+        # init random number generator
         try:
             seed = os.environ['INTPHYS_SEED']
         except KeyError:
             seed = None
-
-        ue.log('init random numbers generator{}'.format(
-            '' if seed is None else ', seed is {}'.format(seed)))
-
         random.seed(seed)
 
-    def init_resolution(self):
+        # setup screen resolution
         try:
-            resolution = os.environ['INTPHYS_RESOLUTION']
+            res = os.environ['INTPHYS_RESOLUTION'].split('x')
+            resolution = (res[0], res[1])
         except KeyError:
-            resolution = str(width) + 'x' + str(height)
-            ue.log('INTPHYS_RESOLUTION not defined, using default')
-
-        ue.log('set screen resolution to {}'.format(resolution))
+            resolution = DEFAULT_RESOLUTION
         KismetSystemLibrary.ExecuteConsoleCommand(
-            self.uobject.get_world(), 'r.SetRes {}'.format(resolution))
+            world, 'r.SetRes {}'.format('x'.join(resolution)))
 
-    def init_configuration(self):
+        # setup output directory where to save generated data
         try:
-            json_file = os.environ['INTPHYS_CONFIG']
+            output_dir = os.environ['INTPHYS_OUTPUTDIR']
         except KeyError:
-            self.exit_ue(
-                'fatal error, INTPHYS_CONFIG not defined, exiting')
-        ue.log('loading configuration from {}'.format(json_file))
+            exit_ue(world, 'fatal error, INTPHYS_OUTPUTDIR not defined, exiting')
 
+        # load the specifications of scenes we are going to generate
         try:
-            output_dir = os.environ['INTPHYS_DATADIR']
+            scenes_config_file = os.environ['INTPHYS_SCENES']
+            scenes_json = json.loads(open(scenes_config_file, 'r').read())
         except KeyError:
-            self.exit_ue(
-                'fatal error, INTPHYS_DATADIR not defined, exiting')
-        ue.log('writing data to {}'.format(output_dir))
+            exit_ue(world, 'fatal error, INTPHYS_SCENES not defined, exiting')
 
-        config = configuration.Configuration(json_file, output_dir)
+        self.scheduler = Scheduler(scenes_json, output_dir)
+        self.scheduler.run()
 
-        ue.log('generation of {nscenes} scenes ({ntest} for test and '
-               '{ntrain} for train), total of {niterations} iterations'.format(
-            nscenes=config.nruns_test + config.nruns_train,
-            ntest=config.nruns_test,
-            ntrain=config.nruns_train,
-            niterations=len(config.iterations)))
+    def tick(self, dt):
+        self.scheduler.tick(dt)
 
-    # def load_scenes(self):
-    #     try:
-    #         scenes_file = os.environ['INTPHYS_SCENES']
-    #     except KeyError:
-    #         self.exit_ue('fatal error, INTPHYS_SCENES not defined, exiting')
-    #         return
-    #     scene_raw = json.loads(open(scenes_file, 'r').read())
 
-    def exit_ue(self, message=None):
-        """Quit the game, optionally displaying an error message"""
-        if message:
-            ue.log_error(message)
-        KismetSystemLibrary.QuitGame(self.world)
 
-    def begin_play(self):
-        self.world = self.uobject.get_world()
-        ue.log('Raising up new world {}'.format(self.world.get_name()))
 
-        # init the seed for random parameters generation
-        self.init_random_seed()
+        # for scene_params in self.scenes_params:
+        #     scene = Scene(scene_params)
 
-        # init the rendering resolution
-        self.init_resolution()
+        #     scene.run()
 
-        # spawn the camera and attach the viewport to it
-        camera = Camera(self.world, FVector(0, 0, 150), FRotator(0, -5, 0))
-        ue.log('camera position is {}'.format(camera.location))
 
-        # init the configuration
-        # config = self.init_configuration()
-        # scenes = [{'block': 'block_O1.train', 'path': '/tmp/train/01_block_O1_train', 'type': -1, 'id': 1}]
-        # for scene_params in scenes:
-        #     scene = Scene(camera, scene_params)
+        # self.ticker = Tick(nticks=100)
+        # self.ticker.add_hook(lambda: exit_ue(self.world), 'final')
 
-        # spawn an actor
-        floor = Floor(self.world, FVector(10, 10, 1), "/Game/Materials/Floor/M_Ground_Gravel")
+        # camera = Camera(self.world, FVector(0, 0, 150), FRotator(0, -5, 0))
+        # self.init_capture(output_dir, camera)
 
-        object_1 = Object(
-            self.world, Object.shape['Cube'],
-            FVector(300, 0, 200), FRotator(0, 0, 45), FVector(1, 1, 1),
-            "/Game/Materials/Actor/M_Metal_Steel")
+        # # init the configuration
+        # # scenes = [{'block': 'block_O1.train', 'path': '/tmp/train/01_block_O1_train', 'type': -1, 'id': 1}]
+        # # for scene_params in scenes:
+        # #     scene = Scene(camera, scene_params)
+
+        # # spawn an actor
+        # floor = Floor(self.world, FVector(10, 10, 1), "/Game/Materials/Floor/M_Ground_Gravel")
+
+        # object_1 = Object(
+        #     self.world, Object.shape['Cube'],
+        #     FVector(300, 0, 200), FRotator(0, 0, 45), FVector(1, 1, 1),
+        #     "/Game/Materials/Actor/M_Metal_Steel")
 
         # #object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
 
@@ -124,26 +117,23 @@ class Main:
         #     FVector(1000, 0, 150), FRotator(0, 0, 0), FVector(1, 1, 1),
         #     "/Game/Materials/Object/GreenMaterial")
 
-        # setup the sceenshots
-        output_dir = os.path.abspath('./screenshots')
-        # delete the dir if existing
-        if os.path.isdir(output_dir):
-            ue.log('overwrite {}'.format(output_dir))
-            shutil.rmtree(output_dir)
+    # def init_capture(self, output_dir, camera):
+    #     """If not in dry mode, register the screenshot manager for ticking"""
+    #     if 'INTPHYS_DRY' in os.environ:
+    #         ue.log('Running in dry mode, capture disabled')
+    #     else:
+    #         ue.log('saving data to {}'.format(output_dir))
 
-        # self.screenshot = Screenshot(output_dir, (100, width, height), camera.get_actor())
-        Screenshot.Initialize(output_dir, width, height, 100, camera.get_actor(), True)
+    #         # setup the sceenshots
+    #         Screenshot.Initialize(width, height, 100, camera.get_actor())
 
-        # register the tick for taking screenshots
-        # self.ticker = Tick()
-        self.ticker = Tick(nticks=100)
-        self.ticker.add_hook(Screenshot.Capture, 'slow')
-        # self.ticker.add_hook(self.screenshot.capture, 'slow')
-        self.ticker.add_hook(Screenshot.Save, 'final')
-        self.ticker.add_hook(self.exit_ue, 'final')
+    #         def save_capture():
+    #             # TODO retrieve max_depth and masks in get_status()
+    #             done, max_depth, masks = Screenshot.Save(output_dir)
+    #             Screenshot.reset()
+    #             ue.log('max depth is {}'.format(max_depth))
+    #             ue.log('masks are {}'.format(masks))
 
-        # run the scene
-        self.ticker.run()
-
-    def tick(self, dt):
-        self.ticker.tick(dt)
+    #         # register for ticking
+    #         self.ticker.add_hook(Screenshot.Capture, 'slow')
+    #         self.ticker.add_hook(save_capture, 'final')

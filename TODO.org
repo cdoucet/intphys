@@ -1,21 +1,34 @@
-* Features
+* Design of game mechanics
+** Scene
+Its main role is to generate random parameters, spawn the actors,
+manage/schedule the successive shootings, run the scenario's magic
+trick.
+
+scenario = 'O1'
+type = 'train' or 'test'
+camera
+actors
+occluders
+other objects (lights, floor, ...)
+* From intphys-1.0
+** Features
 - reset the sky sphere rotation between scenes
 - implement events
 - include an actors field in status.json with mass, scale, physicals
 - include also a magic_trick entry for impossible cases (frame number,
   nature of change)
-* Improvements
-** in status.json for tests
-   do we need to specify when an actor is hidden (ie after a trick)?
-   For now its coordinates are still registered even if it is no more
-   visible.
-** implement different classes of motion
-   static, sliding, rolling, falling, walking (agent)
-** run on a headless cluster
-*** The problem is remote openGl rendering
+** Improvements
+*** in status.json for tests
+    do we need to specify when an actor is hidden (ie after a trick)?
+    For now its coordinates are still registered even if it is no more
+    visible.
+*** implement different classes of motion
+    static, sliding, rolling, falling, walking (agent)
+*** run on a headless cluster
+**** The problem is remote openGl rendering
 - with DISPLAY=:0 that works remotely but corrupt the host's X server!
 - http://www.virtualgl.org can be a solution
-*** alternatively update to UE-4.14
+**** alternatively update to UE-4.14
 - https://www.unrealengine.com/blog/unreal-engine-4-14-released
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
