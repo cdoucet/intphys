@@ -123,10 +123,11 @@ class Main:
         #self.ticker.run()
         self.count = 0
 
-    #def tick(self, dt):
-        #self.count = self.count + 1
-        #if (self.count % 100 == 0):
+    def tick(self, dt):
+        self.count = self.count + 1
+        if (self.count % 100 == 0):
             #self.object.set_material("/Game/Materials/Object/GreenMaterial")
             #self.object.set_mesh_str("/Engine/EngineMeshes/Cube.Cube")
+            self.object.set_hidden(True)
         #self.ticker.tick(dt)
         #self.occluder.move()

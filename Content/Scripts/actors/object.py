@@ -76,6 +76,7 @@ class Object(BaseMesh):
                               rotation,
                               ue.load_object(Material, material),
                               scale)
+            self.hidden = True
             self.set_mass(mass)
             self.set_force(force)
             self.get_mesh().set_simulate_physics()
@@ -104,3 +105,12 @@ class Object(BaseMesh):
 
     def get_force(self):
         return self.force
+
+    def set_hidden(self, hidden):
+        self.hidden = hidden
+        self.actor.SetActorHiddenInGame(self.hidden)
+
+    def get_hidden(self):
+        return self.hidden
+    
+    
