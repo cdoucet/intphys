@@ -1,6 +1,7 @@
 import unreal_engine as ue
+from unreal_engine import FVector
 
-valid_scenarii = ['O1']
+from actors.floor import Floor
 
 
 class BaseScene:
@@ -18,14 +19,19 @@ class BaseScene:
     def is_valid(self):
         return True
 
+    def is_train_scene(self):
+        raise NotImplementedError
+
+    def is_check_run(self):
+        return False
+
     def description(self):
         """Return a string description of the scene's current run"""
         raise NotImplementedError
 
     def render(self):
-        # TODO generate parameters
-
-        # TODO spawn the actors
+        # TODO generate parameters and spawn the actors
+        floor = Floor(self.world, scale=FVector(100, 100, 1))
 
         # prepare for the next run
         self.current_run += 1
@@ -37,6 +43,9 @@ class TrainScene(BaseScene):
 
     def description(self):
         return self.scenario + ' train'
+
+    def is_train_scene(self):
+        return True
 
 
 class TestScene(BaseScene):
@@ -52,6 +61,12 @@ class TestScene(BaseScene):
     def description(self):
         return self.scenario + ' test ({}/{})'.format(
             self.current_run+1, self.get_nruns())
+
+    def is_train_scene(self):
+        return False
+
+    def is_check_run(self):
+        return self.current_run < self.get_nruns_check()
 
     def get_nruns(self):
         return 4 + self.get_nruns_check()

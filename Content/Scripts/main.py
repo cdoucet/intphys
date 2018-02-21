@@ -18,6 +18,13 @@ class Main:
         # get the world from the attached component
         world = self.uobject.get_world()
 
+        # load the specifications of scenes we are going to generate
+        try:
+            scenes_config_file = os.environ['INTPHYS_SCENES']
+            scenes_json = json.loads(open(scenes_config_file, 'r').read())
+        except KeyError:
+            exit_ue(world, 'fatal error, INTPHYS_SCENES not defined, exiting')
+
         # init random number generator
         try:
             seed = os.environ['INTPHYS_SEED']
@@ -38,17 +45,12 @@ class Main:
         try:
             output_dir = os.environ['INTPHYS_OUTPUTDIR']
         except KeyError:
-            exit_ue(world, 'fatal error, INTPHYS_OUTPUTDIR not defined, exiting')
-
-        # load the specifications of scenes we are going to generate
-        try:
-            scenes_config_file = os.environ['INTPHYS_SCENES']
-            scenes_json = json.loads(open(scenes_config_file, 'r').read())
-        except KeyError:
-            exit_ue(world, 'fatal error, INTPHYS_SCENES not defined, exiting')
+            output_dir = None
+            ue.log_warning('INTPHYS_OUTPUTDIR not defined, screenshots capture disabled')
 
         # setup the scheduler with the list of scenes to generate
-        self.scheduler = Scheduler(world, scenes_json, output_dir)
+        size = (resolution[0], resolution[1], 100)
+        self.scheduler = Scheduler(world, scenes_json, size, output_dir)
 
     def tick(self, dt):
         # delegate ticks to the scheduler
@@ -73,21 +75,21 @@ class Main:
     #     FVector(1000, 0, 150), FRotator(0, 0, 0), FVector(1, 1, 1),
     #     "/Game/Materials/Object/GreenMaterial")
 
-    # from unreal_engine.classes import Screenshot
-    # def init_capture(self, output_dir, camera):
-    #     """If not in dry mode, register the screenshot manager for ticking"""
-    #     if 'INTPHYS_DRY' in os.environ:
-    #         ue.log('Running in dry mode, capture disabled')
-    #     else:
-    #         ue.log('saving data to {}'.format(output_dir))
-    #         # setup the sceenshots
-    #         Screenshot.Initialize(width, height, 100, camera.get_actor())
-    #         def save_capture():
-    #             # TODO retrieve max_depth and masks in get_status()
-    #             done, max_depth, masks = Screenshot.Save(output_dir)
-    #             Screenshot.reset()
-    #             ue.log('max depth is {}'.format(max_depth))
-    #             ue.log('masks are {}'.format(masks))
-    #         # register for ticking
-    #         self.ticker.add_hook(Screenshot.Capture, 'slow')
-    #         self.ticker.add_hook(save_capture, 'final')
+    from unreal_engine.classes import Screenshot
+    def init_capture(self, output_dir, camera):
+        """If not in dry mode, register the screenshot manager for ticking"""
+        if 'INTPHYS_DRY' in os.environ:
+            ue.log('Running in dry mode, capture disabled')
+        else:
+            ue.log('saving data to {}'.format(output_dir))
+            # setup the sceenshots
+            Screenshot.Initialize(width, height, 100, camera.get_actor())
+            def save_capture():
+                # TODO retrieve max_depth and masks in get_status()
+                done, max_depth, masks = Screenshot.Save(output_dir)
+                Screenshot.reset()
+                ue.log('max depth is {}'.format(max_depth))
+                ue.log('masks are {}'.format(masks))
+            # register for ticking
+            self.ticker.add_hook(Screenshot.Capture, 'slow')
+            self.ticker.add_hook(save_capture, 'final')

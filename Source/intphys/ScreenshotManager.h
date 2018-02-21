@@ -84,5 +84,4 @@ private:
 
     // Prefix the PNG filenames with zeros : 13 -> "0013"
     FString ZeroPadding(uint Index) const;
-
 };

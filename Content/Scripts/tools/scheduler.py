@@ -1,9 +1,13 @@
 import os
 
 import unreal_engine as ue
+from unreal_engine import FVector
+from unreal_engine.classes import Screenshot
+
 from tools.scene import TrainScene, TestScene
 from tools.tick import Tick
 from tools.utils import exit_ue
+from actors.camera import Camera
 
 
 def parse_scenes_json(world, scenes_json):
@@ -52,13 +56,32 @@ def parse_scenes_json(world, scenes_json):
 class Scheduler:
     """Render a list of intuitive physics scenes
 
-    The scheduler is attached to a given UE `world` in which it
-    renders the scenes defined in `scenes_json`, optionally tales
-    screenshots and save them to `output_dir`
+    The scheduler renders each scene defined in `scenes_json`. It
+    optionally takes screenshots and saves them to `output_dir`.
+
+    Parameters
+    ----------
+    world : ue.uobject
+        The game's world in which to render the scenes
+    scenes_json : dict
+        A dictionary loaded from a scenes json configuration file, see
+        intphys/Exemples/exemple.json
+    scene_size : tuple
+        The size of a scene the screen resolution times the number of
+        images captured in a single scene, in the form (width, height,
+        nimages).
+    output_dir : str, optional
+        When specified, the directory where to write PNG images and
+        metadata from the rendered scenes. When ignored (default), do
+        not take captures nor save any data (dry mode).
 
     """
-    def __init__(self, world, scenes_json, output_dir=None):
+    def __init__(self, world, scenes_json, scene_size, output_dir=None):
         self.world = world
+        self.output_dir = output_dir
+
+        # the scheduler owns the camera
+        self.camera = Camera(world, FVector(0, 0, 150))
 
         # generate the list of scenes from the input JSON file
         self.scenes_list = parse_scenes_json(self.world, scenes_json)
@@ -72,8 +95,14 @@ class Scheduler:
         self.scene_index = 0
         self.scene = self.scenes_list[0]
 
-        # init the scene for 100 ticks (and 100 images) per run
-        self.ticker = Tick(nticks=100)
+        # init the scene for n ticks (and n screenshot captures) per run
+        self.ticker = Tick(nticks=scene_size[2])
+
+        # setup the screenshots
+        if self.output_dir:
+            Screenshot.Initialize(
+                int(scene_size[0]), int(scene_size[1]), int(scene_size[2]),
+                self.camera.get_actor())
 
         # call run() to generate the next run at the end of the
         # current one
@@ -83,18 +112,51 @@ class Scheduler:
         self.ticker.run()
         self.run()
 
+    def scene_output_dir(self):
+        """Return the output directory for the current run"""
+        # build the scene sub-directory name, for exemple '027_test_O1'
+        idx = self.scene_index + 1
+        padded_idx = '0' * len(str(len(self.scenes_list) - idx)) + str(idx)
+        scene_name = (
+            padded_idx + '_' +
+            ('train' if self.scene.is_train_scene() else 'test') + '_' +
+            self.scene.scenario)
+
+        out = os.path.join(self.output_dir, scene_name)
+
+        if not self.scene.is_train_scene():
+            # 1, 2, 3 and 4 subdirectories
+            run_idx = self.scene.get_nruns() - self.current_run + 1
+            out = os.path.join(out, run_idx)
+
+        ue.log('created output dir %s' % out)
+        # ue.print_string(out)
+        return out
+
     def run(self):
-        """Render the current scene"""
+        """Render the current scene, capturing screenshots when required"""
         description = 'rendering scene {}/{}: {}'.format(
             self.scene_index+1, len(self.scenes_list), self.scene.description())
         ue.log(description)
-        # TODO for debug
-        ue.print_string(description)
+        # ue.print_string(description)
+
+        # capture screenshots, only if this is not a check run
+        if self.output_dir and not self.scene.is_check_run():
+            def save_capture():
+                output_dir = self.scene_output_dir()
+                # done, max_depth, masks = Screenshot.Save(output_dir)
+                Screenshot.Reset()
+                # ue.log('max depth is {}'.format(max_depth))
+                # ue.log('masks are {}'.format(masks))
+
+            # register for ticking
+            self.ticker.add_hook(Screenshot.Capture, 'slow')
+            self.ticker.add_hook(save_capture, 'final')
 
         self.scene.render()
 
     def run_next(self):
-        """Setup the next run for rendering, finally exit the game"""
+        """Setup the next run for rendering, exit the game after last run"""
         # if the current run failed, restart the whole scene with new
         # random parameters
         if not self.scene.is_valid():
@@ -109,6 +171,7 @@ class Scheduler:
                 self.scene = self.scenes_list[self.scene_index]
             except IndexError:
                 ue.log_warning('all scenes rendered, exiting')
+                self.ticker.stop()
                 exit_ue(self.world)
                 return
 

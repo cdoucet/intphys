@@ -9,7 +9,10 @@
 
 
 /**
+ * Exposes function to Python for taking and saving screenshots.
  *
+ * This class expose static methods only and wraps a ScreenshotManager
+ * instance. The methods delegates operations to that instance.
  */
 UCLASS()
 class INTPHYS_API UScreenshot : public UBlueprintFunctionLibrary
@@ -36,6 +39,6 @@ public:
     static void Reset();
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-        static void SetOriginActor(AActor* Actor);
+    static void SetOriginActor(AActor* Actor);
 
 };

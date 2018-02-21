@@ -168,6 +168,7 @@ bool FScreenshotManager::Save(const FString& Directory, float& OutMaxDepth, TMap
 
 void FScreenshotManager::Reset()
 {
+    UE_LOG(LogTemp, Warning, TEXT("Reset screenshot buffers"));
     m_ImageIndex = 0;
 }
 

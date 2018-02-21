@@ -47,6 +47,9 @@ class Tick:
         """Run the game and execute the tick hooks"""
         self._is_ticking = True
 
+    def stop(self):
+        self._is_ticking = False
+
     def set_ticks_remaining(self, ticks_remaining):
         """Set the number of slow ticks before the end of the scene"""
         self.nticks = ticks_remaining
@@ -66,7 +69,8 @@ class Tick:
         The level must be 'slow', 'fast', or 'final'.
 
         """
-        self.hooks[level].append(func)
+        if func not in self.hooks[level]:
+            self.hooks[level].append(func)
 
     def clear_hooks(self):
         """Clear all the registered hooks"""
@@ -100,5 +104,6 @@ class Tick:
 
             self._t_tick += 1
         elif self._is_ticking:
+            ue.log('running final hooks')
             self.run_hooks('final')
             self.reset()

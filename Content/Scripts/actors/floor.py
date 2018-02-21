@@ -56,12 +56,13 @@ class Floor(BaseMesh):
                  scale = FVector(10, 10, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
         if (world != None):
-            BaseMesh.__init__(self,
-                              world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
-                              '/Game/Meshes/Floor_400x400',
-                              FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
-                              FRotator(0, 0, 0),
-                              ue.load_object(Material, material),
-                              scale)
+            BaseMesh.__init__(
+                self,
+                world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
+                '/Game/Meshes/Floor_400x400',
+                FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
+                FRotator(0, 0, 0),
+                ue.load_object(Material, material),
+                scale)
         else:
             BaseMesh.__init__(self)

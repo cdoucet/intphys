@@ -32,11 +32,9 @@ class Camera(BaseActor):
             self.set_location(location)
             self.set_rotation(rotation)
 
-            """Attach the viewport to the camera
-            This initialization was present in the intphys-1.0 blueprint
-            but seems to be useless in UE-4.17. This is maybe done by
-            default.
-            """
+            # Attach the viewport to the camera. This initialization
+            # was present in the intphys-1.0 blueprint but seems to be
+            # useless in UE-4.17. This is maybe done by default.
             player_controller = GameplayStatics.GetPlayerController(world, 0)
             player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
         else:

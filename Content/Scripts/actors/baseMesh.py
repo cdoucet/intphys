@@ -116,7 +116,7 @@ class BaseMesh(BaseActor):
     """
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
-        ue.log('begin play {}'.format(self.actor.get_name()))
+        # ue.log('begin play {}'.format(self.actor.get_name()))
 
         # manage OnActorBeginOverlap events
         self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)

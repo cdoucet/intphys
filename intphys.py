@@ -284,7 +284,7 @@ def _BalanceList(l, n):
 
 
 def _Run(command, log, scenes_file, output_dir, cwd=None,
-         seed=None, dry=False, resolution=DEFAULT_RESOLUTION):
+         seed=None, resolution=DEFAULT_RESOLUTION):
     """Run `command` as a subprocess
 
     The `command` stdout and stderr are forwarded to `log`. The
@@ -298,26 +298,22 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
 
     INTPHYS_SEED is `seed`
 
-    INTPHYS_DRY is `dry`
-
     INTPHYS_RESOLUTION is `resolution`
 
     """
-    # get the output directory as absolute path
-    output_dir = os.path.abspath(output_dir)
-
     # setup the environment variables used in python scripts
     environ = copy.deepcopy(os.environ)
     environ['INTPHYS_ROOT'] = INTPHYS_ROOT
-    environ['INTPHYS_OUTPUTDIR'] = output_dir
     environ['INTPHYS_SCENES'] = os.path.abspath(scenes_file)
     environ['INTPHYS_RESOLUTION'] = resolution
 
-    if dry:
-        environ['INTPHYS_DRY'] = 'true'
-        log.info('running in dry mode, dont save anything')
-    else:
+    if output_dir:
+        # get the output directory as absolute path
+        output_dir = os.path.abspath(output_dir)
+        environ['INTPHYS_OUTPUTDIR'] = output_dir
         log.info('write data to ' + output_dir)
+    else:
+        log.info('running in dry mode, dont save anything')
 
     if seed is not None:
         environ['INTPHYS_SEED'] = str(seed)
@@ -352,7 +348,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
 
 
 def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
-              dry=False, resolution=DEFAULT_RESOLUTION, verbose=False):
+              resolution=DEFAULT_RESOLUTION, verbose=False):
     """Run the intphys packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
@@ -388,7 +384,7 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
         res = resolution.split('x')
         _Run(intphys_binary + ' -windowed ResX={} ResY={}'.format(res[0], res[1]),
              GetLogger(verbose=verbose),
-             scenes_file, output_dir, seed=seed, dry=dry,
+             scenes_file, output_dir, seed=seed,
              resolution=resolution, cwd=cwd)
     else:
         raise NotImplementedError('njobs option not yet implemented')
@@ -422,11 +418,11 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
         # joblib.Parallel(n_jobs=njobs, backend='threading')(
         #     joblib.delayed(_Run)(
         #         INTPHYS_BINARY, _log[i], _conf[i], _out[i],
-        #         seed=_seed[i], dry=dry, resolution=resolution)
+        #         seed=_seed[i], resolution=resolution)
         #     for i in range(njobs))
 
 
-def RunEditor(output_dir, scenes_file, seed=None, dry=False,
+def RunEditor(output_dir, scenes_file, seed=None,
               resolution=DEFAULT_RESOLUTION, verbose=False,
               standalone_game=False):
     """Run the intphys project within the UnrealEngine editor"""
@@ -448,7 +444,7 @@ def RunEditor(output_dir, scenes_file, seed=None, dry=False,
         command += ' -game -windowed ResX={} ResY={}'.format(res[0], res[1])
 
     _Run(command, log, scenes_file, output_dir,
-         seed=seed, dry=dry, resolution=resolution, cwd=editor_dir)
+         seed=seed, resolution=resolution, cwd=editor_dir)
 
 
 def FindDuplicates(directory):
@@ -503,23 +499,11 @@ def CleanDataDirectory(directory):
             shutil.rmtree(dirpath)
 
 
-def AtExit(output_dir):
-    if os.path.isdir(output_dir):
-        shutil.rmtree(output_dir)
-
-
 def Main():
     # parse command-line arguments
     args = ParseArgs()
 
-    # setup an empty output directory
-    dry_mode = False
-    if args.output_dir is None:
-        dry_mode = True
-        output_dir = tempfile.mkdtemp()
-        atexit.register(lambda: AtExit(output_dir))
-
-    else:
+    if args.output_dir:
         output_dir = os.path.abspath(args.output_dir)
         if os.path.exists(output_dir):
             if args.force:
@@ -530,6 +514,9 @@ def Main():
                     'Use the --force option to overwrite it'
                     .format(output_dir))
         os.makedirs(output_dir)
+    else:
+        # saving disabled, run in dry mode
+        output_dir = None
 
     # check the scenes_file is a correct JSON file
     try:
@@ -544,25 +531,25 @@ def Main():
     if args.editor:
         RunEditor(
             output_dir, args.scenes_file,
-            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            seed=args.seed, resolution=args.resolution,
             verbose=args.verbose)
     elif args.standalone_game:
         RunEditor(
             output_dir, args.scenes_file,
-            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            seed=args.seed, resolution=args.resolution,
             verbose=args.verbose, standalone_game=True)
     else:
         RunBinary(
             output_dir, args.scenes_file, njobs=1,  # args.njobs,
-            seed=args.seed, dry=dry_mode, resolution=args.resolution,
+            seed=args.seed, resolution=args.resolution,
             verbose=args.verbose)
 
-    # check for duplicated scenes and warn if founded
-    if not dry_mode:
+    if output_dir:
+        # check for duplicated scenes and warn if founded
         FindDuplicates(output_dir)
 
-    # remove temporary files from the output directory
-    CleanDataDirectory(output_dir)
+        # remove temporary files from the output directory
+        CleanDataDirectory(output_dir)
 
 
 if __name__ == '__main__':
