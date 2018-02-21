@@ -67,7 +67,7 @@ class Object(BaseMesh):
                  scale = FVector(1, 1, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  mass = 100,
-                 force = FVector(0.0, 0.0, 0.0)):
+                 force = FVector(0, 0, 0)):
         if (world != None):
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Object.Object_C')),
@@ -89,28 +89,29 @@ class Object(BaseMesh):
     """
     def set_mass(self, mass):
         self.mass = mass
-        self.mesh.SetMassScale(
-            BoneName='None',
-            InMassScale=self.mass / self.mesh.GetMassScale())
+        self.mesh.SetMassScale(BoneName='None', InMassScale=self.mass / self.mesh.GetMassScale())
             
     def get_mass(self):
         return self.mass
 
-    """
-    Apply force to the mesh
-    """
     def set_force(self, force):
         self.force = force
-        self.get_mesh().add_force(self.force)
 
     def get_force(self):
         return self.force
 
+    """
+    Apply the set force to the object
+    """
+    def play_force(self):
+        self.get_mesh().add_force(self.force)
+
+    """
+    make the object visible if False is send or hidden if True is send
+    """
     def set_hidden(self, hidden):
         self.hidden = hidden
         self.actor.SetActorHiddenInGame(self.hidden)
 
     def get_hidden(self):
         return self.hidden
-    
-    

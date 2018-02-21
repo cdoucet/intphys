@@ -95,7 +95,7 @@ class Main:
         self.init_resolution()
 
         # spawn the camera
-        self.from_above = Camera(self.world, FVector(0, 0, 2000), FRotator(0, -90, 0))
+        self.from_above = Camera(self.world, FVector(0, 0, 5000), FRotator(0, -90, 0))
         #self.front = Camera(self.world, FVector(-3000, 0, 100), FRotator(0, 0, 0))
         #self.back = Camera(self.world, FVector(1500, 0, 100), FRotator(0, 0, 180))
         #self.left = Camera(self.world, FVector(-1500, -1500, 100), FRotator(0, 0, 90))
@@ -103,10 +103,15 @@ class Main:
         #self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
         #self.random_camera = Camera(self.world)
         # spawn an actor
-        self.floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel")
+        self.floor = Floor(self.world)#, "/Game/Materials/Floor/M_Ground_Gravel")
         # La ligne ci-dessous parvient load un PhysicalMaterial. Reste plus qu'à l'appliquer sur un material/mesh/actor
-        #ue.load_object(PhysicalMaterial, "/Game/Materials/Floor/test")
-        self.object = Object(self.world, Object.shape['Sphere'], FVector(1000, 0, 900), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial", 100, FVector(10000, 0, 0))
+        self.object = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 900), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial", 1, FVector(10000000, 0, 0))
+        phys = ue.load_object(PhysicalMaterial, "/Game/Materials/PhysicalMaterials/Default")
+        actual = self.object.get_material().GetPhysicalMaterial()
+        actual = phys
+        actual2 = self.floor.get_material().GetPhysicalMaterial()
+        actual2 = phys
+        
         #self.object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
         #self.wall_front = Wall(self.world, 'Front')
         #self.wall_left = Wall(self.world, 'Left')
@@ -125,9 +130,17 @@ class Main:
 
     def tick(self, dt):
         self.count = self.count + 1
-        if (self.count % 100 == 0):
-            #self.object.set_material("/Game/Materials/Object/GreenMaterial")
-            #self.object.set_mesh_str("/Engine/EngineMeshes/Cube.Cube")
-            self.object.set_hidden(True)
+        if (self.count > 200 and self.count < 210):
+            self.object.play_force()
+            print("apply_force")
+        if (self.count == 300):
+            #self.object.__del__()
+            self.object.actor_destroy()
+        if (self.count == 100):
+            self.object.set_material("/Game/Materials/Object/GreenMaterial")
+            self.object.set_mesh_str("/Engine/EngineMeshes/Cube.Cube")
+            #self.object.set_hidden()
+            #self.object.set_scale(FVector(10, 10, 10))
         #self.ticker.tick(dt)
         #self.occluder.move()
+

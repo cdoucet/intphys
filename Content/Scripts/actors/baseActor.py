@@ -24,6 +24,12 @@ class BaseActor():
         self.location = location
         self.rotation = rotation
 
+    def actor_destroy(self):
+        if (self.actor != None):
+            self.actor.actor_destroy()
+            self.actor = None
+        self.actor = None
+
     def get_location(self):
         return self.location
 
