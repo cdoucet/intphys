@@ -103,15 +103,11 @@ class Main:
         #self.perspective = Camera(self.world, FVector(-2000, 0, 2000), FRotator(0, -45, 0))
         #self.random_camera = Camera(self.world)
         # spawn an actor
-        self.floor = Floor(self.world)#, "/Game/Materials/Floor/M_Ground_Gravel")
+        self.floor = Floor(self.world, "/Game/Materials/Floor/M_Ground_Gravel", -5000)
         # La ligne ci-dessous parvient load un PhysicalMaterial. Reste plus qu'à l'appliquer sur un material/mesh/actor
-        self.object = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 900), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial", 1, FVector(10000000, 0, 0))
-        phys = ue.load_object(PhysicalMaterial, "/Game/Materials/PhysicalMaterials/Default")
-        actual = self.object.get_material().GetPhysicalMaterial()
-        actual = phys
-        actual2 = self.floor.get_material().GetPhysicalMaterial()
-        actual2 = phys
-        
+        self.object = Object(self.world, Object.shape['Sphere'], FVector(0, 0, 900), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/BlackMaterial", 1, FVector(10000000, 0, 0), -5000)
+        #self.floor.set_friction(-5000)
+        #self.object.set_friction(-5000)
         #self.object2 = Object(self.world, Object.shape['Cube'], FVector(-1000, 0, 150), FRotator(0, 0, 45), FVector(1, 1, 1), "/Game/Materials/Object/GreenMaterial")
         #self.wall_front = Wall(self.world, 'Front')
         #self.wall_left = Wall(self.world, 'Left')
@@ -133,9 +129,8 @@ class Main:
         if (self.count > 200 and self.count < 210):
             self.object.play_force()
             print("apply_force")
-        if (self.count == 300):
-            #self.object.__del__()
-            self.object.actor_destroy()
+        #if (self.count == 300):
+        #    self.object.actor_destroy()
         if (self.count == 100):
             self.object.set_material("/Game/Materials/Object/GreenMaterial")
             self.object.set_mesh_str("/Engine/EngineMeshes/Cube.Cube")
@@ -143,4 +138,3 @@ class Main:
             #self.object.set_scale(FVector(10, 10, 10))
         #self.ticker.tick(dt)
         #self.occluder.move()
-

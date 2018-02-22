@@ -67,7 +67,8 @@ class Object(BaseMesh):
                  scale = FVector(1, 1, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  mass = 100,
-                 force = FVector(0, 0, 0)):
+                 force = FVector(0, 0, 0),
+                 friction = 0.5):
         if (world != None):
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Object.Object_C')),
@@ -75,7 +76,8 @@ class Object(BaseMesh):
                               location,
                               rotation,
                               ue.load_object(Material, material),
-                              scale)
+                              scale,
+                              friction)
             self.hidden = True
             self.set_mass(mass)
             self.set_force(force)

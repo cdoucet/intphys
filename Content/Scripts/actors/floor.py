@@ -53,7 +53,8 @@ class Floor(BaseMesh):
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self, world = None,
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor'))):
+                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Floor')),
+                 friction = 0.5):
         scale = FVector(1000, 1000, 1)
         if (world != None):
             BaseMesh.__init__(self,
@@ -62,7 +63,8 @@ class Floor(BaseMesh):
                               FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0 - (10 * scale.z)),
                               FRotator(0, 0, 0),
                               ue.load_object(Material, material),
-                              scale)
+                              scale,
+                              friction)
             #self.material.SetPhysMaterial()
             #self.material.SetVectorParameterValue("BodyColor", FLinearColor(255, 0, 0, 0))
             #mid = self.material.create_material_instance_dynamic(self.material)

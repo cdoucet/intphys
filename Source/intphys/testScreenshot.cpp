@@ -13,6 +13,18 @@
 #include <ctime>
 #include <cmath>
 #include "DrawDebugHelpers.h"
+#include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
+
+bool	UtestScreenshot::Change(UMaterial *material, float friction)
+{
+  UPhysicalMaterial *temp = material->GetPhysicalMaterial();
+  if (temp == NULL)
+    return false;
+  temp->Friction = friction;
+  temp->RebuildPhysicalMaterials();
+  temp->UpdatePhysXMaterial();
+  return true;
+}
 
 static FSceneView* GetSceneView(
     APlayerController* PlayerController,

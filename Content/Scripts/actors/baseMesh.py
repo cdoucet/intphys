@@ -4,6 +4,8 @@ from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from baseActor import BaseActor
 
+from unreal_engine.classes import testScreenshot
+
 """
 Ok here we go:
 This is a recursive instantiate class.
@@ -52,10 +54,12 @@ class BaseMesh(BaseActor):
                  location = FVector(0, 0, -42),
                  rotation = FRotator(0, 0, -42),
                  material = None,
-                 scale = FVector(1, 1, 1)):
+                 scale = FVector(1, 1, 1),
+                 friction = 0.5):
         self.mesh_str = mesh_str
         self.material = material
         self.scale = scale
+        self.friction = friction
         # The second part of the condition doesn't work can't figure it out
         if (mesh_str != None):
             
@@ -65,6 +69,7 @@ class BaseMesh(BaseActor):
             self.set_location(location)
             self.set_rotation(rotation)
             self.set_mesh()
+            self.set_friction(friction)
         else:
             BaseActor.__init__(self)
 
@@ -111,6 +116,13 @@ class BaseMesh(BaseActor):
         
     def get_scale(self):
         return self.scale
+
+    def get_friction(self):
+        return self.friction
+
+    def set_friction(self, friction):
+        self.friction = friction
+        testScreenshot.Change(self.material, friction)
 
     """
     begin_play is called when actor_spawn is called.

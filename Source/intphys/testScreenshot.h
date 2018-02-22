@@ -41,7 +41,8 @@ private:
 
 public:
 
-  // UFUNCTION(BlueprintCallable, Category="IntPhys")
+  UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static bool Change(UMaterial *material, float friction);
   // static bool CaptureDepthAndMasks(
   //     const FIntSize& size, int stride, AActor* origin,
   //     const TArray<AActor*>& objects,
