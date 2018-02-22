@@ -61,14 +61,14 @@ class BaseMesh(BaseActor):
         self.scale = scale
         self.friction = friction
         # The second part of the condition doesn't work can't figure it out
-        if (mesh_str != None):
-            
+        if (mesh_str != None):            
             BaseActor.__init__(self, actor, location, rotation)
             if (location == FVector(0.0, 0.0, -42.0)):# and rotation == FRotator(0.0, 0.0, -42.0)):
                 location, rotation = self.get_test_parameters()
             self.set_location(location)
             self.set_rotation(rotation)
             self.set_mesh()
+            #self.mesh.OnComponentHit.AddDynamic(self.actor, print("***************"))
             self.set_friction(friction)
         else:
             BaseActor.__init__(self)
@@ -88,10 +88,7 @@ class BaseMesh(BaseActor):
         self.actor.set_actor_scale(self.scale)
 
     def get_mesh(self):
-        #"""retrieve the StaticMeshComponent of the actor"""
-        #return self.get_actor().get_actor_component_by_type(
-        #    ue.find_class('StaticMeshComponent'))
-        return self.mesh
+        return self.get_actor().get_actor_component_by_type(ue.find_class('StaticMeshComponent'))
 
     """
     set_mesh_str change the current mesh by another
@@ -134,3 +131,4 @@ class BaseMesh(BaseActor):
 
         # manage OnActorBeginOverlap events
         self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
+        self.actor.bind_event('OnActorHit', self.on_actor_hit)

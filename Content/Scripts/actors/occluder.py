@@ -96,3 +96,6 @@ class Occluder(BaseMesh):
                 else:
                     rotation.roll -= self.speed
         self.set_rotation(rotation)
+
+    def tick(self, delta):
+        self.move()

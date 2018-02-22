@@ -54,7 +54,16 @@ class BaseActor():
 
     """Raises a Runtime error when some actor overlaps this object"""
     def manage_overlap(self, me, other):
+        if (me == other):
+            return
         message = '{} overlapping {}'.format(
+            self.actor.get_name(), other.get_name())
+        ue.log_error(message)
+
+    def on_actor_hit(self, me, other, *args):
+        if (other.get_name()[:5] == "Floor"):
+            return
+        message = '{} hitting {}'.format(
             self.actor.get_name(), other.get_name())
         ue.log_error(message)
 

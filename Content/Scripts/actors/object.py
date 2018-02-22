@@ -117,3 +117,9 @@ class Object(BaseMesh):
 
     def get_hidden(self):
         return self.hidden
+
+#You can't call "regular" variable (force, mesh,...) in tick function because it is not called in "regular" instance of the class. It is called in the recursive class, which has not these variable
+"""
+    def tick(self, delta):
+        self.play_force()
+"""
