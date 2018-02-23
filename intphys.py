@@ -481,24 +481,6 @@ def FindDuplicates(directory):
                 os.path.dirname(n1), os.path.dirname(n2)))
 
 
-def CleanDataDirectory(directory):
-    """Remove temporary and useless files and subdirs from `directory`
-
-    This removes the *.t7 files, iterations_table.json and any empty
-    subdirectory (containing nothing or only empty subdirectories).
-
-    """
-    for (dirpath, dirnames, filenames) in os.walk(directory):
-        for f in filenames:
-            if f.endswith('.t7') or f == 'iterations_table.json':
-                os.remove(os.path.join(dirpath, f))
-
-        if not filenames and not sum([os.listdir(os.path.join(dirpath, d))
-                                      for d in dirnames], []):
-            # dirpath is empty or contains only empy subdirs
-            shutil.rmtree(dirpath)
-
-
 def Main():
     # parse command-line arguments
     args = ParseArgs()
@@ -547,9 +529,6 @@ def Main():
     if output_dir:
         # check for duplicated scenes and warn if founded
         FindDuplicates(output_dir)
-
-        # remove temporary files from the output directory
-        CleanDataDirectory(output_dir)
 
 
 if __name__ == '__main__':
