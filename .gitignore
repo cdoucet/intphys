@@ -58,8 +58,8 @@ Binaries
 DerivedDataCache
 Intermediate
 Saved
-Content/Scripts/__pycache__
-Content/Scripts/*.uasset
+Content/Scripts/**/__pycache__
+Content/Scripts/**/*.uasset
 Content/*_BuiltData.uasset
 Build
 Package
