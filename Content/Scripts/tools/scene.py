@@ -10,6 +10,8 @@ class BaseScene:
         self.scenario = scenario
         self.current_run = 0
 
+        self.actors = {}
+
     def get_nruns(self):
         return 1
 
@@ -31,10 +33,16 @@ class BaseScene:
 
     def render(self):
         # TODO generate parameters and spawn the actors
-        floor = Floor(self.world, scale=FVector(100, 100, 1))
+        self.actors['floor'] = Floor(self.world)
+
+        ue.log('spawned {}'.format(self.actors))
 
         # prepare for the next run
         self.current_run += 1
+
+    def clear(self):
+        for actor in self.actors.values():
+            actor.get_actor().actor_destroy()
 
 
 class TrainScene(BaseScene):
@@ -59,8 +67,11 @@ class TestScene(BaseScene):
         self.ntricks = ntricks
 
     def description(self):
-        return self.scenario + ' test ({}/{})'.format(
-            self.current_run+1, self.get_nruns())
+        return (
+            self.scenario + ' test' +
+            (' occluded' if self.is_occluded else ' visible') +
+            (' static' if self.is_static else ' dynamic_{}'.format(self.ntricks)) +
+            ' ({}/{})'.format(self.current_run+1, self.get_nruns()))
 
     def is_train_scene(self):
         return False
