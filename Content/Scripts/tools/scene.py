@@ -22,7 +22,7 @@ class BaseScene:
         return True
 
     def is_train_scene(self):
-        raise NotImplementedError
+        return True if isinstance(self, TrainScene) else False
 
     def is_check_run(self):
         return False
@@ -32,10 +32,11 @@ class BaseScene:
         raise NotImplementedError
 
     def render(self):
-        # TODO generate parameters and spawn the actors
-        self.actors['floor'] = Floor(self.world)
+        # # TODO generate parameters and spawn the actors
+        # self.actors['floor'] = Floor(self.world)
+        Floor(self.world)
 
-        ue.log('spawned {}'.format(self.actors))
+        # ue.log('spawned {}'.format(self.actors))
 
         # prepare for the next run
         self.current_run += 1
@@ -51,9 +52,6 @@ class TrainScene(BaseScene):
 
     def description(self):
         return self.scenario + ' train'
-
-    def is_train_scene(self):
-        return True
 
 
 class TestScene(BaseScene):
@@ -72,9 +70,6 @@ class TestScene(BaseScene):
             (' occluded' if self.is_occluded else ' visible') +
             (' static' if self.is_static else ' dynamic_{}'.format(self.ntricks)) +
             ' ({}/{})'.format(self.current_run+1, self.get_nruns()))
-
-    def is_train_scene(self):
-        return False
 
     def is_check_run(self):
         return self.current_run < self.get_nruns_check()

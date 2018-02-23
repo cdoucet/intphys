@@ -2,7 +2,8 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
-from baseMesh import BaseMesh
+
+from base_mesh import BaseMesh
 import tools.materials
 import random
 from actors.wall import Wall

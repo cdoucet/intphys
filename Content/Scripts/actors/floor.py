@@ -4,7 +4,8 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
-from actors.baseMesh import BaseMesh
+
+from actors.base_mesh import BaseMesh
 from tools.materials import get_random_material, load_materials
 
 # Ok here we go: This is a recursive instantiate class.  The general

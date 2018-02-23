@@ -4,7 +4,7 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
-from actors.baseActor import BaseActor
+from actors.base_actor import BaseActor
 
 from unreal_engine.classes import Friction
 

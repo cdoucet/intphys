@@ -5,7 +5,7 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
-from actors.baseActor import BaseActor
+from actors.base_actor import BaseActor
 
 class Camera(BaseActor):
     """
