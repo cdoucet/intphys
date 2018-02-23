@@ -1,10 +1,10 @@
 #!/bin/bash
 #
-# Run this script from the root directory of the intphys project to
-# build it as a standalone binary.
+# Run this script from the Tools directory of the intphys project to
+# build the game as a standalone binary.
 
 # abspath to the root directory of intphys
-INTPHYS_DIR=$(readlink -f .)
+INTPHYS_DIR=$(readlink -f ..)
 
 # where we are packaging the project
 PACKAGE_DIR=$INTPHYS_DIR/Package
