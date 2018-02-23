@@ -1,6 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 #include "Friction.h"
+#include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
 
 
 bool UFriction::SetFriction(UMaterial* Material, float Friction)

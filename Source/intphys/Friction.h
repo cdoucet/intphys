@@ -15,6 +15,6 @@ class INTPHYS_API UFriction : public UBlueprintFunctionLibrary
     GENERATED_BODY()
 
 public:
-    UFONCTION(BlueprintCallable, Category="IntPhys")
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool SetFriction(UMaterial* Material, float Friction);
 };
