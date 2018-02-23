@@ -7,28 +7,38 @@ from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 from actors.baseActor import BaseActor
 
-"""
-Warning : if you don't send either the location and the rotation
-or if you send them filled with 0, during the camera instantiation,
-the __init__ function will change it on its own
-"""
-
 class Camera(BaseActor):
-    def __init__(self, world=None,
-                 location=FVector(0, 0, 0), rotation=FRotator(0, 0, 0),
-                 field_of_view=90, aspect_ratio=1,
-                 projection_mode=ECameraProjectionMode.Perspective):
+    """
+    __init__ instantiate the class
+    parameters ->
+    world: UEngine world instance
+    location: location of the actor (FVector). Default value: 0, 0, 0
+    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
+    field_of_view: angle of the camera field of view (int). Default value: 90
+    aspect_ratio: I don't know what it is :(
+    projection mode: I redirect you to the Unreal Engine Doc
+
+    Warning !
+    If you don't send either the location and the rotation during the camera instantiation,
+    the __init__ function will change it on its own
+    """
+    def __init__(self,
+                 world = None,
+                 location = FVector(0, 0, -42),
+                 rotation = FRotator(0, 0, -42),
+                 field_of_view = 90,
+                 aspect_ratio = 1,
+                 projection_mode = ECameraProjectionMode.Perspective):
         self.field_of_view = field_of_view
         self.aspect_ratio = aspect_ratio
         self.projection_mode = projection_mode
-
-        if (location == FVector(0, 0, 0) and rotation == FRotator(0, 0, 0)):
-            location, rotation = self.get_test_parameters()
-
         if (world != None):
-            BaseActor.__init__(
-                self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
-                location, rotation)
+            BaseActor.__init__(self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
+                               location,
+                               rotation)
+            # The second part of the condition doesn't work can't figure it out
+            if (location == FVector(0, 0, -42)):# and rotation == FRotator(0, 0, -42)):
+                location, rotation = self.get_test_parameters()
             self.set_location(location)
             self.set_rotation(rotation)
 
@@ -40,47 +50,35 @@ class Camera(BaseActor):
         else:
             BaseActor.__init__(self)
 
-    @staticmethod
-    def get_train_parameters():
-        """Returns random coordinates for train scenes
-        In train scenes, camera has a high variability. Only the roll
-        is forced to 0.
-        """
-        location = FVector(
-            random.uniform(-100, 100),
-            random.uniform(200, 400),
-            100 + random.uniform(-30, 80))
-        rotation = FRotator(
-            0,
-            random.uniform(-15, 10),
-            random.uniform(-30, 30))
-        return location, rotation
+    def get_field_of_view(self):
+        return (self.field_of_view)
 
-    @staticmethod
-    def get_test_parameters():
-        """Returns random coordinates for test scenes
-        In test scenes, the camera has a constrained location, with
-        little variations along the y axis and pitch.
-        """
-        location = FVector(
-            0,
-            -100 * random.random(),
-            150)
-        rotation = FRotator(
-            0,
-            -10 * random.random(),
-            0)
-        return location, rotation
+    def set_field_of_view(self, field_of_view):
+        self.field_of_view = field_of_view
+        self.camera_component.SetFieldOfView(self.field_of_view)
+
+    def get_component(self):
+        return (self.camera_component)
+
+    def get_aspect_ratio(self):
+        return (self.aspect_ratio)
+
+    def set_aspect_ratio(self, aspect_ratio):
+        self.aspect_ratio = aspect_ratio
+        self.camera_component.SetAspectRatio(self.aspect_ratio)
+
+    def set_projection_mode(self, projection_mode):
+        self.projection_mode = projection_mode;
+        self.camera_component.SetProjectionMode(self.projection_mode)
+
+    def get_projection_mode(self):
+        return (self.projection_mode)
 
     def begin_play(self):
-        # retrieve the camera object from its Python component
         self.set_actor(self.uobject.get_owner())
-
         self.actor.bind_event(
             'OnActorBeginOverlap', self.manage_overlap)
-
-        # setup camera attributes
-        camera_component = self.actor.get_component_by_type(CameraComponent)
-        camera_component.SetFieldOfView(self.field_of_view)
-        camera_component.SetAspectRatio(self.aspect_ratio)
-        camera_component.SetProjectionMode(self.projection_mode)
+        self.camera_component = self.actor.get_component_by_type(CameraComponent)
+        self.camera_component.SetFieldOfView(self.field_of_view)
+        self.camera_component.SetAspectRatio(self.aspect_ratio)
+        self.camera_component.SetProjectionMode(self.projection_mode)

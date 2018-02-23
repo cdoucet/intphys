@@ -54,7 +54,7 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, world=None, scale=FVector(10, 10, 1), material=None):
+    def __init__(self, world=None, material=None, scale=FVector(10, 10, 1), friction=0.5):
         if world is not None:
             if not material:
                 material = get_random_material(load_materials('Materials/Floor'))
@@ -62,9 +62,10 @@ class Floor(BaseMesh):
             super().__init__(
                 world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
                 '/Game/Meshes/Floor_400x400',
-                FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0),
+                FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0 - (10 * scale.z)),
                 FRotator(0, 0, 0),
                 ue.load_object(Material, material),
-                scale)
+                scale,
+                friction)
         else:
             super().__init__()

@@ -1,12 +1,12 @@
 # coding: utf-8
 
 import unreal_engine as ue
-import math
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from actors.baseMesh import BaseMesh
 import tools.materials
+import random
 
 """
 Ok here we go:
@@ -42,6 +42,8 @@ class Wall(BaseMesh):
     __init__ instantiate the class
     parameters ->
     world: UEngine world instance
+    side: the wall you wanna build compared to the floor
+    (either "Back, "Front", "Left" or "Right"). Default: "Front"
     material: material of the actor (UObject). Default value: a random one in the relevant directory
 
     You can't pass the location, direction and so on of the wall as parameter
@@ -54,14 +56,18 @@ class Wall(BaseMesh):
     """
     def __init__(self, world = None,
                  side = 'Front',
-                 scale = FVector(10, 1, 10),
+                 length = random.uniform(1500, 4000),
+                 depth = random.uniform(1500, 900),
+                 height = random.uniform(1, 10),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
         self.side = {
-            'Back': self.back,
             'Front': self.front,
             'Left': self.left,
             'Right': self.right
         }
+        self.length = length
+        self.depth = depth
+        self.height = height
         if (world != None):
             self.side[side]()
             BaseMesh.__init__(self,
@@ -70,22 +76,21 @@ class Wall(BaseMesh):
                               self.location,
                               self.rotation,
                               ue.load_object(Material, material),
-                              scale)
+                              self.scale)
         else:
             BaseMesh.__init__(self)
 
     def front(self):
-        self.location = FVector(2000, -2000, 0)
+        self.scale = FVector(self.length / 400, 1, self.height)
         self.rotation = FRotator(0, 0, 90)
-
-    def back(self):
-        self.location = FVector(-2000, -2000, 0)
-        self.rotation = FRotator(0, 0, 90)
+        self.location = FVector(self.depth, (-1 * self.length) / 2, 0)
 
     def left(self):
-        self.location = FVector(-2000, -2000, 0)
+        self.scale = FVector(self.depth / 400, 1, self.height)
         self.rotation = FRotator(0, 0, 0)
+        self.location = FVector(0, (-1 * self.length) / 2, 0)
 
     def right(self):
-        self.location = FVector(-2000, 2000, 0)
+        self.scale = FVector(self.depth / 400, 1, self.height)
         self.rotation = FRotator(0, 0, 0)
+        self.location = FVector(-0, self.length / 2, 0)
