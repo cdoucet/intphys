@@ -41,4 +41,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void SetOriginActor(AActor* Actor);
 
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static bool IsActorInFrame(AActor* Actor, int FrameIndex);
+
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static bool IsActorInLastFrame(AActor* Actor);
 };

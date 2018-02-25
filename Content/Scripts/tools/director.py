@@ -11,14 +11,15 @@ from actors.camera import Camera
 
 
 class Director:
-    """Render a list of intuitive physics scenes, optionally capture them
+    """Render, capture and save a list of train and test scenes
 
     The director renders each scene defined in the `scenes` list in
-    the given UE `world`. It optionally takes screenshots and saves
-    them to `output_dir`.
+    the given UE `world`. It optionally takes screenshot captures and
+    saves them to `output_dir` as PNG images, along with scene's
+    metadata.
 
     The director is linked with the running game through the tick()
-    method, in which it triggers the successive scenes.
+    method, in which the successive scenes are triggered.
 
     Parameters
     ----------
@@ -51,7 +52,7 @@ class Director:
             nruns=sum(s.get_nruns() for s in self.scenes_list)))
 
         # the director owns the camera
-        self.camera = Camera(world, FVector(0, 0, 150))
+        self.camera = Camera(world)
 
         # initialize to render the first scene on the next tick
         self.scene_index = 0
@@ -82,6 +83,14 @@ class Director:
                 self.ticker.counter = 0
                 self.setup()
 
+        # prototype of magic trick
+        if tick == 50:
+            self.scene.actors['object1'].set_location(FVector(-700, 0, 0))
+
+        # prototype of magic trick
+        if tick == 70:
+            self.scene.actors['object1'].set_location(FVector(400, 0, 0))
+
     def setup(self):
         description = 'running scene {}/{}: {}'.format(
             self.scene_index+1, len(self.scenes_list),
@@ -105,6 +114,7 @@ class Director:
             pass
         elif self.output_dir:
             Screenshot.Capture()
+            # self.get_status()
 
     def teardown(self):
         """Save captured images and prepare the next run
@@ -125,13 +135,18 @@ class Director:
             # the run was successful, see if we need to save capture and
             # prepare the next run
             elif self.output_dir:
+                is_here = [Screenshot.IsActorInFrame(
+                    self.scene.actors['object1'].get_actor(), i)
+                           for i in range(self.size[2])]
+                print(sum(is_here))
                 self._save_capture()
 
             # prepare the next run : if no more run for that scene, render
-            # the next scene (else render the next run of the current
+            # the next scene. Else render the next run of the current
             # scene: the runs transition is handled directly by the scene
-            # instance)
+            # instance.
             if self.scene.get_nruns_remaining() == 0:
+                # destroy all the actors from the previous scene
                 self.scene.clear()
 
                 self.scene_index += 1
@@ -150,7 +165,7 @@ class Director:
     def _save_capture(self):
         # save the captured images in a subdirectory
         output_dir = self._get_scene_subdir()
-        ue.log('saving screenshots to %s' % output_dir)
+        ue.log('saving capture to %s' % output_dir)
 
         done, max_depth, masks = Screenshot.Save(output_dir)
 
@@ -162,7 +177,8 @@ class Director:
 
 
     def _get_scene_subdir(self):
-        # build the scene sub-directory name, for exemple '027_test_O1'
+        # build the scene sub-directory name, for exemple
+        # '027_test_O1/3' or '028_train_O1'
         idx = self.scene_index + 1
         padded_idx = '0' * len(str(len(self.scenes_list) - idx)) + str(idx)
         scene_name = (

@@ -1,7 +1,10 @@
+import random
+
 import unreal_engine as ue
-from unreal_engine import FVector
+from unreal_engine import FVector, FRotator
 
 from actors.floor import Floor
+from actors.object import Object
 
 
 class BaseScene:
@@ -32,18 +35,18 @@ class BaseScene:
         raise NotImplementedError
 
     def render(self):
-        # # TODO generate parameters and spawn the actors
-        # self.actors['floor'] = Floor(self.world)
-        Floor(self.world)
+        self.actors['floor'] = Floor(self.world)
 
-        # ue.log('spawned {}'.format(self.actors))
+        self.actors['object1'] = Object(
+            world=self.world,
+            location=FVector(700, 0, 0))
 
         # prepare for the next run
         self.current_run += 1
 
     def clear(self):
         for actor in self.actors.values():
-            actor.get_actor().actor_destroy()
+            actor.actor_destroy()
 
 
 class TrainScene(BaseScene):
