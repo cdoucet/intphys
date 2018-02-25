@@ -52,8 +52,8 @@ class BaseActor():
         if (self.actor.set_actor_rotation(self.rotation, True) == False):
             print("Failed to set the rotation of an actor")
 
-    """Raises a Runtime error when some actor overlaps this object"""
     def manage_overlap(self, me, other):
+        """Raises a Runtime error when some actor overlaps this object"""
         if (me == other):
             return
         message = '{} overlapping {}'.format(
@@ -67,12 +67,13 @@ class BaseActor():
             self.actor.get_name(), other.get_name())
         ue.log_error(message)
 
-    """
-    Returns random coordinates for train scenes
-    In train scenes, camera has a high variability. Only the roll
-    is forced to 0.
-    """
     def get_train_parameters(self):
+        """Returns random coordinates for train scenes
+
+        In train scenes, camera has a high variability. Only the roll
+        is forced to 0.
+
+        """
         location = FVector(
             random.uniform(-100, 100),
             random.uniform(200, 400),
@@ -83,12 +84,13 @@ class BaseActor():
             random.uniform(-30, 30))
         return location, rotation
 
-    """
-    Returns random coordinates for test scenes
-    In test scenes, the camera has a constrained location, with
-    little variations along the y axis and pitch.
-    """
     def get_test_parameters(self):
+        """Returns random coordinates for test scenes
+
+        In test scenes, the camera has a constrained location, with
+        little variations along the y axis and pitch.
+
+        """
         location = FVector(
             0,
             -100 * random.random(),
