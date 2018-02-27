@@ -2,8 +2,7 @@ import os
 import random
 
 import unreal_engine as ue
-from unreal_engine.classes import KismetSystemLibrary
-from tools.utils import parse_scenes_json, exit_ue
+from tools.utils import parse_scenes_json, exit_ue, set_game_resolution
 from tools.director import Director
 
 
@@ -16,6 +15,10 @@ class Main:
     def begin_play(self):
         # get the world from the attached component
         world = self.uobject.get_world()
+
+        # the main loop continues to tick whe the game is paused (but
+        # all other actors are paused)
+        self.uobject.SetTickableWhenPaused(True)
 
         # load the specifications of scenes we are going to generate
         try:
@@ -36,8 +39,7 @@ class Main:
             resolution = (res[0], res[1])
         except KeyError:
             resolution = DEFAULT_RESOLUTION
-        KismetSystemLibrary.ExecuteConsoleCommand(
-            world, 'r.SetRes {}'.format('x'.join(resolution)))
+        set_game_resolution(world, resolution)
 
         # setup output directory where to save generated data
         try:

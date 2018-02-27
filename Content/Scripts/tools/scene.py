@@ -35,11 +35,9 @@ class BaseScene:
         raise NotImplementedError
 
     def render(self):
-        self.actors['floor'] = Floor(self.world)
-
-        self.actors['object1'] = Object(
-            world=self.world,
-            location=FVector(700, 0, 0))
+        if self.current_run == 0:
+            self.actors['floor'] = Floor(self.world)
+            self.actors['object1'] = Object(world=self.world, location=FVector(700, 0, 500))
 
         # prepare for the next run
         self.current_run += 1

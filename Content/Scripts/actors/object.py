@@ -61,15 +61,19 @@ class Object(BaseMesh):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, world = None,
-                 mesh_str = shape['Sphere'],
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 scale = FVector(1, 1, 1),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
-                 mass = 1.0,
-                 force = FVector(0.0, 0.0, 0.0)):
+    def __init__(self, world=None,
+                 mesh_str=shape['Sphere'],
+                 location=FVector(0, 0, 0),
+                 rotation=FRotator(0, 0, 0),
+                 scale=FVector(1, 1, 1),
+                 material=None,
+                 mass=1.0,
+                 force=FVector(0.0, 0.0, 0.0)):
         if (world != None):
+            if material is None:
+                material = tools.materials.get_random_material(
+                    tools.materials.load_materials('Materials/Actor'))
+
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Object.Object_C')),
                               mesh_str,

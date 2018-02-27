@@ -4,21 +4,42 @@ import json
 import os
 
 import unreal_engine as ue
-from unreal_engine.classes import KismetSystemLibrary
+from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 
 
 
 # TODO Does not exit the game immediately, find better
 def exit_ue(world, message=None):
-    """Quit the game, optionally displaying an error message
+    """Quit the game, optionally logging an error message
 
     `world` is the world reference from the running game.
+    `message` is the error message to be looged.
 
     """
     if message:
         ue.log_error(message)
 
-    KismetSystemLibrary.QuitGame(world)
+    # KismetSystemLibrary.QuitGame(world)
+    world.quit_game()
+
+
+def set_game_paused(world, paused):
+    """Pause/unpause the game
+
+    `paused` is a boolean value
+
+    """
+    GameplayStatics.SetGamePaused(world, paused)
+
+
+def set_game_resolution(world, resolution):
+    """Set the game and captured images resolution
+
+    `resolution` is a tuple of (width, height) in pixels
+
+    """
+    KismetSystemLibrary.ExecuteConsoleCommand(
+        world, 'r.SetRes {}'.format('x'.join(resolution)))
 
 
 def intphys_root_directory():

@@ -7,32 +7,59 @@ class Tick:
     """
     def __init__(self, tick_interval=2):
         # Interval between two ticks
-        self.tick_interval = tick_interval
+        self._tick_interval = tick_interval
 
         # True when the ticker is active
-        self.is_ticking = False
+        self._is_ticking = False
 
-        # Count the ticks at the given interval
-        self.counter = 0
+        # True when ticking at the requested interval
+        self._on_tick = False
 
-        # two variables to compute the ticks interval
+        # Count the ticks at the requested interval
+        self._counter = 0
+
+        # two variables to compute the intervals
         self._t_tick, self._t_last_tick = 0, 0
 
-    def tick(self, dt):
-        """Return the tick count if ticking at the requested interval
+    def on_tick(self):
+        """True when ticking, False otherwise"""
+        return self._is_ticking and self._on_tick
 
-        Return -1 if not ticking or ticking out of interval.
+    def start(self):
+        """Start ticking"""
+        self._is_ticking = True
+
+    def stop(self):
+        """Stop ticking but don't reset the ticks counter"""
+        self._is_ticking = False
+
+    def reset(self):
+        """Reset the ticks counter"""
+        self._counter = 0
+        self._t_tick = 0
+        self._t_last_tick = 0
+
+    def get_count(self):
+        """Return the number of ticks since the last reset"""
+        return self._counter
+
+    def tick(self, dt):
+        if self._is_ticking and self._update(dt):
+            self._counter += 1
+            self._on_tick = True
+        else:
+            self._on_tick = False
+
+    def _update(self, dt):
+        """Update the ticker, return True on tick, False otherwise
 
         `dt` is not used here and is the time since the last tick.
 
         """
-        if not self.is_ticking:
-            return -1
-
         self._t_tick += 1
-        if self._t_tick - self._t_last_tick >= self.tick_interval:
+
+        if self._t_tick - self._t_last_tick >= self._tick_interval:
             self._t_last_tick = self._t_tick
-            self.counter += 1
-            return self.counter
-        else:
-            return -1
+            return True
+
+        return False
