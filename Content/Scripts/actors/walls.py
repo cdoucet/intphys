@@ -3,7 +3,7 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 
-from base_mesh import BaseMesh
+from actors.base_mesh import BaseMesh
 import tools.materials
 import random
 from actors.wall import Wall
@@ -21,3 +21,9 @@ class Walls():
         self.front = Wall(world, "Front", length, depth, height, material)
         self.right = Wall(world, "Right", length, depth, height, material)
         self.left = Wall(world, "Left", length, depth, height, material)
+
+    def actor_destroy(self):
+        self.front.actor_destroy()
+        self.right.actor_destroy()
+        self.left.actor_destroy()
+        

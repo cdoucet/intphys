@@ -62,7 +62,7 @@ class Occluder(BaseMesh):
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
                               '/Game/Meshes/OccluderWall',
-                              FVector(location.x, location.y - (200 * scale.y), location.z + 100),
+                              FVector(location.x, location.y - (200 * scale.y), location.z),
                               rotation,
                               ue.load_object(Material, material),
                               scale)
@@ -99,6 +99,3 @@ class Occluder(BaseMesh):
                 else:
                     rotation.roll -= self.speed
         self.set_rotation(rotation)
-
-    def tick(self, delta):
-        self.move()

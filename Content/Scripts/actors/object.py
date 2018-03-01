@@ -97,11 +97,13 @@ class Object(BaseMesh):
     def get_mass(self):
         return self.mass
 
+    def set_force(self, force):
+        self.force = force
+
     """
     Apply force to the mesh
     """
-    def set_force(self, force):
-        self.force = force
+    def move(self):
         self.get_mesh().add_force(self.force)
 
     def get_force(self):

@@ -1,8 +1,13 @@
 import unreal_engine as ue
-from unreal_engine import FVector
+from unreal_engine import FVector, FRotator
+
+import tools.materials
 
 from actors.floor import Floor
-
+from actors.object import Object
+from actors.occluder import Occluder
+from actors.walls import Walls
+from actors.camera import Camera
 
 class BaseScene:
     def __init__(self, world, scenario):
@@ -10,7 +15,7 @@ class BaseScene:
         self.scenario = scenario
         self.current_run = 0
 
-        self.actors = {}
+        self.actors = { "Camera": None, "Floor": None, "Walls": None, "Occluder": [], "Object": [] }
 
     def get_nruns(self):
         return 1
@@ -34,18 +39,34 @@ class BaseScene:
     def render(self):
         # # TODO generate parameters and spawn the actors
         # self.actors['floor'] = Floor(self.world)
-        Floor(self.world)
-
+        self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
+        self.actors["Floor"] = Floor(self.world)
+        self.actors["Walls"] = Walls(self.world)
+        self.actors["Occluder"].append(Occluder(self.world, FVector(0, 0, 0), FRotator(0, 0, 90), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 2))
+        #Object(self.world, Object.shape['Sphere'], FVector(100, 100, 1000), FRotator(0, 0, 0), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 1, FVector(0, 0, 0))
         # ue.log('spawned {}'.format(self.actors))
-
+        
         # prepare for the next run
         self.current_run += 1
 
     def clear(self):
-        for actor in self.actors.values():
-            actor.get_actor().actor_destroy()
-
-
+        ue.log_warning("Clear")
+        for key, value in self.actors.items():
+            if (isinstance(value, list)):
+                for member in value:
+                    member.actor_destroy()
+                    value.remove(member)
+            else:
+                value.actor_destroy()
+                value = None
+        """
+        self.actors["Floor"].get_actor().actor_destroy()
+        for occluder in self.actors["Occluder"]:
+            occluder.get_actor().actor_destroy()
+        for object in self.actors["Object"]:
+            object.get_actor().actor_destroy()
+        """
+        
 class TrainScene(BaseScene):
     def __init__(self, world, scenario):
         super(TrainScene, self).__init__(world, scenario)

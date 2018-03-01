@@ -1,7 +1,7 @@
 import os
 
 import unreal_engine as ue
-from unreal_engine import FVector
+from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Screenshot
 
 from tools.scene import TrainScene, TestScene
@@ -50,9 +50,6 @@ class Director:
             ntrain=len([s for s in self.scenes_list if isinstance(s, TrainScene)]),
             nruns=sum(s.get_nruns() for s in self.scenes_list)))
 
-        # the director owns the camera
-        self.camera = Camera(world, FVector(0, 0, 150))
-
         # initialize to render the first scene on the next tick
         self.scene_index = 0
         self.scene = self.scenes_list[0]
@@ -64,16 +61,18 @@ class Director:
 
     def tick(self, dt):
         """This method is called at each game tick"""
-        tick = self.ticker.tick(dt)
-
+        tick = self.ticker.tick(dt)        
         # we are not ticking, nothing to do
         if tick == -1:
             return
 
-        # during a run, take screenshot
+        # during a run, take screenshot and move actors
         elif tick < self.size[2]:
             self.capture()
-
+            for occluder in self.scene.actors["Occluder"]:
+                occluder.move()
+            for object in self.scene.actors["Object"]:
+                object.move()
         # end of a run, terminate it and setup the next one
         elif tick > self.size[2]:
             is_next_run = self.teardown()
@@ -88,16 +87,17 @@ class Director:
             self.scene.description())
         ue.log(description)
 
+
+        # render the scene: spawn actors
+        self.scene.render()
+        
         # setup the screenshots
         if  self.scene.is_check_run():
             pass
         elif self.output_dir:
             Screenshot.Initialize(
                 int(self.size[0]), int(self.size[1]), int(self.size[2]),
-                self.camera.get_actor())
-
-        # render the scene: spawn actors
-        self.scene.render()
+                self.scene["Camera"].get_actor())
 
     def capture(self):
         if self.scene.is_check_run():
@@ -112,6 +112,7 @@ class Director:
         Return True if there is a run to render, False otherwise.
 
         """
+        self.scene.clear()
         if self.scene.is_check_run():
             return True
         else:
@@ -132,7 +133,7 @@ class Director:
             # scene: the runs transition is handled directly by the scene
             # instance)
             if self.scene.get_nruns_remaining() == 0:
-                self.scene.clear()
+                #self.scene.clear()
 
                 self.scene_index += 1
                 try:
