@@ -58,7 +58,9 @@ class Occluder(BaseMesh):
                  rotation = FRotator(0, 0, -42),
                  scale = FVector(5, 5, 5),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')),
-                 speed = random.uniform(1, 10)):
+                 speed = random.uniform(0, 10)):
+        if (speed < 0 and speed > 10):
+            speed = 1
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
                               '/Game/Meshes/OccluderWall',
@@ -79,23 +81,23 @@ class Occluder(BaseMesh):
         rotation = self.rotation
         if (self.moving == False):
             self.moving = True
-            if (self.up == False):
-                rotation.roll += self.speed
+            if (self.up == True):
+                rotation.roll += self.speed * 1.8
             else:
-                rotation.roll -= self.speed
+                rotation.roll -= self.speed * 1.8
         else:
             if (self.up == True):
-                if (rotation.roll + self.speed >= 90):
+                if (round(rotation.roll, 0) >= 90):
                     self.moving = False
                     self.up = False
                     return
                 else:
-                    rotation.roll += self.speed
+                    rotation.roll += self.speed * 1.8
             else:
-                if (rotation.roll + self.speed <= 0):
+                if (round(rotation.roll, 0) <= 0):
                     self.moving = False
                     self.up = True
                     return
                 else:
-                    rotation.roll -= self.speed
+                    rotation.roll -= self.speed * 1.8
         self.set_rotation(rotation)

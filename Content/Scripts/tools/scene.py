@@ -42,7 +42,7 @@ class BaseScene:
         self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
         self.actors["Floor"] = Floor(self.world)
         self.actors["Walls"] = Walls(self.world)
-        self.actors["Occluder"].append(Occluder(self.world, FVector(0, 0, 0), FRotator(0, 0, 90), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 2))
+        self.actors["Occluder"].append(Occluder(self.world, FVector(0, 0, 0), FRotator(0, 0, 90), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 1))
         #Object(self.world, Object.shape['Sphere'], FVector(100, 100, 1000), FRotator(0, 0, 0), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 1, FVector(0, 0, 0))
         # ue.log('spawned {}'.format(self.actors))
         
