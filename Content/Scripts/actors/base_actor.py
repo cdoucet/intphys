@@ -23,7 +23,8 @@ class BaseActor():
         self.actor = actor
         self.location = location
         self.rotation = rotation
-
+        self.hidden = False
+        
     def actor_destroy(self):
         if (self.actor != None):
             self.actor.actor_destroy()
@@ -98,3 +99,7 @@ class BaseActor():
             -10 * random.random(),
             0)
         return location, rotation
+
+    def set_hidden(self, hidden):
+        self.hidden = hidden
+        self.actor.SetActorHiddenInGame(hidden)

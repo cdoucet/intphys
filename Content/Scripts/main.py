@@ -9,7 +9,7 @@ from tools.director import Director
 
 # the default game resolution, for both scene rendering and saved
 # images (width * height in pixels)
-DEFAULT_RESOLUTION = (288, 288)
+DEFAULT_RESOLUTION = ("288", "288")
 
 
 class Main:
