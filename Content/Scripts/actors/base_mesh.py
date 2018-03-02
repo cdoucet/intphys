@@ -57,11 +57,13 @@ class BaseMesh(BaseActor):
                  rotation = FRotator(0, 0, -42),
                  material = None,
                  scale = FVector(1, 1, 1),
-                 friction = 0.5):
+                 friction = 0.5,
+                 manage_hits = True):
         self.mesh_str = mesh_str
         self.material = material
         self.scale = scale
         self.friction = friction
+        self.manage_hits = manage_hits
         # The second part of the condition doesn't work can't figure it out
         if (mesh_str != None):
             BaseActor.__init__(self, actor, location, rotation)
@@ -70,8 +72,11 @@ class BaseMesh(BaseActor):
             self.set_location(location)
             self.set_rotation(rotation)
             self.set_mesh()
-            #self.mesh.OnComponentHit.AddDynamic(self.actor, print("***************"))
             self.set_friction(friction)
+            # manage OnActorBeginOverlap events
+            if (self.manage_hits == True):
+                self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
+                self.actor.bind_event('OnActorHit', self.on_actor_hit)
         else:
             BaseActor.__init__(self)
 
@@ -130,7 +135,3 @@ class BaseMesh(BaseActor):
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
         # ue.log('begin play {}'.format(self.actor.get_name()))
-
-        # manage OnActorBeginOverlap events
-        self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
-        self.actor.bind_event('OnActorHit', self.on_actor_hit)

@@ -65,10 +65,12 @@ class Object(BaseMesh):
                  mesh_str = shape['Sphere'],
                  location = FVector(0, 0, 0),
                  rotation = FRotator(0, 0, 0),
-                 scale = FVector(1, 1, 1),
+                 scale = FVector(0.5, 0.5, 0.5),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
                  mass = 1.0,
-                 force = FVector(0.0, 0.0, 0.0)):
+                 force = FVector(0.0, 0.0, 0.0),
+                 fricton = 0.5,
+                 manage_hits = True):
         if (world != None):
             BaseMesh.__init__(self,
                               world.actor_spawn(ue.load_class('/Game/Object.Object_C')),
@@ -76,11 +78,16 @@ class Object(BaseMesh):
                               location,
                               rotation,
                               ue.load_object(Material, material),
-                              scale)
+                              scale,
+                              fricton,
+                              manage_hits)
             self.set_mass(mass)
             self.set_force(force)
+            if (self.manage_hits == False):
+                self.get_mesh().call('SetCollisionProfileName Trigger')
+            else:
+                self.get_mesh().call('SetCollisionProfileName BlockAll')
             self.get_mesh().set_simulate_physics()
-
         else:
             BaseMesh.__init__(self)
 

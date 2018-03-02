@@ -14,7 +14,6 @@ class BaseScene:
         self.world = world
         self.scenario = scenario
         self.current_run = 0
-
         self.actors = { "Camera": None, "Floor": None, "Walls": None, "Occluder": [], "Object": [] }
 
     def get_nruns(self):
@@ -41,32 +40,42 @@ class BaseScene:
         # self.actors['floor'] = Floor(self.world)
         self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
         self.actors["Floor"] = Floor(self.world)
+        #self.actors["Floor"].set_friction(-5000)
         self.actors["Walls"] = Walls(self.world)
-        self.actors["Occluder"].append(Occluder(self.world, FVector(0, 0, 0), FRotator(0, 0, 90), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 1, False))
-        #Object(self.world, Object.shape['Sphere'], FVector(100, 100, 1000), FRotator(0, 0, 0), FVector(1, 1, 1), "/Game/Materials/Wall/M_Bricks_1", 1, FVector(0, 0, 0))
+        self.actors["Occluder"].append(Occluder(world = self.world,
+                                                rotation = FRotator(0, 0, 90),
+                                                material = "/Game/Materials/Wall/M_Bricks_1",
+                                                speed = 1,
+                                                pause = False))
+        self.actors["Object"].append(Object(world = self.world,
+                                            mesh_str = Object.shape['Sphere'],
+                                            location = FVector(200, -500, 100),
+                                            material = "/Game/Materials/Wall/M_Bricks_4",
+                                            force = FVector(0, 100000, 0),
+                                            manage_hits = True))
+        self.actors["Object"].append(Object(world = self.world,
+                                            mesh_str = Object.shape['Sphere'],
+                                            location = FVector(200, 500, 100),
+                                            material = "/Game/Materials/Wall/M_Bricks_4",
+                                            force = FVector(0, -100000, 0),
+                                            manage_hits = True))
+        #self.actors["Object"][0].set_friction(-5000)
         # ue.log('spawned {}'.format(self.actors))
         
         # prepare for the next run
         self.current_run += 1
 
     def clear(self):
-        ue.log_warning("Clear")
         for key, value in self.actors.items():
             if (isinstance(value, list)):
                 for member in value:
                     member.actor_destroy()
-                    value.remove(member)
+                value[:] = []
             else:
                 value.actor_destroy()
                 value = None
-        """
-        self.actors["Floor"].get_actor().actor_destroy()
-        for occluder in self.actors["Occluder"]:
-            occluder.get_actor().actor_destroy()
-        for object in self.actors["Object"]:
-            object.get_actor().actor_destroy()
-        """
-        
+            
+                
 class TrainScene(BaseScene):
     def __init__(self, world, scenario):
         super(TrainScene, self).__init__(world, scenario)

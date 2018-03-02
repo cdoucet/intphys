@@ -61,7 +61,12 @@ class Director:
 
     def tick(self, dt):
         """This method is called at each game tick"""
-        tick = self.ticker.tick(dt)        
+        tick = self.ticker.tick(dt)
+        # moving occluders and actors at every "engine tick"
+        for occluder in self.scene.actors["Occluder"]:
+            occluder.move()
+        for object in self.scene.actors["Object"]:
+            object.move()
         # we are not ticking, nothing to do
         if tick == -1:
             return
@@ -104,9 +109,7 @@ class Director:
 
     def teardown(self):
         """Save captured images and prepare the next run
-
         Return True if there is a run to render, False otherwise.
-
         """
         self.scene.clear()
         if self.scene.is_check_run():

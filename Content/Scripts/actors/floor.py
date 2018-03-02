@@ -68,5 +68,6 @@ class Floor(BaseMesh):
                 ue.load_object(Material, material),
                 scale,
                 friction)
+            self.get_mesh().call('SetCollisionProfileName BlockAll')
         else:
             super().__init__()

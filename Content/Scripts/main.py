@@ -54,8 +54,3 @@ class Main:
     def tick(self, dt):
         # delegate ticking to the director
         self.director.tick(dt)
-        for occluder in self.director.scene.actors["Occluder"]:
-            occluder.move()
-        for object in self.director.scene.actors["Object"]:
-            object.move()
-                
