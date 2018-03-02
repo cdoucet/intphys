@@ -3,9 +3,9 @@ import random
 
 import unreal_engine as ue
 from unreal_engine.classes import KismetSystemLibrary
+
 from tools.utils import parse_scenes_json, exit_ue
 from tools.director import Director
-
 
 # the default game resolution, for both scene rendering and saved
 # images (width * height in pixels)
@@ -54,3 +54,8 @@ class Main:
     def tick(self, dt):
         # delegate ticking to the director
         self.director.tick(dt)
+        for occluder in self.director.scene.actors["Occluder"]:
+            occluder.move()
+        for object in self.director.scene.actors["Object"]:
+            object.move()
+                

@@ -66,13 +66,9 @@ class Director:
         if tick == -1:
             return
 
-        # during a run, take screenshot and move actors
+        # during a run, take screenshot
         elif tick < self.size[2]:
             self.capture()
-            for occluder in self.scene.actors["Occluder"]:
-                occluder.move()
-            for object in self.scene.actors["Object"]:
-                object.move()
         # end of a run, terminate it and setup the next one
         elif tick > self.size[2]:
             is_next_run = self.teardown()
@@ -160,7 +156,6 @@ class Director:
             exit_ue(self.world, 'cannot save images to %s' % output_dir)
 
         return max_depth, masks
-
 
     def _get_scene_subdir(self):
         # build the scene sub-directory name, for exemple '027_test_O1'
