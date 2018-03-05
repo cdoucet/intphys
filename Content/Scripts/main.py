@@ -11,7 +11,6 @@ from tools.director import Director
 # images (width * height in pixels)
 DEFAULT_RESOLUTION = ("288", "288")
 
-
 class Main:
     def begin_play(self):
         # get the world from the attached component

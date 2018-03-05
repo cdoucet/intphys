@@ -56,19 +56,29 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, world=None, material=None, scale=FVector(10, 10, 1), friction=0.5):
+    def __init__(self, world=None, material=None, scale=FVector(100, 100, 1), friction=0.5):
         if world is not None:
-            if not material:
-                material = get_random_material(load_materials('Materials/Floor'))
-
+            self.get_parameters(material, scale, friction)
             super().__init__(
-                world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')),
-                '/Game/Meshes/Floor_400x400',
-                FVector(0 - ((400 * scale.x) / 2), 0 - ((400 * scale.y) / 2), 0 - (10 * scale.z)),
-                FRotator(0, 0, 0),
-                ue.load_object(Material, material),
-                scale,
-                friction)
-            self.get_mesh().call('SetCollisionProfileName BlockAll')
+                world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
+            self.set_parameters()
         else:
             super().__init__()
+
+    def get_parameters(self, material, scale, friction):
+        super().get_parameters(FVector(0 - ((400 * scale.x) / 2),
+                                       0 - ((400 * scale.y) / 2),
+                                       0 - (10 * scale.z)),
+                               FRotator(0, 0, 0),
+                               scale,
+                               friction,
+                               False,
+                               '/Game/Meshes/Floor_400x400')
+        if (material == None):
+            self.material = ue.load_object(Material, get_random_material(load_materials('Materials/Floor')))
+        else:
+            self.material = ue.load_object(Material, material)
+
+    def set_parameters(self):
+        super().set_parameters()
+        self.get_mesh().call('SetCollisionProfileName BlockAll')

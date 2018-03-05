@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import unreal_engine as ue
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
@@ -57,29 +58,52 @@ class Wall(BaseMesh):
     """
     def __init__(self, world = None,
                  side = 'Front',
-                 length = random.uniform(1500, 4000),
-                 depth = random.uniform(1500, 900),
-                 height = random.uniform(1, 10),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))):
+                 length = MAGICAL_VALUE,
+                 depth = MAGICAL_VALUE,
+                 height = MAGICAL_VALUE,
+                 material = None,
+                 manage_hits = True):
         self.side = {
             'Front': self.front,
             'Left': self.left,
             'Right': self.right
         }
-        self.length = length
-        self.depth = depth
-        self.height = height
         if (world != None):
-            self.side[side]()
-            BaseMesh.__init__(self,
-                              world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')),
-                              '/Game/Meshes/Wall_400x400',
-                              self.location,
-                              self.rotation,
-                              ue.load_object(Material, material),
-                              self.scale)
+            self.get_parameters(side, length, depth,
+                                height, material, manage_hits)
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
+            self.set_parameters()
         else:
-            BaseMesh.__init__(self)
+            super().__init__()
+
+    def get_parameters(self, side, length,
+                       depth, height, material,
+                       manage_hits):
+        if (depth == MAGICAL_VALUE):
+            self.depth = random.uniform(1500, 4000)
+        else:
+            self.depth = depth
+        if (length == MAGICAL_VALUE):
+            self.length = random.uniform(900, 1500)
+        else:
+            self.length = length
+        if (height == MAGICAL_VALUE):
+            self.height = random.uniform(1, 10)
+        else:
+            self.height = height
+        if (side == None):
+            side = 'Front'
+        else:
+            self.side[side]()
+        super().get_parameters(self.location, self.rotation, self.scale,
+                               0.5, manage_hits, '/Game/Meshes/Wall_400x400')
+        if (material == None):
+            self.material = ue.load_object(Material, tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')))
+        else:
+            self.material = ue.load_object(Material, material)
+
+    def set_parameters(self):
+        super().set_parameters()
 
     def front(self):
         self.scale = FVector(self.length / 400, 1, self.height)

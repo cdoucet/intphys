@@ -1,6 +1,7 @@
 import random
 
 import unreal_engine as ue
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
@@ -24,44 +25,38 @@ class Camera(BaseActor):
     """
     def __init__(self,
                  world = None,
-                 location = FVector(0, 0, -42),
-                 rotation = FRotator(0, 0, -42),
+                 location = FVector(0, 0, MAGICAL_VALUE),
+                 rotation = FRotator(0, 0, MAGICAL_VALUE),
                  field_of_view = 90,
                  aspect_ratio = 1,
-                 projection_mode = ECameraProjectionMode.Perspective):
+                 projection_mode = ECameraProjectionMode.Perspective,
+                 manage_hits = True):
+        self.get_parameters(location, rotation, field_of_view,
+                            aspect_ratio, projection_mode, manage_hits)
+        if (world != None):
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            self.set_parameters(world)
+        else:
+            super().__init__()
+
+    def get_parameters(self, location, rotation, field_of_view,
+                       aspect_ratio, projection_mode, manage_hits):
         self.field_of_view = field_of_view
         self.aspect_ratio = aspect_ratio
         self.projection_mode = projection_mode
-        if (world != None):
-            BaseActor.__init__(self, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')),
-                               location,
-                               rotation)
-            # The second part of the condition doesn't work can't figure it out
-            if (location == FVector(0, 0, -42)):# and rotation == FRotator(0, 0, -42)):
-                location, rotation = self.get_test_parameters()
-            self.set_location(location)
-            self.set_rotation(rotation)
+        super().get_parameters(location, rotation, manage_hits)
 
-            # Attach the viewport to the camera. This initialization
-            # was present in the intphys-1.0 blueprint but seems to be
-            # useless in UE-4.17. This is maybe done by default.
-            player_controller = GameplayStatics.GetPlayerController(world, 0)
-            player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
-        else:
-            BaseActor.__init__(self)
-
-    def get_field_of_view(self):
-        return (self.field_of_view)
+    def set_parameters(self, world):
+        super().set_parameters()
+        # Attach the viewport to the camera. This initialization
+        # was present in the intphys-1.0 blueprint but seems to be
+        # useless in UE-4.17. This is maybe done by default.
+        player_controller = GameplayStatics.GetPlayerController(world, 0)
+        player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
 
     def set_field_of_view(self, field_of_view):
         self.field_of_view = field_of_view
         self.camera_component.SetFieldOfView(self.field_of_view)
-
-    def get_component(self):
-        return (self.camera_component)
-
-    def get_aspect_ratio(self):
-        return (self.aspect_ratio)
 
     def set_aspect_ratio(self, aspect_ratio):
         self.aspect_ratio = aspect_ratio
@@ -71,13 +66,8 @@ class Camera(BaseActor):
         self.projection_mode = projection_mode;
         self.camera_component.SetProjectionMode(self.projection_mode)
 
-    def get_projection_mode(self):
-        return (self.projection_mode)
-
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
-        self.actor.bind_event(
-            'OnActorBeginOverlap', self.manage_overlap)
         self.camera_component = self.actor.get_component_by_type(CameraComponent)
         self.camera_component.SetFieldOfView(self.field_of_view)
         self.camera_component.SetAspectRatio(self.aspect_ratio)

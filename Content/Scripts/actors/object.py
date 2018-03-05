@@ -1,11 +1,13 @@
 # coding: utf-8
 
 import unreal_engine as ue
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
 from actors.base_mesh import BaseMesh
 import tools.materials
+import random
 
 """
 Ok here we go:
@@ -45,8 +47,8 @@ class Object(BaseMesh):
         'Cube': '/Engine/EngineMeshes/Cube.Cube',
         # Cone seems to be gone somehow
         # 'Cone': '/Engine/EngineMeshes/Cone.Cone',
-        # And Cylinder seems soooo far away
-        'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
+        # And Cylinder seems way too small
+        #'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
     }
 
     """
@@ -62,31 +64,55 @@ class Object(BaseMesh):
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
     def __init__(self, world = None,
-                 mesh_str = shape['Sphere'],
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 scale = FVector(0.5, 0.5, 0.5),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Actor')),
-                 mass = 1.0,
-                 force = FVector(0.0, 0.0, 0.0),
-                 fricton = 0.5,
+                 mesh_str = None,
+                 location = FVector(0, 0, MAGICAL_VALUE),
+                 rotation = FRotator(0, 0, MAGICAL_VALUE),
+                 scale = FVector(1, 1, 1),
+                 material = None,
+                 mass = MAGICAL_VALUE,
+                 force = FVector(0, 0, MAGICAL_VALUE),
+                 friction = MAGICAL_VALUE,
                  manage_hits = True):
         if (world != None):
-            BaseMesh.__init__(self,
-                              world.actor_spawn(ue.load_class('/Game/Object.Object_C')),
-                              mesh_str,
-                              location,
-                              rotation,
-                              ue.load_object(Material, material),
-                              scale,
-                              fricton,
-                              manage_hits)
-            self.set_mass(mass)
-            self.set_force(force)
-            self.get_mesh().set_simulate_physics()
+            self.get_parameters(mesh_str, location,
+                                rotation, scale, material,
+                                mass, force, friction, manage_hits)
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
+            self.set_parameters()
         else:
-            BaseMesh.__init__(self)
+            super().__init__()
 
+    def get_parameters(self, mesh_str, location,
+                       rotation, scale, material,
+                       mass, force, friction,
+                       manage_hits):
+        if (mesh_str == None):
+            mesh_str = shape[random.choice(self.shape.keys())]
+        super().get_parameters(location, rotation, scale,
+                               friction, manage_hits, mesh_str)
+        if (material == None):
+            self.material = ue.load_object(Material, tools.materials.get_random_material(
+                tools.materials.load_materials('Materials/Actor')))
+        else:
+            self.material = ue.load_object(Material, material)
+        if (mass == MAGICAL_VALUE):
+            self.mass = random.uniform(0.5, 100)
+        else:
+            self.mass = mass
+        if (force == FVector(0, 0, MAGICAL_VALUE)):
+            self.force = FVector(
+                random.uniform(-10000, 10000),
+                random.uniform(-10000, 10000),
+                random.uniform(-10000, 10000))
+        else:
+            self.force = force
+            
+    def set_parameters(self):
+        super().set_parameters()
+        self.set_mass(self.mass)
+        self.set_force(self.force)
+        self.get_mesh().set_simulate_physics()
+        
     """
     set the mass of the mesh
     to be honnest I don't really know what the second line do

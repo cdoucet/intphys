@@ -1,6 +1,7 @@
 # coding: utf-8
 
 import unreal_engine as ue
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
@@ -54,35 +55,55 @@ class Occluder(BaseMesh):
     The location is precisely from the point at the bottom center of the mesh
     """
     def __init__(self, world = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
+                 location = FVector(0, 0, MAGICAL_VALUE),
+                 rotation = FRotator(0, 0, MAGICAL_VALUE),
                  scale = FVector(1, 1, 1),
-                 material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')),
-                 moves = random.uniform(0, 10),
-                 speed = random.uniform(0, 10),
-                 pause = False):
-        if (speed < 0):
-            speed = 1
-        if (moves < 0):
-            moves = 1
+                 material = None,
+                 moves = MAGICAL_VALUE,
+                 speed = MAGICAL_VALUE,
+                 pause = False,
+                 manage_hits = True):
         if (world != None):
-            BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
-                              '/Game/Meshes/OccluderWall',
-                              FVector(location.x, location.y - (200 * scale.y), location.z),
-                              rotation,
-                              ue.load_object(Material, material),
-                              scale)
+            self.get_parameters(location, rotation,
+                                scale, material,
+                                moves, speed,
+                                pause, manage_hits)
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
+            self.set_parameters()
         else:
-            BaseMesh.__init__(self)
-        self.moving = False
-        self.up = True
-        self.speed = speed
-        self.moves = moves
+            super().__init__()
+
+    def get_parameters(self, location, rotation,
+                       scale, material, moves,
+                       speed, pause, manage_hits):
+        super().get_parameters(location, rotation, scale,
+                               0.5, manage_hits,
+                               '/Game/Meshes/OccluderWall')
+        if (material == None):
+            self.material = ue.load_object(Material, tools.materials.get_random_material(
+                tools.materials.load_materials('Materials/Wall')))
+        else:
+            self.material = ue.load_object(Material, material)
+        if (speed == MAGICAL_VALUE or speed < 0):
+            speed = random.uniform(0, 10)
+        else:
+            self.speed = speed
+        if (moves == MAGICAL_VALUE or moves < 0):
+            moves = random.uniform(0, 10)
+        else:
+            self.moves = moves
         if (pause == True):
             self.pause = 0
         else:
             self.pause = -1
+        self.moving = False
+        self.up = True
+        self.location.y - (200 * scale.y)
 
+    def set_parameters(self):
+        super().set_parameters()
+        
+        
     """
     move make the Occluder fall and get up when called
     """

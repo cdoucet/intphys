@@ -1,6 +1,8 @@
 # coding: utf-8
 
 import unreal_engine as ue
+import random
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
@@ -50,44 +52,36 @@ class BaseMesh(BaseActor):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self,
-                 actor = None,
-                 mesh_str = None,
-                 location = FVector(0, 0, -42),
-                 rotation = FRotator(0, 0, -42),
-                 material = None,
-                 scale = FVector(1, 1, 1),
-                 friction = 0.5,
-                 manage_hits = True):
-        self.mesh_str = mesh_str
-        self.material = material
-        self.scale = scale
-        self.friction = friction
-        self.manage_hits = manage_hits
-        # The second part of the condition doesn't work can't figure it out
-        if (mesh_str != None):
-            BaseActor.__init__(self, actor, location, rotation)
-            if (location == FVector(0.0, 0.0, -42.0)):# and rotation == FRotator(0.0, 0.0, -42.0)):
-                location, rotation = self.get_test_parameters()
-            self.set_location(location)
-            self.set_rotation(rotation)
-            self.set_mesh()
-            self.set_friction(friction)
-            # manage OnActorBeginOverlap events
-            if (self.manage_hits == True):
-                self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
-                self.actor.bind_event('OnActorHit', self.on_actor_hit)
+    def __init__(self, actor = None):
+        if (actor != None):
+            super().__init__(actor)
         else:
-            BaseActor.__init__(self)
+            super().__init__()
 
+    def get_parameters(self, location, rotation, scale, friction, manage_hits, mesh_str):
+        super().get_parameters(location, rotation, manage_hits)
+        self.scale = scale
+        if (friction == MAGICAL_VALUE):
+            self.friction = random.uniform(-1000, 1000)
+        else:
+            self.friction = friction
+        self.mesh_str = mesh_str
+
+    def set_parameters(self):
+        super().set_parameters()
+        self.set_location(self.location)
+        self.set_rotation(self.rotation)
+        self.set_mesh()
+        self.set_friction(self.friction)
+        
     """
     set_mesh sets the mesh, enable collision, set the material and the scale
     """
     def set_mesh(self):
         self.mesh = self.get_actor().get_actor_component_by_type(ue.find_class('StaticMeshComponent'))
         # enable collisions
-        self.mesh.call('SetCollisionProfileName BlockAll')
-        self.actor.SetActorEnableCollision(True)
+        #self.mesh.call('SetCollisionProfileName BlockAll')
+        #self.actor.SetActorEnableCollision(True)
 
         # setup mesh and material
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))

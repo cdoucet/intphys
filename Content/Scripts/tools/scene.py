@@ -38,30 +38,29 @@ class BaseScene:
     def render(self):
         # # TODO generate parameters and spawn the actors
         self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
-        self.actors["Floor"] = Floor(self.world)
-        #self.actors["Floor"].set_friction(-5000)
+        self.actors["Floor"] = Floor(world = self.world,
+                                     friction = 0)
+        """
         self.actors["Walls"] = Walls(self.world)
         self.actors["Occluder"].append(Occluder(world = self.world,
                                                 rotation = FRotator(0, 0, 90),
-                                                material = "/Game/Materials/Wall/M_Bricks_1",
                                                 speed = 5,
                                                 moves = 3,
                                                 pause = True))
+        """
         self.actors["Object"].append(Object(world = self.world,
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, -500, 100),
-                                            material = "/Game/Materials/Wall/M_Bricks_4",
                                             force = FVector(0, 100000, 0),
-                                            manage_hits = True))
+                                            manage_hits = True,
+                                            friction = 0))
         self.actors["Object"].append(Object(world = self.world,
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, 500, 100),
-                                            material = "/Game/Materials/Wall/M_Bricks_4",
                                             force = FVector(0, -100000, 0),
-                                            manage_hits = True))
-        #self.actors["Object"][0].set_friction(-5000)
-        # ue.log('spawned {}'.format(self.actors))
-        
+                                            manage_hits = True,
+                                            friction = 0))
+        print(self.actors["Object"][0].force)
         # prepare for the next run
         self.current_run += 1
 
@@ -72,7 +71,8 @@ class BaseScene:
                     member.actor_destroy()
                 value[:] = []
             else:
-                value.actor_destroy()
+                if (value != None):
+                    value.actor_destroy()
                 value = None
             
                 

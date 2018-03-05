@@ -1,5 +1,6 @@
 import unreal_engine as ue
 import random
+from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
@@ -19,17 +20,40 @@ class BaseActor():
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
     """
-    def __init__(self, actor = None, location = FVector(0, 0, -42), rotation = FRotator(0, 0, -42)):
+    def __init__(self, actor = None):
         self.actor = actor
-        self.location = location
-        self.rotation = rotation
-        self.hidden = False
-        
+
     def actor_destroy(self):
         if (self.actor != None):
             self.actor.actor_destroy()
             self.actor = None
         self.actor = None
+
+    def get_parameters(self, location, rotation, manage_hits):
+        if (location == FVector(0, 0, MAGICAL_VALUE)):
+            self.location = FVector(
+                random.uniform(-100, 100),
+                random.uniform(200, 400),
+                100 + random.uniform(-30, 80))
+        else:
+            self.location = location
+        if (rotation == FRotator(0, 0, MAGICAL_VALUE)):
+            self.rotation = FRotator(
+                0,
+                random.uniform(-15, 10),
+                random.uniform(-30, 30))
+        else:
+            self.rotation = rotation
+        self.manage_hits = manage_hits
+
+    def set_parameters(self):
+        self.set_location(self.location)
+        self.set_rotation(self.rotation)
+        self.hidden = False
+        # manage OnActorBeginOverlap events
+        if (self.manage_hits == True):
+            self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
+            self.actor.bind_event('OnActorHit', self.on_actor_hit)
 
     def get_location(self):
         return self.location
