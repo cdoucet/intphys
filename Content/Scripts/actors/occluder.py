@@ -61,9 +61,9 @@ class Occluder(BaseMesh):
                  moves = random.uniform(0, 10),
                  speed = random.uniform(0, 10),
                  pause = False):
-        if (speed < 0 and speed > 10):
+        if (speed < 0):
             speed = 1
-        if (moves < 0 and moves > 10):
+        if (moves < 0):
             moves = 1
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
