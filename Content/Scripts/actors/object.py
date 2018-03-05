@@ -83,10 +83,6 @@ class Object(BaseMesh):
                               manage_hits)
             self.set_mass(mass)
             self.set_force(force)
-            if (self.manage_hits == False):
-                self.get_mesh().call('SetCollisionProfileName Trigger')
-            else:
-                self.get_mesh().call('SetCollisionProfileName BlockAll')
             self.get_mesh().set_simulate_physics()
         else:
             BaseMesh.__init__(self)

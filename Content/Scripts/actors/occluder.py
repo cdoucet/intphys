@@ -58,10 +58,13 @@ class Occluder(BaseMesh):
                  rotation = FRotator(0, 0, 0),
                  scale = FVector(1, 1, 1),
                  material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')),
+                 moves = random.uniform(0, 10),
                  speed = random.uniform(0, 10),
                  pause = False):
         if (speed < 0 and speed > 10):
             speed = 1
+        if (moves < 0 and moves > 10):
+            moves = 1
         if (world != None):
             BaseMesh.__init__(self, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')),
                               '/Game/Meshes/OccluderWall',
@@ -74,6 +77,7 @@ class Occluder(BaseMesh):
         self.moving = False
         self.up = True
         self.speed = speed
+        self.moves = moves
         if (pause == True):
             self.pause = 0
         else:
@@ -83,16 +87,18 @@ class Occluder(BaseMesh):
     move make the Occluder fall and get up when called
     """
     def move(self):
+        if (self.moves <= 0):
+            return
         rotation = self.rotation
         if (self.moving == False):
             self.moving = True
             if (self.up == True):
-                rotation.roll += self.speed * 0.9
+                rotation.roll += self.speed
             else:
-                rotation.roll -= self.speed * 0.9
+                rotation.roll -= self.speed
         else:
             if (self.up == True):
-                if (round(rotation.roll, 0) >= 90):
+                if (rotation.roll >= 90):
                     if (self.pause == -1 or random.uniform(0, 100) < self.pause):
                         if (self.pause != -1):
                             self.pause = 0
@@ -102,17 +108,22 @@ class Occluder(BaseMesh):
                         self.pause = self.pause + 1
                     return
                 else:
-                    rotation.roll += self.speed * 0.9
+                    rotation.roll += self.speed
             else:
-                if (round(rotation.roll, 0) <= 0):
+                if (rotation.roll <= 0):
                     if (self.pause == -1 or random.uniform(0, 100) < self.pause):
                         if (self.pause != -1):
                             self.pause = 0
                         self.moving = False
                         self.up = True
+                        self.moves = self.moves - 1
                     else:
                         self.pause = self.pause + 1
                     return
                 else:
-                    rotation.roll -= self.speed * 0.9
+                    rotation.roll -= self.speed
+        if (rotation.roll > 90):
+            rotation.roll = 90
+        if (rotation.roll < 0):
+            rotation.roll = 0
         self.set_rotation(rotation)

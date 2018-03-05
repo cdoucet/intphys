@@ -37,7 +37,6 @@ class BaseScene:
 
     def render(self):
         # # TODO generate parameters and spawn the actors
-        # self.actors['floor'] = Floor(self.world)
         self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
         self.actors["Floor"] = Floor(self.world)
         #self.actors["Floor"].set_friction(-5000)
@@ -45,8 +44,9 @@ class BaseScene:
         self.actors["Occluder"].append(Occluder(world = self.world,
                                                 rotation = FRotator(0, 0, 90),
                                                 material = "/Game/Materials/Wall/M_Bricks_1",
-                                                speed = 1,
-                                                pause = False))
+                                                speed = 5,
+                                                moves = 3,
+                                                pause = True))
         self.actors["Object"].append(Object(world = self.world,
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, -500, 100),
