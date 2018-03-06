@@ -4,6 +4,7 @@ from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
 from unreal_engine.enums import ECollisionChannel
+from collections import defaultdict
 
 """
 BaseActor is the very base of the inheritance tree.
@@ -20,8 +21,9 @@ class BaseActor():
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
     """
-    def __init__(self, actor = None):
+    def __init__(self, test = False, actor = None):
         self.actor = actor
+        self.test = test
 
     def actor_destroy(self):
         if (self.actor != None):
@@ -92,38 +94,19 @@ class BaseActor():
             self.actor.get_name(), other.get_name())
         ue.log_error(message)
 
-    """
-    Returns random coordinates for train scenes
-    In train scenes, camera has a high variability. Only the roll
-    is forced to 0.
-    """
-    def get_train_parameters(self):
-        location = FVector(
-            random.uniform(-100, 100),
-            random.uniform(200, 400),
-            100 + random.uniform(-30, 80))
-        rotation = FRotator(
-            0,
-            random.uniform(-15, 10),
-            random.uniform(-30, 30))
-        return location, rotation
-
-    """
-    Returns random coordinates for test scenes
-    In test scenes, the camera has a constrained location, with
-    little variations along the y axis and pitch.
-    """
-    def get_test_parameters(self):
-        location = FVector(
-            0,
-            -100 * random.random(),
-            150)
-        rotation = FRotator(
-            0,
-            -10 * random.random(),
-            0)
-        return location, rotation
-
     def set_hidden(self, hidden):
         self.hidden = hidden
         self.actor.SetActorHiddenInGame(hidden)
+
+    def get_status(self):
+        status = defaultdict(list)
+        status['actor'] = self.actor.get_name()
+        status['location'].append(('x', self.location.x))
+        status['location'].append(('y', self.location.y))
+        status['location'].append(('z', self.location.z))
+        status['rotation'].append(('pitch', self.rotation.pitch))
+        status['rotation'].append(('roll', self.rotation.roll))
+        status['rotation'].append(('yaw', self.rotation.yaw))
+        status['hidden'] = self.hidden
+        status['manage_hits'] = self.manage_hits
+        return status

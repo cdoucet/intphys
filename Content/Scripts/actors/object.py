@@ -63,7 +63,8 @@ class Object(BaseMesh):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, world = None,
+    def __init__(self, test = False,
+                 world = None,
                  mesh_str = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
@@ -74,10 +75,10 @@ class Object(BaseMesh):
                  friction = MAGICAL_VALUE,
                  manage_hits = True):
         if (world != None):
+            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
             self.get_parameters(mesh_str, location,
                                 rotation, scale, material,
                                 mass, force, friction, manage_hits)
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
             self.set_parameters()
         else:
             super().__init__()
@@ -123,9 +124,6 @@ class Object(BaseMesh):
             BoneName='None',
             InMassScale=self.mass / self.mesh.GetMassScale())
 
-    def get_mass(self):
-        return self.mass
-
     def set_force(self, force):
         self.force = force
 
@@ -135,5 +133,11 @@ class Object(BaseMesh):
     def move(self):
         self.get_mesh().add_force(self.force)
 
-    def get_force(self):
-        return self.force
+    def get_status(self):
+        status = super().get_status()
+        status['material'] = self.material.get_name()
+        status['mass'] = self.mass
+        status['force'].append(('x', self.force.x))
+        status['force'].append(('y', self.force.y))
+        status['force'].append(('z', self.force.z))
+        return status

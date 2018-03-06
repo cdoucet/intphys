@@ -24,6 +24,7 @@ class Camera(BaseActor):
     the __init__ function will change it on its own
     """
     def __init__(self,
+                 test = False,
                  world = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
@@ -31,10 +32,10 @@ class Camera(BaseActor):
                  aspect_ratio = 1,
                  projection_mode = ECameraProjectionMode.Perspective,
                  manage_hits = True):
-        self.get_parameters(location, rotation, field_of_view,
-                            aspect_ratio, projection_mode, manage_hits)
         if (world != None):
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            self.get_parameters(location, rotation, field_of_view,
+                            aspect_ratio, projection_mode, manage_hits)
             self.set_parameters(world)
         else:
             super().__init__()
@@ -53,6 +54,10 @@ class Camera(BaseActor):
         # useless in UE-4.17. This is maybe done by default.
         player_controller = GameplayStatics.GetPlayerController(world, 0)
         player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
+        self.camera_component = self.actor.get_component_by_type(CameraComponent)
+        self.camera_component.SetFieldOfView(self.field_of_view)
+        self.camera_component.SetAspectRatio(self.aspect_ratio)
+        self.camera_component.SetProjectionMode(self.projection_mode)
 
     def set_field_of_view(self, field_of_view):
         self.field_of_view = field_of_view
@@ -68,7 +73,10 @@ class Camera(BaseActor):
 
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
-        self.camera_component = self.actor.get_component_by_type(CameraComponent)
-        self.camera_component.SetFieldOfView(self.field_of_view)
-        self.camera_component.SetAspectRatio(self.aspect_ratio)
-        self.camera_component.SetProjectionMode(self.projection_mode)
+
+    def get_status(self):
+        status = super().get_status()
+        status['field_of_view'] = self.field_of_view
+        status['aspect_ratio'] = self.aspect_ratio
+        status['projection_mode'] = self.projection_mode
+        return status

@@ -54,7 +54,8 @@ class Occluder(BaseMesh):
     Warning !
     The location is precisely from the point at the bottom center of the mesh
     """
-    def __init__(self, world = None,
+    def __init__(self, test = False,
+                 world = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
                  scale = FVector(1, 1, 1),
@@ -64,11 +65,11 @@ class Occluder(BaseMesh):
                  pause = False,
                  manage_hits = True):
         if (world != None):
+            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
             self.get_parameters(location, rotation,
                                 scale, material,
                                 moves, speed,
                                 pause, manage_hits)
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
             self.set_parameters()
         else:
             super().__init__()
@@ -125,6 +126,7 @@ class Occluder(BaseMesh):
                             self.pause = 0
                         self.moving = False
                         self.up = False
+                        self.moves = self.moves - 0.5
                     else:
                         self.pause = self.pause + 1
                     return
@@ -137,7 +139,7 @@ class Occluder(BaseMesh):
                             self.pause = 0
                         self.moving = False
                         self.up = True
-                        self.moves = self.moves - 1
+                        self.moves = self.moves - 0.5
                     else:
                         self.pause = self.pause + 1
                     return
@@ -148,3 +150,14 @@ class Occluder(BaseMesh):
         if (rotation.roll < 0):
             rotation.roll = 0
         self.set_rotation(rotation)
+
+    def get_status(self):
+        status = super().get_status()
+        status['material'] = self.material.get_name()
+        if (self.pause != -1):
+            status['pause'] = False
+        else:
+            status['pause'] = True
+        status['speed'] = self.speed
+        status['moves'] = self.moves
+        return status

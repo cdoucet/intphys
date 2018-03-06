@@ -9,6 +9,8 @@ from actors.occluder import Occluder
 from actors.walls import Walls
 from actors.camera import Camera
 
+import json
+
 class BaseScene:
     def __init__(self, world, scenario):
         self.world = world
@@ -37,9 +39,9 @@ class BaseScene:
 
     def render(self):
         # # TODO generate parameters and spawn the actors
-        self.actors["Camera"] = Camera(self.world, FVector(-500, 0, 150), FRotator(0, 0, 0))
+        self.actors["Camera"] = Camera(world = self.world, location = FVector(-500, 0, 150), rotation = FRotator(0, 0, 0))
         self.actors["Floor"] = Floor(world = self.world,
-                                     friction = 0)
+                                     friction = 1)
         """
         self.actors["Walls"] = Walls(self.world)
         self.actors["Occluder"].append(Occluder(world = self.world,
@@ -51,16 +53,17 @@ class BaseScene:
         self.actors["Object"].append(Object(world = self.world,
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, -500, 100),
-                                            force = FVector(0, 100000, 0),
+                                            force = FVector(0, 1e8, 0),
                                             manage_hits = True,
-                                            friction = 0))
+                                            friction = 1))
         self.actors["Object"].append(Object(world = self.world,
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, 500, 100),
-                                            force = FVector(0, -100000, 0),
+                                            force = FVector(0, -1e8, 0),
                                             manage_hits = True,
-                                            friction = 0))
-        print(self.actors["Object"][0].force)
+                                            friction = 1))
+        print(json.dumps(self.actors["Object"][0].get_status(), indent = 4))
+        print(json.dumps(self.actors["Object"][1].get_status(), indent = 4))
         # prepare for the next run
         self.current_run += 1
 

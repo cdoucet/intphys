@@ -15,19 +15,20 @@ Walls is a wrapper class that make 3 walls spawn.
 
 class Walls():
     def __init__(self, world,
+                 test = False,
                  length = MAGICAL_VALUE,
                  depth = MAGICAL_VALUE,
                  height = MAGICAL_VALUE,
                  material = None,
                  manage_hits = True):
         self.get_parameters(length, depth, height, material, manage_hits)
-        self.front = Wall(world, "Front",
+        self.front = Wall(test, world, "Front",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.right = Wall(world, "Right",
+        self.right = Wall(test, world, "Right",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.left = Wall(world, "Left",
+        self.left = Wall(test, world, "Left",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
 
@@ -54,3 +55,9 @@ class Walls():
             self.material = tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall'))
         else:
             self.material = material
+
+    def get_status(self):
+        status = self.front.get_status()
+        status += self.left.get_status()
+        status += self.right.get_status()
+        return status

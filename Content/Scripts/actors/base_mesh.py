@@ -52,9 +52,9 @@ class BaseMesh(BaseActor):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, actor = None):
+    def __init__(self, test = False, actor = None):
         if (actor != None):
-            super().__init__(actor)
+            super().__init__(test, actor)
         else:
             super().__init__()
 
@@ -73,6 +73,8 @@ class BaseMesh(BaseActor):
         self.set_rotation(self.rotation)
         self.set_mesh()
         self.set_friction(self.friction)
+        if (self.manage_hits == True):
+            self.mesh.call('SetCollisionProfileName BlockAll')
         
     """
     set_mesh sets the mesh, enable collision, set the material and the scale
@@ -129,3 +131,12 @@ class BaseMesh(BaseActor):
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())
         # ue.log('begin play {}'.format(self.actor.get_name()))
+
+    def get_status(self):
+        status = super().get_status()
+        status['scale'].append(('x', self.scale.x))
+        status['scale'].append(('y', self.scale.y))
+        status['scale'].append(('z', self.scale.z))
+        status['friction'] = self.friction
+        status['mesh_str'] = self.mesh_str
+        return status

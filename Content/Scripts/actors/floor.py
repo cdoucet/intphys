@@ -56,11 +56,12 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, world=None, material=None, scale=FVector(100, 100, 1), friction=0.5):
+    def __init__(self, test = False, world=None,
+                 material=None, scale=FVector(100, 100, 1), friction=0.5):
         if world is not None:
-            self.get_parameters(material, scale, friction)
-            super().__init__(
+            super().__init__(test,
                 world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
+            self.get_parameters(material, scale, friction)
             self.set_parameters()
         else:
             super().__init__()
@@ -82,3 +83,8 @@ class Floor(BaseMesh):
     def set_parameters(self):
         super().set_parameters()
         self.get_mesh().call('SetCollisionProfileName BlockAll')
+
+    def get_status(self):
+        status = super().get_status()
+        status['material'] = self.material.get_name()
+        return status

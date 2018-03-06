@@ -56,22 +56,24 @@ class Wall(BaseMesh):
     formula = 'the place where you want it to be' - (('size of the mesh' * 'scale') / 2
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
-    def __init__(self, world = None,
+    def __init__(self,
+                 test = False,
+                 world = None,
                  side = 'Front',
                  length = MAGICAL_VALUE,
                  depth = MAGICAL_VALUE,
                  height = MAGICAL_VALUE,
                  material = None,
                  manage_hits = True):
-        self.side = {
+        self.sides = {
             'Front': self.front,
             'Left': self.left,
             'Right': self.right
         }
         if (world != None):
+            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
             self.get_parameters(side, length, depth,
                                 height, material, manage_hits)
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
             self.set_parameters()
         else:
             super().__init__()
@@ -91,16 +93,15 @@ class Wall(BaseMesh):
             self.height = random.uniform(1, 10)
         else:
             self.height = height
-        if (side == None):
-            side = 'Front'
-        else:
-            self.side[side]()
+        self.side = side
+        self.sides[self.side]()
         super().get_parameters(self.location, self.rotation, self.scale,
                                0.5, manage_hits, '/Game/Meshes/Wall_400x400')
         if (material == None):
             self.material = ue.load_object(Material, tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')))
         else:
             self.material = ue.load_object(Material, material)
+
 
     def set_parameters(self):
         super().set_parameters()
@@ -119,3 +120,11 @@ class Wall(BaseMesh):
         self.scale = FVector(self.depth / 400, 1, self.height)
         self.rotation = FRotator(0, 0, 0)
         self.location = FVector(-0, self.length / 2, 0)
+
+    def get_status(self):
+        status = super().get_status()
+        status['side'] = self.side
+        status['length'] = self.length
+        status['height'] = self.height
+        status['depth'] = self.depth
+        status['material'] = self.material.get_name()
