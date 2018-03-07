@@ -47,6 +47,7 @@ class BaseScene:
                                      train = self.is_train_scene(),
                                      friction = 1)
         self.actors["Light"] = Light(world = self.world,
+                                     type = 'SkyLight',
                                      location = FVector(-1000, 0, 1000),
                                      rotation = FRotator(0, -45, 0),
                                      train = self.is_train_scene())

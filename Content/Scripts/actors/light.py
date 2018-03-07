@@ -23,13 +23,20 @@ class Light(BaseActor):
     def __init__(self,
                  train = False,
                  world = None,
+                 type = "Directional",
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
                  manage_hits = True):
+        types = {
+            'Directional': '/Game/DirectionalLight.DirectionalLight_C',
+            'SkyLight': '/Game/SkyLight.SkyLight_C',
+            'PointLight': '/Game/PointLight.PointLight_C'
+            }
         if (world != None):
-            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Light.Light_C')))
-            self.get_parameters(location, rotation, manage_hits)
-            self.set_parameters()
+            super().__init__(train, world.actor_spawn(ue.load_class(types[type])))
+            if (type != 'SkyLight'):
+                self.get_parameters(location, rotation, manage_hits)
+                self.set_parameters()
         else:
             super().__init__()
 
