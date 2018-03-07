@@ -8,7 +8,7 @@ from actors.object import Object
 from actors.occluder import Occluder
 from actors.walls import Walls
 from actors.camera import Camera
-
+from actors.light import Light
 import json
 
 class BaseScene:
@@ -16,7 +16,7 @@ class BaseScene:
         self.world = world
         self.scenario = scenario
         self.current_run = 0
-        self.actors = { "Camera": None, "Floor": None, "Walls": None, "Occluder": [], "Object": [] }
+        self.actors = { "Camera": None, "Floor": None, "Light": None, "Walls": None, "Occluder": [], "Object": [] }
 
     def get_nruns(self):
         return 1
@@ -39,24 +39,34 @@ class BaseScene:
 
     def render(self):
         # # TODO generate parameters and spawn the actors
-        self.actors["Camera"] = Camera(world = self.world, location = FVector(-500, 0, 150), rotation = FRotator(0, 0, 0))
+        self.actors["Camera"] = Camera(train = self.is_train_scene(),
+                                       world = self.world,
+                                       location = FVector(-500, 0, 150),
+                                       rotation = FRotator(0, 0, 0))
         self.actors["Floor"] = Floor(world = self.world,
+                                     train = self.is_train_scene(),
                                      friction = 1)
-        """
-        self.actors["Walls"] = Walls(self.world)
+        self.actors["Light"] = Light(world = self.world,
+                                     location = FVector(-1000, 0, 1000),
+                                     rotation = FRotator(0, -45, 0),
+                                     train = self.is_train_scene())
+        self.actors["Walls"] = Walls(world = self.world,
+                                     train = self.is_train_scene())
         self.actors["Occluder"].append(Occluder(world = self.world,
+                                                train = self.is_train_scene(),
                                                 rotation = FRotator(0, 0, 90),
                                                 speed = 5,
-                                                moves = 3,
+                                                moves = 2.5,
                                                 pause = True))
-        """
         self.actors["Object"].append(Object(world = self.world,
+                                            train = self.is_train_scene(),
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, -500, 100),
                                             force = FVector(0, 1e8, 0),
                                             manage_hits = True,
                                             friction = 1))
         self.actors["Object"].append(Object(world = self.world,
+                                            train = self.is_train_scene(),
                                             mesh_str = Object.shape['Sphere'],
                                             location = FVector(200, 500, 100),
                                             force = FVector(0, -1e8, 0),

@@ -15,20 +15,20 @@ Walls is a wrapper class that make 3 walls spawn.
 
 class Walls():
     def __init__(self, world,
-                 test = False,
+                 train = False,
                  length = MAGICAL_VALUE,
                  depth = MAGICAL_VALUE,
                  height = MAGICAL_VALUE,
                  material = None,
                  manage_hits = True):
         self.get_parameters(length, depth, height, material, manage_hits)
-        self.front = Wall(test, world, "Front",
+        self.front = Wall(train, world, "Front",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.right = Wall(test, world, "Right",
+        self.right = Wall(train, world, "Right",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.left = Wall(test, world, "Left",
+        self.left = Wall(train, world, "Left",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
 
@@ -40,11 +40,11 @@ class Walls():
     def get_parameters(self, length, depth, height, material, manage_hits):
         self.manage_hits = manage_hits
         if (depth == MAGICAL_VALUE):
-            self.depth = random.uniform(1500, 4000)
+            self.depth = random.uniform(900, 1500)
         else:
             self.depth = depth
         if (length == MAGICAL_VALUE):
-            self.length = random.uniform(900, 1500)
+            self.length = random.uniform(1500, 4000)
         else:
             self.length = length
         if (height == MAGICAL_VALUE):

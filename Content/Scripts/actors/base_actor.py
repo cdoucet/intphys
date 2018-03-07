@@ -21,9 +21,9 @@ class BaseActor():
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
     """
-    def __init__(self, test = False, actor = None):
+    def __init__(self, train = False, actor = None):
         self.actor = actor
-        self.test = test
+        self.train = train
 
     def actor_destroy(self):
         if (self.actor != None):

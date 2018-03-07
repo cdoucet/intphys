@@ -54,7 +54,7 @@ class Occluder(BaseMesh):
     Warning !
     The location is precisely from the point at the bottom center of the mesh
     """
-    def __init__(self, test = False,
+    def __init__(self, train = False,
                  world = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
@@ -65,7 +65,7 @@ class Occluder(BaseMesh):
                  pause = False,
                  manage_hits = True):
         if (world != None):
-            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
+            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
             self.get_parameters(location, rotation,
                                 scale, material,
                                 moves, speed,

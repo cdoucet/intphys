@@ -70,7 +70,6 @@ class Director:
         # we are not ticking, nothing to do
         if tick == -1:
             return
-
         # during a run, take screenshot
         elif tick < self.size[2]:
             self.capture()

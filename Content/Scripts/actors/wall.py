@@ -57,7 +57,7 @@ class Wall(BaseMesh):
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self,
-                 test = False,
+                 train = False,
                  world = None,
                  side = 'Front',
                  length = MAGICAL_VALUE,
@@ -71,7 +71,7 @@ class Wall(BaseMesh):
             'Right': self.right
         }
         if (world != None):
-            super().__init__(test, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
+            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
             self.get_parameters(side, length, depth,
                                 height, material, manage_hits)
             self.set_parameters()
