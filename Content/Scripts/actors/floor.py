@@ -76,10 +76,7 @@ class Floor(BaseMesh):
                                friction,
                                False,
                                '/Game/Meshes/Floor_400x400')
-        if (material == None):
-            self.material = ue.load_object(Material, get_random_material(load_materials('Materials/Floor')))
-        else:
-            self.material = ue.load_object(Material, material)
+        self.material = ue.load_object(Material, material)
 
     def set_parameters(self):
         super().set_parameters()

@@ -59,9 +59,9 @@ class Wall(BaseMesh):
     def __init__(self,
                  world = None,
                  side = 'Front',
-                 length = MAGICAL_VALUE,
-                 depth = MAGICAL_VALUE,
-                 height = MAGICAL_VALUE,
+                 length = 2000,
+                 depth = 1000,
+                 height = 1,
                  material = None,
                  manage_hits = True):
         self.sides = {
@@ -80,26 +80,14 @@ class Wall(BaseMesh):
     def get_parameters(self, side, length,
                        depth, height, material,
                        manage_hits):
-        if (depth == MAGICAL_VALUE):
-            self.depth = random.uniform(1500, 4000)
-        else:
-            self.depth = depth
-        if (length == MAGICAL_VALUE):
-            self.length = random.uniform(900, 1500)
-        else:
-            self.length = length
-        if (height == MAGICAL_VALUE):
-            self.height = random.uniform(1, 10)
-        else:
-            self.height = height
+        self.depth = depth
+        self.length = length
+        self.height = height
         self.side = side
         self.sides[self.side]()
         super().get_parameters(self.location, self.rotation, self.scale,
                                0.5, manage_hits, '/Game/Meshes/Wall_400x400')
-        if (material == None):
-            self.material = ue.load_object(Material, tools.materials.get_random_material(tools.materials.load_materials('Materials/Wall')))
-        else:
-            self.material = ue.load_object(Material, material)
+        self.material = ue.load_object(Material, material)
 
 
     def set_parameters(self):

@@ -25,8 +25,8 @@ class Camera(BaseActor):
     """
     def __init__(self,
                  world = None,
-                 location = FVector(0, 0, MAGICAL_VALUE),
-                 rotation = FRotator(0, 0, MAGICAL_VALUE),
+                 location = FVector(0, 0, 0),
+                 rotation = FRotator(0, 0, 0),
                  field_of_view = 90,
                  aspect_ratio = 1,
                  projection_mode = ECameraProjectionMode.Perspective,

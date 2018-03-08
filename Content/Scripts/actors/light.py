@@ -23,9 +23,9 @@ class Light(BaseActor):
     """
     def __init__(self,
                  world = None,
-                 type = "Directional",
-                 location = FVector(0, 0, MAGICAL_VALUE),
-                 rotation = FRotator(0, 0, MAGICAL_VALUE),
+                 type = "SkyLight",
+                 location = FVector(0, 0, 0),
+                 rotation = FRotator(0, 0, 0),
                  manage_hits = True):
         types = {
             'Directional': '/Game/DirectionalLight.DirectionalLight_C',

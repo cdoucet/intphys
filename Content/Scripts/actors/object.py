@@ -65,14 +65,14 @@ class Object(BaseMesh):
     """
     def __init__(self,
                  world = None,
-                 mesh_str = None,
-                 location = FVector(0, 0, MAGICAL_VALUE),
-                 rotation = FRotator(0, 0, MAGICAL_VALUE),
+                 mesh_str = shape['Sphere'],
+                 location = FVector(0, 0, 0),
+                 rotation = FRotator(0, 0, 0),
                  scale = FVector(1, 1, 1),
                  material = None,
-                 mass = MAGICAL_VALUE,
-                 force = FVector(0, 0, MAGICAL_VALUE),
-                 friction = MAGICAL_VALUE,
+                 mass = 1,
+                 force = FVector(0, 0, 0),
+                 friction = 0.5,
                  manage_hits = True):
         if (world != None):
             super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
@@ -87,26 +87,11 @@ class Object(BaseMesh):
                        rotation, scale, material,
                        mass, force, friction,
                        manage_hits):
-        if (mesh_str == None):
-            mesh_str = shape[random.choice(self.shape.keys())]
         super().get_parameters(location, rotation, scale,
                                friction, manage_hits, mesh_str)
-        if (material == None):
-            self.material = ue.load_object(Material, tools.materials.get_random_material(
-                tools.materials.load_materials('Materials/Actor')))
-        else:
-            self.material = ue.load_object(Material, material)
-        if (mass == MAGICAL_VALUE):
-            self.mass = random.uniform(0.5, 100)
-        else:
-            self.mass = mass
-        if (force == FVector(0, 0, MAGICAL_VALUE)):
-            self.force = FVector(
-                random.uniform(-10000, 10000),
-                random.uniform(-10000, 10000),
-                random.uniform(-10000, 10000))
-        else:
-            self.force = force
+        self.material = ue.load_object(Material, material)
+        self.mass = mass
+        self.force = force
             
     def set_parameters(self):
         super().set_parameters()

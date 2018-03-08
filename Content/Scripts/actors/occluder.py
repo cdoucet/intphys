@@ -56,12 +56,12 @@ class Occluder(BaseMesh):
     """
     def __init__(self,
                  world = None,
-                 location = FVector(0, 0, MAGICAL_VALUE),
-                 rotation = FRotator(0, 0, MAGICAL_VALUE),
+                 location = FVector(0, 0, 0),
+                 rotation = FRotator(0, 0, 0),
                  scale = FVector(1, 1, 1),
                  material = None,
-                 moves = MAGICAL_VALUE,
-                 speed = MAGICAL_VALUE,
+                 moves = [0],
+                 speed = 1,
                  manage_hits = True):
         if (world != None):
             super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))

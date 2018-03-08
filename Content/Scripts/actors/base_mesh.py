@@ -61,10 +61,7 @@ class BaseMesh(BaseActor):
     def get_parameters(self, location, rotation, scale, friction, manage_hits, mesh_str):
         super().get_parameters(location, rotation, manage_hits)
         self.scale = scale
-        if (friction == MAGICAL_VALUE):
-            self.friction = random.uniform(-1000, 1000)
-        else:
-            self.friction = friction
+        self.friction = friction
         self.mesh_str = mesh_str
 
     def set_parameters(self):

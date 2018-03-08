@@ -31,20 +31,8 @@ class BaseActor():
         self.actor = None
 
     def get_parameters(self, location, rotation, manage_hits):
-        if (location == FVector(0, 0, MAGICAL_VALUE)):
-            self.location = FVector(
-                random.uniform(-100, 100),
-                random.uniform(200, 400),
-                100 + random.uniform(-30, 80))
-        else:
-            self.location = location
-        if (rotation == FRotator(0, 0, MAGICAL_VALUE)):
-            self.rotation = FRotator(
-                0,
-                random.uniform(-15, 10),
-                random.uniform(-30, 30))
-        else:
-            self.rotation = rotation
+        self.location = location
+        self.rotation = rotation
         self.manage_hits = manage_hits
 
     def set_parameters(self):
