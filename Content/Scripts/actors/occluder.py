@@ -54,7 +54,7 @@ class Occluder(BaseMesh):
     Warning !
     The location is precisely from the point at the bottom center of the mesh
     """
-    def __init__(self, train = False,
+    def __init__(self,
                  world = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
@@ -62,102 +62,76 @@ class Occluder(BaseMesh):
                  material = None,
                  moves = MAGICAL_VALUE,
                  speed = MAGICAL_VALUE,
-                 pause = False,
                  manage_hits = True):
         if (world != None):
-            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
             self.get_parameters(location, rotation,
                                 scale, material,
                                 moves, speed,
-                                pause, manage_hits)
+                                manage_hits)
             self.set_parameters()
         else:
             super().__init__()
 
     def get_parameters(self, location, rotation,
                        scale, material, moves,
-                       speed, pause, manage_hits):
+                       speed, manage_hits):
         super().get_parameters(location, rotation, scale,
                                0.5, manage_hits,
                                '/Game/Meshes/OccluderWall')
-        if (material == None):
-            self.material = ue.load_object(Material, tools.materials.get_random_material(
-                tools.materials.load_materials('Materials/Wall')))
-        else:
-            self.material = ue.load_object(Material, material)
-        if (speed == MAGICAL_VALUE or speed < 0):
-            speed = random.uniform(0, 10)
-        else:
-            self.speed = speed
-        if (moves == MAGICAL_VALUE or moves < 0):
-            moves = random.uniform(0, 10)
-        else:
-            self.moves = moves
-        if (pause == True):
-            self.pause = 0
-        else:
-            self.pause = -1
+        self.material = ue.load_object(Material, material)
+        self.speed = speed
+        self.moves = moves
         self.moving = False
         self.up = True
         self.location.y - (200 * scale.y)
+        self.count = -1
 
     def set_parameters(self):
         super().set_parameters()
         
         
     """
-    move make the Occluder fall and get up when called
+    make the Occluder fall and get up when called
     """
     def move(self):
-        if (self.moves <= 0):
-            return
+        self.count += 1
         rotation = self.rotation
-        if (self.moving == False):
-            self.moving = True
+        if (self.count in self.moves):
+            if (self.moving == False):
+                if (self.up == True):
+                    rotation.roll += self.speed
+                else:
+                    rotation.roll -= self.speed
+                self.moving = True
+            else:
+                if (self.up == True):
+                    rotation.roll += self.speed
+                    self.up = False
+                else:
+                    rotation.roll -= self.speed
+                    self.up = True
+        elif (self.moving == True):
             if (self.up == True):
                 rotation.roll += self.speed
             else:
                 rotation.roll -= self.speed
         else:
-            if (self.up == True):
-                if (rotation.roll >= 90):
-                    if (self.pause == -1 or random.uniform(0, 100) < self.pause):
-                        if (self.pause != -1):
-                            self.pause = 0
-                        self.moving = False
-                        self.up = False
-                        self.moves = self.moves - 0.5
-                    else:
-                        self.pause = self.pause + 1
-                    return
-                else:
-                    rotation.roll += self.speed
-            else:
-                if (rotation.roll <= 0):
-                    if (self.pause == -1 or random.uniform(0, 100) < self.pause):
-                        if (self.pause != -1):
-                            self.pause = 0
-                        self.moving = False
-                        self.up = True
-                        self.moves = self.moves - 0.5
-                    else:
-                        self.pause = self.pause + 1
-                    return
-                else:
-                    rotation.roll -= self.speed
-        if (rotation.roll > 90):
+            return
+        if (rotation.roll >= 90):
             rotation.roll = 90
-        if (rotation.roll < 0):
+            self.up = False
+            self.moving = False
+        elif (rotation.roll <= 0):
             rotation.roll = 0
+            self.up = True
+            self.moving = False
         self.set_rotation(rotation)
 
     def get_status(self):
         status = super().get_status()
         status['material'] = self.material.get_name()
-        if (self.pause != -1):
-            status['pause'] = False
-        else:
-            status['pause'] = True
         status['speed'] = self.speed
-        status['moves'] = self.moves
+        for i in self.moves:
+            status['moves'].append(i)
         return status

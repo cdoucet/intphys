@@ -1,5 +1,6 @@
 import random
 
+from collections import defaultdict
 import unreal_engine as ue
 from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
@@ -21,7 +22,6 @@ class Light(BaseActor):
     the __init__ function will change it on its own
     """
     def __init__(self,
-                 train = False,
                  world = None,
                  type = "Directional",
                  location = FVector(0, 0, MAGICAL_VALUE),
@@ -33,10 +33,11 @@ class Light(BaseActor):
             'PointLight': '/Game/PointLight.PointLight_C'
             }
         if (world != None):
-            super().__init__(train, world.actor_spawn(ue.load_class(types[type])))
+            super().__init__(world.actor_spawn(ue.load_class(types[type])))
             if (type != 'SkyLight'):
                 self.get_parameters(location, rotation, manage_hits)
                 self.set_parameters()
+            self.type = type
         else:
             super().__init__()
 
@@ -50,5 +51,10 @@ class Light(BaseActor):
         self.set_actor(self.uobject.get_owner())
 
     def get_status(self):
-        status = super().get_status()
+        if (self.type != 'SkyLight'):
+            status = super().get_status()
+        else:
+            status = defaultdict(list)
+            status['actor'] = self.actor.get_name()
+        status['type'] = self.type
         return status

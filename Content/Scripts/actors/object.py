@@ -63,7 +63,7 @@ class Object(BaseMesh):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, train = False,
+    def __init__(self,
                  world = None,
                  mesh_str = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
@@ -75,7 +75,7 @@ class Object(BaseMesh):
                  friction = MAGICAL_VALUE,
                  manage_hits = True):
         if (world != None):
-            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
             self.get_parameters(mesh_str, location,
                                 rotation, scale, material,
                                 mass, force, friction, manage_hits)

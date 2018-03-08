@@ -52,9 +52,9 @@ class BaseMesh(BaseActor):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, train = False, actor = None):
+    def __init__(self, actor = None):
         if (actor != None):
-            super().__init__(train, actor)
+            super().__init__(actor)
         else:
             super().__init__()
 

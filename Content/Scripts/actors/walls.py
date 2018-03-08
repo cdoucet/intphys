@@ -7,6 +7,7 @@ from unreal_engine.enums import ECollisionChannel
 from actors.base_mesh import BaseMesh
 import tools.materials
 import random
+from collections import defaultdict
 from actors.wall import Wall
 
 """
@@ -15,20 +16,19 @@ Walls is a wrapper class that make 3 walls spawn.
 
 class Walls():
     def __init__(self, world,
-                 train = False,
                  length = MAGICAL_VALUE,
                  depth = MAGICAL_VALUE,
                  height = MAGICAL_VALUE,
                  material = None,
                  manage_hits = True):
         self.get_parameters(length, depth, height, material, manage_hits)
-        self.front = Wall(train, world, "Front",
+        self.front = Wall(world, "Front",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.right = Wall(train, world, "Right",
+        self.right = Wall(world, "Right",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
-        self.left = Wall(train, world, "Left",
+        self.left = Wall(world, "Left",
                           self.length, self.depth,
                           self.height, self.material, self.manage_hits)
 
@@ -57,7 +57,7 @@ class Walls():
             self.material = material
 
     def get_status(self):
-        status = self.front.get_status()
-        status += self.left.get_status()
-        status += self.right.get_status()
-        return status
+        print(self.front.get_status())
+        print(self.left.get_status())
+        print(self.right.get_status())
+        return None

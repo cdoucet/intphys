@@ -56,11 +56,12 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, train = False, world=None,
-                 material=None, scale=FVector(100, 100, 1), friction=0.5):
+    def __init__(self, world=None,
+                 material=None,
+                 scale=FVector(100, 100, 1),
+                 friction=0.5):
         if world is not None:
-            super().__init__(train,
-                world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
             self.get_parameters(material, scale, friction)
             self.set_parameters()
         else:

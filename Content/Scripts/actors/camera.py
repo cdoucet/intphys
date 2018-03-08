@@ -24,7 +24,6 @@ class Camera(BaseActor):
     the __init__ function will change it on its own
     """
     def __init__(self,
-                 train = False,
                  world = None,
                  location = FVector(0, 0, MAGICAL_VALUE),
                  rotation = FRotator(0, 0, MAGICAL_VALUE),
@@ -33,7 +32,7 @@ class Camera(BaseActor):
                  projection_mode = ECameraProjectionMode.Perspective,
                  manage_hits = True):
         if (world != None):
-            super().__init__(train, world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
             self.get_parameters(location, rotation, field_of_view,
                             aspect_ratio, projection_mode, manage_hits)
             self.set_parameters(world)
