@@ -1,10 +1,8 @@
-import random
-
-from collections import defaultdict
 import unreal_engine as ue
-from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from actors.base_actor import BaseActor
+from collections import defaultdict
+
 
 class Light(BaseActor):
     """
@@ -22,27 +20,28 @@ class Light(BaseActor):
     the __init__ function will change it on its own
     """
     def __init__(self,
-                 world = None,
-                 type = "SkyLight",
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 manage_hits = True):
+                 world=None,
+                 type="SkyLight",
+                 location=FVector(0, 0, 0),
+                 rotation=FRotator(0, 0, 0),
+                 overlap=True,
+                 warning=False):
         types = {
             'Directional': '/Game/DirectionalLight.DirectionalLight_C',
             'SkyLight': '/Game/SkyLight.SkyLight_C',
             'PointLight': '/Game/PointLight.PointLight_C'
             }
-        if (world != None):
+        if (world is not None):
             super().__init__(world.actor_spawn(ue.load_class(types[type])))
             if (type != 'SkyLight'):
-                self.get_parameters(location, rotation, manage_hits)
+                self.get_parameters(location, rotation, overlap, warning)
                 self.set_parameters()
             self.type = type
         else:
             super().__init__()
 
-    def get_parameters(self, location, rotation, manage_hits):
-        super().get_parameters(location, rotation, manage_hits)
+    def get_parameters(self, location, rotation, overlap, warning):
+        super().get_parameters(location, rotation, overlap, warning)
 
     def set_parameters(self):
         super().set_parameters()

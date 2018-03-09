@@ -18,3 +18,17 @@ bool UFriction::SetFriction(UMaterial* Material, float Friction)
 
     return true;
 }
+
+bool UFriction::SetRestitution(UMaterial* Material, float restitution)
+{
+    UPhysicalMaterial* PhysicalMaterial = Material->GetPhysicalMaterial();
+    if (PhysicalMaterial == nullptr)
+    {
+        return false;
+    }
+    PhysicalMaterial->Restitution = restitution;
+    PhysicalMaterial->RebuildPhysicalMaterials();
+    PhysicalMaterial->UpdatePhysXMaterial();
+
+    return true;
+}

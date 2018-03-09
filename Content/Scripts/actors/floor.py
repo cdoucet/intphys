@@ -2,11 +2,8 @@
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
-
+from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
-from tools.materials import get_random_material, load_materials
 
 # Ok here we go: This is a recursive instantiate class.  The general
 # principle is to instantiate a class twice to avoid making two
@@ -31,6 +28,7 @@ from tools.materials import get_random_material, load_materials
 
 # Floor is the plane thing which is the ground of the magic tricks.
 # It inherits from BaseMesh.
+
 
 class Floor(BaseMesh):
     """A rectangular plane which is the ground of other actors
@@ -59,21 +57,24 @@ class Floor(BaseMesh):
     def __init__(self, world=None,
                  material=None,
                  scale=FVector(100, 100, 1),
-                 friction=0.5):
+                 friction=0.5,
+                 restitution=0.5):
         if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
-            self.get_parameters(material, scale, friction)
+            self.get_parameters(material, scale, friction, restitution)
             self.set_parameters()
         else:
             super().__init__()
 
-    def get_parameters(self, material, scale, friction):
+    def get_parameters(self, material, scale, friction, restitution):
         super().get_parameters(FVector(0 - ((400 * scale.x) / 2),
                                        0 - ((400 * scale.y) / 2),
                                        0 - (10 * scale.z)),
                                FRotator(0, 0, 0),
                                scale,
                                friction,
+                               restitution,
+                               False,
                                False,
                                '/Game/Meshes/Floor_400x400')
         self.material = ue.load_object(Material, material)

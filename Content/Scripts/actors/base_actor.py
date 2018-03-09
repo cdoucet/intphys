@@ -1,9 +1,4 @@
 import unreal_engine as ue
-import random
-from magical_value import MAGICAL_VALUE
-from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
 from collections import defaultdict
 
 """
@@ -13,6 +8,7 @@ Beware : this is a recursive instantiation (see comments at the begining of othe
 Therefore, don't try to use the self.actor before the actor_spawn function is called
 """
 
+
 class BaseActor():
     """
     __init__ instantiate the class
@@ -21,35 +17,36 @@ class BaseActor():
     location: location of the actor (FVector). Default value: 0, 0, 0
     rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
     """
-    def __init__(self, actor = None):
+    def __init__(self, actor=None):
         self.actor = actor
 
     def actor_destroy(self):
-        if (self.actor != None):
+        if (self.actor is not None):
             self.actor.actor_destroy()
             self.actor = None
         self.actor = None
 
-    def get_parameters(self, location, rotation, manage_hits):
+    def get_parameters(self, location, rotation, overlap, warning):
         self.location = location
         self.rotation = rotation
-        self.manage_hits = manage_hits
+        self.overlap = overlap
+        self.warning = warning
 
     def set_parameters(self):
         self.set_location(self.location)
         self.set_rotation(self.rotation)
         self.hidden = False
         # manage OnActorBeginOverlap events
-        if (self.manage_hits == True):
+        if (self.warning is True and self.overlap is True):
             self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
+        elif (self.warning is True and self.overlap is False):
             self.actor.bind_event('OnActorHit', self.on_actor_hit)
 
-    def get_location(self):
-        return self.location
-
-    def get_rotation(self):
-        return self.rotation
-
+    """
+    this getter is important : in the recursive instance,
+    it's an internal unreal engine function called get_actor which is called
+    so wherever you call get_actor(), it will works
+    """
     def get_actor(self):
         return self.actor
 
@@ -58,12 +55,12 @@ class BaseActor():
 
     def set_location(self, location):
         self.location = location
-        if (self.actor.set_actor_location(self.location, False) == False):
+        if (self.actor.set_actor_location(self.location, False) is False):
             ue.log_warning("Failed to set the location of an actor")
 
     def set_rotation(self, rotation):
         self.rotation = rotation
-        if (self.actor.set_actor_rotation(self.rotation) == False):
+        if (self.actor.set_actor_rotation(self.rotation) is False):
             ue.log_warning("Failed to set the rotation of an actor")
 
     """Raises a Runtime error when some actor overlaps this object"""
@@ -95,5 +92,6 @@ class BaseActor():
         status['rotation'].append(('roll', self.rotation.roll))
         status['rotation'].append(('yaw', self.rotation.yaw))
         status['hidden'] = self.hidden
-        status['manage_hits'] = self.manage_hits
+        status['overlap'] = self.overlap
+        status['warning'] = self.warning
         return status

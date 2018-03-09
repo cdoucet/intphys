@@ -1,13 +1,9 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
 from actors.base_mesh import BaseMesh
-import tools.materials
-import random
+from unreal_engine.classes import Material
 
 """
 Ok here we go:
@@ -38,6 +34,7 @@ Object is the python component for the main actors of the magic tricks (the sphe
 It inherits from BaseMesh.
 """
 
+
 class Object(BaseMesh):
     """
     shape is a dictionnary with the path of every shape (mesh) available for the Object actor
@@ -48,7 +45,7 @@ class Object(BaseMesh):
         # Cone seems to be gone somehow
         # 'Cone': '/Engine/EngineMeshes/Cone.Cone',
         # And Cylinder seems way too small
-        #'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
+        # 'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
     }
 
     """
@@ -64,21 +61,25 @@ class Object(BaseMesh):
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
     def __init__(self,
-                 world = None,
-                 mesh_str = shape['Sphere'],
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 scale = FVector(1, 1, 1),
-                 material = None,
-                 mass = 1,
-                 force = FVector(0, 0, 0),
-                 friction = 0.5,
-                 manage_hits = True):
-        if (world != None):
+                 world=None,
+                 mesh_str=shape['Sphere'],
+                 location=FVector(0, 0, 0),
+                 rotation=FRotator(0, 0, 0),
+                 scale=FVector(1, 1, 1),
+                 material=None,
+                 mass=1,
+                 force=FVector(0, 0, 0),
+                 friction=0.5,
+                 restitution=0.5,
+                 overlap=False,
+                 warning=True):
+        if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
             self.get_parameters(mesh_str, location,
                                 rotation, scale, material,
-                                mass, force, friction, manage_hits)
+                                mass, force, friction,
+                                restitution, overlap,
+                                warning)
             self.set_parameters()
         else:
             super().__init__()
@@ -86,19 +87,22 @@ class Object(BaseMesh):
     def get_parameters(self, mesh_str, location,
                        rotation, scale, material,
                        mass, force, friction,
-                       manage_hits):
+                       restitution, overlap,
+                       warning):
         super().get_parameters(location, rotation, scale,
-                               friction, manage_hits, mesh_str)
+                               friction, restitution,
+                               overlap, warning,
+                               mesh_str)
         self.material = ue.load_object(Material, material)
         self.mass = mass
         self.force = force
-            
+
     def set_parameters(self):
         super().set_parameters()
         self.set_mass(self.mass)
         self.set_force(self.force)
         self.get_mesh().set_simulate_physics()
-        
+
     """
     set the mass of the mesh
     to be honnest I don't really know what the second line do

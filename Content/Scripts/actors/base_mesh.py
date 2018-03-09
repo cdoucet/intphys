@@ -1,11 +1,7 @@
 # coding: utf-8
 
 import unreal_engine as ue
-import random
-from magical_value import MAGICAL_VALUE
-from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
 from actors.base_actor import BaseActor
 
 from unreal_engine.classes import Friction
@@ -39,6 +35,7 @@ BaseMesh inherits from BaseActor.
 It is the base class of every python component build with a mesh.
 """
 
+
 class BaseMesh(BaseActor):
     """
     __init__ instantiate the class
@@ -52,16 +49,19 @@ class BaseMesh(BaseActor):
     mass: mass of the actor (float). Default value: 1.0
     force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
     """
-    def __init__(self, actor = None):
-        if (actor != None):
+    def __init__(self, actor=None):
+        if actor is not None:
             super().__init__(actor)
         else:
             super().__init__()
 
-    def get_parameters(self, location, rotation, scale, friction, manage_hits, mesh_str):
-        super().get_parameters(location, rotation, manage_hits)
+    def get_parameters(self, location, rotation,
+                       scale, friction, restitution,
+                       overlap, warning, mesh_str):
+        super().get_parameters(location, rotation, overlap, warning)
         self.scale = scale
         self.friction = friction
+        self.restitution = restitution
         self.mesh_str = mesh_str
 
     def set_parameters(self):
@@ -70,17 +70,18 @@ class BaseMesh(BaseActor):
         self.set_rotation(self.rotation)
         self.set_mesh()
         self.set_friction(self.friction)
-        if (self.manage_hits == True):
+        self.set_restitution(self.restitution)
+        if (self.overlap is False):
             self.mesh.call('SetCollisionProfileName BlockAll')
-        
+
     """
     set_mesh sets the mesh, enable collision, set the material and the scale
     """
     def set_mesh(self):
         self.mesh = self.get_actor().get_actor_component_by_type(ue.find_class('StaticMeshComponent'))
         # enable collisions
-        #self.mesh.call('SetCollisionProfileName BlockAll')
-        #self.actor.SetActorEnableCollision(True)
+        # self.mesh.call('SetCollisionProfileName BlockAll')
+        # self.actor.SetActorEnableCollision(True)
 
         # setup mesh and material
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
@@ -97,29 +98,21 @@ class BaseMesh(BaseActor):
         self.mesh_str = mesh_str
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
 
-    def get_mesh_str(self):
-        return self.mesh_str
-
     def set_material(self, material_str):
         self.material = ue.load_object(Material, material_str)
         self.mesh.set_material(0, self.material)
-
-    def get_material(self):
-        return self.material
 
     def set_scale(self, scale):
         self.scale = scale
         self.actor.set_actor_scale(self.scale)
 
-    def get_scale(self):
-        return self.scale
-
-    def get_friction(self):
-        return self.friction
-
     def set_friction(self, friction):
         self.friction = friction
         Friction.SetFriction(self.material, friction)
+
+    def set_restitution(self, restitution):
+        self.restitution = restitution
+        Friction.SetRestitution(self.material, restitution)
 
     """
     begin_play is called when actor_spawn is called.

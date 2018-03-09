@@ -1,14 +1,9 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
-
+from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
-import tools.materials
-import random
 
 """
 Ok here we go:
@@ -39,6 +34,7 @@ Wall is the vertical plane thing
 It inherits from BaseMesh.
 """
 
+
 class Wall(BaseMesh):
     """
     __init__ instantiate the class
@@ -57,38 +53,39 @@ class Wall(BaseMesh):
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self,
-                 world = None,
-                 side = 'Front',
-                 length = 2000,
-                 depth = 1000,
-                 height = 1,
-                 material = None,
-                 manage_hits = True):
+                 world=None,
+                 side='Front',
+                 length=2000,
+                 depth=1000,
+                 height=1,
+                 material=None,
+                 overlap=False,
+                 warning=False):
         self.sides = {
             'Front': self.front,
             'Left': self.left,
             'Right': self.right
         }
-        if (world != None):
+        if (world is not None):
             super().__init__(world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
             self.get_parameters(side, length, depth,
-                                height, material, manage_hits)
+                                height, material, overlap, warning)
             self.set_parameters()
         else:
             super().__init__()
 
     def get_parameters(self, side, length,
                        depth, height, material,
-                       manage_hits):
+                       overlap, warning):
         self.depth = depth
         self.length = length
         self.height = height
         self.side = side
         self.sides[self.side]()
         super().get_parameters(self.location, self.rotation, self.scale,
-                               0.5, manage_hits, '/Game/Meshes/Wall_400x400')
+                               0.5, 0.5, overlap, warning,
+                               '/Game/Meshes/Wall_400x400')
         self.material = ue.load_object(Material, material)
-
 
     def set_parameters(self):
         super().set_parameters()

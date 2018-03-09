@@ -1,14 +1,9 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Material, StaticMesh
-from unreal_engine.enums import ECollisionChannel
-
+from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
-import tools.materials
-import random
 
 """
 Ok here we go:
@@ -40,6 +35,7 @@ Sounds weird, it is.
 It inherits from BaseMesh.
 """
 
+
 class Occluder(BaseMesh):
     """
     __init__ instantiate the class
@@ -55,29 +51,30 @@ class Occluder(BaseMesh):
     The location is precisely from the point at the bottom center of the mesh
     """
     def __init__(self,
-                 world = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 scale = FVector(1, 1, 1),
-                 material = None,
-                 moves = [0],
-                 speed = 1,
-                 manage_hits = True):
-        if (world != None):
+                 world=None,
+                 location=FVector(0, 0, 0),
+                 rotation=FRotator(0, 0, 0),
+                 scale=FVector(1, 1, 1),
+                 material=None,
+                 moves=[0],
+                 speed=1,
+                 overlap=False,
+                 warning=True):
+        if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
             self.get_parameters(location, rotation,
                                 scale, material,
                                 moves, speed,
-                                manage_hits)
+                                overlap, warning)
             self.set_parameters()
         else:
             super().__init__()
 
     def get_parameters(self, location, rotation,
                        scale, material, moves,
-                       speed, manage_hits):
+                       speed, overlap, warning):
         super().get_parameters(location, rotation, scale,
-                               0.5, manage_hits,
+                               0.5, 0.5, overlap, warning,
                                '/Game/Meshes/OccluderWall')
         self.material = ue.load_object(Material, material)
         self.speed = speed
@@ -89,8 +86,6 @@ class Occluder(BaseMesh):
 
     def set_parameters(self):
         super().set_parameters()
-        
-        
     """
     make the Occluder fall and get up when called
     """
@@ -98,21 +93,21 @@ class Occluder(BaseMesh):
         self.count += 1
         rotation = self.rotation
         if (self.count in self.moves):
-            if (self.moving == False):
-                if (self.up == True):
+            if (self.moving is False):
+                if (self.up is True):
                     rotation.roll += self.speed
                 else:
                     rotation.roll -= self.speed
                 self.moving = True
             else:
-                if (self.up == True):
+                if (self.up is True):
                     rotation.roll += self.speed
                     self.up = False
                 else:
                     rotation.roll -= self.speed
                     self.up = True
-        elif (self.moving == True):
-            if (self.up == True):
+        elif (self.moving is True):
+            if (self.up is True):
                 rotation.roll += self.speed
             else:
                 rotation.roll -= self.speed

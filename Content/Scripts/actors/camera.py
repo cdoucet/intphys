@@ -1,12 +1,10 @@
-import random
-
 import unreal_engine as ue
-from magical_value import MAGICAL_VALUE
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
-from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
+from unreal_engine.classes import GameplayStatics
 from actors.base_actor import BaseActor
+
 
 class Camera(BaseActor):
     """
@@ -20,31 +18,35 @@ class Camera(BaseActor):
     projection mode: I redirect you to the Unreal Engine Doc
 
     Warning !
-    If you don't send either the location and the rotation during the camera instantiation,
+    If you don't send either the location and the rotation
+    during the camera instantiation,
     the __init__ function will change it on its own
     """
     def __init__(self,
-                 world = None,
-                 location = FVector(0, 0, 0),
-                 rotation = FRotator(0, 0, 0),
-                 field_of_view = 90,
-                 aspect_ratio = 1,
-                 projection_mode = ECameraProjectionMode.Perspective,
-                 manage_hits = True):
-        if (world != None):
+                 world=None,
+                 location=FVector(0, 0, 0),
+                 rotation=FRotator(0, 0, 0),
+                 field_of_view=90,
+                 aspect_ratio=1,
+                 projection_mode=ECameraProjectionMode.Perspective,
+                 overlap=True,
+                 warning=True):
+        if (world is not None):
             super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
-            self.get_parameters(location, rotation, field_of_view,
-                            aspect_ratio, projection_mode, manage_hits)
+            self.get_parameters(location, rotation,
+                                field_of_view, aspect_ratio,
+                                projection_mode, overlap,
+                                warning)
             self.set_parameters(world)
         else:
             super().__init__()
 
     def get_parameters(self, location, rotation, field_of_view,
-                       aspect_ratio, projection_mode, manage_hits):
+                       aspect_ratio, projection_mode, overlap, warning):
         self.field_of_view = field_of_view
         self.aspect_ratio = aspect_ratio
         self.projection_mode = projection_mode
-        super().get_parameters(location, rotation, manage_hits)
+        super().get_parameters(location, rotation, overlap, warning)
 
     def set_parameters(self, world):
         super().set_parameters()
@@ -67,7 +69,7 @@ class Camera(BaseActor):
         self.camera_component.SetAspectRatio(self.aspect_ratio)
 
     def set_projection_mode(self, projection_mode):
-        self.projection_mode = projection_mode;
+        self.projection_mode = projection_mode
         self.camera_component.SetProjectionMode(self.projection_mode)
 
     def begin_play(self):
