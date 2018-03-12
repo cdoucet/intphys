@@ -1,6 +1,9 @@
-from unreal_engine import FVector, FRotator
+import random
 
+import unreal_engine as ue
+from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
+
 from actors.floor import Floor
 from actors.object import Object
 from actors.occluder import Occluder
@@ -9,7 +12,6 @@ from actors.camera import Camera
 from actors.light import Light
 from tools.materials import get_random_material
 from tools.materials import load_materials
-import random
 
 
 class BaseScene:

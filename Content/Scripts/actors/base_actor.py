@@ -63,8 +63,8 @@ class BaseActor():
         if (self.actor.set_actor_rotation(self.rotation) is False):
             ue.log_warning("Failed to set the rotation of an actor")
 
-    """Raises a Runtime error when some actor overlaps this object"""
     def manage_overlap(self, me, other):
+        """Raises a Runtime error when some actor overlaps this object"""
         if (me == other):
             return
         message = '{} overlapping {}'.format(

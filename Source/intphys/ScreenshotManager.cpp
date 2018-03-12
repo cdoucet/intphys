@@ -168,8 +168,27 @@ bool FScreenshotManager::Save(const FString& Directory, float& OutMaxDepth, TMap
 
 void FScreenshotManager::Reset()
 {
-    UE_LOG(LogTemp, Warning, TEXT("Reset screenshot buffers"));
     m_ImageIndex = 0;
+    m_ActorsSet.Empty();
+    m_ActorsMap.Empty();
+}
+
+
+bool FScreenshotManager::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
+{
+    if (FrameIndex >= m_ImageIndex)
+    {
+        return false;
+    }
+
+    uint8 ActorId = m_ActorsMap[Actor->GetName()];
+    return m_Masks[FrameIndex].Contains(ActorId);
+}
+
+
+bool FScreenshotManager::IsActorInLastFrame(const AActor* Actor)
+{
+    return IsActorInFrame(Actor, m_ImageIndex-1);
 }
 
 
@@ -240,8 +259,9 @@ bool FScreenshotManager::CaptureDepthAndMasks()
 
                 // compute mask
                 FString ActorName = HitResult.GetActor()->GetName();
-                int32 ActorIndex = m_ActorsSet.Add(ActorName).AsInteger() + 1;
-                m_Masks[m_ImageIndex][PixelIndex] = static_cast<uint8>(ActorIndex);
+                int8 ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
+                m_ActorsMap.Add(ActorName, ActorIndex);
+                m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
             }
 
             // // log a debug message with ray coordinates

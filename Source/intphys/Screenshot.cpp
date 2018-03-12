@@ -3,7 +3,6 @@
 #include "Screenshot.h"
 
 
-
 TSharedPtr<FScreenshotManager> UScreenshot::ScreenshotManager = nullptr;
 
 
@@ -29,7 +28,8 @@ bool UScreenshot::Capture()
 
 bool UScreenshot::Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap)
 {
-    return UScreenshot::ScreenshotManager->Save(Directory, OutMaxDepth, OutActorsMap);
+    return UScreenshot::ScreenshotManager->Save(
+        Directory, OutMaxDepth, OutActorsMap);
 }
 
 
@@ -42,4 +42,17 @@ void UScreenshot::Reset()
 void UScreenshot::SetOriginActor(AActor* Actor)
 {
     UScreenshot::ScreenshotManager->SetOriginActor(Actor);
+}
+
+
+bool UScreenshot::IsActorInFrame(AActor* Actor, int FrameIndex)
+{
+    return UScreenshot::ScreenshotManager->IsActorInFrame(
+        Actor, static_cast<uint>(FrameIndex));
+}
+
+
+bool UScreenshot::IsActorInLastFrame(AActor* Actor)
+{
+    return UScreenshot::ScreenshotManager->IsActorInLastFrame(Actor);
 }

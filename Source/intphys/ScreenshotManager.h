@@ -22,6 +22,10 @@ public:
 
     void Reset();
 
+    bool IsActorInFrame(const AActor* Actor, const uint FrameIndex);
+
+    bool IsActorInLastFrame(const AActor* Actor);
+
 private:
     // Types of the captured images (they are all saved after a
     // conversion to TArray<uint8>)
@@ -62,6 +66,7 @@ private:
 
     // Map the actors names to int ids
     TSet<FString> m_ActorsSet;
+    TMap<FString, uint8> m_ActorsMap;
 
     // Take a screenshot of the scene and push it in memory
     bool CaptureScene();
