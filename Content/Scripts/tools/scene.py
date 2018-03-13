@@ -57,7 +57,8 @@ class BaseScene:
 
     def render(self):
         self.spawn_actors()
-        self.print_status()
+        # self.print_status()
+
         # prepare for the next run
         self.current_run += 1
 

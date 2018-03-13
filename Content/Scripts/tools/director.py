@@ -7,7 +7,7 @@ from unreal_engine.classes import Screenshot
 from tools.scene import TrainScene, TestScene
 from tools.tick import Tick
 from tools.utils import exit_ue, set_game_paused
-from actors.camera import Camera
+# from actors.camera import Camera
 
 
 class Director:
@@ -115,10 +115,6 @@ class Director:
             self.scene.description())
         ue.log(description)
 
-
-        # render the scene: spawn actors
-        self.scene.render()
-
         # setup the screenshots
         if  self.scene.is_check_run():
             pass
@@ -163,8 +159,7 @@ class Director:
         # scene: the runs transition is handled directly by the scene
         # instance)
         if self.scene.get_nruns_remaining() == 0:
-            #self.scene.clear()
-
+            self.scene.clear()
             self.scene_index += 1
             try:
                 self.scene = self.scenes_list[self.scene_index]
