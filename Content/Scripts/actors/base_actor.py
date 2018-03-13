@@ -36,10 +36,11 @@ class BaseActor():
         self.set_location(self.location)
         self.set_rotation(self.rotation)
         self.hidden = False
+
         # manage OnActorBeginOverlap events
-        if (self.warning is True and self.overlap is True):
+        if self.warning and self.overlap:
             self.actor.bind_event('OnActorBeginOverlap', self.manage_overlap)
-        elif (self.warning is True and self.overlap is False):
+        if self.warning and not self.overlap:
             self.actor.bind_event('OnActorHit', self.on_actor_hit)
 
     """
@@ -55,13 +56,15 @@ class BaseActor():
 
     def set_location(self, location):
         self.location = location
-        if (self.actor.set_actor_location(self.location, False) is False):
+        if not self.actor.set_actor_location(self.location, False):
             ue.log_warning("Failed to set the location of an actor")
 
     def set_rotation(self, rotation):
         self.rotation = rotation
-        if (self.actor.set_actor_rotation(self.rotation) is False):
-            ue.log_warning("Failed to set the rotation of an actor")
+        if not self.actor.set_actor_rotation(self.rotation):
+            ue.log_warning(
+                "Failed to set the rotation of {}"
+                .format(self.actor.get_name()))
 
     def manage_overlap(self, me, other):
         """Raises a Runtime error when some actor overlaps this object"""
