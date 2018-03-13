@@ -38,8 +38,14 @@ def set_game_resolution(world, resolution):
     `resolution` is a tuple of (width, height) in pixels
 
     """
-    KismetSystemLibrary.ExecuteConsoleCommand(
-        world, 'r.SetRes {}'.format('x'.join(resolution)))
+    # cast resolution to string
+    resolution = (str(r) for r in resolution)
+
+    # command that change the resolution
+    command = 'r.SetRes {}'.format('x'.join(resolution))
+
+    # execute the command
+    KismetSystemLibrary.ExecuteConsoleCommand(world, command)
 
 
 def intphys_root_directory():

@@ -1,20 +1,20 @@
 import os
 import random
-
 import unreal_engine as ue
-from tools.utils import parse_scenes_json, exit_ue, set_game_resolution
+
 from tools.director import Director
+from tools.utils import parse_scenes_json, exit_ue, set_game_resolution
 
 # the default game resolution, for both scene rendering and saved
 # images (width * height in pixels)
-DEFAULT_RESOLUTION = ("288", "288")
+DEFAULT_RESOLUTION = (288, 288)
 
 class Main:
     def begin_play(self):
         # get the world from the attached component
         world = self.uobject.get_world()
 
-        # the main loop continues to tick whe the game is paused (but
+        # the main loop continues to tick when the game is paused (but
         # all other actors are paused)
         self.uobject.SetTickableWhenPaused(True)
 
