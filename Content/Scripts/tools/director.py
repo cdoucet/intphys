@@ -1,3 +1,4 @@
+import json
 import os
 
 import unreal_engine as ue
@@ -27,7 +28,7 @@ class Director:
     ----------
     world : ue.uobject
         The game's world in which to render the scenes
-    scenarii : list
+    scenario_list : list
         A list of scenes to render, derived from scenario.base.Base
     size : tuple
         The size of a scene the screen resolution times the number of
@@ -46,20 +47,20 @@ class Director:
         loaded before the first capture. Default to 10 ticks.
 
     """
-    def __init__(self, world, scenarii, size, output_dir=None,
+    def __init__(self, world, scenario_list, size, output_dir=None,
                  tick_interval=2, tick_pause_at_start=10):
         self.world = world
-        self.scenarii_list = scenarii
+        self.scenario_list = scenario_list
         self.size = size
         self.output_dir = output_dir
         self.tick_pause_at_start = tick_pause_at_start
 
         ue.log('scheduling {nscenes} scenes, ({ntest} for test and '
                '{ntrain} for train), total of {nruns} runs'.format(
-            nscenes=len(self.scenarii_list),
-            ntest=len([s for s in self.scenarii_list if not s.is_train()]),
-            ntrain=len([s for s in self.scenarii_list if s.is_train()]),
-            nruns=sum(s.get_nruns() for s in self.scenarii_list)))
+            nscenes=len(self.scenario_list),
+            ntest=len([s for s in self.scenario_list if not s.is_train()]),
+            ntrain=len([s for s in self.scenario_list if s.is_train()]),
+            nruns=sum(s.get_nruns() for s in self.scenario_list)))
 
         # the director owns the camera
         self.camera = Camera(world=world, params=CameraParams(
@@ -70,19 +71,22 @@ class Director:
         self.ticker = Tick(tick_interval=tick_interval)
         self.ticker.start()
 
+        # an empty list to append status along the run
+        self.status = []
+
         # initialize to render the first scene on the next tick
         self.scene_index = 0
-        self.scene = Scene(world, self.scenarii_list[0])
-        self._setup()
+        self.scene = Scene(world, self.scenario_list[0])
+        self.setup()
 
     def tick(self, dt):
         """This method is called at each game tick by UE"""
         # update the ticker
         self.ticker.tick(dt)
 
-        # moving occluders and actors at every game tick
-        for actor in self.scene.moving_actors():
-            actor.move()
+        # # moving occluders and actors at every game tick
+        # for actor in self.scene.moving_actors().values():
+        #     actor.move()
 
         # if we are not ticking at low rate, nothing more to do
         if not self.ticker.on_tick():
@@ -99,21 +103,21 @@ class Director:
 
         # during a run, take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self._capture()
+            self.capture(tick)
 
         # end of a run, terminate it
         if tick == self.size[2] + self.tick_pause_at_start:
-            is_next_run = self._teardown()
+            is_next_run = self.teardown()
             if is_next_run is True:
-                self._setup()
+                self.setup()
             else:
                 ue.log('all scenes rendered, exiting')
                 self.ticker.stop()
                 exit_ue(self.world)
 
-    def _setup(self):
+    def setup(self):
         description = 'running scene {}/{}: {}'.format(
-            self.scene_index+1, len(self.scenarii_list),
+            self.scene_index+1, len(self.scenario_list),
             self.scene.description())
         ue.log(description)
 
@@ -130,15 +134,15 @@ class Director:
         self.ticker.reset()
         set_game_paused(self.world, True)
 
-    def _capture(self):
+    def capture(self):
         if self.scene.is_check_run():
             # Screenshot.CaptureMasks()
             pass
         elif self.output_dir:
             Screenshot.Capture()
-            # self.get_status()
+            self.status.append(self.scene.get_status())
 
-    def _teardown(self):
+    def teardown(self):
         """Save captured images for the current run and prepare the next one
 
         Return True if there is a next run to render, False otherwise.
@@ -154,20 +158,14 @@ class Director:
         # the run was successful, see if we need to save capture and
         # prepare the next run
         if self.output_dir and not self.scene.is_check_run():
-            self._save_capture()
+            # save the captured images in a subdirectory
+            output_dir = self.get_scene_subdir()
+            ue.log('saving capture to %s' % output_dir)
 
-        # prepare the next run : if no more run for that scene, render
-        # the next scene (else render the next run of the current
-        # scene: the runs transition is handled directly by the scene
-        # instance)
-        if self.scene.get_nruns_remaining() == 0:
-            self.scene.clear()
-            self.scene_index += 1
-            try:
-                scenario = self.scenarii_list[self.scene_index]
-                self.scene = Scene(self.world, scenario)
-            except IndexError:
-                return False
+            max_depth, masks = self.save_capture(output_dir)
+            self.status['images'] = {'max_depth': max_depth, 'masks': masks}
+
+            self.save_status(os.path.join(output_dir, 'status.json'))
 
         # prepare the next run : if no more run for that scene, render
         # the next scene. Else render the next run of the current
@@ -178,32 +176,29 @@ class Director:
         else:
             # destroy all the actors from the previous scene
             self.scene.clear()
-
             self.scene_index += 1
             try:
-                self.scene = Scene(self.world, self.scenarii_list[self.scene_index])
+                scenario = self.scenario_list[self.scene_index]
+                self.scene = Scene(self.world, scenario)
                 return True
             except IndexError:
                 return False
 
-    def _save_capture(self):
-        # save the captured images in a subdirectory
-        output_dir = self._get_scene_subdir()
-        ue.log('saving capture to %s' % output_dir)
-
+    def save_capture(self, output_dir):
         done, max_depth, masks = Screenshot.Save(output_dir)
-
         if not done:
             self.ticker.stop()
             exit_ue(self.world, 'cannot save images to %s' % output_dir)
-
         return max_depth, masks
 
-    def _get_scene_subdir(self):
+    def save_status(self, json_file):
+        open(json_file, 'w').write(json.dumps(self.status, indent=4))
+
+    def get_scene_subdir(self):
         # build the scene sub-directory name, for exemple
         # '027_test_O1/3' or '028_train_O1'
         idx = self.scene_index + 1
-        padded_idx = '0' * len(str(len(self.scenarii_list) - idx)) + str(idx)
+        padded_idx = '0' * len(str(len(self.scenario_list) - idx)) + str(idx)
         scene_name = (
             padded_idx + '_' +
             ('train' if self.scene.is_train_scene() else 'test') + '_' +

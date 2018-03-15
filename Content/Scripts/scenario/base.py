@@ -34,17 +34,24 @@ class Base(object):
         pass
 
     def generate_parameters(self):
-        """Return a dict of {actor: parameters} for that scenario"""
+        """Return a dict of {actor: parameters} for that scenario
+
+        This method should be specialized in child classes. At the
+        base level only the actors common to all scenarii are
+        considered.
+
+        """
         params = {}
 
         params['floor'] = FloorParams(
             material=get_random_material_for_category('Floor'))
 
         params['light'] = LightParams(
+            type='SkyLight',
             location=FVector(0, 0, 1000),
             rotation=FRotator(0, 0, 0))
 
-        prob_wall = 0.5
+        prob_wall = 0
         if random.uniform(0, 1) <= prob_wall:
            params['walls'] = WallsParams(
                material=get_random_material_for_category('Wall'),

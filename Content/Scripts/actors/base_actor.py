@@ -1,11 +1,13 @@
 import unreal_engine as ue
 from collections import defaultdict
 
-"""
-BaseActor is the very base of the inheritance tree.
-It is the base class of every python component build with an actor (all of them, though).
-Beware : this is a recursive instantiation (see comments at the begining of other classes)
-Therefore, don't try to use the self.actor before the actor_spawn function is called
+"""BaseActor is the very base of the actors inheritance tree
+
+It is the base class of every python component build with an actor
+(all of them, though).  Beware : this is a recursive instantiation
+(see comments at the begining of other classes) Therefore, don't try
+to use the self.actor before the actor_spawn function is called
+
 """
 
 

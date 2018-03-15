@@ -3,6 +3,9 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
 
 
+# when material is None, a random one is choosen by actors at
+# instanciation.
+
 @dataclass
 class CameraParams:
     location: FVector = FVector(0, 0, 0)
@@ -37,10 +40,10 @@ class WallsParams:
 
 @dataclass
 class ObjectParams:
-    mesh: str
-    material: str
-    location: FVector
-    rotation: FRotator
+    mesh: str = 'Sphere'
+    material: str = None
+    location: FVector = FVector(0, 0, 0)
+    rotation: FRotator = FRotator(0, 0, 0)
     scale: FVector = FVector(1, 1, 1)
     mass: float = 1
     friction: float = 0.5
@@ -50,9 +53,9 @@ class ObjectParams:
 
 @dataclass
 class OccluderParams:
-    material: str
-    location: FVector
-    rotation: FRotator
+    material: str = None
+    location: FVector = FVector(0, 0, 0)
+    rotation: FRotator = FRotator(0, 0, 0)
     scale: FVector = FVector(1, 1, 1)
     moves: tuple = (0)
     speed: float = 1

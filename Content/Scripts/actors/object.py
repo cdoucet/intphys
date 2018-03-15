@@ -2,37 +2,38 @@
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-from actors.base_mesh import BaseMesh
 from unreal_engine.classes import Material
 
-"""
-Ok here we go:
-This is a recursive instantiate class.
-The general principle is to instantiate a class twice to avoid making two distinct classes.
-I needed to instantiate a python component with parameters but UnrealEnginePython
-wouldn't let me do that.
-Furthermore, I couldn't spawn the actor without instanciate the class and thus,
-I couldn't spawn it with any parameter.
+from actors.base_mesh import BaseMesh
+from actors.parameters import ObjectParams
+from tools.materials import get_random_material_for_category
 
-Let me explain myself :
-In the main, I call the constructor of the class Object (for instance, or Floor, or Occluder),
-which call the __init__ function of Object with at least 1 argument, world
-which call the __init__function of BaseMesh with at least 1 argument, mesh_str.
-In the Object __init__ function, I call actor_spawn,
-which implicitely instanciate Object (yes, again)
-BUT during the second instantiation, no parameters is given to __init__ (of Object and BaseMesh)
-(this is why there is default values to every parameters of __init__).
-Thus, if __init__ is called without any parameters, I know that it is the second instantiation,
-so I don't spawn the actor again.
-Once the object spawned, all I have to do is to set the parameters in the second instantiation
-(location, rotation,...).
-Et voilà !
-"""
 
-"""
-Object is the python component for the main actors of the magic tricks (the sphere, the cube, or else).
-It inherits from BaseMesh.
-"""
+# Ok here we go:
+# This is a recursive instantiate class.
+# The general principle is to instantiate a class twice to avoid making two distinct classes.
+# I needed to instantiate a python component with parameters but UnrealEnginePython
+# wouldn't let me do that.
+# Furthermore, I couldn't spawn the actor without instanciate the class and thus,
+# I couldn't spawn it with any parameter.
+
+# Let me explain myself :
+# In the main, I call the constructor of the class Object (for instance, or Floor, or Occluder),
+# which call the __init__ function of Object with at least 1 argument, world
+# which call the __init__function of BaseMesh with at least 1 argument, mesh_str.
+# In the Object __init__ function, I call actor_spawn,
+# which implicitely instanciate Object (yes, again)
+# BUT during the second instantiation, no parameters is given to __init__ (of Object and BaseMesh)
+# (this is why there is default values to every parameters of __init__).
+# Thus, if __init__ is called without any parameters, I know that it is the second instantiation,
+# so I don't spawn the actor again.
+# Once the object spawned, all I have to do is to set the parameters in the second instantiation
+# (location, rotation,...).
+# Et voilà !
+
+# Object is the python component for the main actors of the magic tricks (the sphere, the cube, or else).
+# It inherits from BaseMesh.
+
 
 
 class Object(BaseMesh):
@@ -62,40 +63,31 @@ class Object(BaseMesh):
     """
     def __init__(self,
                  world=None,
-                 mesh_str=shape['Sphere'],
-                 location=FVector(0, 0, 0),
-                 rotation=FRotator(0, 0, 0),
-                 scale=FVector(1, 1, 1),
-                 material=None,
-                 mass=1,
-                 force=FVector(0, 0, 0),
-                 friction=0.5,
-                 restitution=0.5,
+                 params=ObjectParams(),
                  overlap=False,
                  warning=True):
         if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
-            self.get_parameters(mesh_str, location,
-                                rotation, scale, material,
-                                mass, force, friction,
-                                restitution, overlap,
-                                warning)
+            self.get_parameters(params)
             self.set_parameters()
         else:
             super().__init__()
 
-    def get_parameters(self, mesh_str, location,
-                       rotation, scale, material,
-                       mass, force, friction,
-                       restitution, overlap,
-                       warning):
-        super().get_parameters(location, rotation, scale,
-                               friction, restitution,
-                               overlap, warning,
-                               mesh_str)
+    def get_parameters(self, params):
+        super().get_parameters(
+            params.location,
+            params.rotation,
+            params.scale,
+            params.friction,
+            params.restitution,
+            False, True,
+            self.shape[params.mesh])
+
+        material = (get_random_material_for_category('Floor')
+                    if params.material is None else params.material)
         self.material = ue.load_object(Material, material)
-        self.mass = mass
-        self.force = force
+        self.mass = params.mass
+        self.force = params.force
 
     def set_parameters(self):
         super().set_parameters()
