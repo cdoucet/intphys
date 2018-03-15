@@ -9,6 +9,7 @@ from tools.utils import parse_scenes_json, exit_ue, set_game_resolution
 # images (width * height in pixels)
 DEFAULT_RESOLUTION = (288, 288)
 
+
 class Main:
     def begin_play(self):
         # get the world from the attached component
@@ -46,7 +47,8 @@ class Main:
             output_dir = None
             ue.log_warning('INTPHYS_OUTPUTDIR not defined, capture disabled')
 
-        # setup the director with the list of scenes to generate
+        # setup the director with the list of scenes to generate, 100
+        # images per video at the game resolution
         scenes = parse_scenes_json(world, scenes_json)
         size = (resolution[0], resolution[1], 100)
         self.director = Director(world, scenes, size, output_dir)

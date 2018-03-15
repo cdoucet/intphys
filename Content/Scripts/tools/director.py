@@ -4,10 +4,12 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Screenshot
 
-from tools.scene import TrainScene, TestScene
+from tools.scene2 import Scene
 from tools.tick import Tick
 from tools.utils import exit_ue, set_game_paused
-# from actors.camera import Camera
+
+from actors.camera import Camera
+from actors.parameters import CameraParams
 
 
 class Director:
@@ -25,9 +27,8 @@ class Director:
     ----------
     world : ue.uobject
         The game's world in which to render the scenes
-    scenes : list
-        A list of scenes to render, can be either instance of the
-        class TrainScene or TestScene
+    scenarii : list
+        A list of scenes to render, derived from scenario.base.Base
     size : tuple
         The size of a scene the screen resolution times the number of
         images captured in a single scene, in the form (width, height,
@@ -41,27 +42,30 @@ class Director:
         captures. Default to 2.
     tick_pause_at_start: int, optional
         Pause the game at beginning of a run for `tick_pause_at_start`
-        intervals. This allows the actors's materials to be completly
+        intervals. This allows the textures and materials to be completly
         loaded before the first capture. Default to 10 ticks.
 
     """
-    def __init__(self, world, scenes, size, output_dir=None,
+    def __init__(self, world, scenarii, size, output_dir=None,
                  tick_interval=2, tick_pause_at_start=10):
         self.world = world
-        self.scenes_list = scenes
+        self.scenarii_list = scenarii
         self.size = size
         self.output_dir = output_dir
         self.tick_pause_at_start = tick_pause_at_start
 
         ue.log('scheduling {nscenes} scenes, ({ntest} for test and '
                '{ntrain} for train), total of {nruns} runs'.format(
-            nscenes=len(self.scenes_list),
-            ntest=len([s for s in self.scenes_list if isinstance(s, TestScene)]),
-            ntrain=len([s for s in self.scenes_list if isinstance(s, TrainScene)]),
-            nruns=sum(s.get_nruns() for s in self.scenes_list)))
+            nscenes=len(self.scenarii_list),
+            ntest=len([s for s in self.scenarii_list if not s.is_train()]),
+            ntrain=len([s for s in self.scenarii_list if s.is_train()]),
+            nruns=sum(s.get_nruns() for s in self.scenarii_list)))
 
-        # # the director owns the camera
-        # self.camera = Camera(world)
+        # the director owns the camera
+        camera_params = CameraParams(
+            location=FVector(-1000, 0, 200),
+            rotation=FRotator(0, 0, 0))
+        self.camera = Camera(camera_params, world=world)
 
         # start the ticker, take a screen capture each 2 game ticks
         self.ticker = Tick(tick_interval=tick_interval)
@@ -69,20 +73,19 @@ class Director:
 
         # initialize to render the first scene on the next tick
         self.scene_index = 0
-        self.scene = self.scenes_list[0]
-        self.setup()
+        self.scene = Scene(world, self.scenarii_list[0])
+        self._setup()
 
     def tick(self, dt):
         """This method is called at each game tick by UE"""
-        # update the ticker, if we are not ticking, nothing to do
+        # update the ticker
         self.ticker.tick(dt)
 
-        # moving occluders and actors at every "engine tick"
-        for occluder in self.scene.actors["Occluder"]:
-            occluder.move()
-        for object in self.scene.actors["Object"]:
-            object.move()
+        # moving occluders and actors at every game tick
+        for actor in self.scene.moving_actors():
+            actor.move()
 
+        # if we are not ticking at low rate, nothing more to do
         if not self.ticker.on_tick():
             return
 
@@ -97,19 +100,19 @@ class Director:
 
         # during a run, take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self.capture()
+            self._capture()
 
         # end of a run, terminate it
         if tick == self.size[2] + self.tick_pause_at_start:
-            is_next_run = self.teardown()
+            is_next_run = self._teardown()
             if is_next_run is True:
-                self.setup()
+                self._setup()
             else:
                 ue.log_warning('all scenes rendered, exiting')
                 self.ticker.stop()
                 exit_ue(self.world)
 
-    def setup(self):
+    def _setup(self):
         description = 'running scene {}/{}: {}'.format(
             self.scene_index+1, len(self.scenes_list),
             self.scene.description())
@@ -121,14 +124,14 @@ class Director:
         elif self.output_dir:
             Screenshot.Initialize(
                 int(self.size[0]), int(self.size[1]), int(self.size[2]),
-                self.scene["Camera"].get_actor())
+                self.camera.get_actor())
 
         # render the scene: spawn actors
         self.scene.render()
         self.ticker.reset()
         set_game_paused(self.world, True)
 
-    def capture(self):
+    def _capture(self):
         if self.scene.is_check_run():
             # Screenshot.CaptureMasks()
             pass
@@ -136,7 +139,7 @@ class Director:
             Screenshot.Capture()
             # self.get_status()
 
-    def teardown(self):
+    def _teardown(self):
         """Save captured images for the current run and prepare the next one
 
         Return True if there is a next run to render, False otherwise.

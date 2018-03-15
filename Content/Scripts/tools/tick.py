@@ -34,7 +34,7 @@ class Tick:
         self._is_ticking = False
 
     def reset(self):
-        """Reset the ticks counter"""
+        """Reset the ticks counter but don't stop ticking"""
         self._counter = 0
         self._t_tick = 0
         self._t_last_tick = 0
@@ -44,6 +44,7 @@ class Tick:
         return self._counter
 
     def tick(self, dt):
+        """Tick at the requested interval"""
         if self._is_ticking and self._update(dt):
             self._counter += 1
             self._on_tick = True

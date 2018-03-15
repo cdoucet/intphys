@@ -82,41 +82,41 @@ class TrainScene(BaseScene):
         return self.scenario + ' train'
 
     def spawn_actors(self):
-        self.actors["Camera"] = Camera(
-            world=self.world,
-            location=FVector(-1000, 0, 200),
-            rotation=FRotator(0, 0, 0),
-            field_of_view=90,
-            aspect_ratio=1,
-            projection_mode=ECameraProjectionMode.Perspective,
-            overlap=True,
-            warning=True)
+        # self.actors["Camera"] = Camera(
+        #     world=self.world,
+        #     location=FVector(-1000, 0, 200),
+        #     rotation=FRotator(0, 0, 0),
+        #     field_of_view=90,
+        #     aspect_ratio=1,
+        #     projection_mode=ECameraProjectionMode.Perspective,
+        #     overlap=True,
+        #     warning=True)
 
-        self.actors["Floor"] = Floor(
-            world=self.world,
-            material=get_random_material(load_materials('Materials/Floor')),
-            scale=FVector(100, 100, 1),
-            friction=random.uniform(-1000, 1000))
+        # self.actors["Floor"] = Floor(
+        #     world=self.world,
+        #     material=get_random_material(load_materials('Materials/Floor')),
+        #     scale=FVector(100, 100, 1),
+        #     friction=random.uniform(-1000, 1000))
 
-        self.actors["Light"] = Light(
-            world=self.world,
-            type='SkyLight',
-            location=FVector(0, 0, 1000),
-            rotation=FRotator(0, 0, 0),
-            overlap=True,
-            warning=True)
+        # self.actors["Light"] = Light(
+        #     world=self.world,
+        #     type='SkyLight',
+        #     location=FVector(0, 0, 1000),
+        #     rotation=FRotator(0, 0, 0),
+        #     overlap=True,
+        #     warning=True)
 
-        if random.randint(0, 1) == 1:
-            self.actors["Walls"] = Walls(
-                world=self.world,
-                height=random.uniform(1, 10),
-                length=random.uniform(1500, 4000),
-                depth=random.uniform(900, 1500),
-                material=get_random_material(load_materials('Materials/Wall')),
-                overlap=False,
-                warning=False)
-        else:
-            self.actors["Walls"] = None
+        # if random.randint(0, 1) == 1:
+        #     self.actors["Walls"] = Walls(
+        #         world=self.world,
+        #         height=random.uniform(1, 10),
+        #         length=random.uniform(1500, 4000),
+        #         depth=random.uniform(900, 1500),
+        #         material=get_random_material(load_materials('Materials/Wall')),
+        #         overlap=False,
+        #         warning=False)
+        # else:
+        #     self.actors["Walls"] = None
 
         for i in range(1, random.randint(1, 3)):
             scale_value = random.uniform(0.5, 1)

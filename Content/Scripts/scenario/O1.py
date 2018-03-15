@@ -1,15 +1,15 @@
 from scenario import base
 
 
-class BaseO1(object):
+class O1Base(object):
     name = 'O1'
 
 
-class O1Train(base.BaseTrain, O1):
+class O1Train(base.BaseTrain, O1Base):
     pass
 
 
-class O1Test(base.BaseTest, O1):
+class O1Test(base.BaseTest, O1Base):
     def get_nruns_check(self):
         nruns = 0
         if not self.is_occluded:

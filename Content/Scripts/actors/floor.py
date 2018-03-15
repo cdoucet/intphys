@@ -3,7 +3,10 @@
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material
+
 from actors.base_mesh import BaseMesh
+from actors.parameters import FloorParams
+
 
 # Ok here we go: This is a recursive instantiate class.  The general
 # principle is to instantiate a class twice to avoid making two
@@ -54,30 +57,25 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, world=None,
-                 material=None,
-                 scale=FVector(100, 100, 1),
-                 friction=0.5,
-                 restitution=0.5):
+    def __init__(self, params, world=None):
         if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
-            self.get_parameters(material, scale, friction, restitution)
+            self.get_parameters(params)
             self.set_parameters()
         else:
             super().__init__()
 
-    def get_parameters(self, material, scale, friction, restitution):
-        super().get_parameters(FVector(0 - ((400 * scale.x) / 2),
-                                       0 - ((400 * scale.y) / 2),
-                                       0 - (10 * scale.z)),
-                               FRotator(0, 0, 0),
-                               scale,
-                               friction,
-                               restitution,
-                               False,
-                               False,
-                               '/Game/Meshes/Floor_400x400')
-        self.material = ue.load_object(Material, material)
+    def get_parameters(self, params):
+        location = FVector(
+            0 - ((400 * params.scale.x) / 2),
+            0 - ((400 * params.scale.y) / 2),
+            0 - (10 * params.scale.z)),
+
+        super().get_parameters(
+            location, FRotator(0, 0, 0), params.scale,
+            params.friction, params.restitution, False, False,
+            '/Game/Meshes/Floor_400x400')
+        self.material = ue.load_object(Material, params.material)
 
     def set_parameters(self):
         super().set_parameters()

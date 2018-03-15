@@ -1,4 +1,10 @@
 import abc
+import random
+
+from unreal_engine import FVector, FRotator
+
+from actors.parameters import *
+from tools.materials import get_random_material_for_category
 
 
 class Base(object):
@@ -19,6 +25,32 @@ class Base(object):
         """The total number of runs needed for the scenario"""
         pass
 
+    @abc.abstractmethod
+    def is_train(self):
+        """Return True if this is a train scenario, False otherwise"""
+        pass
+
+    def magic_setup(self, run_index):
+        pass
+
+    def generate_parameters(self):
+        """Return a dict of {actor: parameters} for that scenario"""
+        params = {}
+
+        params['floor'] = FloorParams(
+            material=get_random_material_for_category('Floor'))
+
+        params['light'] = LightParams(
+            location=FVector(0, 0, 1000),
+            rotation=FRotator(0, 0, 0))
+
+        prob_wall = 0.5
+        if random.uniform(0, 1) <= prob_wall:
+           params['walls'] = WallsParams(
+               material=get_random_material_for_category('Wall'))
+
+        return params
+
 
 class BaseTrain(Base):
     def get_description(self):
@@ -26,6 +58,9 @@ class BaseTrain(Base):
 
     def get_nruns(self):
         return 1
+
+    def is_train(self):
+        return True
 
 
 class BaseTest(Base):
@@ -42,9 +77,12 @@ class BaseTest(Base):
              .format(self.ntricks)))
 
     def get_nruns(self):
-        return 4 + self.get_nruns_check()
+        return 4 + self.get_nchecks()
+
+    def is_train(self):
+        return False
 
     @abc.abstractmethod
-    def get_nruns_check(self):
+    def get_nchecks(self):
         """Return the total number of check runs needed by this scenario"""
         pass

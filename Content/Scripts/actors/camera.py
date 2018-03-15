@@ -3,7 +3,9 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
 from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import GameplayStatics
+
 from actors.base_actor import BaseActor
+from actors.parameters import CameraParams
 
 
 class Camera(BaseActor):
@@ -22,31 +24,20 @@ class Camera(BaseActor):
     during the camera instantiation,
     the __init__ function will change it on its own
     """
-    def __init__(self,
-                 world=None,
-                 location=FVector(0, 0, 0),
-                 rotation=FRotator(0, 0, 0),
-                 field_of_view=90,
-                 aspect_ratio=1,
-                 projection_mode=ECameraProjectionMode.Perspective,
-                 overlap=True,
-                 warning=True):
-        if (world is not None):
+    def __init__(self, params, world=None):
+        if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
-            self.get_parameters(location, rotation,
-                                field_of_view, aspect_ratio,
-                                projection_mode, overlap,
-                                warning)
+
+            self.get_parameters(params)
             self.set_parameters(world)
         else:
             super().__init__()
 
-    def get_parameters(self, location, rotation, field_of_view,
-                       aspect_ratio, projection_mode, overlap, warning):
-        self.field_of_view = field_of_view
-        self.aspect_ratio = aspect_ratio
-        self.projection_mode = projection_mode
-        super().get_parameters(location, rotation, overlap, warning)
+    def get_parameters(self, params):
+        self.field_of_view = params.field_of_view
+        self.aspect_ratio = params.aspect_ratio
+        self.projection_mode = params.projection_mode
+        super().get_parameters(params.location, params.rotation, True, True)
 
     def set_parameters(self, world):
         super().set_parameters()
@@ -55,6 +46,7 @@ class Camera(BaseActor):
         # useless in UE-4.17. This is maybe done by default.
         player_controller = GameplayStatics.GetPlayerController(world, 0)
         player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
+
         self.camera_component = self.actor.get_component_by_type(CameraComponent)
         self.camera_component.SetFieldOfView(self.field_of_view)
         self.camera_component.SetAspectRatio(self.aspect_ratio)
