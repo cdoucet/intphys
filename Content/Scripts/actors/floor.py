@@ -6,6 +6,7 @@ from unreal_engine.classes import Material
 
 from actors.base_mesh import BaseMesh
 from actors.parameters import FloorParams
+from tools.materials import get_random_material_for_category
 
 
 # Ok here we go: This is a recursive instantiate class.  The general
@@ -57,7 +58,7 @@ class Floor(BaseMesh):
     changing the formula
 
     """
-    def __init__(self, params, world=None):
+    def __init__(self, world=None, params=FloorParams()):
         if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
             self.get_parameters(params)
@@ -69,13 +70,16 @@ class Floor(BaseMesh):
         location = FVector(
             0 - ((400 * params.scale.x) / 2),
             0 - ((400 * params.scale.y) / 2),
-            0 - (10 * params.scale.z)),
+            0 - (10 * params.scale.z))
 
         super().get_parameters(
             location, FRotator(0, 0, 0), params.scale,
             params.friction, params.restitution, False, False,
             '/Game/Meshes/Floor_400x400')
-        self.material = ue.load_object(Material, params.material)
+
+        material = (get_random_material_for_category('Floor')
+                    if params.material is None else params.material)
+        self.material = ue.load_object(Material, material)
 
     def set_parameters(self):
         super().set_parameters()

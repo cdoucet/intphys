@@ -4,7 +4,7 @@ import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Screenshot
 
-from tools.scene2 import Scene
+from tools.scene import Scene
 from tools.tick import Tick
 from tools.utils import exit_ue, set_game_paused
 
@@ -62,10 +62,9 @@ class Director:
             nruns=sum(s.get_nruns() for s in self.scenarii_list)))
 
         # the director owns the camera
-        camera_params = CameraParams(
+        self.camera = Camera(world=world, params=CameraParams(
             location=FVector(-1000, 0, 200),
-            rotation=FRotator(0, 0, 0))
-        self.camera = Camera(camera_params, world=world)
+            rotation=FRotator(0, 0, 0)))
 
         # start the ticker, take a screen capture each 2 game ticks
         self.ticker = Tick(tick_interval=tick_interval)
@@ -108,13 +107,13 @@ class Director:
             if is_next_run is True:
                 self._setup()
             else:
-                ue.log_warning('all scenes rendered, exiting')
+                ue.log('all scenes rendered, exiting')
                 self.ticker.stop()
                 exit_ue(self.world)
 
     def _setup(self):
         description = 'running scene {}/{}: {}'.format(
-            self.scene_index+1, len(self.scenes_list),
+            self.scene_index+1, len(self.scenarii_list),
             self.scene.description())
         ue.log(description)
 
@@ -165,13 +164,9 @@ class Director:
             self.scene.clear()
             self.scene_index += 1
             try:
-                self.scene = self.scenes_list[self.scene_index]
+                scenario = self.scenarii_list[self.scene_index]
+                self.scene = Scene(self.world, scenario)
             except IndexError:
-                ue.log_warning('all scenes rendered, exiting')
-
-                # stop the ticker while the program exits
-                self.ticker.is_ticking = False
-                exit_ue(self.world)
                 return False
 
         # prepare the next run : if no more run for that scene, render
@@ -186,7 +181,7 @@ class Director:
 
             self.scene_index += 1
             try:
-                self.scene = self.scenes_list[self.scene_index]
+                self.scene = Scene(self.world, self.scenarii_list[self.scene_index])
                 return True
             except IndexError:
                 return False
@@ -208,11 +203,11 @@ class Director:
         # build the scene sub-directory name, for exemple
         # '027_test_O1/3' or '028_train_O1'
         idx = self.scene_index + 1
-        padded_idx = '0' * len(str(len(self.scenes_list) - idx)) + str(idx)
+        padded_idx = '0' * len(str(len(self.scenarii_list) - idx)) + str(idx)
         scene_name = (
             padded_idx + '_' +
             ('train' if self.scene.is_train_scene() else 'test') + '_' +
-            self.scene.scenario)
+            self.scene.scenario.name)
 
         out = os.path.join(self.output_dir, scene_name)
 

@@ -376,7 +376,7 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
         '' if njobs == 1 else ' in {} jobs'.format(njobs)))
 
     # on packaged game, UnrealEnginePython expect the script to be in
-    # ../../../intphys/Content/Scripts. Here we go to a dircetory
+    # ../../../intphys/Content/Scripts. Here we go to a directory
     # where that relative path works.
     cwd = os.path.join(INTPHYS_ROOT, 'Package/LinuxNoEditor')
 

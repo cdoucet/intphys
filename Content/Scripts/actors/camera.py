@@ -24,7 +24,7 @@ class Camera(BaseActor):
     during the camera instantiation,
     the __init__ function will change it on its own
     """
-    def __init__(self, params, world=None):
+    def __init__(self, world=None, params=CameraParams()):
         if world is not None:
             super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
 

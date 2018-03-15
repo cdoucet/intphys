@@ -47,7 +47,10 @@ class Base(object):
         prob_wall = 0.5
         if random.uniform(0, 1) <= prob_wall:
            params['walls'] = WallsParams(
-               material=get_random_material_for_category('Wall'))
+               material=get_random_material_for_category('Wall'),
+               height=random.uniform(1, 10),
+               length=random.uniform(1500, 4000),
+               depth=random.uniform(900, 1500))
 
         return params
 

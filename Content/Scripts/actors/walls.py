@@ -1,4 +1,6 @@
 from actors.wall import Wall
+from actors.parameters import WallsParams
+from tools.materials import get_random_material_for_category
 
 """
 Walls is a wrapper class that make 3 walls spawn.
@@ -6,7 +8,7 @@ Walls is a wrapper class that make 3 walls spawn.
 
 
 class Walls():
-    def __init__(self, params, world):
+    def __init__(self, world=None, params=WallsParams):
         self.get_parameters(params)
         self.front = Wall(world, "Front",
                           self.length, self.depth,
@@ -29,7 +31,11 @@ class Walls():
         self.depth = params.depth
         self.length = params.length
         self.height = params.height
+
         self.material = params.material
+        if self.material is None:
+            self.material = get_random_material_for_category('Wall')
+
         self.overlap = False
         self.warning = False
 

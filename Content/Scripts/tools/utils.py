@@ -78,7 +78,7 @@ def parse_scenes_json(world, scenes_json):
 
     Returns
     -------
-    A list of instances of TestScene and TrainScene
+    A list of instances of scenario classes (derived from scenario.base.Base)
 
     """
     from scenario.factory import get_train_scenario, get_test_scenario

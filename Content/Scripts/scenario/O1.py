@@ -2,14 +2,16 @@ from scenario import base
 
 
 class O1Base(object):
-    name = 'O1'
+    @property
+    def name(self):
+        return 'O1'
 
 
-class O1Train(base.BaseTrain, O1Base):
+class O1Train(O1Base, base.BaseTrain):
     pass
 
 
-class O1Test(base.BaseTest, O1Base):
+class O1Test(O1Base, base.BaseTest):
     def get_nruns_check(self):
         nruns = 0
         if not self.is_occluded:
