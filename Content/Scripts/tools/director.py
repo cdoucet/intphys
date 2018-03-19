@@ -62,9 +62,10 @@ class Director:
             ntrain=len([s for s in self.scenario_list if s.is_train()]),
             nruns=sum(s.get_nruns() for s in self.scenario_list)))
 
-        # the director owns the camera
+        # the director owns the camera (placed at (0, 0) by default,
+        # two meters high)
         self.camera = Camera(world=world, params=CameraParams(
-            location=FVector(-1000, 0, 200),
+            location=FVector(0, 0, 200),
             rotation=FRotator(0, 0, 0)))
 
         # start the ticker, take a screen capture each 2 game ticks
@@ -103,7 +104,7 @@ class Director:
 
         # during a run, take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self.capture(tick)
+            self.capture()
 
         # end of a run, terminate it
         if tick == self.size[2] + self.tick_pause_at_start:

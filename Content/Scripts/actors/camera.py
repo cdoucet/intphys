@@ -41,6 +41,7 @@ class Camera(BaseActor):
 
     def set_parameters(self, world):
         super().set_parameters()
+
         # Attach the viewport to the camera. This initialization
         # was present in the intphys-1.0 blueprint but seems to be
         # useless in UE-4.17. This is maybe done by default.
