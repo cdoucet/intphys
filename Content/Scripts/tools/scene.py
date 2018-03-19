@@ -60,7 +60,12 @@ class Scene(object):
         return self.scenario.get_nruns() - self.current_run
 
     def description(self):
-        return self.scenario.get_description()
+        res = self.scenario.get_description()
+        if self.scenario.get_nruns() > 1:
+            res += f' (run {self.current_run + 1}/{self.scenario.get_nruns()})'
+            if self.is_check_run():
+                res = res[:-1] + ', check)'
+        return res
 
     def render(self):
         """Setup the actors defined by the scenario to their initial state"""
