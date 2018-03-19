@@ -4,7 +4,7 @@ import random
 from unreal_engine import FVector, FRotator
 
 from actors.parameters import *
-from tools.materials import get_random_material_for_category
+from tools.materials import get_random_material
 
 
 class Base(object):
@@ -44,7 +44,7 @@ class Base(object):
         params = {}
 
         params['floor'] = FloorParams(
-            material=get_random_material_for_category('Floor'))
+            material=get_random_material('Floor'))
 
         params['light'] = LightParams(
             type='SkyLight',
@@ -54,7 +54,7 @@ class Base(object):
         prob_wall = 0
         if random.uniform(0, 1) <= prob_wall:
            params['walls'] = WallsParams(
-               material=get_random_material_for_category('Wall'),
+               material=get_random_material('Wall'),
                height=random.uniform(1, 10),
                length=random.uniform(1500, 4000),
                depth=random.uniform(900, 1500))

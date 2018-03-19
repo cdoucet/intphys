@@ -1,9 +1,10 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
 from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
+from actors.parameters import OccluderParams
+
 
 """
 Ok here we go:
@@ -50,38 +51,31 @@ class Occluder(BaseMesh):
     Warning !
     The location is precisely from the point at the bottom center of the mesh
     """
-    def __init__(self,
-                 world=None,
-                 location=FVector(0, 0, 0),
-                 rotation=FRotator(0, 0, 0),
-                 scale=FVector(1, 1, 1),
-                 material=None,
-                 moves=[0],
-                 speed=1,
-                 overlap=False,
-                 warning=True):
+    def __init__(self, world=None, params=OccluderParams()):
         if world is not None:
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
-            self.get_parameters(location, rotation,
-                                scale, material,
-                                moves, speed,
-                                overlap, warning)
+            super().__init__(
+                world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
+            self.get_parameters(params)
             self.set_parameters()
         else:
             super().__init__()
 
-    def get_parameters(self, location, rotation,
-                       scale, material, moves,
-                       speed, overlap, warning):
-        super().get_parameters(location, rotation, scale,
-                               0.5, 0.5, overlap, warning,
-                               '/Game/Meshes/OccluderWall')
-        self.material = ue.load_object(Material, material)
-        self.speed = speed
-        self.moves = moves
+    def get_parameters(self, params):
+        super().get_parameters(
+            params.location,
+            params.rotation,
+            params.scale,
+            params.friction,
+            params.restitution,
+            False, True,
+            '/Game/Meshes/OccluderWall')
+        self.material = ue.load_object(Material, params.material)
+        self.speed = params.speed
+        self.moves = params.moves
+
         self.moving = False
         self.up = True
-        self.location.y - (200 * scale.y)
+        self.location.y - (200 * params.scale.y)
         self.count = -1
 
     def set_parameters(self):

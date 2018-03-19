@@ -6,8 +6,6 @@ from unreal_engine.classes import Material
 
 from actors.base_mesh import BaseMesh
 from actors.parameters import FloorParams
-from tools.materials import get_random_material_for_category
-
 
 # Ok here we go: This is a recursive instantiate class.  The general
 # principle is to instantiate a class twice to avoid making two
@@ -77,9 +75,7 @@ class Floor(BaseMesh):
             params.friction, params.restitution, False, False,
             '/Game/Meshes/Floor_400x400')
 
-        material = (get_random_material_for_category('Floor')
-                    if params.material is None else params.material)
-        self.material = ue.load_object(Material, material)
+        self.material = ue.load_object(Material, params.material)
 
     def set_parameters(self):
         super().set_parameters()

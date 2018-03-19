@@ -1,10 +1,8 @@
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
+from tools.materials import get_random_material
 
-
-# when material is None, a random one is choosen by actors at
-# instanciation.
 
 @dataclass
 class CameraParams:
@@ -17,7 +15,7 @@ class CameraParams:
 
 @dataclass
 class FloorParams:
-    material: str = None
+    material: str = get_random_material('Floor')
     scale: FVector = FVector(100, 100, 1)
     friction: float = 0.5
     restitution: float = 0.5
@@ -32,7 +30,7 @@ class LightParams:
 
 @dataclass
 class WallsParams:
-    material: str = None
+    material: str = get_random_material('Wall')
     length: float = 2000
     depth: float = 1000
     height: float = 1
@@ -41,21 +39,23 @@ class WallsParams:
 @dataclass
 class ObjectParams:
     mesh: str = 'Sphere'
-    material: str = None
+    material: str = get_random_material('Object')
     location: FVector = FVector(0, 0, 0)
     rotation: FRotator = FRotator(0, 0, 0)
     scale: FVector = FVector(1, 1, 1)
+    force: FVector = FVector(0, 0, 0)
     mass: float = 1
     friction: float = 0.5
     restitution: float = 0.5
-    force: FVector = FVector(0, 0, 0)
 
 
 @dataclass
 class OccluderParams:
-    material: str = None
+    material: str = get_random_material('Wall')
     location: FVector = FVector(0, 0, 0)
     rotation: FRotator = FRotator(0, 0, 0)
     scale: FVector = FVector(1, 1, 1)
-    moves: tuple = (0)
+    friction: float = 0.5
+    restitution: float = 0.5
+    moves: tuple = (0)  # list not supported
     speed: float = 1
