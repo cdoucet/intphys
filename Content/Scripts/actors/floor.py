@@ -68,8 +68,8 @@ class Floor(BaseMesh):
 
     def get_parameters(self, params):
         location = FVector(
-            0 - ((400 * params.scale.x) / 2),
-            0 - ((400 * params.scale.y) / 2),
+            0,  #0 - ((400 * params.scale.x) / 2),
+            0 - (400 * params.scale.y / 2),
             0 - (10 * params.scale.z))
 
         super().get_parameters(
