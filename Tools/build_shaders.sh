@@ -11,4 +11,4 @@ INTPHYS_DIR=$(readlink -f ..)
 # ue_site.py from ../../../../intphys
 cd $INTPHYS_DIR/Plugins/UnrealEnginePython/Source
 
-$UE_ROOT/Engine/Binaries/Linux/UE4Editor $INTPHYS_DIR/intphys.uproject -run=DerivedDataCache -fill
+$UE_ROOT/Engine/Binaries/Linux/UE4Editor $INTPHYS_DIR/intphys.uproject -run=DerivedDataCache -fill -DDC=CreatePak
