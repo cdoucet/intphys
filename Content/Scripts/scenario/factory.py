@@ -6,7 +6,7 @@ train_classes = {
 
 
 test_classes = {
-    'O1': O1.O1Test}
+    'O1': O1.O1TestStatic}
 
 
 def get_train_scenario(name):

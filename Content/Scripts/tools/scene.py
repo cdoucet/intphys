@@ -1,21 +1,13 @@
-import random
-
-import unreal_engine as ue
-from unreal_engine import FVector, FRotator
-from unreal_engine.enums import ECameraProjectionMode
+from actors.floor import Floor
+from actors.light import Light
+from actors.object import Object
+from actors.occluder import Occluder
+from actors.walls import Walls
 
 
 def get_actor_class(name):
-    from actors.floor import Floor
-    from actors.light import Light
-    from actors.object import Object
-    from actors.occluder import Occluder
-    from actors.walls import Walls
-
     name = name.lower()
-    if 'camera' in name:
-        return Camera
-    elif 'floor' in name:
+    if 'floor' in name:
         return Floor
     elif 'light' in name:
         return Light
@@ -39,10 +31,10 @@ class Scene(object):
     Parameters
     ----------
     world: ue.uobject
-       The game world in which to render the scene
+       The game world in which to render the scene.
     scenario: child of scenario.base.Base
         The scenario to execute. A scenario defines the actors,
-        generates parameters for them and implement the magic tricks.
+        generates parameters for them and implement the magic trick.
 
     """
     def __init__(self, world, scenario):
@@ -101,24 +93,21 @@ class Scene(object):
 
     def is_check_run(self):
         """Return True if the current run is a check"""
-        if (not self.scenario.is_train() and
-            self.current_run <= self.scenario.get_nchecks()):
+        if self.scenario.is_train():
+            return False
+        elif self.current_run <= self.scenario.get_nchecks():
             return True
         else:
             return False
 
-    def moving_actors(self):
+    def get_moving_actors(self):
         """Return the dict of moving actors (objects and occluders)"""
         return {
             k: v for k, v in self.actors.items()
             if 'occluder' in k or 'object' in k}
 
-    def _spawn(self):
-        """Spawn and initialize all the actors"""
-        pass
-
     def _reset(self):
         """Set all the actors to their initial location/rotation"""
-        for k, v in self.moving_actors().items():
+        for k, v in self.get_moving_actors().items():
             v.set_location(self.params[k].location)
             v.set_rotation(self.params[k].rotation)

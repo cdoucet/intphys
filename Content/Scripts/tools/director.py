@@ -86,7 +86,7 @@ class Director:
         self.ticker.tick(dt)
 
         # # moving occluders and actors at every game tick
-        # for actor in self.scene.moving_actors().values():
+        # for actor in self.scene.get_moving_actors().values():
         #     actor.move()
 
         # if we are not ticking at low rate, nothing more to do
@@ -123,7 +123,7 @@ class Director:
         ue.log(description)
 
         # setup the screenshots
-        if  self.scene.is_check_run():
+        if self.scene.is_check_run():
             pass
         elif self.output_dir:
             Screenshot.Initialize(

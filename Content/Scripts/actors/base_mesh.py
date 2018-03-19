@@ -71,15 +71,17 @@ class BaseMesh(BaseActor):
         self.set_mesh()
         self.set_friction(self.friction)
         self.set_restitution(self.restitution)
-        if (self.overlap is False):
+        if self.overlap is False:
             self.mesh.call('SetCollisionProfileName BlockAll')
 
     """
     set_mesh sets the mesh, enable collision, set the material and the scale
     """
     def set_mesh(self):
-        self.mesh = self.get_actor().get_actor_component_by_type(ue.find_class('StaticMeshComponent'))
-        # enable collisions
+        self.mesh = self.get_actor().get_actor_component_by_type(
+            ue.find_class('StaticMeshComponent'))
+
+        # # enable collisions
         # self.mesh.call('SetCollisionProfileName BlockAll')
         # self.actor.SetActorEnableCollision(True)
 
@@ -89,7 +91,8 @@ class BaseMesh(BaseActor):
         self.actor.set_actor_scale(self.scale)
 
     def get_mesh(self):
-        return self.get_actor().get_actor_component_by_type(ue.find_class('StaticMeshComponent'))
+        return self.get_actor().get_actor_component_by_type(
+            ue.find_class('StaticMeshComponent'))
 
     """
     set_mesh_str change the current mesh by another
@@ -128,5 +131,5 @@ class BaseMesh(BaseActor):
         status['scale'].append(('y', self.scale.y))
         status['scale'].append(('z', self.scale.z))
         status['friction'] = self.friction
-        status['mesh_str'] = self.mesh_str
+        status['mesh'] = self.mesh_str
         return status

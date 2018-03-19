@@ -1,5 +1,5 @@
+import collections
 import unreal_engine as ue
-from collections import defaultdict
 
 """BaseActor is the very base of the actors inheritance tree
 
@@ -88,7 +88,7 @@ class BaseActor():
         self.actor.SetActorHiddenInGame(hidden)
 
     def get_status(self):
-        status = defaultdict(list)
+        status = collections.defaultdict(list)
         status['actor'] = self.actor.get_name()
         status['location'].append(('x', self.location.x))
         status['location'].append(('y', self.location.y))

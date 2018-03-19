@@ -2,6 +2,16 @@
   Main objective is to replicate intphys-1.0 with the following
   scenarii: apparition/disparition, teleportation, changement de
   texture, changement de forme (en vol ou glissant)
+
+** steps for test O1
+*** static visible
+- 1 actors
+- then up to 3 actors
+*** static occluded
+- implement check run
+*** dynamic visible
+- implement the corridors and force
+*** dynamic occluded
 ** TODO implement scenario classes
 ** TODO implement status.json
 - include an actors field in status.json with mass, scale, physicals
@@ -9,11 +19,12 @@
   nature of change)
 ** TODO on actors
 *** lights
-    - bug: increasing illumination in some scenes
-    - We want 1 skylight and from 0 to 2 (random) directional lights.
+    - bug: increasing illumination in some scenes (when walls)
+    - we want 1 skylight and from 0 to 2 (random) directional lights.
 ** TODO generate and validate a little database
-* various bugs
-** TODO Tools/build_shaders.sh
+* various bugs [1/2]
+** DONE Tools/build_shaders.sh
+   CLOSED: [2018-03-19 lun. 18:02]
    Compiled shaders are not found when runnong the game in standalone mode.
 ** TODO packaged mode
    Fix the Tools/build_package.sh and the code base to run in packaged
@@ -21,7 +32,7 @@
 * desired features
 ** TODO reset the sky sphere rotation between scenes
 ** TODO implement different classes of motion
-   static, sliding, rolling, falling, walking (agent)
+   static, sliding, rolling(?), falling, walking (agent)
 ** TODO run on a headless cluster
 *** The problem is remote openGl rendering
 - with DISPLAY=:0 that works remotely but corrupt the host's X server!

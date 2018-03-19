@@ -19,15 +19,15 @@ class O1Train(O1Base, base.BaseTrain):
             side = 'left' if random.random() < 0.5 else 'right'
 
         return FVector(
-            -400 if side == 'left' else 500,
-            -550 - 150 * float(index - 1),
+            550 + 150 * float(index - 1),
+            -500 if side == 'left' else 500,
             70 + 200 * random.random())
 
     def generate_parameters(self):
         params = super().generate_parameters()
 
         nobjects = 1  # random.randint(1, 3)
-        for n in range(1, nobjects+1):
+        for n in range(1, nobjects + 1):
             scale = 1.5 + random.random()
             params[f'object_{n}'] = ObjectParams(
                 mesh='Sphere',
@@ -40,7 +40,7 @@ class O1Train(O1Base, base.BaseTrain):
         return params
 
 
-class O1Test(O1Base, base.BaseTest):
+class O1TestStatic(O1Base, base.BaseTest):
     def get_nchecks(self):
         if not self.is_occluded:
             return 0
@@ -48,3 +48,33 @@ class O1Test(O1Base, base.BaseTest):
             return 2
         else:  # occluded single trick
             return 1
+
+    def random_location(self, index):
+        # max scale is 1.5 (so width of 150), space between objects is
+        # 170 so they are not overlapping
+        return FVector(
+            random.random() * 1000 + 500,
+            170 * (index - 1),
+            0)
+
+    def generate_parameters(self):
+        params = super().generate_parameters()
+
+        nobjects = 1  # random.randint(1, 3)
+        for n in range(1, nobjects + 1):
+            scale = 0.5 + random.random()
+            params[f'object_{n}'] = ObjectParams(
+                mesh='Sphere',
+                material=get_random_material('Object'),
+                location=self.random_location(n),
+                rotation=FRotator(0, 0, 0),
+                scale=FVector(scale, scale, scale),
+                mass=100)
+
+        params['magic_object'] = f'object_{random.randint(1, nobjects)}'
+        params['magic_frame'] = random.randint(10, 90)
+
+        return params
+
+    def apply_magic_trick(actor):
+        actor.set_hidden(True)

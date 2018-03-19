@@ -71,7 +71,7 @@ class Object(BaseMesh):
         # (by default the pivot is on the middle)
         location = FVector(
             params.location.x,
-            500,  # params.location.y,
+            params.location.y,
             params.location.z + 100 * params.scale.z  # mesh is 100x100x100
         )
 
