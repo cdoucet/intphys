@@ -96,3 +96,11 @@ class BaseTest(Base):
     def get_nchecks(self):
         """Return the total number of check runs needed by this scenario"""
         pass
+
+    @abc.abstractmethod
+    def magic_setup(self, actor, run):
+        pass
+
+    @abc.abstractmethod
+    def apply_magic_trick(self, actor, run):
+        pass

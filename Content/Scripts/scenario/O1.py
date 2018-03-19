@@ -71,10 +71,18 @@ class O1TestStatic(O1Base, base.BaseTest):
                 scale=FVector(scale, scale, scale),
                 mass=100)
 
-        params['magic_object'] = f'object_{random.randint(1, nobjects)}'
-        params['magic_frame'] = random.randint(10, 90)
+        params['magic'] = {
+            'actor': f'object_{random.randint(1, nobjects)}',
+            'tick': random.randint(10, 90)}
 
         return params
 
-    def apply_magic_trick(actor):
-        actor.set_hidden(True)
+    def magic_setup(self, actor, run):
+        if run in (2, 4):
+            actor.hidden = True
+        print(f'setup: {run}, {actor.hidden}')
+
+    def apply_magic_trick(self, actor, run):
+        if run <= 2:
+            print(f'apply: {run}, {actor.hidden}')
+            actor.set_hidden(not actor.hidden)

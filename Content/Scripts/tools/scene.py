@@ -6,19 +6,18 @@ from actors.walls import Walls
 
 
 def get_actor_class(name):
-    name = name.lower()
-    if 'floor' in name:
-        return Floor
-    elif 'light' in name:
-        return Light
-    elif 'object' in name:
-        return Object
-    elif 'occluder' in name:
-        return Occluder
-    elif 'walls' in name:
-        return Walls
-    else:
-        raise ValueError('actor class unknown for {}'.format(name))
+    classes = {
+        'floor': Floor,
+        'light': Light,
+        'object': Object,
+        'occluder': Occluder,
+        'walls': Walls}
+
+    for k, v in classes.items():
+        if name.lower().startswith(k):
+            return v
+
+    raise ValueError('actor class unknown for {}'.format(name))
 
 
 class Scene(object):
@@ -42,33 +41,45 @@ class Scene(object):
         self.scenario = scenario
         self.current_run = 0
 
+        # generate random parameters for the scene
         self.params = self.scenario.generate_parameters()
+
+        # spawn the actors from generated params
         self.actors = {
             k: get_actor_class(k)(world=self.world, params=v)
-            for k, v in self.params.items()}
+            for k, v in self.params.items() if 'magic' not in k}
 
     def get_nruns_remaining(self):
         """Return the number of runs to render before the end of the scene"""
         return self.scenario.get_nruns() - self.current_run
 
     def description(self):
-        res = self.scenario.get_description()
+        desc = self.scenario.get_description()
         if self.scenario.get_nruns() > 1:
-            res += f' (run {self.current_run + 1}/{self.scenario.get_nruns()})'
+            desc += f' (run {self.current_run}/{self.scenario.get_nruns()})'
             if self.is_check_run():
-                res = res[:-1] + ', check)'
-        return res
+                desc = desc[:-1] + ', check)'
+        return desc
 
     def render(self):
         """Setup the actors defined by the scenario to their initial state"""
         # replace the actors to their initial position
-        self._reset()
+        self.reset()
 
         # update the run index
         self.current_run += 1
 
         # setup the magic actor before applying the magic trick
-        self.scenario.magic_setup(self.current_run)
+        actor = self.actors[self.params['magic']['actor']]
+        self.scenario.magic_setup(actor, self.current_run)
+
+    def magic(self, tick):
+        if 'magic' not in self.params:
+            return
+
+        if tick == self.params['magic']['tick']:
+            actor = self.actors[self.params['magic']['actor']]
+            self.scenario.apply_magic_trick(actor, self.current_run)
 
     def clear(self):
         """Destroy all the actors in the scene"""
@@ -106,7 +117,7 @@ class Scene(object):
             k: v for k, v in self.actors.items()
             if 'occluder' in k or 'object' in k}
 
-    def _reset(self):
+    def reset(self):
         """Set all the actors to their initial location/rotation"""
         for k, v in self.get_moving_actors().items():
             v.set_location(self.params[k].location)

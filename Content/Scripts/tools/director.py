@@ -102,8 +102,9 @@ class Director:
         if tick == self.tick_pause_at_start + 1:
             set_game_paused(self.world, False)
 
-        # during a run, take screenshot
+        # during a run, apply magic trick (if any) and take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
+            self.scene.magic(tick)
             self.capture()
 
         # end of a run, terminate it
@@ -117,6 +118,11 @@ class Director:
                 exit_ue(self.world)
 
     def setup(self):
+        # render the scene: spawn actors
+        self.scene.render()
+        self.ticker.reset()
+        set_game_paused(self.world, True)
+
         description = 'running scene {}/{}: {}'.format(
             self.scene_index+1, len(self.scenario_list),
             self.scene.description())
@@ -129,11 +135,6 @@ class Director:
             Screenshot.Initialize(
                 int(self.size[0]), int(self.size[1]), int(self.size[2]),
                 self.camera.get_actor())
-
-        # render the scene: spawn actors
-        self.scene.render()
-        self.ticker.reset()
-        set_game_paused(self.world, True)
 
     def capture(self):
         if self.scene.is_check_run():
