@@ -55,12 +55,13 @@ class Director:
         self.output_dir = output_dir
         self.tick_pause_at_start = tick_pause_at_start
 
-        ue.log('scheduling {nscenes} scenes, ({ntest} for test and '
-               '{ntrain} for train), total of {nruns} runs'.format(
-            nscenes=len(self.scenario_list),
-            ntest=len([s for s in self.scenario_list if not s.is_train()]),
-            ntrain=len([s for s in self.scenario_list if s.is_train()]),
-            nruns=sum(s.get_nruns() for s in self.scenario_list)))
+        ue.log(
+            'scheduling {nscenes} scenes, ({ntest} for test and '
+            '{ntrain} for train), total of {nruns} runs'.format(
+                nscenes=len(self.scenario_list),
+                ntest=len([s for s in self.scenario_list if not s.is_train()]),
+                ntrain=len([s for s in self.scenario_list if s.is_train()]),
+                nruns=sum(s.get_nruns() for s in self.scenario_list)))
 
         # the director owns the camera (placed at (0, 0) by default,
         # two meters high)
@@ -165,7 +166,7 @@ class Director:
             ue.log('saving capture to %s' % output_dir)
 
             max_depth, masks = self.save_capture(output_dir)
-            self.status['images'] = {'max_depth': max_depth, 'masks': masks}
+            self.status.append({'max_depth': max_depth, 'masks': masks})
 
             self.save_status(os.path.join(output_dir, 'status.json'))
 
@@ -203,14 +204,15 @@ class Director:
         padded_idx = '0' * len(str(len(self.scenario_list) - idx)) + str(idx)
         scene_name = (
             padded_idx + '_' +
-            ('train' if self.scene.is_train_scene() else 'test') + '_' +
+            ('train' if self.scene.scenario.is_train() else 'test') + '_' +
             self.scene.scenario.name)
 
         out = os.path.join(self.output_dir, scene_name)
 
-        if not self.scene.is_train_scene():
+        if not self.scene.scenario.is_train():
             # 1, 2, 3 and 4 subdirectories for test scenes
-            run_idx = self.scene.get_nruns() - self.scene.current_run + 1
+            run_idx = (
+                self.scene.scenario.get_nruns() - self.scene.current_run + 1)
             out = os.path.join(out, str(run_idx))
 
         return out

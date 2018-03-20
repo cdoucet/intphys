@@ -89,7 +89,7 @@ class Scene(object):
 
     def get_status(self):
         """Return the current status of each actor in the scene"""
-        return {k: v.get_status() for k, v in self.actors}
+        return {k: v.get_status() for k, v in self.actors.items()}
 
     def is_valid(self):
         """Return True when the scene is in valid state
