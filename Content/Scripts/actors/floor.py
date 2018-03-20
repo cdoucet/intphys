@@ -58,7 +58,8 @@ class Floor(BaseMesh):
     """
     def __init__(self, world=None, params=FloorParams()):
         if world is not None:
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
+            super().__init__(
+                world.actor_spawn(ue.load_class('/Game/Floor.Floor_C')))
             self.get_parameters(params)
             self.set_parameters()
         else:
@@ -66,7 +67,7 @@ class Floor(BaseMesh):
 
     def get_parameters(self, params):
         location = FVector(
-            0,  #0 - ((400 * params.scale.x) / 2),
+            0,  # 0 - ((400 * params.scale.x) / 2),
             0 - (400 * params.scale.y / 2),
             0 - (10 * params.scale.z))
 

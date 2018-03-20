@@ -63,11 +63,12 @@ class O1TestStatic(O1Base, base.BaseTest):
 
         nobjects = 1  # random.randint(1, 3)
         for n in range(1, nobjects + 1):
-            scale = 0.5 + random.random()
+            # scale = 0.5 + random.random()
+            scale = 1
             params[f'object_{n}'] = ObjectParams(
                 mesh='Sphere',
                 material=get_random_material('Object'),
-                location=self.random_location(n),
+                location=FVector(500, 0, 110),  # self.random_location(n),
                 rotation=FRotator(0, 0, 0),
                 scale=FVector(scale, scale, scale),
                 mass=100)

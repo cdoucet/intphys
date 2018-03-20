@@ -67,16 +67,16 @@ class Object(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
-        # adjust the location.z to be placed at the bottom of the mesh
-        # (by default the pivot is on the middle)
-        location = FVector(
-            params.location.x,
-            params.location.y,
-            params.location.z + 100 * params.scale.z  # mesh is 100x100x100
-        )
+        # # adjust the location.z to be placed at the bottom of the mesh
+        # # (by default the pivot is on the middle), mesh is 100x100x100
+        # location = FVector(
+        #     params.location.x,
+        #     params.location.y,
+        #     params.location.z  # - 50 * params.scale.z
+        # )
 
         super().get_parameters(
-            location,
+            params.location,
             params.rotation,
             params.scale,
             params.friction,

@@ -107,7 +107,7 @@ void FScreenshotManager::SetIgnoredActors(const TArray<AActor*>& Actors)
     m_CollisionQueryParams.ClearIgnoredComponents();
 
     // ignore the requested objects from the raycasting
-    for (auto& i : m_IgnoredActors)
+    for (auto& i : Actors)
         m_CollisionQueryParams.AddIgnoredActor(i);
 }
 

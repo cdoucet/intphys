@@ -45,9 +45,6 @@ private:
     // Index of the current image (next to be captured)
     uint m_ImageIndex;
 
-    // Some actors we want to ignore when capturing depth and masks
-    TArray<AActor*> m_IgnoredActors;
-
     // Used to tell the capture to ignore the requested actors
     FCollisionQueryParams m_CollisionQueryParams;
 
