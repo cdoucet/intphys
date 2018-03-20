@@ -94,8 +94,6 @@ class Object(BaseMesh):
         self.set_force(self.force)
         self.get_mesh().set_simulate_physics()
 
-        print(self.get_actor().get_actor_location())
-
     """
     set the mass of the mesh
     to be honnest I don't really know what the second line do

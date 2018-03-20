@@ -122,7 +122,7 @@ class Director:
 
     def setup(self):
         # render the scene: spawn actors
-        self.scene.render()
+        self.scene.render(self.saver)
         self.ticker.reset()
         set_game_paused(self.world, True)
 

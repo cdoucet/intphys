@@ -80,7 +80,7 @@ class O1TestStatic(O1Base, base.BaseTest):
 
     def setup_magic_trick(self, saver, actor, run):
         if run in (2, 4):
-            actor.hidden = True
+            actor.set_hidden(True)
             saver.ignore_actors([actor.get_actor()])
 
     def apply_magic_trick(self, saver, actor, run):

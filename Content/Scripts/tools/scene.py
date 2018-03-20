@@ -73,13 +73,13 @@ class Scene(object):
         actor = self.actors[self.params['magic']['actor']]
         self.scenario.setup_magic_trick(saver, actor, self.current_run)
 
-    def run_magic(self, tick):
+    def run_magic(self, saver, tick):
         if 'magic' not in self.params:
             return
 
         if tick == self.params['magic']['tick']:
             actor = self.actors[self.params['magic']['actor']]
-            self.scenario.apply_magic_trick(actor, self.current_run)
+            self.scenario.apply_magic_trick(saver, actor, self.current_run)
 
     def clear(self):
         """Destroy all the actors in the scene"""
