@@ -18,7 +18,6 @@ To see command-line arguments, have a::
 """
 
 import argparse
-import atexit
 import copy
 import json
 import logging
@@ -28,7 +27,6 @@ import shlex
 import shutil
 import subprocess
 import sys
-import tempfile
 import threading
 
 
@@ -38,7 +36,7 @@ INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 # path to the UnrealEngine directory
 try:
     UE_ROOT = os.environ['UE_ROOT']
-except:
+except KeyError:
     print(
         'The UE_ROOT environment variable is undefined. '
         'Please set it as the absolute path to your Unreal Engine directory')
@@ -114,6 +112,7 @@ class LogInhibitUnrealFilter(logging.Filter):
         # keep only messages with Error, logPython and LogTemp
         return 'LogPython' in msg or 'Error' in msg or (
             'LogTemp' in msg and 'Display: Loaded TP' not in msg)
+
 
 def GetLogger(verbose=False, name=None):
     """Returns a logger configured to filter Unreal log messages
@@ -333,7 +332,11 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
         with pipe:
             # NOTE: workaround read-ahead bug
             for line in iter(pipe.readline, b''):
-                consume(line.decode('utf8'))
+                line = line.decode('utf8')
+                consume(line)
+                # exit the UE subprocess on the first encountered error
+                if 'Error:' in line:
+                    job.kill()
             consume('\n')
 
     threading.Thread(
