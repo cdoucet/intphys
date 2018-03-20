@@ -3,7 +3,7 @@ import random
 
 from unreal_engine import FVector, FRotator
 
-from actors.parameters import *
+from actors.parameters import FloorParams, LightParams, WallsParams
 from tools.materials import get_random_material
 
 
@@ -53,11 +53,11 @@ class Base(object):
 
         prob_wall = 0
         if random.uniform(0, 1) <= prob_wall:
-           params['walls'] = WallsParams(
-               material=get_random_material('Wall'),
-               height=random.uniform(1, 10),
-               length=random.uniform(1500, 4000),
-               depth=random.uniform(900, 1500))
+            params['walls'] = WallsParams(
+                material=get_random_material('Wall'),
+                height=random.uniform(1, 10),
+                length=random.uniform(1500, 4000),
+                depth=random.uniform(900, 1500))
 
         return params
 
@@ -98,7 +98,7 @@ class BaseTest(Base):
         pass
 
     @abc.abstractmethod
-    def magic_setup(self, actor, run):
+    def setup_magic_trick(self, actor, run):
         pass
 
     @abc.abstractmethod

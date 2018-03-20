@@ -42,6 +42,9 @@ public:
     static void SetOriginActor(AActor* Actor);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static void SetIgnoredActors(const TArray<AActor*>& Actors);
+
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool IsActorInFrame(AActor* Actor, int FrameIndex);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")

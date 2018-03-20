@@ -45,6 +45,12 @@ void UScreenshot::SetOriginActor(AActor* Actor)
 }
 
 
+void UScreenshot::SetIgnoredActors(const TArray<AActor*>& Actors)
+{
+    UScreenshot::ScreenshotManager->SetIgnoredActors(Actors);
+}
+
+
 bool UScreenshot::IsActorInFrame(AActor* Actor, int FrameIndex)
 {
     return UScreenshot::ScreenshotManager->IsActorInFrame(

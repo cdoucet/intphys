@@ -61,7 +61,7 @@ class Scene(object):
                 desc = desc[:-1] + ', check)'
         return desc
 
-    def render(self):
+    def render(self, saver):
         """Setup the actors defined by the scenario to their initial state"""
         # replace the actors to their initial position
         self.reset()
@@ -71,9 +71,9 @@ class Scene(object):
 
         # setup the magic actor before applying the magic trick
         actor = self.actors[self.params['magic']['actor']]
-        self.scenario.magic_setup(actor, self.current_run)
+        self.scenario.setup_magic_trick(saver, actor, self.current_run)
 
-    def magic(self, tick):
+    def run_magic(self, tick):
         if 'magic' not in self.params:
             return
 

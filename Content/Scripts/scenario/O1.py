@@ -1,6 +1,7 @@
 import random
 
 from unreal_engine import FVector, FRotator
+from unreal_engine.classes import Screenshot
 
 from scenario import base
 from actors.parameters import ObjectParams
@@ -77,12 +78,12 @@ class O1TestStatic(O1Base, base.BaseTest):
 
         return params
 
-    def magic_setup(self, actor, run):
+    def setup_magic_trick(self, saver, actor, run):
         if run in (2, 4):
             actor.hidden = True
-        print(f'setup: {run}, {actor.hidden}')
+            saver.ignore_actors([actor.get_actor()])
 
-    def apply_magic_trick(self, actor, run):
+    def apply_magic_trick(self, saver, actor, run):
         if run <= 2:
-            print(f'apply: {run}, {actor.hidden}')
             actor.set_hidden(not actor.hidden)
+            saver.ignore_actors([actor.get_actor()] if actor.hidden else [])

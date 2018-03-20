@@ -1,10 +1,9 @@
-import json
 import os
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Screenshot
 
+from tools.saver import Saver
 from tools.scene import Scene
 from tools.tick import Tick
 from tools.utils import exit_ue, set_game_paused
@@ -69,12 +68,15 @@ class Director:
             location=FVector(0, 0, 200),
             rotation=FRotator(0, 0, 0)))
 
+        # initialize the saver for taking screenshots and scene's
+        # status (if output_dir is defined)
+        self.saver = Saver(
+            self.size, self.camera.get_actor(),
+            dry_mode=True if self.output_dir is None else False)
+
         # start the ticker, take a screen capture each 2 game ticks
         self.ticker = Tick(tick_interval=tick_interval)
         self.ticker.start()
-
-        # an empty list to append status along the run
-        self.status = []
 
         # initialize to render the first scene on the next tick
         self.scene_index = 0
@@ -105,7 +107,7 @@ class Director:
 
         # during a run, apply magic trick (if any) and take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self.scene.magic(tick)
+            self.scene.run_magic(self.saver, tick)
             self.capture()
 
         # end of a run, terminate it
@@ -132,18 +134,15 @@ class Director:
         # setup the screenshots
         if self.scene.is_check_run():
             pass
-        elif self.output_dir:
-            Screenshot.Initialize(
-                int(self.size[0]), int(self.size[1]), int(self.size[2]),
-                self.camera.get_actor())
+        else:
+            self.saver.reset()
 
     def capture(self):
         if self.scene.is_check_run():
             # Screenshot.CaptureMasks()
             pass
-        elif self.output_dir:
-            Screenshot.Capture()
-            self.status.append(self.scene.get_status())
+        else:
+            self.saver.capture(self.scene)
 
     def teardown(self):
         """Save captured images for the current run and prepare the next one
@@ -160,17 +159,13 @@ class Director:
 
         # the run was successful, see if we need to save capture and
         # prepare the next run
-        if self.output_dir and not self.scene.is_check_run():
-            # save the captured images in a subdirectory
-            output_dir = self.get_scene_subdir()
-            ue.log('saving capture to %s' % output_dir)
+        if not self.saver.is_dry_mode() and not self.scene.is_check_run():
+            if not self.saver.save(self.get_scene_subdir()):
+                # save failed, exit
+                self.ticker.stop()
+                exit_ue(self.world)
 
-            max_depth, masks = self.save_capture(output_dir)
-            self.status.append({'max_depth': max_depth, 'masks': masks})
-
-            self.save_status(os.path.join(output_dir, 'status.json'))
-
-        # prepare the next run : if no more run for that scene, render
+        # prepare the next run: if no more run for that scene, render
         # the next scene. Else render the next run of the current
         # scene: the runs transition is handled directly by the scene
         # instance.
@@ -186,16 +181,6 @@ class Director:
                 return True
             except IndexError:
                 return False
-
-    def save_capture(self, output_dir):
-        done, max_depth, masks = Screenshot.Save(output_dir)
-        if not done:
-            self.ticker.stop()
-            exit_ue(self.world, 'cannot save images to %s' % output_dir)
-        return max_depth, masks
-
-    def save_status(self, json_file):
-        open(json_file, 'w').write(json.dumps(self.status, indent=4))
 
     def get_scene_subdir(self):
         # build the scene sub-directory name, for exemple

@@ -75,7 +75,6 @@ static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* Wor
 }
 
 
-
 FScreenshotManager::FScreenshotManager(const FIntVector& Size, AActor* OriginActor, bool Verbose):
     m_Size(Size), m_OriginActor(OriginActor), m_Verbose(Verbose),
     m_ImageIndex(0), m_CollisionQueryParams("ClickableTrace", false)
@@ -102,7 +101,7 @@ FScreenshotManager::~FScreenshotManager()
 {}
 
 
-void FScreenshotManager::SetIgnoredActors(const TArray<AActor*>& )
+void FScreenshotManager::SetIgnoredActors(const TArray<AActor*>& Actors)
 {
     // clear any registered actor
     m_CollisionQueryParams.ClearIgnoredComponents();
