@@ -14,9 +14,7 @@ public:
 
     void SetOriginActor(AActor* Actor);
 
-    void SetIgnoredActors(const TArray<AActor*>& IgnoredActors);
-
-    bool Capture();
+    bool Capture(const TArray<AActor*>& IgnoredActors);
 
     bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
 
@@ -45,9 +43,6 @@ private:
     // Index of the current image (next to be captured)
     uint m_ImageIndex;
 
-    // Used to tell the capture to ignore the requested actors
-    FCollisionQueryParams m_CollisionQueryParams;
-
     // World and scene view for depth and mask capture
     UWorld* m_World;
     FSceneView* m_SceneView;
@@ -69,7 +64,7 @@ private:
     bool CaptureScene();
 
     // Take the scene's depth field and object masking, push them to memory
-    bool CaptureDepthAndMasks();
+    bool CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors);
 
     // Save all the scene images to disk
     bool SaveScene(const FString& Directory);

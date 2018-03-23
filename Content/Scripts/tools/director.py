@@ -107,7 +107,7 @@ class Director:
 
         # during a run, apply magic trick (if any) and take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self.scene.run_magic(self.saver, tick)
+            self.scene.run_magic(tick)
             self.capture()
 
         # end of a run, terminate it

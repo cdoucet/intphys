@@ -71,21 +71,29 @@ class Scene(object):
 
         # setup the magic actor before applying the magic trick
         actor = self.actors[self.params['magic']['actor']]
-        self.scenario.setup_magic_trick(saver, actor, self.current_run)
+        self.scenario.setup_magic_trick(actor, self.current_run)
 
-    def run_magic(self, saver, tick):
+    def run_magic(self, tick):
         if 'magic' not in self.params:
             return
 
         if tick == self.params['magic']['tick']:
             actor = self.actors[self.params['magic']['actor']]
-            self.scenario.apply_magic_trick(saver, actor, self.current_run)
+            self.scenario.apply_magic_trick(actor, self.current_run)
 
     def clear(self):
         """Destroy all the actors in the scene"""
         for k, v in self.actors.items():
             v.actor_destroy()
         self.actors = {}
+
+    def get_ignored_actors(self):
+        actor = self.actors[self.params['magic']['actor']]
+        try:
+            return ([actor.get_actor()]
+                    if self.scenario.is_magic_actor_hidden else [])
+        except AttributeError:
+            return []
 
     def get_status(self):
         """Return the current status of each actor in the scene"""

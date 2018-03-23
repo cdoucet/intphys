@@ -24,7 +24,6 @@ static bool VerifyOrCreateDirectory(const FString& Directory)
 }
 
 
-
 // Looks up the player's SceneView object modeled after
 // APlayerController::GetHitResultAtScreenPosition. From UETorch.
 static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* World)
@@ -75,9 +74,8 @@ static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* Wor
 }
 
 
-FScreenshotManager::FScreenshotManager(const FIntVector& Size, AActor* OriginActor, bool Verbose):
-    m_Size(Size), m_OriginActor(OriginActor), m_Verbose(Verbose),
-    m_ImageIndex(0), m_CollisionQueryParams("ClickableTrace", false)
+FScreenshotManager::FScreenshotManager(const FIntVector& Size, AActor* OriginActor, bool Verbose)
+    : m_Size(Size), m_OriginActor(OriginActor), m_Verbose(Verbose), m_ImageIndex(0)
 {
     // allocate memory for storing images
     m_Scene.SetNum(Size.Z);
@@ -101,24 +99,13 @@ FScreenshotManager::~FScreenshotManager()
 {}
 
 
-void FScreenshotManager::SetIgnoredActors(const TArray<AActor*>& Actors)
-{
-    // clear any registered actor
-    m_CollisionQueryParams.ClearIgnoredComponents();
-
-    // ignore the requested objects from the raycasting
-    for (auto& i : Actors)
-        m_CollisionQueryParams.AddIgnoredActor(i);
-}
-
-
 void FScreenshotManager::SetOriginActor(AActor* Actor)
 {
     m_OriginActor = Actor;
 }
 
 
-bool FScreenshotManager::Capture()
+bool FScreenshotManager::Capture(const TArray<AActor*>& IgnoredActors)
 {
     // if (m_Verbose)
     // {
@@ -132,7 +119,7 @@ bool FScreenshotManager::Capture()
     }
 
     bool bDone1 = FScreenshotManager::CaptureScene();
-    bool bDone2 = FScreenshotManager::CaptureDepthAndMasks();
+    bool bDone2 = FScreenshotManager::CaptureDepthAndMasks(IgnoredActors);
 
     // Update the counter
     m_ImageIndex++;
@@ -218,8 +205,14 @@ bool FScreenshotManager::CaptureScene()
 }
 
 
-bool FScreenshotManager::CaptureDepthAndMasks()
+bool FScreenshotManager::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 {
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+    for (auto& Actor : IgnoredActors)
+    {
+        CollisionQueryParams.AddIgnoredActor(Actor);
+    }
+
     // Intitialize world and scene view
     m_World = m_OriginActor->GetWorld();
     m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
@@ -246,7 +239,7 @@ bool FScreenshotManager::CaptureDepthAndMasks()
 
             bool bHit = m_World->LineTraceSingleByChannel(
                 HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
-                ECollisionChannel::ECC_Visibility, m_CollisionQueryParams);
+                ECollisionChannel::ECC_Visibility, CollisionQueryParams);
 
             if(bHit)
             {
@@ -262,30 +255,6 @@ bool FScreenshotManager::CaptureDepthAndMasks()
                 m_ActorsMap.Add(ActorName, ActorIndex);
                 m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
             }
-
-            // // log a debug message with ray coordinates
-            // if(m_Verbose)
-            // {
-            //     UE_LOG(
-            //         LogTemp, Log,
-            //         TEXT("Capture: camera origin = (%f, %f, %f), rotation = (%f, %f, %f)"),
-            //         OriginLoc.X, OriginLoc.Y, OriginLoc.Z,
-            //         OriginRot.X, OriginRot.Y, OriginRot.Z);
-
-            //     FVector ViewLoc = SceneView->ViewLocation;
-            //     FRotator ViewRot = SceneView->ViewRotation;
-            //     UE_LOG(
-            //         LogTemp, Log,
-            //         TEXT("Capture: view origin = (%f, %f, %f), rotation = (%f, %f, %f)"),
-            //         ViewLoc.X, ViewLoc.Y, ViewLoc.Z,
-            //         ViewRot.Pitch, ViewRot.Roll, ViewRot.Yaw);
-
-            //     UE_LOG(
-            //         LogTemp, Log,
-            //         TEXT("Capture: ray origin = (%f, %f, %f), direction = (%f, %f, %f)"),
-            //         RayOrigin.X, RayOrigin.Y, RayOrigin.Z,
-            //         RayDirection.X, RayDirection.Y, RayDirection.Z);
-            // }
         }
     }
 
@@ -402,18 +371,6 @@ bool FScreenshotManager::SaveMasks(const FString& Directory, TMap<FString, uint8
     }
 
     return true;
-
-    // TMap<FString, FColor> MasksNameMap;
-    // TMap<uint8, FColor> MasksIndexMap;
-    // m_ActorsSet.Sort([](const FString& A, const FString& B) {return A < B;});
-    // for (const FString& Actor : m_ActorsSet)
-    // {
-    //     uint8 Index = static_cast<uint8>(m_ActorsSet.Add(Actor).AsInteger());
-    //     uint8 GrayIndex = Index * 255 / (float)m_ActorsSet.Num();
-    //     FColor GrayColor(GrayIndex, GrayIndex, GrayIndex, 255);
-    //     MasksNameMap[Actor] = GrayColor;
-    //     MasksIndexMap[Index] = GrayColor;
-    // }
 }
 
 

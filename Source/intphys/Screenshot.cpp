@@ -20,9 +20,9 @@ bool UScreenshot::Initialize(
 }
 
 
-bool UScreenshot::Capture()
+bool UScreenshot::Capture(const TArray<AActor*>& IgnoredActors)
 {
-    return UScreenshot::ScreenshotManager->Capture();
+    return UScreenshot::ScreenshotManager->Capture(IgnoredActors);
 }
 
 
@@ -42,12 +42,6 @@ void UScreenshot::Reset()
 void UScreenshot::SetOriginActor(AActor* Actor)
 {
     UScreenshot::ScreenshotManager->SetOriginActor(Actor);
-}
-
-
-void UScreenshot::SetIgnoredActors(const TArray<AActor*>& Actors)
-{
-    UScreenshot::ScreenshotManager->SetIgnoredActors(Actors);
 }
 
 

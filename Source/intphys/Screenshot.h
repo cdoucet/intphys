@@ -30,7 +30,7 @@ public:
         bool Verbose = false);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static bool Capture();
+    static bool Capture(const TArray<AActor*>& IgnoredActors);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
@@ -40,9 +40,6 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void SetOriginActor(AActor* Actor);
-
-    UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static void SetIgnoredActors(const TArray<AActor*>& Actors);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool IsActorInFrame(AActor* Actor, int FrameIndex);

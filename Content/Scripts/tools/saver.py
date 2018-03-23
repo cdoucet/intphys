@@ -58,7 +58,7 @@ class Saver:
 
     def capture(self, scene):
         if not self.is_dry_mode():
-            Screenshot.Capture()
+            Screenshot.Capture(scene.get_ignored_actors())
             self.status.append(scene.get_status())
 
     def save(self, output_dir):

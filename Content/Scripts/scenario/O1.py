@@ -42,6 +42,8 @@ class O1Train(O1Base, base.BaseTrain):
 
 
 class O1TestStatic(O1Base, base.BaseTest):
+    is_magic_actor_hidden = False
+
     def get_nchecks(self):
         if not self.is_occluded:
             return 0
@@ -79,12 +81,15 @@ class O1TestStatic(O1Base, base.BaseTest):
 
         return params
 
-    def setup_magic_trick(self, saver, actor, run):
+    def setup_magic_trick(self, actor, run):
         if run in (2, 4):
-            actor.set_hidden(True)
-            saver.ignore_actors([actor.get_actor()])
+            self.is_magic_actor_hidden = True
+            actor.set_hidden(self.is_magic_actor_hidden)
 
-    def apply_magic_trick(self, saver, actor, run):
+    def apply_magic_trick(self, actor, run):
         if run <= 2:
             actor.set_hidden(not actor.hidden)
-            saver.ignore_actors([actor.get_actor()] if actor.hidden else [])
+            self.is_magic_actor_hidden = actor.hidden
+
+    def get_ignored_actors(self):
+        return []
