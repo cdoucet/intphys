@@ -23,6 +23,8 @@
     - we want 1 skylight and from 0 to 2 (random) directional lights.
 ** TODO generate and validate a little database
 * various bugs [1/2]
+** Warning: Failed to set the rotation of Object_C_0
+   bug in base_actor.set_rotation
 ** DONE Tools/build_shaders.sh
    CLOSED: [2018-03-19 lun. 18:02]
    Compiled shaders are not found when runnong the game in standalone mode.

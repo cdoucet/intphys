@@ -30,14 +30,26 @@ class Base(object):
         """Return True if this is a train scenario, False otherwise"""
         pass
 
-    def magic_setup(self, run_index):
+    def is_test(self):
+        """Return True if this is a test scenario, False otherwise"""
+        return not self.is_train()
+
+    @abc.abstractmethod
+    def is_possible(self, run_index):
+        """Return True if the current scene is physically plausible
+
+        Train scenes are always possible. Test scenes have runs (1, 2)
+        impossible and runs (3, 4) possible, ignoring the check runs
+        if any.
+
+        """
         pass
 
     def generate_parameters(self):
-        """Return a dict of {actor: parameters} for that scenario
+        """Return a the common paramaters for all the scenarios
 
         This method should be specialized in child classes. At the
-        base level only the actors common to all scenarii are
+        base level only the floor, background walls and lights are
         considered.
 
         """
@@ -51,13 +63,14 @@ class Base(object):
             location=FVector(0, 0, 1000),
             rotation=FRotator(0, 0, 0))
 
-        prob_wall = 0
-        if random.uniform(0, 1) <= prob_wall:
+        # the probability to have background walls
+        prob_walls = 1
+        if random.uniform(0, 1) <= prob_walls:
             params['walls'] = WallsParams(
                 material=get_random_material('Wall'),
                 height=random.uniform(1, 10),
-                length=random.uniform(1500, 4000),
-                depth=random.uniform(900, 1500))
+                length=random.uniform(2000, 5000),
+                depth=random.uniform(1500, 5000))
 
         return params
 
@@ -70,6 +83,10 @@ class BaseTrain(Base):
         return 1
 
     def is_train(self):
+        return True
+
+    def is_possible(self, run_index):
+        # A train scene is always possible
         return True
 
 
@@ -91,6 +108,12 @@ class BaseTest(Base):
 
     def is_train(self):
         return False
+
+    def is_possible(self, run_index):
+        # A test scene is possible on runs 3 and 4 (minus the
+        # checks). With this definition, a check scene is always
+        # impossible.
+        return True if run_index - self.get_nchecks() in (3, 4) else False
 
     @abc.abstractmethod
     def get_nchecks(self):

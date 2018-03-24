@@ -16,7 +16,7 @@ class CameraParams:
 @dataclass
 class FloorParams:
     material: str = get_random_material('Floor')
-    scale: FVector = FVector(100, 100, 1)
+    scale: FVector = FVector(50, 50, 1)
     friction: float = 0.5
     restitution: float = 0.5
 
@@ -57,5 +57,5 @@ class OccluderParams:
     scale: FVector = FVector(1, 1, 1)
     friction: float = 0.5
     restitution: float = 0.5
-    moves: tuple = (0)  # list not supported
+    moves: tuple = (0, 1)  # list not supported
     speed: float = 1

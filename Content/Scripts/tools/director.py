@@ -88,9 +88,9 @@ class Director:
         # update the ticker
         self.ticker.tick(dt)
 
-        # # moving occluders and actors at every game tick
-        # for actor in self.scene.get_moving_actors().values():
-        #     actor.move()
+        # moving occluders and actors at every game tick
+        for actor in self.scene.get_moving_actors().values():
+            actor.move()
 
         # if we are not ticking at low rate, nothing more to do
         if not self.ticker.on_tick():

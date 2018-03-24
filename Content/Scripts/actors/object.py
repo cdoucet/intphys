@@ -1,7 +1,6 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from unreal_engine import FVector
 from unreal_engine.classes import Material
 
 from actors.base_mesh import BaseMesh

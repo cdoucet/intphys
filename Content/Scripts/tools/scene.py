@@ -47,6 +47,8 @@ class Scene(object):
         # spawn the actors from generated params
         self.actors = {
             k: get_actor_class(k)(world=self.world, params=v)
+            # we ignore the 'magic' parameters when spawning actors
+            # because it concerns the scenario
             for k, v in self.params.items() if 'magic' not in k}
 
     def get_nruns_remaining(self):
@@ -69,17 +71,18 @@ class Scene(object):
         # update the run index
         self.current_run += 1
 
-        # setup the magic actor before applying the magic trick
-        actor = self.actors[self.params['magic']['actor']]
-        self.scenario.setup_magic_trick(actor, self.current_run)
+        # on test scenes, setup the magic actor for the trick
+        if self.scenario.is_test():
+            self.scenario.setup_magic_trick(
+                self.get_magic_actor(), self.current_run)
 
     def run_magic(self, tick):
-        if 'magic' not in self.params:
+        if self.get_magic_actor() is None:
             return
 
         if tick == self.params['magic']['tick']:
-            actor = self.actors[self.params['magic']['actor']]
-            self.scenario.apply_magic_trick(actor, self.current_run)
+            self.scenario.apply_magic_trick(
+                self.get_magic_actor(), self.current_run)
 
     def clear(self):
         """Destroy all the actors in the scene"""
@@ -88,12 +91,14 @@ class Scene(object):
         self.actors = {}
 
     def get_ignored_actors(self):
-        actor = self.actors[self.params['magic']['actor']]
+        """Return a list of actors to ignore when taking captures"""
         try:
-            return ([actor.get_actor()]
-                    if self.scenario.is_magic_actor_hidden else [])
+            actor = self.get_magic_actor().get_actor()
+            if actor is not None and self.scenario.is_magic_actor_hidden:
+                return [actor]
         except AttributeError:
-            return []
+            pass
+        return []
 
     def get_status(self):
         """Return the current status of each actor in the scene"""
@@ -111,13 +116,20 @@ class Scene(object):
         return True
 
     def is_check_run(self):
-        """Return True if the current run is a check"""
+        """Return True if the current run is a check, False otherwise"""
         if self.scenario.is_train():
             return False
         elif self.current_run <= self.scenario.get_nchecks():
             return True
         else:
             return False
+
+    def get_magic_actor(self):
+        """Return the magic actor, or None if no such actor"""
+        try:
+            return self.actors[self.params['magic']['actor']]
+        except KeyError:
+            return None
 
     def get_moving_actors(self):
         """Return the dict of moving actors (objects and occluders)"""
@@ -126,7 +138,8 @@ class Scene(object):
             if 'occluder' in k or 'object' in k}
 
     def reset(self):
-        """Set all the actors to their initial location/rotation"""
+        """Set all the actors to their initial position/acceleration"""
         for k, v in self.get_moving_actors().items():
+            # TODO force
             v.set_location(self.params[k].location)
             v.set_rotation(self.params[k].rotation)
