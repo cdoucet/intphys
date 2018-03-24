@@ -101,8 +101,15 @@ class Scene(object):
         return []
 
     def get_status(self):
-        """Return the current status of each actor in the scene"""
-        return {k: v.get_status() for k, v in self.actors.items()}
+        """Return the current status of each moving actor in the scene"""
+        return {k: v.get_status() for k, v in self.get_moving_actors().items()}
+
+    def get_status_header(self):
+        """Return the status header, static actors and metedata"""
+        status = {k: v.get_status()
+                  for k, v in self.get_static_actors().items()}
+        status['scenario'] = self.scenario.get_status(self.current_run)
+        return status
 
     def is_valid(self):
         """Return True when the scene is in valid state
@@ -136,6 +143,12 @@ class Scene(object):
         return {
             k: v for k, v in self.actors.items()
             if 'occluder' in k or 'object' in k}
+
+    def get_static_actors(self):
+        """Return the dict of static actors (floor, walls, lights, ...)"""
+        moving = self.get_moving_actors().keys()
+        return {k: v for k, v in self.actors.items()
+                if k not in moving}
 
     def reset(self):
         """Set all the actors to their initial position/acceleration"""

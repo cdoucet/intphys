@@ -4,8 +4,22 @@ import json
 import os
 
 import unreal_engine as ue
+from unreal_engine import FVector, FRotator
 from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
 
+
+def as_dict(value):
+    """Convert a FVector or FRotator to a dict
+
+    Raise ValueError if value is not a FVector or a FRoator.
+
+    """
+    if isinstance(value, FVector):
+        return {'x': value.x, 'y': value.y, 'z': value.z}
+    elif isinstance(value, FRotator):
+        return {'roll': value.roll, 'pitch': value.pitch, 'yaw': value.yaw}
+    else:
+        raise ValueError(f'expect FVector or FRotator, having {type(value)}')
 
 
 # TODO Does not exit the game immediately, find better
@@ -54,7 +68,7 @@ def intphys_root_directory():
     # relative path from here
     try:
         root_dir = os.environ['INTPHYS_ROOT']
-    except:
+    except KeyError:
         root_dir = os.path.join(os.path.dirname(__file__), '../..')
 
     # make sure the directory is the good one
@@ -98,7 +112,8 @@ def parse_scenes_json(world, scenes_json):
             # train case, v is the number of scenes to generate
             if 'train' in k:
                 nscenes = v
-                scenes += [get_train_scenario(scenario) for _ in range(nscenes)]
+                scenes += [get_train_scenario(scenario)
+                           for _ in range(nscenes)]
 
             # test scenes in the form 'test_visible' or 'test_occluded'
             else:
@@ -108,7 +123,8 @@ def parse_scenes_json(world, scenes_json):
                     is_static = 'static' in condition
                     ntricks = 2 if condition.endswith('2') else 1
                     scenes += [
-                        get_test_scenario(scenario, is_occluded, is_static, ntricks)
+                        get_test_scenario(
+                            scenario, is_occluded, is_static, ntricks)
                         for _ in range(nscenes)]
 
     return scenes

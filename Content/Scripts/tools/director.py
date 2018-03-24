@@ -71,7 +71,7 @@ class Director:
         # initialize the saver for taking screenshots and scene's
         # status (if output_dir is defined)
         self.saver = Saver(
-            self.size, self.camera.get_actor(),
+            self.size, self.camera,
             dry_mode=True if self.output_dir is None else False)
 
         # start the ticker, take a screen capture each 2 game ticks

@@ -1,7 +1,6 @@
 from collections import defaultdict
 
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
 
 from actors.base_actor import BaseActor
 from actors.parameters import LightParams
@@ -30,7 +29,8 @@ class Light(BaseActor):
             }
 
         if world is not None:
-            super().__init__(world.actor_spawn(ue.load_class(types[params.type])))
+            super().__init__(
+                world.actor_spawn(ue.load_class(types[params.type])))
 
             # the position does not affect sky light
             if params.type != 'SkyLight':
@@ -57,7 +57,6 @@ class Light(BaseActor):
         if self.type != 'SkyLight':
             status = super().get_status()
         else:
-            status = defaultdict(list)
-            status['actor'] = self.actor.get_name()
+            status = {}
         status['type'] = self.type
         return status

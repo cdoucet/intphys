@@ -26,7 +26,8 @@ class Camera(BaseActor):
     """
     def __init__(self, world=None, params=CameraParams()):
         if world is not None:
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Camera.Camera_C')))
+            super().__init__(world.actor_spawn(
+                ue.load_class('/Game/Camera.Camera_C')))
 
             self.get_parameters(params)
             self.set_parameters(world)
@@ -48,7 +49,8 @@ class Camera(BaseActor):
         player_controller = GameplayStatics.GetPlayerController(world, 0)
         player_controller.SetViewTargetWithBlend(NewViewTarget=self.actor)
 
-        self.camera_component = self.actor.get_component_by_type(CameraComponent)
+        self.camera_component = self.actor.get_component_by_type(
+            CameraComponent)
         self.camera_component.SetFieldOfView(self.field_of_view)
         self.camera_component.SetAspectRatio(self.aspect_ratio)
         self.camera_component.SetProjectionMode(self.projection_mode)

@@ -45,6 +45,15 @@ class Base(object):
         """
         pass
 
+    def get_status(self, run_index):
+        """Return a dict describing the scenario"""
+        status = {
+            'name': self.name,
+            'type': 'test' if self.is_test() else 'train',
+            'is_possible': self.is_possible(run_index)}
+
+        return status
+
     def generate_parameters(self):
         """Return a the common paramaters for all the scenarios
 

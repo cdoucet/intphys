@@ -1,10 +1,11 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from unreal_engine.classes import Material, StaticMesh
-from actors.base_actor import BaseActor
+from unreal_engine.classes import Material, StaticMesh, Friction
 
-from unreal_engine.classes import Friction
+from actors.base_actor import BaseActor
+from tools.utils import as_dict
+
 
 """
 Ok here we go:
@@ -127,9 +128,8 @@ class BaseMesh(BaseActor):
 
     def get_status(self):
         status = super().get_status()
-        status['scale'].append(('x', self.scale.x))
-        status['scale'].append(('y', self.scale.y))
-        status['scale'].append(('z', self.scale.z))
+        status['scale'] = as_dict(self.scale)
         status['friction'] = self.friction
+        status['restitution'] = self.restitution
         status['mesh'] = self.mesh_str
         return status

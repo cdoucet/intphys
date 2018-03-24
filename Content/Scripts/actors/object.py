@@ -5,6 +5,8 @@ from unreal_engine.classes import Material
 
 from actors.base_mesh import BaseMesh
 from actors.parameters import ObjectParams
+from tools.utils import as_dict
+
 
 # Ok here we go: This is a recursive instantiate class.  The general
 # principle is to instantiate a class twice to avoid making two
@@ -116,7 +118,5 @@ class Object(BaseMesh):
         status = super().get_status()
         status['material'] = self.material.get_name()
         status['mass'] = self.mass
-        status['force'].append(('x', self.force.x))
-        status['force'].append(('y', self.force.y))
-        status['force'].append(('z', self.force.z))
+        status['force'] = as_dict(self.force)
         return status
