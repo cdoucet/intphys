@@ -159,7 +159,7 @@ class Director:
 
         # the run was successful, see if we need to save capture and
         # prepare the next run
-        if not self.saver.is_dry_mode() and not self.scene.is_check_run():
+        if not self.saver.is_dry_mode and not self.scene.is_check_run():
             if not self.saver.save(self.get_scene_subdir()):
                 # save failed, exit
                 self.ticker.stop()

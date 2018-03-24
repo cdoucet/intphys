@@ -2,11 +2,8 @@ import json
 import os
 
 import unreal_engine as ue
-from unreal_engine.classes import Screenshot
+from unreal_engine.classes import ScreenshotManager
 
-
-# TODO implement a mode 'json_only' where we don't take captures but
-# only the status.
 
 class Saver:
     """Take screen captures during a run and save them at the end
@@ -17,10 +14,10 @@ class Saver:
 
     Parameters
     ----------
-    size : tuple
-        The size of a scene the screen resolution times the number of
-        images captured in a single scene, in the form (width, height,
-        nimages).
+    size : tuple of (width, height, nimages)
+        The size of a scene where (width, height) is the screen
+        resolution in pixels and nimages the number of images captured
+        in a single scene.
     origin : AActor
         The actor from which to capture screenshots (usually the
         camera).
@@ -33,42 +30,40 @@ class Saver:
     def __init__(self, size, origin, dry_mode=False):
         self.size = size
         self.origin = origin
-        self.dry_mode = dry_mode
+        self.is_dry_mode = dry_mode
 
         # an empty list to append status along the run
         self.status = []
 
-        self.reset()
+        # initialize the capture. TODO We initialize the manager even
+        # if if we are in dry mode because we may use it in check runs
+        ScreenshotManager.Initialize(
+            int(self.size[0]), int(self.size[1]), int(self.size[2]),
+            self.origin, True)
 
-    def is_dry_mode(self):
-        """Return True if saving is disabled, False otherwise"""
-        return self.dry_mode is True
+    def capture(self, scene):
+        """Push the scene's current screenshot and status to memory"""
+        if not self.is_dry_mode:
+            # scene, depth and masks images are stored from C++
+            ScreenshotManager.Capture(scene.get_ignored_actors())
+            self.status.append(scene.get_status())
 
     def reset(self):
         """Reset the saver and delete all data in cache"""
-        if not self.is_dry_mode():
-            Screenshot.Initialize(
-                int(self.size[0]), int(self.size[1]), int(self.size[2]),
-                self.origin)
-
-    def ignore_actors(self, actors):
-        """Ignore the `actors` when taking screenshots"""
-        if not self.is_dry_mode():
-            Screenshot.SetIgnoredActors(actors)
-
-    def capture(self, scene):
-        if not self.is_dry_mode():
-            Screenshot.Capture(scene.get_ignored_actors())
-            self.status.append(scene.get_status())
+        if not self.is_dry_mode:
+            ScreenshotManager.Reset()
+            self.status = []
 
     def save(self, output_dir):
-        if self.is_dry_mode():
+        """Save the captured data to `output_dir`"""
+        if self.is_dry_mode:
             return True
 
         ue.log(f'saving capture to {output_dir}')
 
         # save the captured images as PNG
-        done, max_depth, masks = Screenshot.Save(output_dir)
+        # TODO postprocess masks of walls (merge)
+        done, max_depth, masks = ScreenshotManager.Save(output_dir)
         if not done:
             ue.log_warning(f'failed to save images to {output_dir}')
             return False
