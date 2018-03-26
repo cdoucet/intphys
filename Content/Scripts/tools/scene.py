@@ -1,255 +1,158 @@
-from unreal_engine import FVector, FRotator
-
-from unreal_engine.enums import ECameraProjectionMode
 from actors.floor import Floor
+from actors.light import Light
 from actors.object import Object
 from actors.occluder import Occluder
 from actors.walls import Walls
-from actors.camera import Camera
-from actors.light import Light
-from tools.materials import get_random_material
-from tools.materials import load_materials
-import random
 
 
-class BaseScene:
+def get_actor_class(name):
+    classes = {
+        'floor': Floor,
+        'light': Light,
+        'object': Object,
+        'occluder': Occluder,
+        'walls': Walls}
+
+    for k, v in classes.items():
+        if name.lower().startswith(k):
+            return v
+
+    raise ValueError('actor class unknown for {}'.format(name))
+
+
+class Scene(object):
+    """The scene renders a given `scenario` in a given `world`
+
+    A scene is made of several runs. Train scenes are always a single
+    run. Test scenes have 4 runs plus some check runs. The number of
+    checks varies accross scenarii.
+
+    Parameters
+    ----------
+    world: ue.uobject
+       The game world in which to render the scene.
+    scenario: child of scenario.base.Base
+        The scenario to execute. A scenario defines the actors,
+        generates parameters for them and implement the magic trick.
+
+    """
     def __init__(self, world, scenario):
         self.world = world
         self.scenario = scenario
         self.current_run = 0
-        self.actors = {"Camera": None, "Floor": None, "Light": None, "Walls": None, "Occluder": [], "Object": []}
 
-    def get_nruns(self):
-        return 1
+        # generate random parameters for the scene
+        self.params = self.scenario.generate_parameters()
+
+        # spawn the actors from generated params
+        self.actors = {
+            k: get_actor_class(k)(world=self.world, params=v)
+            # we ignore the 'magic' parameters when spawning actors
+            # because it concerns the scenario
+            for k, v in self.params.items() if 'magic' not in k}
 
     def get_nruns_remaining(self):
-        return self.get_nruns() - self.current_run
-
-    def is_valid(self):
-        return True
-
-    def is_train_scene(self):
-        return True if isinstance(self, TrainScene) else False
-
-    def is_check_run(self):
-        return False
+        """Return the number of runs to render before the end of the scene"""
+        return self.scenario.get_nruns() - self.current_run
 
     def description(self):
-        """Return a string description of the scene's current run"""
-        raise NotImplementedError
+        desc = self.scenario.get_description()
+        if self.scenario.get_nruns() > 1:
+            desc += f' (run {self.current_run}/{self.scenario.get_nruns()})'
+            if self.is_check_run():
+                desc = desc[:-1] + ', check)'
+        return desc
 
-    def print_status(self):
-        for key, value in self.actors.items():
-            if (isinstance(value, list)):
-                for member in value:
-                    print(member.get_status())
-            else:
-                if (value is not None):
-                    print(value.get_status())
+    def render(self, saver):
+        """Setup the actors defined by the scenario to their initial state"""
+        # replace the actors to their initial position
+        self.reset()
 
-    def render(self):
-        self.spawn_actors()
-        self.print_status()
-        # prepare for the next run
+        # update the run index
         self.current_run += 1
 
+        # on test scenes, setup the magic actor for the trick
+        if self.scenario.is_test():
+            self.scenario.setup_magic_trick(
+                self.get_magic_actor(), self.current_run)
+
+    def run_magic(self, tick):
+        if self.get_magic_actor() is None:
+            return
+
+        if tick == self.params['magic']['tick']:
+            self.scenario.apply_magic_trick(
+                self.get_magic_actor(), self.current_run)
+
     def clear(self):
-        for key, value in self.actors.items():
-            if (isinstance(value, list)):
-                for member in value:
-                    member.actor_destroy()
-                value[:] = []
-            else:
-                if (value is not None):
-                    value.actor_destroy()
-                value = None
+        """Destroy all the actors in the scene"""
+        for k, v in self.actors.items():
+            v.actor_destroy()
+        self.actors = {}
 
+    def get_ignored_actors(self):
+        """Return a list of actors to ignore when taking captures"""
+        try:
+            actor = self.get_magic_actor().get_actor()
+            if actor is not None and self.scenario.is_magic_actor_hidden:
+                return [actor]
+        except AttributeError:
+            pass
+        return []
 
-class TrainScene(BaseScene):
-    def __init__(self, world, scenario):
-        super(TrainScene, self).__init__(world, scenario)
+    def get_status(self):
+        """Return the current status of each moving actor in the scene"""
+        return {k: v.get_status() for k, v in self.get_moving_actors().items()}
 
-    def description(self):
-        return self.scenario + ' train'
+    def get_status_header(self):
+        """Return the status header, static actors and metedata"""
+        status = {k: v.get_status()
+                  for k, v in self.get_static_actors().items()}
+        status['scenario'] = self.scenario.get_status(self.current_run)
+        return status
 
-    def spawn_actors(self):
-        print("teeeeeeeeeeeeeeeeeeeeeeeeeeeeeest")
-        self.actors["Camera"] = Camera(world=self.world,
-                                       location=FVector(-1000, 0, 200),
-                                       rotation=FRotator(0, 0, 0),
-                                       field_of_view=90,
-                                       aspect_ratio=1,
-                                       projection_mode=ECameraProjectionMode.Perspective,
-                                       overlap=True,
-                                       warning=True)
-        self.actors["Floor"] = Floor(world=self.world,
-                                     material=get_random_material(load_materials('Materials/Floor')),
-                                     scale=FVector(100, 100, 1),
-                                     friction=random.uniform(-1000, 1000))
-        self.actors["Light"] = Light(world=self.world,
-                                     type='SkyLight',
-                                     location=FVector(0, 0, 1000),
-                                     rotation=FRotator(0, 0, 0),
-                                     overlap=True,
-                                     warning=True)
-        if (random.randint(0, 1) == 1):
-            self.actors["Walls"] = Walls(world=self.world,
-                                         height=random.uniform(1, 10),
-                                         length=random.uniform(1500, 4000),
-                                         depth=random.uniform(900, 1500),
-                                         material=get_random_material(load_materials('Materials/Wall')),
-                                         overlap=False,
-                                         warning=False)
-        else:
-            self.actors["Walls"] = None
-        for i in range(1, random.randint(1, 3)):
-            scale_value = random.uniform(0.5, 1)
-            self.actors["Object"].append(Object(world=self.world,
-                                                mesh_str=Object.shape['Sphere'],
-                                                location=FVector(random.uniform(-500, 500),
-                                                                 random.uniform(-500, 500),
-                                                                 random.uniform(0, 100) + (50 * scale_value)),
-                                                rotation=FRotator(random.uniform(-180, 180),
-                                                                  random.uniform(-180, 180),
-                                                                  random.uniform(-180, 180)),
-                                                scale=FVector(scale_value,
-                                                              scale_value,
-                                                              scale_value),
-                                                material=get_random_material(load_materials('Materials/Actor')),
-                                                mass=random.uniform(1, 500),
-                                                force=FVector(random.uniform(-1e8, 1e8),
-                                                              random.uniform(-1e8, 1e8),
-                                                              0),
-                                                friction=random.uniform(-1000, 1000),
-                                                overlap=False,
-                                                warning=False))
-        for i in range(1, random.randint(1, 3)):
-            moves_array = []
-            for j in range(1, random.randint(0, 2)):
-                moves_array.append(random.randint(1, 200))
-            self.actors["Occluder"].append(Occluder(world=self.world,
-                                                    location=FVector(random.uniform(-500, 500),
-                                                                     random.uniform(-500, 500),
-                                                                     0),
-                                                    rotation=FRotator(0,
-                                                                      0,
-                                                                      random.uniform(-180, 180)),
-                                                    scale=FVector(random.uniform(1, 2),
-                                                                  1,
-                                                                  random.uniform(1, 2)),
-                                                    material=get_random_material(load_materials('Materials/Wall')),
-                                                    speed=random.uniform(0.5, 10),
-                                                    moves=moves_array,
-                                                    overlap=False,
-                                                    warning=False))
+    def is_valid(self):
+        """Return True when the scene is in valid state
 
+        A scene can be invalid if some forbidden hit occured (e.g. an
+        occluder overlapping the camera), or , for test scenes, if a
+        check run failed.
 
-class TestScene(BaseScene):
-    def __init__(
-            self, world, scenario,
-            is_occluded=False, is_static=False, ntricks=1):
-        super(TestScene, self).__init__(world, scenario)
-
-        self.is_occluded = is_occluded
-        self.is_static = is_static
-        self.ntricks = ntricks
-
-    def description(self):
-        return (
-            self.scenario + ' test' +
-            (' occluded' if self.is_occluded else ' visible') +
-            (' static' if self.is_static else ' dynamic_{}'.format(self.ntricks)) +
-            ' ({}/{})'.format(self.current_run+1, self.get_nruns()))
+        """
+        # TODO
+        return True
 
     def is_check_run(self):
-        return self.current_run < self.get_nruns_check()
-
-    def get_nruns(self):
-        return 4 + self.get_nruns_check()
-
-    def get_nruns_check(self):
-        # TODO should be retrieved for scenario class
-        nruns = 0
-        if not self.is_occluded:
-            nruns = 0
-        elif self.ntricks == 2:
-            nruns = 2
-        else:  # occluded single trick
-            nruns = 1
-
-        # block O2 has twice the checks of block O1
-        if 'O2' in self.scenario:
-            nruns *= 2
-
-        return nruns
-
-    def spawn_actors(self):
-        self.actors["Camera"] = Camera(world=self.world,
-                                       location=FVector(0, -100 * random.random(), 150 + random.random()),
-                                       rotation=FRotator(10 * random.random(), 10 * random.random(), 0),
-                                       field_of_view=90,
-                                       aspect_ratio=1,
-                                       projection_mode=ECameraProjectionMode.Perspective,
-                                       overlap=True,
-                                       warning=True)
-        self.actors["Floor"] = Floor(world=self.world,
-                                     material=get_random_material(load_materials('Materials/Floor')),
-                                     scale=FVector(100, 100, 1),
-                                     friction=0.7)
-        self.actors["Light"] = Light(world=self.world,
-                                     type='SkyLight',
-                                     location=FVector(0, 0, 1000),
-                                     rotation=FRotator(0, 0, 0),
-                                     overlap=True,
-                                     warning=True)
-        if (random.randint(0, 1) == 1):
-            self.actors["Walls"] = Walls(world=self.world,
-                                         height=random.uniform(1, 10),
-                                         length=random.uniform(1500, 4000),
-                                         depth=random.uniform(900, 1500),
-                                         material=get_random_material(load_materials('Materials/Wall')),
-                                         overlap=False,
-                                         warning=True)
+        """Return True if the current run is a check, False otherwise"""
+        if self.scenario.is_train():
+            return False
+        elif self.current_run <= self.scenario.get_nchecks():
+            return True
         else:
-            self.actors["Walls"] = None
-        object_number = random.randint(1, 3)
-        for i in range(1, object_number):
-            scale_value = random.uniform(0.5, 1)
-            self.actors["Object"].append(Object(world=self.world,
-                                                mesh_str=Object.shape['Sphere'],
-                                                location=FVector(random.uniform(-500, 500),
-                                                                 random.uniform(-500, 500),
-                                                                 random.uniform(0, 100) + (50 * scale_value)),
-                                                rotation=FRotator(random.uniform(-180, 180),
-                                                                  random.uniform(-180, 180),
-                                                                  random.uniform(-180, 180)),
-                                                scale=FVector(scale_value,
-                                                              scale_value,
-                                                              scale_value),
-                                                material=get_random_material(load_materials('Materials/Actor')),
-                                                mass=random.uniform(1, 500),
-                                                force=FVector(random.uniform(-1e8, 1e8),
-                                                              random.uniform(-1e8, 1e8),
-                                                              0),
-                                                friction=random.uniform(-1000, 1000),
-                                                overlap=False,
-                                                warning=True))
-        for i in range(1, random.randint(1, 3)):
-            moves_array = []
-            for j in range(1, random.randint(0, 2)):
-                moves_array.append(random.randint(1, 200))
-            self.actors["Occluder"].append(Occluder(world=self.world,
-                                                    location=FVector(random.uniform(-500, 500),
-                                                                     random.uniform(-500, 500),
-                                                                     0),
-                                                    rotation=FRotator(0,
-                                                                      0,
-                                                                      random.uniform(-180, 180)),
-                                                    scale=FVector(random.uniform(1, 10),
-                                                                  1,
-                                                                  random.uniform(1, 10)),
-                                                    material=get_random_material(load_materials('Materials/Wall')),
-                                                    speed=random.uniform(-1.5, 10),
-                                                    moves=moves_array,
-                                                    overlap=False,
-                                                    warning=True))
+            return False
+
+    def get_magic_actor(self):
+        """Return the magic actor, or None if no such actor"""
+        try:
+            return self.actors[self.params['magic']['actor']]
+        except KeyError:
+            return None
+
+    def get_moving_actors(self):
+        """Return the dict of moving actors (objects and occluders)"""
+        return {
+            k: v for k, v in self.actors.items()
+            if 'occluder' in k or 'object' in k}
+
+    def get_static_actors(self):
+        """Return the dict of static actors (floor, walls, lights, ...)"""
+        moving = self.get_moving_actors().keys()
+        return {k: v for k, v in self.actors.items()
+                if k not in moving}
+
+    def reset(self):
+        """Set all the actors to their initial position/acceleration"""
+        for k, v in self.get_moving_actors().items():
+            # TODO force
+            v.set_location(self.params[k].location)
+            v.set_rotation(self.params[k].rotation)

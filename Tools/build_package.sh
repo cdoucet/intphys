@@ -2,9 +2,11 @@
 #
 # Run this script from the Tools directory of the intphys project to
 # build the game as a standalone binary.
+#
+# We assume $UE_ROOT is defined.
 
 # abspath to the root directory of intphys
-INTPHYS_DIR=$(readlink -f ..)
+INTPHYS_DIR=$(dirname $(dirname $(readlink -f $0)))
 
 # where we are packaging the project
 PACKAGE_DIR=$INTPHYS_DIR/Package

@@ -63,6 +63,19 @@ not been tested.
 
         git clone --recursive git@github.com:bootphon/intphys.git
 
+* You need Python>=3.6 installed as `/usr/bin/python3.6` (else you
+  need to tweak the UnrealEnginePython plugin
+  [here](https://github.com/20tab/UnrealEnginePython/blob/master/Source/UnrealEnginePython/UnrealEnginePython.Build.cs#L11)
+  so that it can find python>=3.6 in a non-standard path, for exemple
+  in a virtual environment). You also need the dataclasses module (in
+  the standard library with python>=3.7). To install it on ubuntu
+  16.04, have a:
+
+        sudo add-apt-repository ppa:jonathonf/python-3.6
+        sudo apt-get update
+        sudo apt-get install python3.6 python3.6-dev
+        /usr/bin/python3.6 -m pip install dataclasses
+
 * The intphys code reads the path to UnrealEngine from the `UE_ROOT`
   environment variable. Add that to your `~/.bashrc`:
 

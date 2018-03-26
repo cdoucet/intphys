@@ -1,34 +1,46 @@
-* Design of game mechanics
-** Scene
-Its main role is to generate random parameters, spawn the actors,
-manage/schedule the successive shootings, run the scenario's magic
-trick.
+* for intphys-2.0 release
+  Main objective is to replicate intphys-1.0 with the following
+  scenarii: apparition/disparition, teleportation, changement de
+  texture, changement de forme (en vol ou glissant)
 
-scenario = 'O1'
-type = 'train' or 'test'
-camera
-actors
-occluders
-other objects (lights, floor, ...)
-* From intphys-1.0
-** Features
-- reset the sky sphere rotation between scenes
-- implement events
-- include an actors field in status.json with mass, scale, physicals
-- include also a magic_trick entry for impossible cases (frame number,
-  nature of change)
-** Improvements
-*** in status.json for tests
-    do we need to specify when an actor is hidden (ie after a trick)?
-    For now its coordinates are still registered even if it is no more
-    visible.
-*** implement different classes of motion
-    static, sliding, rolling, falling, walking (agent)
-*** run on a headless cluster
-**** The problem is remote openGl rendering
+** steps for test O1 [1/4]
+*** DONE static visible
+    CLOSED: [2018-03-24 sam. 19:15]
+- 1 actors
+- then up to 3 actors
+*** TODO static occluded
+- implement check run
+- have working occluders
+*** TODO dynamic visible
+- implement the corridors and force
+- implement dynamic check
+*** TODO dynamic occluded
+** TODO generate and validate a little database
+* various bugs [3/5]
+** TODO lighting
+   - bug: increasing illumination in some scenes (when walls)
+   - we want 1 skylight and from 0 to 2 (random) directional lights.
+** TODO packaged mode
+   Fix the Tools/build_package.sh and the code base to run in packaged
+   mode. (standalone binary independent of UE)
+
+** DONE merge masks in a single one for walls
+** DONE Warning: Failed to set the rotation of Object_C_0
+   CLOSED: [2018-03-24 sam. 19:14]
+   bug in base_actor.set_rotation
+** DONE Tools/build_shaders.sh
+   CLOSED: [2018-03-19 lun. 18:02]
+   Compiled shaders are not found when runnong the game in standalone mode.
+* desired features
+** TODO reset the sky sphere rotation between scenes
+   - integrate SkySphere as a Pyhton class
+** TODO implement different classes of motion
+   static, sliding, rolling(?), falling, walking (agent)
+** TODO run on a headless cluster
+*** The problem is remote openGl rendering
 - with DISPLAY=:0 that works remotely but corrupt the host's X server!
 - http://www.virtualgl.org can be a solution
-**** alternatively update to UE-4.14
+*** alternatively update to UE-4.14
 - https://www.unrealengine.com/blog/unreal-engine-4-14-released
 - New: Added "offscreen" video driver to SDL so the engine can now
   create GL context on headless machines not running any display
