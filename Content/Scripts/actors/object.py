@@ -68,14 +68,12 @@ class Object(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
-        # # adjust the location.z to be placed at the bottom of the mesh
-        # # (by default the pivot is on the middle), mesh is 100x100x100
-        # location = FVector(
-        #     params.location.x,
-        #     params.location.y,
-        #     params.location.z  # - 50 * params.scale.z
-        # )
-
+        # adjust the location.z to be placed at the bottom of the mesh
+        # (by default the pivot is on the middle), mesh is 100x100x100
+        print("location.z avant = ", params.location.z)
+        params.location.z += 50 * params.scale.z
+        print("scale.z = ", params.scale.z)
+        print("location.z = ", params.location.z)
         super().get_parameters(
             params.location,
             params.rotation,
@@ -84,7 +82,6 @@ class Object(BaseMesh):
             params.restitution,
             False, True,
             self.shape[params.mesh])
-
         self.material = ue.load_object(Material, params.material)
         self.mass = params.mass
         self.force = params.force

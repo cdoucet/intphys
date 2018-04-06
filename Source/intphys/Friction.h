@@ -20,4 +20,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool SetRestitution(UMaterial* Material, float restitution);
+
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static void ExitEngine(bool force);
 };
