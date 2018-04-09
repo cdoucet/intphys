@@ -70,10 +70,7 @@ class Object(BaseMesh):
     def get_parameters(self, params):
         # adjust the location.z to be placed at the bottom of the mesh
         # (by default the pivot is on the middle), mesh is 100x100x100
-        print("location.z avant = ", params.location.z)
-        params.location.z += 50 * params.scale.z
-        print("scale.z = ", params.scale.z)
-        print("location.z = ", params.location.z)
+        params.location.z += 150 * params.scale.z
         super().get_parameters(
             params.location,
             params.rotation,
