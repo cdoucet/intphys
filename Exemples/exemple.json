@@ -10,7 +10,7 @@
         },
         "test_occluded" :
         {
-            "static" : 0,
+            "static" : 1,
             "dynamic_1" : 0,
             "dynamic_2" : 0
         }

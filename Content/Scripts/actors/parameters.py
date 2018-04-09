@@ -1,8 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import * 
 from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
 from tools.materials import get_random_material
-
 
 @dataclass
 class CameraParams:
@@ -57,5 +56,6 @@ class OccluderParams:
     scale: FVector = FVector(1, 1, 1)
     friction: float = 0.5
     restitution: float = 0.5
-    moves: tuple = (0, 1)  # list not supported
+    # moves: tuple = (0, 1)  # list not supported
+    moves: list = field(default_factory=list)
     speed: float = 1
