@@ -79,7 +79,12 @@ not been tested.
 * The intphys code reads the path to UnrealEngine from the `UE_ROOT`
   environment variable. Add that to your `~/.bashrc`:
 
-        UE_ROOT=/absolute/path/to/UnrealEngine
+        export UE_ROOT=/absolute/path/to/UnrealEngine
+
+* Python needs to know the location of the script files of the intphys
+  project. Add that to your `~/.bashrc`:
+
+		export PYTHONPATH="$PYTHONPATH:/path/to/intphys/repository/Content/Scripts"
 
 * We now need to package the `intphys/intphys.uproject` project
   into a standalone binary. You need a manual intervention in the
