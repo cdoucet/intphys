@@ -9,22 +9,7 @@ from actors.parameters import CameraParams
 
 
 class Camera(BaseActor):
-    """
-    __init__ instantiate the class
-    parameters ->
-    world: UEngine world instance
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    field_of_view: angle of the camera field of view (int). Default value: 90
-    aspect_ratio: I don't know what it is :(
-    projection mode: I redirect you to the Unreal Engine Doc
-
-    Warning !
-    If you don't send either the location and the rotation
-    during the camera instantiation,
-    the __init__ function will change it on its own
-    """
-    def __init__(self, world=None, params=CameraParams()):
+   def __init__(self, world=None, params=CameraParams()):
         if world is not None:
             super().__init__(world.actor_spawn(
                 ue.load_class('/Game/Camera.Camera_C')))

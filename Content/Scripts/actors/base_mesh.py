@@ -28,7 +28,6 @@ Thus, if __init__ is called without any parameters, I know that it is the second
 so I don't spawn the actor again.
 Once the object spawned, all I have to do is to set the parameters in the second instantiation
 (location, rotation,...).
-Et voilà !
 """
 
 """
@@ -38,19 +37,7 @@ It is the base class of every python component build with a mesh.
 
 
 class BaseMesh(BaseActor):
-    """
-    __init__ instantiate the class
-    parameters ->
-    actor: spawned actor (UObject)
-    mesh_str: the path of the mesh/shape of the actor (str). Default value: a sphere
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    material: material of the actor (UObject). Default value: a random one in the relevant directory
-    scale: scale of the actor (FVector). Default value: 1, 1, 1
-    mass: mass of the actor (float). Default value: 1.0
-    force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
-    """
-    def __init__(self, actor=None):
+   def __init__(self, actor=None):
         if actor is not None:
             super().__init__(actor)
         else:

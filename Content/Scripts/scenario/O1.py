@@ -76,7 +76,7 @@ class O1TestStatic(O1Base, base_scenario.BaseTest):
                 location=FVector(400, -500, 0),
                 rotation=FRotator(0, 0, 90),
                 scale=FVector(1, 1, 1),
-                moves=[0, 50],
+                moves=[0, 100, 145],
                 speed=1)
 
         params['magic'] = {

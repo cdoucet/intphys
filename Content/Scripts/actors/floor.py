@@ -26,7 +26,7 @@ from actors.parameters import FloorParams
 # parameters, I know that it is the second instantiation, so I don't
 # spawn the actor again.  Once the object spawned, all I have to do is
 # to set the parameters in the second instantiation (location,
-# rotation,...).  Et voilà !
+# rotation,...).
 
 # Floor is the plane thing which is the ground of the magic tricks.
 # It inherits from BaseMesh.

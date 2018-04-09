@@ -28,30 +28,23 @@ so I don't spawn the actor again.
 Once the object spawned, all I have to do is to set the parameters in the second instantiation
 (location, rotation,...).
 Et voilà !
-"""
 
-"""
+
 Occluder is the vertical plane thing that sometimes fall and sometimes get up by itself.
 Sounds weird, it is.
 It inherits from BaseMesh.
+The occluder spawns verticaly.
+
+ABOUT the moves variable : it is an array which shall contain the frames when
+you want the occluder to initiate a movement (it moves at 1 degree per frame).
+ergo, if you want the occluder to move at the first frame, put 0 in the array.
+The occluder will come down. If you put 50, it won't have time to fully go 
+down : it will rise again at the 50th frame
 """
 
 
 class Occluder(BaseMesh):
-    """
-    __init__ instantiate the class
-    parameters ->
-    world: UEngine world instance
-    mesh_str: the path of the mesh/shape of the actor (str). Default value: a sphere
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    scale: scale of the actor (FVector). Default value: 1, 1, 1
-    material: material of the actor (str). Default value: a random one in the relevant directory
-
-    Warning !
-    The location is precisely from the point at the bottom center of the mesh
-    """
-    def __init__(self, world=None, params=OccluderParams()):
+   def __init__(self, world=None, params=OccluderParams()):
         if world is not None:
             super().__init__(
                 world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))

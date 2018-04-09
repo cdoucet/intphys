@@ -1,4 +1,5 @@
-from dataclasses import * 
+from dataclasses import dataclass
+from dataclasses import field
 from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
 from tools.materials import get_random_material
