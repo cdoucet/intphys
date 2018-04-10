@@ -28,23 +28,13 @@ class SandBox(base_scenario.BaseTest):
                 mass=100,
                 force=FVector(0, 1e8, 0),
                 overlap=True)
-        params[f'object_{2}'] = ObjectParams(
-                mesh='Sphere',
-                material=get_random_material('Object'),
-                location=FVector(1000, 800, 0),
-                rotation=FRotator(0, 0, 0),
-                scale=FVector(1, 1, 1),
-                mass=100,
-                overlap=True)
-        """
-        params['occluder'] = OccluderParams(
+       params['occluder'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=FVector(400, -500, 0),
                 rotation=FRotator(0, 0, 90),
                 scale=FVector(1, 1, 1),
                 moves=[0, 100, 145],
                 speed=1)
-        """
         params['magic'] = {
             'actor': f'object_{1}',
             'tick': 50}        

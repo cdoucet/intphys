@@ -181,6 +181,11 @@ def ParseArgs():
         '-f', '--force', action='store_true',
         help='overwrite <output-dir>, any existing content is erased')
 
+    parser.add_argument(
+        '-d', '--debug', action='store_true',
+        help='''optionnal flag which doesn't kill immediately the program after
+        a crash to let time to the debug to print''')
+
     # parser.add_argument(
     #     '-j', '--njobs', type=int, default=1, metavar='<int>',
     #     help='''number of data generation to run in parallel,
@@ -282,7 +287,7 @@ def _BalanceList(l, n):
 
 
 def _Run(command, log, scenes_file, output_dir, cwd=None,
-         seed=None, resolution=DEFAULT_RESOLUTION):
+         seed=None, resolution=DEFAULT_RESOLUTION, debug=False):
     """Run `command` as a subprocess
 
     The `command` stdout and stderr are forwarded to `log`. The
@@ -334,7 +339,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
                 line = line.decode('utf8')
                 consume(line)
                 # exit the UE subprocess on the first encountered error
-                if 'Error:' in line:
+                if 'Error:' in line and debug is False:
                     job.kill()
             consume('\n')
 
@@ -350,7 +355,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
 
 
 def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
-              resolution=DEFAULT_RESOLUTION, verbose=False):
+              resolution=DEFAULT_RESOLUTION, verbose=False, debug=False):
     """Run the intphys packaged binary as a subprocess
 
     If `njobs` is greater than 1, split the json configuration file
@@ -387,7 +392,7 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
         _Run(intphys_binary + ' -windowed ResX={} ResY={}'.format(res[0], res[1]),
              GetLogger(verbose=verbose),
              scenes_file, output_dir, seed=seed,
-             resolution=resolution, cwd=cwd)
+             resolution=resolution, cwd=cwd, debug=debug)
     else:
         raise NotImplementedError('njobs option not yet implemented')
         # # split the json configuration file into balanced subparts
@@ -526,7 +531,7 @@ def Main():
         RunBinary(
             output_dir, args.scenes_file, njobs=1,  # args.njobs,
             seed=args.seed, resolution=args.resolution,
-            verbose=args.verbose)
+            verbose=args.verbose, debug=args.debug)
 
     if output_dir:
         # check for duplicated scenes and warn if founded
