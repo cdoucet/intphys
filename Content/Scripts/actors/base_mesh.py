@@ -37,7 +37,7 @@ It is the base class of every python component build with a mesh.
 
 
 class BaseMesh(BaseActor):
-   def __init__(self, actor=None):
+    def __init__(self, actor=None):
         if actor is not None:
             super().__init__(actor)
         else:
