@@ -1,0 +1,18 @@
+{
+    "scenario_SandBox" :
+    {
+        "train" : 1,
+        "test_visible" :
+        {
+            "static" : 0,
+            "dynamic_1" : 0,
+            "dynamic_2" : 0
+        },
+        "test_occluded" :
+        {
+            "static" : 0,
+            "dynamic_1" : 0,
+            "dynamic_2" : 0
+        }
+    }
+}

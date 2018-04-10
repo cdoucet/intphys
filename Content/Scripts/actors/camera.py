@@ -1,7 +1,5 @@
 import unreal_engine as ue
-from unreal_engine import FVector, FRotator
 from unreal_engine.classes import CameraComponent
-from unreal_engine.enums import ECameraProjectionMode
 from unreal_engine.classes import GameplayStatics
 
 from actors.base_actor import BaseActor
@@ -9,7 +7,7 @@ from actors.parameters import CameraParams
 
 
 class Camera(BaseActor):
-   def __init__(self, world=None, params=CameraParams()):
+    def __init__(self, world=None, params=CameraParams()):
         if world is not None:
             super().__init__(world.actor_spawn(
                 ue.load_class('/Game/Camera.Camera_C')))

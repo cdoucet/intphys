@@ -44,7 +44,7 @@ down : it will rise again at the 50th frame
 
 
 class Occluder(BaseMesh):
-   def __init__(self, world=None, params=OccluderParams()):
+    def __init__(self, world=None, params=OccluderParams()):
         if world is not None:
             super().__init__(
                 world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))

@@ -29,7 +29,6 @@ import subprocess
 import sys
 import threading
 
-
 # absolute path to the directory containing this script
 INTPHYS_ROOT = os.path.dirname(os.path.abspath(__file__))
 

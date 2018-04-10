@@ -101,6 +101,7 @@ class Object(BaseMesh):
 
     def set_force(self, force):
         self.force = force
+        self.get_mesh().add_force(self.force)
 
     """
     Apply force to the mesh

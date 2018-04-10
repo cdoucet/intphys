@@ -1,12 +1,14 @@
 from scenario import O1
-
+from scenario import sandbox
 
 train_classes = {
-    'O1': O1.O1Train}
+    'O1': O1.O1Train,
+    'SandBox': sandbox.SandBox}
 
 
 test_classes = {
-    'O1': O1.O1TestStatic}
+    'O1': O1.O1TestStatic,
+    'SandBox': sandbox.SandBox}
 
 
 def get_train_scenario(name):

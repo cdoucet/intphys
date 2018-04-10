@@ -5,7 +5,7 @@ import os
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-from unreal_engine.classes import KismetSystemLibrary, GameplayStatics
+from unreal_engine.classes import KismetSystemLibrary, GameplayStatics, Friction
 
 
 def as_dict(value):
@@ -34,7 +34,8 @@ def exit_ue(world, message=None):
         ue.log_error(message)
 
     # KismetSystemLibrary.QuitGame(world)
-    world.quit_game()
+    #world.quit_game()
+    Friction.ExitEngine()
 
 
 def set_game_paused(world, paused):
