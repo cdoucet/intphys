@@ -77,7 +77,8 @@ class Object(BaseMesh):
             params.scale,
             params.friction,
             params.restitution,
-            False, True,
+            params.overlap,
+            params.warning,
             self.shape[params.mesh])
         self.material = ue.load_object(Material, params.material)
         self.mass = params.mass

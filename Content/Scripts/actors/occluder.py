@@ -38,7 +38,7 @@ The occluder spawns verticaly.
 ABOUT the moves variable : it is an array which shall contain the frames when
 you want the occluder to initiate a movement (it moves at 1 degree per frame).
 ergo, if you want the occluder to move at the first frame, put 0 in the array.
-The occluder will come down. If you put 50, it won't have time to fully go 
+The occluder will come down. If you put 50, it won't have time to fully go
 down : it will rise again at the 50th frame
 """
 
@@ -60,7 +60,8 @@ class Occluder(BaseMesh):
             params.scale,
             params.friction,
             params.restitution,
-            False, True,
+            params.overlap,
+            params.warning,
             '/Game/Meshes/OccluderWall')
         self.material = ue.load_object(Material, params.material)
         self.speed = params.speed

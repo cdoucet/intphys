@@ -22,10 +22,20 @@ class SandBox(base_scenario.BaseTest):
         params[f'object_{1}'] = ObjectParams(
                 mesh='Sphere',
                 material=get_random_material('Object'),
-                location=FVector(1000, 500, 0),
+                location=FVector(1000, 0, 0),
                 rotation=FRotator(0, 0, 0),
                 scale=FVector(1, 1, 1),
-                mass=100)
+                mass=100,
+                force=FVector(0, 1e8, 0),
+                overlap=True)
+        params[f'object_{2}'] = ObjectParams(
+                mesh='Sphere',
+                material=get_random_material('Object'),
+                location=FVector(1000, 800, 0),
+                rotation=FRotator(0, 0, 0),
+                scale=FVector(1, 1, 1),
+                mass=100,
+                overlap=True)
         """
         params['occluder'] = OccluderParams(
                 material=get_random_material('Wall'),
@@ -42,7 +52,10 @@ class SandBox(base_scenario.BaseTest):
 
     def setup_magic_trick(self, actor, run):
         print("begin magic trick")
-        actor.set_force(FVector(1e8, 0, 0))
-
+        #actor.set_force(FVector(1e8, 0, 0))
+        
     def apply_magic_trick(self, actor, run):
         print("end magic trick")
+
+    def get_nruns(self):
+        return 1

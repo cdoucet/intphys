@@ -34,6 +34,8 @@ class WallsParams:
     length: float = 2000
     depth: float = 1000
     height: float = 1
+    overlap: bool = False
+    warning: bool = False
 
 
 @dataclass
@@ -47,6 +49,8 @@ class ObjectParams:
     mass: float = 1
     friction: float = 0.5
     restitution: float = 0.5
+    overlap: bool = False
+    warning: bool = False
 
 
 @dataclass
@@ -60,3 +64,6 @@ class OccluderParams:
     # moves: tuple = (0, 1)  # list not supported
     moves: list = field(default_factory=list)
     speed: float = 1
+    overlap: bool = False
+    warning: bool = False
+
