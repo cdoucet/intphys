@@ -35,29 +35,18 @@ from tools.utils import as_dict
 
 class Object(BaseMesh):
     """
-    shape is a dictionnary with the path of every shape (mesh) available for the Object actor
+    shape is a dictionnary with the path of every
+    shape (mesh) available for the Object actor
     """
     shape = {
-        'Sphere': '/Engine/EngineMeshes/Sphere.Sphere',
-        'Cube': '/Engine/EngineMeshes/Cube.Cube',
+        'Sphere': '/Game/Meshes/Sphere.Sphere',
+        'Cube': '/Game/Meshes/Cube.Cube',
         # Cone seems to be gone somehow
         # 'Cone': '/Engine/EngineMeshes/Cone.Cone',
         # And Cylinder seems way too small
         # 'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
     }
 
-    """
-    __init__ instantiate the class
-    parameters ->
-    world: UEngine world instance
-    mesh_str: the path of the mesh/shape of the actor (str). Default value: a sphere
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    material: material of the actor (UObject). Default value: a random one in the relevant directory
-    scale: scale of the actor (FVector). Default value: 1, 1, 1
-    mass: mass of the actor (float). Default value: 1.0
-    force: force applied to the actor (FVector) Default value: 0.0, 0.0, 0.0
-    """
     def __init__(self, world=None, params=ObjectParams()):
         if world is not None:
             super().__init__(
@@ -70,7 +59,7 @@ class Object(BaseMesh):
     def get_parameters(self, params):
         # adjust the location.z to be placed at the bottom of the mesh
         # (by default the pivot is on the middle), mesh is 100x100x100
-        params.location.z += 150 * params.scale.z
+        params.location.z += 50 * params.scale.z
         super().get_parameters(
             params.location,
             params.rotation,
@@ -89,6 +78,8 @@ class Object(BaseMesh):
         self.set_mass(self.mass)
         self.set_force(self.force)
         self.get_mesh().set_simulate_physics()
+        print(self.shape)
+        print(self.location)
 
     """
     set the mass of the mesh
@@ -100,9 +91,14 @@ class Object(BaseMesh):
             BoneName='None',
             InMassScale=self.mass / self.mesh.GetMassScale())
 
-    def set_force(self, force):
-        self.force = force
-        self.get_mesh().add_force(self.force)
+    """
+    If set to True, persistent will make the force apply to the object at
+    every tick
+    """
+    def set_force(self, force, persistent=False):
+        if (persistent):
+            self.force = force
+        self.get_mesh().add_force(force)
 
     """
     Apply force to the mesh

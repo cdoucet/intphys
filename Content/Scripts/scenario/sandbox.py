@@ -20,32 +20,43 @@ class SandBox(base_scenario.BaseTest):
     def generate_parameters(self):
         params = super().generate_parameters()
         params[f'object_{1}'] = ObjectParams(
-                mesh='Sphere',
+                mesh='Cube',
                 material=get_random_material('Object'),
-                location=FVector(1000, 0, 0),
+                location=FVector(500, 0, 0),
                 rotation=FRotator(0, 0, 0),
                 scale=FVector(1, 1, 1),
                 mass=100,
-                force=FVector(0, 1e8, 0),
-                overlap=True)
-       params['occluder'] = OccluderParams(
+                force=FVector(0, 0, 0),
+                overlap=False)
+        params[f'object_{2}'] = ObjectParams(
+                mesh='Sphere',
+                material=get_random_material('Object'),
+                location=FVector(500, 500, 0),
+                rotation=FRotator(0, 0, 0),
+                scale=FVector(1, 1, 1),
+                mass=100,
+                force=FVector(0, 0, 0),
+                overlap=False) 
+        """
+        params['occluder'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=FVector(400, -500, 0),
                 rotation=FRotator(0, 0, 90),
                 scale=FVector(1, 1, 1),
                 moves=[0, 100, 145],
                 speed=1)
+        """
         params['magic'] = {
             'actor': f'object_{1}',
-            'tick': 50}        
+            'tick': 50} 
         return params
 
     def setup_magic_trick(self, actor, run):
-        print("begin magic trick")
-        #actor.set_force(FVector(1e8, 0, 0))
-        
+        pass 
+
     def apply_magic_trick(self, actor, run):
-        print("end magic trick")
+        print("do magic trick")
+        #actor.set_hidden(True)
 
     def get_nruns(self):
         return 1
