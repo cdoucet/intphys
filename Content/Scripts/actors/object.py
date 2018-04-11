@@ -42,9 +42,9 @@ class Object(BaseMesh):
         'Sphere': '/Game/Meshes/Sphere.Sphere',
         'Cube': '/Game/Meshes/Cube.Cube',
         # Cone seems to be gone somehow
-        # 'Cone': '/Engine/EngineMeshes/Cone.Cone',
+        'Cone': '/Game/Meshes/Cone.Cone',
         # And Cylinder seems way too small
-        # 'Cylinder': '/Engine/EngineMeshes/Cylinder.Cylinder'
+        'Cylinder': '/Game/Meshes/Cylinder.Cylinder'
     }
 
     def __init__(self, world=None, params=ObjectParams()):
