@@ -20,7 +20,7 @@ class SandBox(base_scenario.BaseTest):
     def generate_parameters(self):
         params = super().generate_parameters()
         params[f'object_{1}'] = ObjectParams(
-                mesh='Cube',
+                mesh='Cylinder',
                 material=get_random_material('Object'),
                 location=FVector(500, 0, 0),
                 rotation=FRotator(0, 0, 0),
@@ -29,7 +29,7 @@ class SandBox(base_scenario.BaseTest):
                 force=FVector(0, 0, 0),
                 overlap=False)
         params[f'object_{2}'] = ObjectParams(
-                mesh='Sphere',
+                mesh='Cylinder',
                 material=get_random_material('Object'),
                 location=FVector(500, 500, 0),
                 rotation=FRotator(0, 0, 0),

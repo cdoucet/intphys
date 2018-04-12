@@ -41,9 +41,7 @@ class Object(BaseMesh):
     shape = {
         'Sphere': '/Game/Meshes/Sphere.Sphere',
         'Cube': '/Game/Meshes/Cube.Cube',
-        # Cone seems to be gone somehow
         'Cone': '/Game/Meshes/Cone.Cone',
-        # And Cylinder seems way too small
         'Cylinder': '/Game/Meshes/Cylinder.Cylinder'
     }
 

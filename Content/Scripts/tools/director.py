@@ -53,7 +53,7 @@ class Director:
         self.size = size
         self.output_dir = output_dir
         self.tick_pause_at_start = tick_pause_at_start
-
+        self.last_location = None
         ue.log(
             'scheduling {nscenes} scenes, ({ntest} for test and '
             '{ntrain} for train), total of {nruns} runs'.format(
@@ -156,7 +156,11 @@ class Director:
             ue.log('scene failed, retry it')
             self.scene.reset()
             return True
-
+        if self.scene.scenario.is_test():
+            if (self.last_location is not None and self.last_location != self.scene.actors[self.scene.params['magic']['actor']].location):
+                print("Error : last location of magic actors in test scenes don't match")
+            self.last_location = self.scene.actors[self.scene.params['magic']['actor']].location
+            print("last location is ok")
         # the run was successful, see if we need to save capture and
         # prepare the next run
         if not self.saver.is_dry_mode and not self.scene.is_check_run():
