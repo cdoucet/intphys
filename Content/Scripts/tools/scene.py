@@ -3,6 +3,7 @@ from actors.light import Light
 from actors.object import Object
 from actors.occluder import Occluder
 from actors.walls import Walls
+from actors.skysphere import SkySphere
 
 
 def get_actor_class(name):
@@ -11,7 +12,8 @@ def get_actor_class(name):
         'light': Light,
         'object': Object,
         'occluder': Occluder,
-        'walls': Walls}
+        'walls': Walls,
+        'skysphere': SkySphere}
 
     for k, v in classes.items():
         if name.lower().startswith(k):

@@ -76,8 +76,6 @@ class Object(BaseMesh):
         self.set_mass(self.mass)
         self.set_force(self.force)
         self.get_mesh().set_simulate_physics()
-        print(self.shape)
-        print(self.location)
 
     """
     set the mass of the mesh

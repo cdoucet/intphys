@@ -48,7 +48,7 @@ class Light(BaseActor):
         super().set_parameters()
 
         # deactivate the physics (we don't want the light to fall)
-        self.get_mesh().set_simulate_physics(False)
+        # self.get_mesh().set_simulate_physics(False)
 
     def begin_play(self):
         self.set_actor(self.uobject.get_owner())

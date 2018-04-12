@@ -158,9 +158,8 @@ class Director:
             return True
         if self.scene.scenario.is_test():
             if (self.last_location is not None and self.last_location != self.scene.actors[self.scene.params['magic']['actor']].location):
-                print("Error : last location of magic actors in test scenes don't match")
+                print("Error : last location of magic actors in test scenes doesn't match")
             self.last_location = self.scene.actors[self.scene.params['magic']['actor']].location
-            print("last location is ok")
         # the run was successful, see if we need to save capture and
         # prepare the next run
         if not self.saver.is_dry_mode and not self.scene.is_check_run():

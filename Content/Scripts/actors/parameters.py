@@ -67,3 +67,6 @@ class OccluderParams:
     overlap: bool = False
     warning: bool = False
 
+@dataclass
+class SkySphereParams:
+    pass

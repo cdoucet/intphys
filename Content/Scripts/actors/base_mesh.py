@@ -62,6 +62,7 @@ class BaseMesh(BaseActor):
     def set_parameters(self):
         super().set_parameters()
         self.set_mesh()
+        self.set_scale(self.scale)
         self.set_location(self.location)
         self.set_rotation(self.rotation)
         self.set_friction(self.friction)
@@ -70,7 +71,7 @@ class BaseMesh(BaseActor):
             self.mesh.call('SetCollisionProfileName BlockAll')
 
     """
-    set_mesh sets the mesh, enable collision, set the material and the scale
+    set_mesh sets the mesh, enable collision, set the material 
     """
     def set_mesh(self):
         self.mesh = self.get_actor().get_actor_component_by_type(
@@ -78,7 +79,6 @@ class BaseMesh(BaseActor):
         # setup mesh and material
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
         self.mesh.set_material(0, self.material)
-        self.actor.set_actor_scale(self.scale)
 
     def get_mesh(self):
         return self.get_actor().get_actor_component_by_type(

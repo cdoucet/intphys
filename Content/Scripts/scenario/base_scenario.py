@@ -3,7 +3,7 @@ import random
 
 from unreal_engine import FVector, FRotator
 
-from actors.parameters import FloorParams, LightParams, WallsParams
+from actors.parameters import FloorParams, LightParams, WallsParams, SkySphereParams
 from tools.materials import get_random_material
 
 
@@ -63,14 +63,14 @@ class Base(object):
 
         """
         params = {}
-
         params['floor'] = FloorParams(
             material=get_random_material('Floor'))
-
         params['light'] = LightParams(
-            type='SkyLight',
+            type='Directional',
             location=FVector(0, 0, 1000),
             rotation=FRotator(0, 0, 0))
+
+        params['skysphere'] = SkySphereParams()
 
         # the probability to have background walls
         prob_walls = 1
