@@ -66,7 +66,7 @@ class Base(object):
         params['floor'] = FloorParams(
             material=get_random_material('Floor'))
         params['light'] = LightParams(
-            type='Directional',
+            type='SkyLight',
             location=FVector(0, 0, 1000),
             rotation=FRotator(0, 0, 0))
 
@@ -80,7 +80,6 @@ class Base(object):
                 height=random.uniform(1, 10),
                 length=random.uniform(2000, 5000),
                 depth=random.uniform(1500, 5000))
-
         return params
 
 

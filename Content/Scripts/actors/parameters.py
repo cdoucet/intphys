@@ -69,4 +69,4 @@ class OccluderParams:
 
 @dataclass
 class SkySphereParams:
-    pass
+    material: str = '/Game/Meshes/SkySphere/M_Sky_Panning_Clouds2'

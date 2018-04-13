@@ -1,7 +1,7 @@
 {
     "scenario_O1" :
     {
-        "train" : 0,
+        "train" : 2,
         "test_visible" :
         {
             "static" : 1,

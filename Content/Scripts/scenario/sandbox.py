@@ -20,23 +20,14 @@ class SandBox(base_scenario.BaseTest):
     def generate_parameters(self):
         params = super().generate_parameters()
         params[f'object_{1}'] = ObjectParams(
-                mesh='Cylinder',
+                mesh='Cube',
                 material=get_random_material('Object'),
                 location=FVector(500, 0, 0),
-                rotation=FRotator(0, 0, 0),
+                rotation=FRotator(0, 0, 45),
                 scale=FVector(1, 1, 1),
                 mass=100,
                 force=FVector(0, 0, 0),
                 overlap=False)
-        params[f'object_{2}'] = ObjectParams(
-                mesh='Cylinder',
-                material=get_random_material('Object'),
-                location=FVector(500, 500, 0),
-                rotation=FRotator(0, 0, 0),
-                scale=FVector(1, 1, 1),
-                mass=100,
-                force=FVector(0, 0, 0),
-                overlap=False) 
         """
         params['occluder'] = OccluderParams(
                 material=get_random_material('Wall'),
