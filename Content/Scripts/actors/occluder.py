@@ -66,10 +66,11 @@ class Occluder(BaseMesh):
         self.material = ue.load_object(Material, params.material)
         self.speed = params.speed
         self.moves = params.moves
-
         self.moving = False
-        self.up = True
-        self.location.y - (200 * params.scale.y)
+        self.up = params.start_up
+        self.location.y -= (200 * params.scale.y)
+        if (self.up is False):
+            self.rotation.roll = 90
         self.count = -1
 
     def set_parameters(self):

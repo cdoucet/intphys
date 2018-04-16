@@ -15,6 +15,8 @@ public:
     void SetOriginActor(AActor* Actor);
 
     bool Capture(const TArray<AActor*>& IgnoredActors);
+	
+	void CaptureMasks(const TArray<AActor*>& IgnoredActors);
 
     bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
 
@@ -22,7 +24,7 @@ public:
 
     bool IsActorInFrame(const AActor* Actor, const uint FrameIndex);
 
-    bool IsActorInLastFrame(const AActor* Actor);
+    bool IsActorInLastFrame(const AActor* Actor, const TArray<AActor*>& IgnoredActors);
 
 private:
     // Types of the captured images (they are all saved after a

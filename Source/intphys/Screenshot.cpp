@@ -142,6 +142,55 @@ bool FScreenshot::Capture(const TArray<AActor*>& IgnoredActors)
     return bDone1 and bDone2;
 }
 
+void FScreenshot::CaptureMasks(const TArray<AActor*>& IgnoredActors)
+{
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+    for (auto& Actor : IgnoredActors)
+    {
+        CollisionQueryParams.AddIgnoredActor(Actor);
+    }
+
+    // Intitialize world and scene view
+    m_World = m_OriginActor->GetWorld();
+    m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
+
+    if (m_World == NULL || m_SceneView == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: SceneView or World are null"));
+    }
+
+    // get the origin location and rotation for distance computation
+    FVector OriginLoc = m_OriginActor->GetActorLocation();
+    FVector OriginRot = FRotationMatrix(m_OriginActor->GetActorRotation()).GetScaledAxis(EAxis::X);
+    OriginRot.Normalize();
+
+    // for each pixel of the view, cast a ray in the scene and get the
+    // resulting hit actor and hit distance
+    FHitResult HitResult;
+    for (int y = 0; y < m_Size.Y; ++y)
+    {
+        for (int x = 0; x < m_Size.X; ++x)
+		{
+            FVector RayOrigin, RayDirection;
+            m_SceneView->DeprojectFVector2D(FVector2D(x, y), RayOrigin, RayDirection);
+
+            bool bHit = m_World->LineTraceSingleByChannel(
+                HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
+                ECollisionChannel::ECC_Visibility, CollisionQueryParams);
+
+            if(bHit)
+            {
+                uint PixelIndex = y * m_Size.X + x;
+                // compute mask
+                FString ActorName = HitResult.GetActor()->GetName();
+                int8 ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
+                m_ActorsMap.Add(ActorName, ActorIndex);
+                m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
+            }
+        }
+    }
+}
+
 
 bool FScreenshot::Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap)
 {
@@ -178,10 +227,52 @@ bool FScreenshot::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
     return m_Masks[FrameIndex].Contains(ActorId);
 }
 
-
-bool FScreenshot::IsActorInLastFrame(const AActor* Actor)
+bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>& IgnoredActors)
 {
-    return IsActorInFrame(Actor, m_ImageIndex-1);
+	FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+    for (auto& Actor : IgnoredActors)
+    {
+        CollisionQueryParams.AddIgnoredActor(Actor);
+    }
+
+    // Intitialize world and scene view
+    m_World = m_OriginActor->GetWorld();
+    m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
+
+    if (m_World == NULL || m_SceneView == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: SceneView or World are null"));
+    }
+
+    // get the origin location and rotation for distance computation
+    FVector OriginLoc = m_OriginActor->GetActorLocation();
+    FVector OriginRot = FRotationMatrix(m_OriginActor->GetActorRotation()).GetScaledAxis(EAxis::X);
+    OriginRot.Normalize();
+
+    // for each pixel of the view, cast a ray in the scene and get the
+    // resulting hit actor and hit distance
+    FHitResult HitResult;
+    for (int y = 0; y < m_Size.Y; ++y)
+    {
+        for (int x = 0; x < m_Size.X; ++x)
+		{
+            FVector RayOrigin, RayDirection;
+            m_SceneView->DeprojectFVector2D(FVector2D(x, y), RayOrigin, RayDirection);
+
+            bool bHit = m_World->LineTraceSingleByChannel(
+                HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
+                ECollisionChannel::ECC_Visibility, CollisionQueryParams);
+
+            if(bHit)
+            {
+                uint PixelIndex = y * m_Size.X + x;
+                // compute mask
+                if (HitResult.GetActor()->GetName().Compare(Target->GetName()) == 0)
+					return (true);
+           }
+        }
+    }
+    return (false);
 }
 
 

@@ -2,7 +2,7 @@ import os
 
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
-
+from unreal_engine.classes import ScreenshotManager
 from tools.saver import Saver
 from tools.scene import Scene
 from tools.tick import Tick
@@ -107,9 +107,11 @@ class Director:
 
         # during a run, apply magic trick (if any) and take screenshot
         if tick <= self.size[2] + self.tick_pause_at_start:
-            self.scene.run_magic(tick)
-            self.capture()
-
+            if (self.scene.is_check_run() is False):
+                self.scene.run_magic(tick)
+                self.capture()
+        if (self.scene.is_check_run()):
+            self.scene.scenario.run_tick_check(self.scene.get_magic_actor())
         # end of a run, terminate it
         if tick == self.size[2] + self.tick_pause_at_start:
             is_next_run = self.teardown()
@@ -132,14 +134,13 @@ class Director:
         ue.log(description)
 
         # setup the screenshots
-        if self.scene.is_check_run():
-            pass
-        else:
-            self.saver.reset()
+        # if self.scene.is_check_run():
+        #    pass
+        # else:
+        self.saver.reset()
 
     def capture(self):
         if self.scene.is_check_run():
-            # Screenshot.CaptureMasks()
             pass
         else:
             self.saver.capture(self.scene)
@@ -154,6 +155,7 @@ class Director:
         # random parameters
         if not self.scene.is_valid():
             ue.log('scene failed, retry it')
+            self.scene.current_run -= 1
             self.scene.reset()
             return True
         if self.scene.scenario.is_test():
@@ -176,6 +178,7 @@ class Director:
             return True
         else:
             # destroy all the actors from the previous scene
+            self.last_location = None
             self.scene.clear()
             self.scene_index += 1
             try:

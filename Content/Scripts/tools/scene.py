@@ -4,7 +4,7 @@ from actors.object import Object
 from actors.occluder import Occluder
 from actors.walls import Walls
 from actors.skysphere import SkySphere
-
+from unreal_engine.classes import ScreenshotManager
 
 def get_actor_class(name):
     classes = {
@@ -115,14 +115,20 @@ class Scene(object):
 
     def is_valid(self):
         """Return True when the scene is in valid state
-
         A scene can be invalid if some forbidden hit occured (e.g. an
         occluder overlapping the camera), or , for test scenes, if a
         check run failed.
-
         """
-        # TODO
-        return True
+        if (self.is_check_run() is True):
+            res = self.scenario.run_check()
+            if (type(res) is bool):
+                return res
+            elif (type(res) is int):
+                if (res >= 0 and res <= 100):
+                    self.params['magic']['tick'] = res
+                    return True
+                return False
+        return self.scenario.is_valid
 
     def is_check_run(self):
         """Return True if the current run is a check, False otherwise"""
@@ -154,7 +160,12 @@ class Scene(object):
 
     def reset(self):
         """Set all the actors to their initial position/acceleration"""
+        self.scenario.is_valid = True
+        self.scenario.is_actor_in_frame[:] = []
         for k, v in self.get_moving_actors().items():
-            # TODO force
+            if (type(v) is Occluder):
+                v.count = -1
+            elif (type(v) is Object):
+                v.set_force(self.params[k].force, False)
             v.set_location(self.params[k].location)
             v.set_rotation(self.params[k].rotation)
