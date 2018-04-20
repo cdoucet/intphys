@@ -18,13 +18,13 @@ class BaseActor():
 
     """
     def __init__(self, actor=None):
-        self.actor = actor
+        if (actor is not None):
+            self.actor = actor
 
     def actor_destroy(self):
-        if self.actor is not None:
-            self.actor.actor_destroy()
+        if (self.get_actor() is not None):
+            self.get_actor().actor_destroy()
             self.actor = None
-        self.actor = None
 
     def get_parameters(self, location, rotation, overlap, warning):
         self.location = location
@@ -40,7 +40,7 @@ class BaseActor():
         # manage OnActorBeginOverlap events
         if self.warning and self.overlap:
             self.actor.bind_event('OnActorBeginOverlap', self.on_actor_overlap)
-        if self.warning and not self.overlap:
+        elif self.warning and not self.overlap:
             self.actor.bind_event('OnActorHit', self.on_actor_hit)
 
     def get_actor(self):
@@ -67,12 +67,13 @@ class BaseActor():
             r0, r1 = rotation, self.actor.get_actor_rotation()
             rd = [abs(d) for d in (
                 r0.roll - r1.roll, r0.yaw - r1.yaw, r0.pitch - r1.pitch)]
+            """
             if max(rd) > 1e-3:
                 ue.log_warning(
                     f'Failed to set the rotation of {self.actor.get_name()}, '
                     f'asked {str(r0)} but have {str(r1)}')
                 return False
-
+            """
         self.rotation = self.actor.get_actor_rotation()
         return True
 

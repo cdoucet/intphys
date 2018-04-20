@@ -22,8 +22,7 @@ def as_dict(value):
         raise ValueError(f'expect FVector or FRotator, having {type(value)}')
 
 
-# TODO Does not exit the game immediately, find better
-def exit_ue(world, message=None):
+def exit_ue(message=None):
     """Quit the game, optionally logging an error message
 
     `world` is the world reference from the running game.
@@ -31,7 +30,7 @@ def exit_ue(world, message=None):
 
     """
     if message:
-        ue.log_error(message)
+        ue.log(message)
 
     # KismetSystemLibrary.QuitGame(world)
     #world.quit_game()

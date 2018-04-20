@@ -66,7 +66,7 @@ class OccluderParams:
     speed: float = 1
     overlap: bool = False
     warning: bool = False
-
+    start_up: bool = False
 @dataclass
 class SkySphereParams:
     material: str = '/Game/Meshes/SkySphere/M_Sky_Panning_Clouds2'

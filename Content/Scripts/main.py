@@ -48,10 +48,9 @@ class Main:
 
         # setup the director with the list of scenes to generate, 100
         # images per video at the game resolution
-        scenes = parse_scenes_json(world, scenes_json)
         size = (resolution[0], resolution[1], 100)
-        self.director = Director(world, scenes, size, output_dir)
+        self.director = Director(world, scenes_json, size, output_dir)
 
     def tick(self, dt):
-        # delegate ticking to the director
+        # let the director handle the tick
         self.director.tick(dt)

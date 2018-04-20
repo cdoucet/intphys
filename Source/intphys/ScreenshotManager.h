@@ -32,6 +32,9 @@ public:
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool Capture(const TArray<AActor*>& IgnoredActors);
 
+	UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static void CaptureMasks(const TArray<AActor*>& IgnoredActors);
+
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
 
@@ -45,5 +48,5 @@ public:
     static bool IsActorInFrame(AActor* Actor, int FrameIndex);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static bool IsActorInLastFrame(AActor* Actor);
+    static bool IsActorInLastFrame(AActor* Actor, const TArray<AActor*>& IgnoredActors);
 };

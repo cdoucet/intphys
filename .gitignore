@@ -70,3 +70,7 @@ data*/*
 !Exemples/*.json
 Exemples/data
 Exemples/html
+
+# Temporary files
+# Vim
+*.swp

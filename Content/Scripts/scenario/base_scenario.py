@@ -1,4 +1,3 @@
-import abc
 import random
 
 from unreal_engine import FVector, FRotator
@@ -8,42 +7,9 @@ from tools.materials import get_random_material
 
 
 class Base(object):
-    __metaclass__ = abc.ABCMeta
-
-    @abc.abstractproperty
-    def name(self):
-        """The name of the scenario (ie 'O1' or 'U2')"""
-        pass
-
-    @abc.abstractmethod
-    def get_description(self):
-        """A brief description of the scenario (ie 'O1 test visible static')"""
-        pass
-
-    @abc.abstractmethod
-    def get_nruns(self):
-        """The total number of runs needed for the scenario"""
-        pass
-
-    @abc.abstractmethod
-    def is_train(self):
-        """Return True if this is a train scenario, False otherwise"""
-        pass
-
     def is_test(self):
         """Return True if this is a test scenario, False otherwise"""
         return not self.is_train()
-
-    @abc.abstractmethod
-    def is_possible(self, run_index):
-        """Return True if the current scene is physically plausible
-
-        Train scenes are always possible. Test scenes have runs (1, 2)
-        impossible and runs (3, 4) possible, ignoring the check runs
-        if any.
-
-        """
-        pass
 
     def get_status(self, run_index):
         """Return a dict describing the scenario"""
@@ -73,7 +39,7 @@ class Base(object):
         params['skysphere'] = SkySphereParams()
 
         # the probability to have background walls
-        prob_walls = 1
+        prob_walls = 0.5
         if random.uniform(0, 1) <= prob_walls:
             params['walls'] = WallsParams(
                 material=get_random_material('Wall'),
@@ -122,16 +88,3 @@ class BaseTest(Base):
         # checks). With this definition, a check scene is always
         # impossible.
         return True if run_index - self.get_nchecks() in (3, 4) else False
-
-    @abc.abstractmethod
-    def get_nchecks(self):
-        """Return the total number of check runs needed by this scenario"""
-        pass
-
-    @abc.abstractmethod
-    def setup_magic_trick(self, actor, run):
-        pass
-
-    @abc.abstractmethod
-    def apply_magic_trick(self, actor, run):
-        pass

@@ -18,10 +18,7 @@ class SkySphere(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
-        location = FVector(
-            0,  # 0 - ((400 * params.scale.x) / 2),
-            0 - (400 * params.scale.y / 2),
-            0)
+        location = FVector(0, 0, 0)
 
         super().get_parameters(
             location, FRotator(0, 0, 0), params.scale,

@@ -2,6 +2,7 @@
 
 import unreal_engine as ue
 from unreal_engine.classes import Material
+from unreal_engine import FVector
 
 from actors.base_mesh import BaseMesh
 from actors.parameters import ObjectParams
@@ -57,9 +58,12 @@ class Object(BaseMesh):
     def get_parameters(self, params):
         # adjust the location.z to be placed at the bottom of the mesh
         # (by default the pivot is on the middle), mesh is 100x100x100
-        params.location.z += 50 * params.scale.z
+        location = FVector(
+                params.location.x,
+                params.location.y,
+                params.location.z + (50 * params.scale.z))
         super().get_parameters(
-            params.location,
+            location,
             params.rotation,
             params.scale,
             params.friction,

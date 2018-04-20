@@ -63,8 +63,6 @@ class BaseMesh(BaseActor):
         super().set_parameters()
         self.set_mesh()
         self.set_scale(self.scale)
-        self.set_location(self.location)
-        self.set_rotation(self.rotation)
         self.set_friction(self.friction)
         self.set_restitution(self.restitution)
         if self.overlap is False:
