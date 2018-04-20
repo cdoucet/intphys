@@ -52,7 +52,6 @@ class ObjectParams:
     overlap: bool = False
     warning: bool = False
 
-
 @dataclass
 class OccluderParams:
     material: str = get_random_material('Wall')

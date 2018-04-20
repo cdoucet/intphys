@@ -31,11 +31,11 @@ class BaseActor():
         self.rotation = rotation
         self.overlap = overlap
         self.warning = warning
+        self.hidden = False
 
     def set_parameters(self):
         self.set_location(self.location)
         self.set_rotation(self.rotation)
-        self.hidden = False
 
         # manage OnActorBeginOverlap events
         if self.warning and self.overlap:

@@ -48,9 +48,9 @@ class RunCheck(Run):
             return
         # TODO add the ignored actors array if needed
         actor = self.actors[self.actors_params['magic']['actor']].actor
-        res = ScreenshotManager.IsActorInLastFrame(actor, [])
+        res = ScreenshotManager.IsActorInFrame(actor, tick_index)
         if (res is True):
-            print("ta race")
+            print("ta race --> {}".format(tick_index))
         self.visible_frame.append(res)
 
     def del_actors(self):
@@ -68,18 +68,4 @@ class RunPossible(Run):
 
 
 class RunImpossible(Run):
-    def setup_magic_trick(self, actor, run):
-        if run in (2, 4):
-            actor.set_hidden(False)
-
-    def apply_magic_trick(self):
-        actor = self.actors[self.actors_params['magic']['actor']]
-        actor.set_hidden(not actor.hidden)
-        if (self.is_occluded):
-            self.is_valid = not ScreenshotManager.IsActorInLastFrame(actor.actor, [])
-        self.is_magic_actor_hidden = actor.hidden
-
-    def tick(self, tick_index):
-        super().tick(tick_index)
-        if tick_index == self.actors_params['magic']['tick']:
-            self.apply_magic_trick()
+    pass

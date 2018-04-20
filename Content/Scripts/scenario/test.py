@@ -15,9 +15,9 @@ class Test(Scene):
         for run in range(self.get_nchecks()):
             self.runs.append(RunCheck(self.world, self.params))
         for run in range(2):
-            self.runs.append(RunPossible(self.world, self.params))
-        for run in range(2):
             self.runs.append(RunImpossible(self.world, self.params))
+        for run in range(2):
+            self.runs.append(RunPossible(self.world, self.params))
 
 
     def get_nchecks(self):
@@ -75,7 +75,8 @@ class Test(Scene):
     def set_magic_tick(self, magic_tick):
         self.params['magic']['tick'] = magic_tick
         for run in self.runs:
-            run.params['magic']['tick'] = magic_tick
+            if (type(run) is RunImpossible):
+                run.actors_params['magic']['tick'] = magic_tick
 
     def stop_run(self):
         if (type(self.runs[self.run]) is RunCheck):
@@ -84,12 +85,10 @@ class Test(Scene):
             self.runs[self.run].del_actors()
         super().stop_run()
 
-    def apply_magic_trick(self, actor, run):
-        if run <= 2:
-            actor.set_hidden(not actor.hidden)
-            if (self.is_occluded):
-                self.is_valid = not ScreenshotManager.IsActorInLastFrame(actor.actor, [])
-            self.is_magic_actor_hidden = actor.hidden
+    def tick(self, tick_index):
+        super().tick(tick_index)
+        if tick_index % 100 == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
+            self.apply_magic_trick()
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False

@@ -1,18 +1,46 @@
 import random
 
 from unreal_engine import FVector, FRotator
-
-from scenario import base_scenario
+from scenario.scene import Scene
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
+from scenario.run import RunImpossible
 
+class SandBoxBase:
+    def __init__(self, world, saver=None, is_occluded=None, movement=None):
+        super().__init__(world, saver)
+        self.generate_parameters()
+        for run in range(1):
+            self.runs.append(RunImpossible(self.world, self.params))
 
-class SandBox(base_scenario.BaseTest):
     @property
     def name(self):
         return 'SandBox'
 
-    is_magic_actor_hidden = False
+class SandBoxTrain(SandBoxBase, Scene):
+    def generate_parameters(self):
+        super().generate_parameters()
+        self.params[f'object_{1}'] = ObjectParams(
+                mesh='Cube',
+                material=get_random_material('Object'),
+                location=FVector(500, 0, 0),
+                rotation=FRotator(0, 0, 45),
+                scale=FVector(1, 1, 1),
+                mass=100,
+                force=FVector(0, 0, 0),
+                overlap=False)
+        """
+        self.params['occluder'] = OccluderParams(
+                material=get_random_material('Wall'),
+                location=FVector(400, -500, 0),
+                rotation=FRotator(0, 0, 90),
+                scale=FVector(1, 1, 1),
+                moves=[0, 100, 145],
+                speed=1)
+        """
+
+
+class SandBoxTest(SandBoxBase, Scene):
 
     def get_nchecks(self):
         return 1 if self.is_occluded else 0
