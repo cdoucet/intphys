@@ -2,6 +2,7 @@
 
 import unreal_engine as ue
 from unreal_engine.classes import Material
+from unreal_engine import FVector
 from actors.base_mesh import BaseMesh
 from actors.parameters import OccluderParams
 
@@ -54,8 +55,12 @@ class Occluder(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
+        location = FVector(
+                params.location.x,
+                params.location.y - (200 * params.scale.y),
+                params.location.z)
         super().get_parameters(
-            params.location,
+            location,
             params.rotation,
             params.scale,
             params.friction,
@@ -65,10 +70,10 @@ class Occluder(BaseMesh):
             '/Game/Meshes/OccluderWall')
         self.material = ue.load_object(Material, params.material)
         self.speed = params.speed
+        # array of numbers from 1 to 100
         self.moves = params.moves
         self.moving = False
         self.up = params.start_up
-        self.location.y -= (200 * params.scale.y)
         if (self.up is False):
             self.rotation.roll = 90
         self.count = -1

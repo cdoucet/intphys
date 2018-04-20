@@ -234,7 +234,6 @@ bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>
     {
         CollisionQueryParams.AddIgnoredActor(Actor);
     }
-
     // Intitialize world and scene view
     m_World = m_OriginActor->GetWorld();
     m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
@@ -262,11 +261,11 @@ bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>
             bool bHit = m_World->LineTraceSingleByChannel(
                 HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
                 ECollisionChannel::ECC_Visibility, CollisionQueryParams);
-
             if(bHit)
             {
                 uint PixelIndex = y * m_Size.X + x;
                 // compute mask
+   				UE_LOG(LogTemp, Log, TEXT("%d: Target -> %s, HitActor --> %s"), PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
                 if (HitResult.GetActor()->GetName().Compare(Target->GetName()) == 0)
 					return (true);
            }

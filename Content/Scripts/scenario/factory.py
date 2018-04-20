@@ -7,16 +7,13 @@ train_classes = {
 
 
 test_classes = {
-    'O1': O1.O1TestStatic,
+    'O1': O1.O1Test,
     'SandBox': sandbox.SandBox}
 
 
-def get_train_scenario(name):
-    return train_classes[name]()
+def get_train_scenario(name, world):
+    return train_classes[name](world)
 
 
-def get_test_scenario(name, is_occluded=False, is_static=True, ntricks=1):
-    return test_classes[name](
-        is_occluded=is_occluded,
-        is_static=is_static,
-        ntricks=ntricks)
+def get_test_scenario(name, world):
+    return test_classes[name](world)

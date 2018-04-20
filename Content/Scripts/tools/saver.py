@@ -26,10 +26,11 @@ class Saver:
         any data.
 
     """
-    def __init__(self, size, camera, dry_mode=False):
+    def __init__(self, size, dry_mode=False, output_dir=None):
         self.size = size
-        self.camera = camera
+        self.camera = None
         self.is_dry_mode = dry_mode
+        self.output_dir = output_dir
 
         # an empty list to append status along the run
         self.status_header = {}
@@ -40,7 +41,7 @@ class Saver:
         verbose = False
         ScreenshotManager.Initialize(
             int(self.size[0]), int(self.size[1]), int(self.size[2]),
-            self.camera.get_actor(), verbose)
+            None, verbose)
 
     def capture(self, scene):
         """Push the scene's current screenshot and status to memory"""
@@ -63,17 +64,17 @@ class Saver:
             self.status_header = {}
             self.status = []
 
-    def save(self, output_dir):
+    def save(self):
         """Save the captured data to `output_dir`"""
         if self.is_dry_mode:
             return True
 
-        ue.log(f'saving capture to {output_dir}')
+        ue.log(f'saving capture to {self.output_dir}')
 
         # save the captured images as PNG
-        done, max_depth, masks = ScreenshotManager.Save(output_dir)
+        done, max_depth, masks = ScreenshotManager.Save(self.output_dir)
         if not done:
-            ue.log_warning(f'failed to save images to {output_dir}')
+            ue.log_warning(f'failed to save images to {self.output_dir}')
             return False
 
         # save images max depth and actors's masks to status
@@ -81,8 +82,12 @@ class Saver:
         status = {'header': self.status_header, 'frames': self.status}
 
         # save the status as JSON file
-        json_file = os.path.join(output_dir, 'status.json')
+        json_file = os.path.join(self.output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
 
         return True
+
+    def update_camera(self, camera):
+        self.camera = camera
+        ScreenshotManager.SetOriginActor(camera.actor)

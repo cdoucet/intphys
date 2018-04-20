@@ -18,13 +18,13 @@ class BaseActor():
 
     """
     def __init__(self, actor=None):
-        self.actor = actor
+        if (actor is not None):
+            self.actor = actor
 
     def actor_destroy(self):
-        if self.actor is not None:
-            self.actor.actor_destroy()
+        if (self.get_actor() is not None):
+            self.get_actor().actor_destroy()
             self.actor = None
-        self.actor = None
 
     def get_parameters(self, location, rotation, overlap, warning):
         self.location = location
@@ -40,7 +40,7 @@ class BaseActor():
         # manage OnActorBeginOverlap events
         if self.warning and self.overlap:
             self.actor.bind_event('OnActorBeginOverlap', self.on_actor_overlap)
-        if self.warning and not self.overlap:
+        elif self.warning and not self.overlap:
             self.actor.bind_event('OnActorHit', self.on_actor_hit)
 
     def get_actor(self):
