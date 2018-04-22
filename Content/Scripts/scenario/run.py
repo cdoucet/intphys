@@ -47,10 +47,17 @@ class RunCheck(Run):
         if (self.actors is None):
             return
         # TODO add the ignored actors array if needed
-        actor = self.actors[self.actors_params['magic']['actor']].actor
-        res = ScreenshotManager.IsActorInFrame(actor, tick_index)
-        if (res is True):
-            print("ta race --> {}".format(tick_index))
+        magic_actor = self.actors[self.actors_params['magic']['actor']].actor
+        ignored_actors = []
+        for actor_name, actor in self.actors.items():
+            if 'object' not in actor_name.lower() and 'occluder' not in actor_name.lower():
+                if 'walls' in actor_name.lower():
+                    ignored_actors.append(actor.front.actor)
+                    ignored_actors.append(actor.left.actor)
+                    ignored_actors.append(actor.right.actor)
+                else:
+                    ignored_actors.append(actor.actor)
+        res = ScreenshotManager.IsActorInLastFrame(magic_actor, ignored_actors)[0]
         self.visible_frame.append(res)
 
     def del_actors(self):

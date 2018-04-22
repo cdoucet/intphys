@@ -5,6 +5,8 @@ from scenario.scene import Scene
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
 from scenario.run import RunImpossible
+from unreal_engine.classes import ScreenshotManager
+
 
 class SandBoxBase:
     def __init__(self, world, saver=None, is_occluded=None, movement=None):
@@ -17,6 +19,25 @@ class SandBoxBase:
     def name(self):
         return 'SandBox'
 
+    def tick(self, tick_index):
+        super().tick(tick_index)
+        ignored_actors = []
+        magic_actor = None
+        for actor_name, actor in self.runs[0].actors.items():
+            if 'object' not in actor_name.lower() and 'occluder' not in actor_name.lower():
+                if 'walls' in actor_name.lower():
+                    ignored_actors.append(actor.front.actor)
+                    ignored_actors.append(actor.left.actor)
+                    ignored_actors.append(actor.right.actor)
+                else:
+                    ignored_actors.append(actor.actor)
+            else:
+                if 'object' in actor_name.lower():
+                    magic_actor = actor.actor
+        # print(tick_index)
+        res = ScreenshotManager.IsActorInLastFrame(magic_actor, [])[0]
+        print(res)
+
 class SandBoxTrain(SandBoxBase, Scene):
     def generate_parameters(self):
         super().generate_parameters()
@@ -27,55 +48,19 @@ class SandBoxTrain(SandBoxBase, Scene):
                 rotation=FRotator(0, 0, 45),
                 scale=FVector(1, 1, 1),
                 mass=100,
-                force=FVector(0, 0, 0),
-                overlap=False)
-        """
+                force=FVector(0, 0, 0))
         self.params['occluder'] = OccluderParams(
                 material=get_random_material('Wall'),
-                location=FVector(400, -500, 0),
+                location=FVector(400, 0, 0),
                 rotation=FRotator(0, 0, 90),
                 scale=FVector(1, 1, 1),
-                moves=[0, 100, 145],
+                moves=[0],
+                start_up=True,
                 speed=1)
-        """
+    
+    def play_run(self):
+        super().play_run()
 
 
 class SandBoxTest(SandBoxBase, Scene):
-
-    def get_nchecks(self):
-        return 1 if self.is_occluded else 0
-
-    def generate_parameters(self):
-        params = super().generate_parameters()
-        params[f'object_{1}'] = ObjectParams(
-                mesh='Cube',
-                material=get_random_material('Object'),
-                location=FVector(500, 0, 0),
-                rotation=FRotator(0, 0, 45),
-                scale=FVector(1, 1, 1),
-                mass=100,
-                force=FVector(0, 0, 0),
-                overlap=False)
-        """
-        params['occluder'] = OccluderParams(
-                material=get_random_material('Wall'),
-                location=FVector(400, -500, 0),
-                rotation=FRotator(0, 0, 90),
-                scale=FVector(1, 1, 1),
-                moves=[0, 100, 145],
-                speed=1)
-        """
-        params['magic'] = {
-            'actor': f'object_{1}',
-            'tick': 50} 
-        return params
-
-    def setup_magic_trick(self, actor, run):
-        pass 
-
-    def apply_magic_trick(self, actor, run):
-        print("do magic trick")
-        #actor.set_hidden(True)
-
-    def get_nruns(self):
-        return 1
+    pass
