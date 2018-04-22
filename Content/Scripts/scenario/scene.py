@@ -53,7 +53,7 @@ class Scene:
     def play_run(self):
         if self.run >= len(self.runs):
             return
-        ue.log("Run {}/{}".format(self.run + 1, len(self.runs)))
+        ue.log("Run {}/{}: {} run".format(self.run + 1, len(self.runs), type(self.runs[self.run]).__name__[3:]))
         self.runs[self.run].play()
         self.saver.update_camera(self.runs[self.run].actors['Camera'])
 
