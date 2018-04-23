@@ -28,5 +28,4 @@ class O1Test(O1Base, Test):
         super().generate_parameters()
 
     def apply_magic_trick(self):
-        print("magic trick")
         self.runs[self.run].actors[self.params['magic']['actor']].set_hidden(True)

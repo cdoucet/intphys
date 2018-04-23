@@ -122,6 +122,7 @@ class Occluder(BaseMesh):
         status = super().get_status()
         status['material'] = self.material.get_name()
         status['speed'] = self.speed
+        status['moves'] = []
         for i in self.moves:
             status['moves'].append(i)
         return status
