@@ -4,10 +4,17 @@ from unreal_engine.classes import ScreenshotManager
 
 
 class Run:
-    def __init__(self, world, actors_params):
+    def __init__(self, world, saver, actors_params, status_header):
         self.world = world
+        self.saver = saver
         self.actors_params = actors_params
         self.actors = None
+        self.status_header = status_header
+
+    def get_status(self):
+        """Return the current status of each moving actor in the scene"""
+        # TODO change actors in status : Camera ? Walls ? Floor ? SkySphere ? ect
+        return {k: v.get_status() for k, v in self.actors.items()}
 
     def spawn_actors(self):
         self.actors = {}
@@ -29,6 +36,7 @@ class Run:
 
     def play(self):
         self.spawn_actors()
+        self.saver.update_camera(self.actors['Camera'])
 
     def tick(self, tick_index):
         if (self.actors is not None):
@@ -38,15 +46,14 @@ class Run:
 
 
 class RunCheck(Run):
-    def __init__(self, world, actors_params):
-        super().__init__(world, actors_params)
+    def __init__(self, world, saver, actors_params, status_header):
+        super().__init__(world, saver, actors_params, status_header)
         self.visible_frame = []
 
     def tick(self, tick_index):
         super().tick(tick_index)
         if (self.actors is None):
             return
-        # TODO add the ignored actors array if needed
         magic_actor = self.actors[self.actors_params['magic']['actor']].actor
         ignored_actors = []
         for actor_name, actor in self.actors.items():
@@ -72,7 +79,14 @@ class RunCheck(Run):
 class RunPossible(Run):
     def tick(self, tick_index):
         super().tick(tick_index)
+        ignored_actors = []
+        self.saver.capture(ignored_actors, self.status_header, self.get_status())
 
 
 class RunImpossible(Run):
-    pass
+    def tick(self, tick_index):
+        super().tick(tick_index)
+        ignored_actors = []
+        if (self.actors[self.actors_params['magic']['actor']].hidden is True):
+            ignored_actors.append(self.actors[self.actors_params['magic']['actor']].actor)
+        self.saver.capture(ignored_actors, self.status_header, self.get_status())

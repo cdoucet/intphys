@@ -1,5 +1,6 @@
 import random
 
+import unreal_engine as ue
 from scenario.scene import Scene
 from scenario.run import RunCheck, RunPossible, RunImpossible
 from unreal_engine import FVector, FRotator
@@ -13,12 +14,26 @@ class Test(Scene):
         self.movement = movement
         super().__init__(world, saver)
         for run in range(self.get_nchecks()):
-            self.runs.append(RunCheck(self.world, self.params))
+            self.runs.append(RunCheck(self.world, self.saver, self.params,
+                {
+                    'name': self.name,
+                    'type': 'test',
+                    'is_possible': True}
+                ))
         for run in range(2):
-            self.runs.append(RunImpossible(self.world, self.params))
+            self.runs.append(RunImpossible(self.world, self.saver, self.params,
+                {
+                    'name': self.name,
+                    'type': 'test',
+                    'is_possible': False}
+                ))
         for run in range(2):
-            self.runs.append(RunPossible(self.world, self.params))
-
+            self.runs.append(RunPossible(self.world, self.saver, self.params,
+                {
+                    'name': self.name,
+                    'type': 'test',
+                    'is_possible': True}
+                ))
 
     def get_nchecks(self):
         res = 0
@@ -78,16 +93,17 @@ class Test(Scene):
             if (type(run) is RunImpossible):
                 run.actors_params['magic']['tick'] = magic_tick
 
-    def stop_run(self):
+    def stop_run(self, scene_index):
         if (type(self.runs[self.run]) is RunCheck):
             self.set_magic_tick(self.runs[self.run].del_actors())
         else:
             self.runs[self.run].del_actors()
-        super().stop_run()
+        super().stop_run(scene_index)
 
     def tick(self, tick_index):
         super().tick(tick_index)
         if tick_index % 100 == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
+            ue.log("tick {}: magic trick".format(tick_index % 100))
             self.apply_magic_trick()
 
     def is_possible(self):
