@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Run this script from the Tools directory of the intphys project to
-# build all the shaders and assets used in the game. From
+# Build all the shaders and assets used in the game. From
 # https://docs.unrealengine.com/latest/INT/Engine/Basics/DerivedDataCache
 #
 # We assume $UE_ROOT is defined.
