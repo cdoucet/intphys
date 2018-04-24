@@ -52,6 +52,7 @@ class Scene:
             self.saver.reset()
         self.runs[self.run].del_actors()
         self.run += 1
+        return True
 
     def get_scene_subdir(self, scene_index):
         # build the scene sub-directory name, for exemple

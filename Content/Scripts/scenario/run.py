@@ -54,7 +54,7 @@ class RunCheck(Run):
         super().tick(tick_index)
         if (self.actors is None):
             return
-        magic_actor = self.actors[self.actors_params['magic']['actor']].actor
+        magic_actor = self.actors[self.actors_params['magic']['actor']]
         ignored_actors = []
         for actor_name, actor in self.actors.items():
             if 'object' not in actor_name.lower() and 'occluder' not in actor_name.lower():
@@ -64,15 +64,25 @@ class RunCheck(Run):
                     ignored_actors.append(actor.right.actor)
                 else:
                     ignored_actors.append(actor.actor)
-        res = ScreenshotManager.IsActorInLastFrame(magic_actor, ignored_actors)[0]
+        res = ScreenshotManager.IsActorInLastFrame(magic_actor.actor, ignored_actors)[0]
         self.visible_frame.append(res)
 
     def del_actors(self):
         super().del_actors()
         try:
+            """
+            occluders = []
+            for actor_name, actor in self.actors.items():
+                if 'occluder' in actor_name.lower():
+                    occluders.append(actor)
+            for item in self.visible_frame:
+                if item[0] is False:
+                    if 
+                    return self.visible_frame.index(item)
+            """
             return self.visible_frame.index(False)
-        except IndexError:
-            ue.log("Error: Didn't find any true value in occluded_frame array")
+        except:
+            ue.log("Warning: the magic actor is never occluded in the check run")
             return -1
 
 

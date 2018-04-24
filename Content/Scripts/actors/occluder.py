@@ -55,9 +55,11 @@ class Occluder(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
+        # TODO this thing is a non-sense (we apply to the y location the x scale...)
+        # maybe it's time to drop out the normalization
         location = FVector(
                 params.location.x,
-                params.location.y - (200 * params.scale.y),
+                params.location.y - (200 * params.scale.x),
                 params.location.z)
         super().get_parameters(
             location,

@@ -63,7 +63,19 @@ class Director(object):
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-        self.scenes[self.scene].stop_run(self.scene)
+        if self.scenes[self.scene].stop_run(self.scene) is False:
+            is_test = True if 'test' in type(self.scenes[self.scene]).__name__.lower() else False
+            module = importlib.import_module("scenario.{}".format(self.scenes[self.scene].name))
+            if is_test is True:
+                test_class = getattr(module, "{}Test".format(self.scenes[self.scene].name))
+                is_occluded = self.scenes[self.scene].is_occluded
+                movement = self.scenes[self.scene].movement
+                self.scenes.insert(self.scene + 1, test_class(self.world, self.saver, is_occluded, movement))
+                self.scenes.pop(0)
+            else:
+                train_class = getattr(module, "{}Train".format(self.scenes[self.scene].name))
+                self.scenes.insert(self.scene + 1, train_class(self.world, self.saver))
+                self.scenes.pop()
         if self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
             self.scene += 1
 

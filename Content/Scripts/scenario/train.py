@@ -35,7 +35,7 @@ class Train(Scene):
             # full random rotation (does not matter on spheres, except
             # for texture variations)
             location = FVector(
-                    random.uniform(-500, 500),
+                    random.uniform(200, 700),
                     random.uniform(-500, 500),
                     random.uniform(0, 200))
             rotation = FRotator(
@@ -46,11 +46,11 @@ class Train(Scene):
                 location=location,
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=100)
+                mass=100)               
         noccluders = random.randint(0, 2)
         for n in range(noccluders):
             location = FVector(
-                    random.uniform(-500, 500),
+                    random.uniform(200, 700),
                     random.uniform(-500, 500),
                     0)
             rotation = FRotator(
