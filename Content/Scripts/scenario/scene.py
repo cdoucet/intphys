@@ -1,4 +1,5 @@
 import random
+import os
 import unreal_engine as ue
 from unreal_engine import FVector, FRotator
 from actors.parameters import SkySphereParams, FloorParams
@@ -14,24 +15,6 @@ class Scene:
         self.runs = []
         self.run = 0
         self.saver = saver
-
-    def __del__(self):
-        for run in self.runs:
-            del run
-
-    def get_status_header(self):
-        """Return a dict describing the scenario"""
-        status = {
-            'name': self.name,
-            'type':  'test' if 'Test' in type(self) else 'train',
-            'is_possible': True if 'Check' in type(self.run)
-            or 'Train' in type(self.run) else False}
-        # TODO A check is possible since there is no magic trick (no ?)
-        return status
-
-    def get_status(self):
-        """Return the current status of each moving actor in the scene"""
-        return {k: v.get_status() for k, v in self.get_moving_actors().items()}
 
     def generate_parameters(self):
         self.params['Camera'] = CameraParams(
@@ -55,18 +38,36 @@ class Scene:
             return
         ue.log("Run {}/{}: {} run".format(self.run + 1, len(self.runs), type(self.runs[self.run]).__name__[3:]))
         self.runs[self.run].play()
-        self.saver.update_camera(self.runs[self.run].actors['Camera'])
 
     def is_over(self):
         if (self.run < len(self.runs)):
             return False
         return True
 
-    def stop_run(self):
+    def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return
+        if 'Check' not in type(self.runs[self.run]).__name__ and self.saver.is_dry_mode is False:
+            self.saver.save(self.get_scene_subdir(scene_index))
+            self.saver.reset()
         self.runs[self.run].del_actors()
         self.run += 1
+
+    def get_scene_subdir(self, scene_index):
+        # build the scene sub-directory name, for exemple
+        # '027_test_O1/3' or '028_train_O1'
+        idx = scene_index + 1
+        padded_idx = '0{}'.format(idx)
+        scene_name = (
+                padded_idx + '_' +
+                ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
+                self.name)
+        out = os.path.join(self.saver.output_dir, scene_name)
+        if 'Test' in type(self).__name__:
+            # 1, 2, 3 and 4 subdirectories for test scenes
+            run_idx = (self.run + 1) - self.get_nchecks()
+            out = os.path.join(out, str(run_idx))
+        return out
 
     def tick(self, tick_index):
         if (self.run < len(self.runs)):

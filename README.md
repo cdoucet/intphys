@@ -59,7 +59,7 @@ not been tested.
 
 * Install intphys in a separate directory. Clone the repository and
   its UnrealEnginePython submodule from github. Do not forget the
-  `recursive` option to download the submodule:
+  `--recursive` option to download the submodule:
 
         git clone --recursive git@github.com:bootphon/intphys.git
 
@@ -76,43 +76,17 @@ not been tested.
         sudo apt-get install python3.6 python3.6-dev
         /usr/bin/python3.6 -m pip install dataclasses
 
-* The intphys code reads the path to UnrealEngine from the `UE_ROOT`
-  environment variable. Add that to your `~/.bashrc`:
+* The intphys code reads the path to UnrealEngine and the path to the
+  Python scripts from the `UE_ROOT` and `PYTHONPATH` environment
+  variables repectively. Add that to your `~/.bashrc`:
 
         export UE_ROOT=/absolute/path/to/UnrealEngine
+		export PYTHONPATH=$PYTHONPATH:/absolute/path/to/intphys/Content/Scripts
 
-* Python needs to know the location of the script files of the intphys
-  project. Add that to your `~/.bashrc`:
+* We now need to package the intphys project into a standalone binary
+  program. Just have a:
 
-		export PYTHONPATH="$PYTHONPATH:/path/to/intphys/repository/Content/Scripts"
-
-* We now need to package the `intphys/intphys.uproject` project
-  into a standalone binary. You need a manual intervention in the
-  editor. Open it with:
-
-        ./intphys.py Exemples/exemple.json --editor --verbose
-
-  * Answer *no* if a pop-up complains the UnrealEnginePython plugin is
-    not compatible with the current engine version.
-
-  * Answer *yes* if a pop-up asks you for rebuilding missing libraries.
-
-  In the *File/Package Project* menu, select the *Linux* target and
-  `./intphys/Package` as the package directory. This operation takes a
-  while on the first time.
-
-  ![Packaging menu](https://docs.unrealengine.com/latest/images/Engine/Basics/Projects/Packaging/packaging_menu.jpg)
-
-
-* **Potential issue:** If the 3D scene generated seems to be frozen
-  (the spheres are moving but the wall remains in the 'down' position
-  for a while), there is a problem with the packaged binary.
-
-  Try to repackage it within the UnrealEngine editor.
-
-  If the problem persists, launch the editor (with the *--editor*
-  option of `intphys.py`), click on the *Play* button (in the top
-  panel) and, then, repackage the game.
+        ./Tools/build_package.sh
 
 
 ## Usage
@@ -143,6 +117,11 @@ In the `Tools` directory are stored few utility scripts:
   a gif file. Used to postprocess the generated png images.
 
 * **clean.sh** : deletes the intphys build/binaries directories.
+
+* **make_archives.py** : build tar.gz archives as released on
+  www.intphys.com.
+
+* scripts for building the project.
 
 In the `Exemples` directory are stored scripts to generate few videos,
 extract them to gif pictures and embeed them in a html page.

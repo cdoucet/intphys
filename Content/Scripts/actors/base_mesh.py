@@ -69,7 +69,7 @@ class BaseMesh(BaseActor):
             self.mesh.call('SetCollisionProfileName BlockAll')
 
     """
-    set_mesh sets the mesh, enable collision, set the material 
+    set_mesh sets the mesh, enable collision, set the material
     """
     def set_mesh(self):
         self.mesh = self.get_actor().get_actor_component_by_type(

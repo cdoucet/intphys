@@ -20,8 +20,6 @@ import pathlib
 import progressbar
 import random
 import re
-import shutil
-import sys
 import tarfile
 import tempfile
 
@@ -57,7 +55,8 @@ def join_data_subdirs(data_dir, output_dir):
     # the data subdir is either test or train
     s = 'test' if os.path.isdir(os.path.join(subdirs[0], 'test')) else 'train'
     subdirs = [os.path.join(d, s) for d in subdirs]
-    src_data = sorted((os.path.join(d, dd)) for d in subdirs for dd in os.listdir(d))
+    src_data = sorted(
+        (os.path.join(d, dd)) for d in subdirs for dd in os.listdir(d))
     log.info('found %s blocks in %s subfolders', len(src_data), len(configs))
 
     # adapt the index of src_data dirs
@@ -84,6 +83,7 @@ def join_data_subdirs(data_dir, output_dir):
 
     counter = {k: 0 for k in block_total.keys()}
     index_length = len(str(len(src_data)))
+
     def get_index(block_type):
         counter[block_type] += 1
         n = offset[block_type] + counter[block_type]
@@ -95,7 +95,7 @@ def join_data_subdirs(data_dir, output_dir):
         block_type = '_'.join(src_dir.split('/')[-1].split('_')[1:])
 
         links.append((src_dir, os.path.join(
-            output_dir, get_index(block_type)+ '_' + block_type)))
+            output_dir, get_index(block_type) + '_' + block_type)))
 
     for src, dst in links:
         # check the content of the folder
@@ -188,6 +188,18 @@ def prepare_test(data_dir, output_dir):
             os.path.join(output_dir, 'test.tar.gz'),
             data_files, data_arcfiles)
 
+        log.info('retrieving nobjects')
+        folders = (os.path.join(data_dir, d) for d in os.listdir(data_dir))
+        folders = (d for d in folders if os.path.isdir(d))
+        data_nobjects = []
+        for folder in sorted(folders):
+            params = os.path.join(folder, 'params.json')
+            nobjects = len(json.load(open(params, 'r'))['objects'])
+            data_nobjects.append('{} {}'.format(
+                os.path.basename(folder), nobjects))
+        open(os.path.join(output_dir, 'test_nobjects.txt'), 'w').write(
+            '\n'.join(data_nobjects))
+
 
 def permute_subblocks(data_dir):
     # since subdirs of data_dir are symlinks to read-only data we
@@ -232,7 +244,7 @@ def parse_args():
     parser.add_argument(
         '-o', '--output-dir',
         help=('the output directory where to write the tar.gz files, '
-        'use data_dir by default'))
+              'use data_dir by default'))
     args = parser.parse_args()
     return args.data_dir, args.output_dir if args.output_dir else args.data_dir
 
@@ -254,4 +266,4 @@ def main():
 
 
 if __name__ == '__main__':
-   main()
+    main()

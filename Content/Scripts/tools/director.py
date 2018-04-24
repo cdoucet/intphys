@@ -57,13 +57,13 @@ class Director(object):
     def play_scene(self):
         if self.scene >= len(self.scenes):
             return
-        ue.log("Scene {}/{}:".format(self.scene + 1, len(self.scenes)))
+        ue.log("Scene {}/{}: scenario {}".format(self.scene + 1, len(self.scenes), self.scenes[self.scene].name))
         self.scenes[self.scene].play_run()
 
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-        self.scenes[self.scene].stop_run()
+        self.scenes[self.scene].stop_run(self.scene)
         if self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
             self.scene += 1
 

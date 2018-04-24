@@ -10,7 +10,13 @@ from tools.materials import get_random_material
 class Train(Scene):
     def __init__(self, world, saver):
         super().__init__(world, saver)
-        self.runs.append(RunPossible(self.world, self.params))
+        self.runs.append(RunPossible(self.world, self.saver, self.params,
+            {
+                'name': self.name,
+                'type': 'train',
+                'is_possible': True
+                }
+                ))
 
     def random_location(self, index, side=None):
         if side is None:
@@ -46,7 +52,7 @@ class Train(Scene):
             location = FVector(
                     random.uniform(-500, 500),
                     random.uniform(-500, 500),
-                    random.uniform(0, 200))
+                    0)
             rotation = FRotator(
                     0, 0, random.uniform(-180, 180))
             nmoves = random.randint(0, 3)

@@ -1,7 +1,6 @@
 #!/bin/bash
 #
-# Run this script from the Tools directory of the intphys project to
-# build the game as a standalone binary.
+# Build the game as a standalone binary.
 #
 # We assume $UE_ROOT is defined.
 

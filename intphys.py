@@ -197,13 +197,12 @@ def ParseArgs():
         help='launch the intphys project in the UnrealEngine editor')
 
     group.add_argument(
-        '-g', '--standalone', action='store_true',
+        '-g', '--standalone-game', action='store_true',
         help='launch the project as a standalone game (relies on UE4Editor)')
 
     group.add_argument(
         '--headless', action='store_true',
-        help='run the program without screen rendering, allows to run on '
-        'a server with no screen attached, or from a SSH connection')
+        help='disable screen rendering (only for packaged game)')
 
     args = parser.parse_args()
     if not re.match('[0-9]+x[0-9]+', args.resolution):
@@ -327,7 +326,6 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
         environ['INTPHYS_SEED'] = str(seed)
 
     # run the command as a subprocess
-    log.info('UE command is: %s', command)
     job = subprocess.Popen(
         shlex.split(command),
         stdin=None,
@@ -397,7 +395,7 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
     if njobs == 1:
         res = resolution.split('x')
         _Run(intphys_binary + ' {} -windowed ResX={} ResY={}'.format(
-            '-NullRHI' if headless is True else '', res[0], res[1]),
+            '-NullRHI' if headless else '', res[0], res[1]),
              GetLogger(verbose=verbose),
              scenes_file, output_dir, seed=seed,
              resolution=resolution, cwd=cwd, debug=debug)
@@ -530,7 +528,7 @@ def Main():
             output_dir, args.scenes_file,
             seed=args.seed, resolution=args.resolution,
             verbose=args.verbose)
-    elif args.standalone:
+    elif args.standalone_game:
         RunEditor(
             output_dir, args.scenes_file,
             seed=args.seed, resolution=args.resolution,

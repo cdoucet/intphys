@@ -29,6 +29,8 @@ class Saver:
     def __init__(self, size, dry_mode=False, output_dir=None):
         self.size = size
         self.camera = None
+        if output_dir is None:
+            dry_mode = True
         self.is_dry_mode = dry_mode
         self.output_dir = output_dir
 
@@ -36,26 +38,25 @@ class Saver:
         self.status_header = {}
         self.status = []
 
-        # initialize the capture. TODO We initialize the manager even
-        # if if we are in dry mode because we may use it in check runs
+        # initialize the capture.
         verbose = False
         ScreenshotManager.Initialize(
             int(self.size[0]), int(self.size[1]), int(self.size[2]),
             None, verbose)
 
-    def capture(self, scene):
+    def capture(self, ignored_actors, status_header, status):
         """Push the scene's current screenshot and status to memory"""
         if not self.is_dry_mode:
             # save the header only once
             if self.status_header == {}:
-                self.status_header = scene.get_status_header()
+                self.status_header = status_header
                 self.status_header['camera'] = self.camera.get_status()
 
             # scene, depth and masks images are stored from C++
-            ScreenshotManager.Capture(scene.get_ignored_actors())
+            ScreenshotManager.Capture(ignored_actors)
 
             # save the current status
-            self.status.append(scene.get_status())
+            self.status.append(status)
 
     def reset(self):
         """Reset the saver and delete all data in cache"""
@@ -64,17 +65,17 @@ class Saver:
             self.status_header = {}
             self.status = []
 
-    def save(self):
+    def save(self, output_dir):
         """Save the captured data to `output_dir`"""
         if self.is_dry_mode:
             return True
 
-        ue.log(f'saving capture to {self.output_dir}')
+        ue.log(f'saving capture to {output_dir}')
 
         # save the captured images as PNG
-        done, max_depth, masks = ScreenshotManager.Save(self.output_dir)
+        done, max_depth, masks = ScreenshotManager.Save(output_dir)
         if not done:
-            ue.log_warning(f'failed to save images to {self.output_dir}')
+            ue.log_warning(f'failed to save images to {output_dir}')
             return False
 
         # save images max depth and actors's masks to status
