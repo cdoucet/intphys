@@ -43,6 +43,9 @@ class Tick:
         """Return the number of ticks since the last reset"""
         return self._counter
 
+    def set_count(self, count):
+        self._counter = count
+
     def tick(self, dt):
         """Tick at the requested interval"""
         if self._is_ticking and self._update(dt):

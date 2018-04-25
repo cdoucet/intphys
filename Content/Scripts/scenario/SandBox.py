@@ -34,7 +34,6 @@ class SandBoxBase:
 class SandBoxTrain(SandBoxBase, Scene):
     def generate_parameters(self):
         super().generate_parameters()
-        # self.params['Floor'].friction = -4000
         locations = [FVector(1000 + 200 * y + 50, 500, 0) for y in (-1, 0, 1)]
         for object_nb in range(3):
             self.params[f'object_{object_nb + 1}'] = ObjectParams(

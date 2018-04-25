@@ -23,8 +23,11 @@ class Director(object):
         except BufferError as e:
             print(e)
         # start the ticker, take a screen capture each 2 game ticks
-        self.ticker = Tick(tick_interval=tick_interval)
-        self.ticker.start()
+        # self.ticker = Tick(tick_interval=tick_interval)
+        # self.ticker.start()
+        self.ticker = 0
+        self.pause = 0
+        self.b_pause = False
 
     def generate_scenes(self, params_file):
         for scenario, a in self.scenarios_dict.items():
@@ -57,28 +60,52 @@ class Director(object):
     def play_scene(self):
         if self.scene >= len(self.scenes):
             return
-        ue.log("Scene {}/{}: scenario {}".format(self.scene + 1, len(self.scenes), self.scenes[self.scene].name))
+        if self.scenes[self.scene].run == 0:
+            ue.log("Scene {}/{}: scenario {}".format(self.scene + 1, len(self.scenes), self.scenes[self.scene].name))
         self.scenes[self.scene].play_run()
 
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-        self.scenes[self.scene].stop_run(self.scene)
+        if self.scenes[self.scene].stop_run(self.scene) is False:
+            is_test = True if 'test' in type(self.scenes[self.scene]).__name__.lower() else False
+            module = importlib.import_module("scenario.{}".format(self.scenes[self.scene].name))
+            if is_test is True:
+                test_class = getattr(module, "{}Test".format(self.scenes[self.scene].name))
+                is_occluded = self.scenes[self.scene].is_occluded
+                movement = self.scenes[self.scene].movement
+                self.scenes.insert(self.scene + 1, test_class(self.world, self.saver, is_occluded, movement))
+                self.scenes.pop(0)
+            else:
+                train_class = getattr(module, "{}Train".format(self.scenes[self.scene].name))
+                self.scenes.insert(self.scene + 1, train_class(self.world, self.saver))
+                self.scenes.pop(0)
+            return
         if self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
             self.scene += 1
 
+    def capture(self):
+        self.scenes[self.scene].capture()
+
     def tick(self, dt):
         """ this method is called at each game tick by UE """
-        # update the ticker
-        self.ticker.tick(dt)
-        if self.ticker.on_tick() is False:
+        if self.pause != 0:
+            self.pause -= 1
             return
-        if (self.ticker.get_count() - 1) % 100 == 0:
-            if self.ticker.get_count() - 1 != 0:
+        # launch new scene every 200 tick except if a pause just finished
+        if self.b_pause is False and self.ticker % 100 == 0 and (self.ticker / 100) % 2 == 0:
+            if self.ticker != 0:
                 self.stop_scene()
             self.play_scene()
+            # pause to let textures load
+            self.pause = 20
+            self.b_pause = True
+            return
+        self.b_pause = False
         if (self.scene < len(self.scenes)):
-            self.scenes[self.scene].tick(self.ticker.get_count())
+            self.scenes[self.scene].tick()
+            if self.ticker % 2 == 0:
+                self.capture()
         else:
             exit_ue("the end")
-            self.ticker.stop()
+        self.ticker += 1

@@ -55,9 +55,11 @@ class Occluder(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
+        # TODO this thing is a non-sense (we apply to the y location the x scale...)
+        # maybe it's time to drop out the normalization
         location = FVector(
                 params.location.x,
-                params.location.y - (200 * params.scale.y),
+                params.location.y - (200 * params.scale.x),
                 params.location.z)
         super().get_parameters(
             location,
@@ -70,7 +72,7 @@ class Occluder(BaseMesh):
             '/Game/Meshes/OccluderWall')
         self.material = ue.load_object(Material, params.material)
         self.speed = params.speed
-        # array of numbers from 1 to 100
+        # array of numbers from 1 to 200
         self.moves = params.moves
         self.moving = False
         self.up = params.start_up
