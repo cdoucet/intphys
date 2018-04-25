@@ -52,6 +52,9 @@ class Run:
                     actor.move()
         self.ticker += 1
 
+    def is_valid(self):
+        return all([a.is_valid for a in self.actors.values()])
+
 
 class RunCheck(Run):
     def __init__(self, world, saver, actors_params, status_header):

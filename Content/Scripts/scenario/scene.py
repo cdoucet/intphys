@@ -46,6 +46,9 @@ class Scene:
             return False
         return True
 
+    def is_valid(self):
+        return self.runs[self.run].is_valid()
+
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return True

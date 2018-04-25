@@ -25,6 +25,8 @@ class Walls():
             self.length, self.depth,
             self.height, self.material, self.overlap, self.warning)
 
+        self.is_valid = True
+
     def actor_destroy(self):
         self.front.actor_destroy()
         self.right.actor_destroy()

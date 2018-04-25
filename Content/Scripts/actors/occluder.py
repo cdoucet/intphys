@@ -55,8 +55,9 @@ class Occluder(BaseMesh):
             super().__init__()
 
     def get_parameters(self, params):
-        # TODO this thing is a non-sense (we apply to the y location the x scale...)
-        # maybe it's time to drop out the normalization
+        # TODO this thing is a non-sense (we apply to the y location
+        # the x scale...)  maybe it's time to drop out the
+        # normalization
         location = FVector(
                 params.location.x,
                 params.location.y - (200 * params.scale.x),
@@ -128,3 +129,13 @@ class Occluder(BaseMesh):
         for i in self.moves:
             status['moves'].append(i)
         return status
+
+    def on_actor_overlap(self, me, other):
+        super().on_actor_overlap(me, other)
+        if 'occluder' in other.get_name().lower():
+            self.is_valid = False
+
+    def on_actor_hit(self, me, other):
+        super().on_actor_hit(me, other)
+        if 'occluder' in other.get_name().lower():
+            self.is_valid = False
