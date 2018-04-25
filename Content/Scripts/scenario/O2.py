@@ -1,6 +1,7 @@
 from scenario.test import Test
 from scenario.train import Train
-
+from unreal_engine.classes import Friction
+from unreal_engine import FVector
 
 class O2Base:
     @property

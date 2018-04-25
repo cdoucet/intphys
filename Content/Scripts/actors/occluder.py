@@ -72,7 +72,7 @@ class Occluder(BaseMesh):
             '/Game/Meshes/OccluderWall')
         self.material = ue.load_object(Material, params.material)
         self.speed = params.speed
-        # array of numbers from 1 to 100
+        # array of numbers from 1 to 200
         self.moves = params.moves
         self.moving = False
         self.up = params.start_up

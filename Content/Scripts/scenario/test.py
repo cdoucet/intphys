@@ -55,7 +55,7 @@ class Test(Scene):
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1 + random.random() * 0.5
+            scale = 1# + random.random() * 0.5
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -63,13 +63,13 @@ class Test(Scene):
             # for texture variations)
             rotation = FRotator(
                 360*random.random(), 360*random.random(), 360*random.random())
-            self.params[f'object_{n+1}'] = ObjectParams(
+            self.params['object_{}'.format(n + 1)] = ObjectParams(
                 mesh='Sphere',
                 material=get_random_material('Object'),
                 location=locations[n],
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=100)
+                mass=1)
         tick = -1 if self.is_occluded is True else 25
         self.params['magic'] = {
             'actor': f'object_{random.randint(1, nobjects)}',
@@ -78,31 +78,31 @@ class Test(Scene):
             moves = []
             if 'dynamic' in self.movement:
                 if self.movement.split('_')[1] == '2':
-                    location = FVector(600, -200, 0)
+                    location = FVector(600, -300, 0)
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
             else:
-                start_up = False
-                moves.append(0)
-                moves.append(50)
-                location = FVector(400, self.params[self.params['magic']['actor']].location.y / 2, 0)
+                 location = FVector(400, self.params[self.params['magic']['actor']].location.y / 2, 0)
+            start_up = False
+            moves.append(0)
+            moves.append(100)
             self.params['occluder_1'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=FRotator(0, 0, 90),
-                scale=FVector(0.5, 1, 1.5),
+                scale=FVector(1, 1, 1.5),
                 moves=moves,
-                speed=2,
+                speed=1,
                 start_up=start_up)
             if ('dynamic' in self.movement and self.movement.split('_')[1] == '2'):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
-                    location=FVector(600, 200, 0),
+                    location=FVector(600, 300, 0),
                     rotation=FRotator(0, 0, 90),
-                    scale=FVector(0.5, 1, 1.5),
+                    scale=FVector(1, 1, 1.5),
                     moves=moves,
-                    speed=3,
+                    speed=1,
                     start_up=start_up)
 
     def set_magic_tick(self, magic_tick):
@@ -114,6 +114,13 @@ class Test(Scene):
                 run.actors_params['magic']['tick'] = magic_tick
         return True
 
+    def play_run(self):
+        super().play_run()
+        if 'dynamic' in self.movement:
+            for name, actor in self.runs[self.run].actors.items():
+                if 'object' in name.lower():
+                    actor.set_force(FVector(0, -5e6 if 'right' in self.side else 5e6, 0))
+
     def stop_run(self, scene_index):
         if (type(self.runs[self.run]) is RunCheck):
             if self.set_magic_tick(self.runs[self.run].del_actors()) is False:
@@ -122,14 +129,10 @@ class Test(Scene):
             self.runs[self.run].del_actors()
         super().stop_run(scene_index)
 
-    def tick(self, tick_index):
-        super().tick(tick_index)
-        if tick_index % 100 == 1 and 'dynamic' in self.movement:
-            for name, actor in self.runs[self.run].actors.items():
-                if 'object' in name.lower():
-                    actor.set_force(FVector(0, -1e9 if 'right' in self.side else 1e9, 5e8))
-        if tick_index % 100 == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
-            ue.log("tick {}: magic trick".format(tick_index % 100))
+    def tick(self):
+        super().tick()
+        if self.runs[self.run].ticker == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
+            ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
             self.apply_magic_trick()
 
     def is_possible(self):

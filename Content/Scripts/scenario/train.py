@@ -46,7 +46,7 @@ class Train(Scene):
                 location=location,
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=100)               
+                mass=1) 
         noccluders = random.randint(0, 2)
         for n in range(noccluders):
             location = FVector(
