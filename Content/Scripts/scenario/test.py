@@ -83,7 +83,7 @@ class Test(Scene):
                     location = FVector(600, 0, 0)
                 start_up = True
             else:
-                 location = FVector(400, self.params[self.params['magic']['actor']].location.y / 2, 0)
+                location = FVector(400, self.params[self.params['magic']['actor']].location.y / 2, 0)
             start_up = False
             moves.append(0)
             moves.append(100)
@@ -116,6 +116,8 @@ class Test(Scene):
 
     def play_run(self):
         super().play_run()
+        self.setup_magic_actor()
+
         if 'dynamic' in self.movement:
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
