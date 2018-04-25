@@ -2,7 +2,7 @@ import json
 import importlib
 import unreal_engine as ue
 from tools.tick import Tick
-from tools.utils import exit_ue
+from tools.utils import exit_ue, set_game_paused
 from tools.saver import Saver
 
 
@@ -109,8 +109,9 @@ class Director(object):
                 self.stop_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = 50
+            self.pause = 10
             self.b_pause = True
+            set_game_paused(self.world, True)
             return
 
         # if one of the actors is not valid, restart the scene with
@@ -120,11 +121,13 @@ class Director(object):
             self.restart_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = 50
+            self.pause = 10
             self.b_pause = True
+            set_game_paused(self.world, True)
             return
 
         self.b_pause = False
+        set_game_paused(self.world, False)
         if self.scene < len(self.scenes):
             self.scenes[self.scene].tick()
             if self.ticker % 2 == 0:
