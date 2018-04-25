@@ -49,9 +49,11 @@ class Test(Scene):
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
-            side_bool = bool(random.getrandbits(1))
-            self.side = 'left' if side_bool is True else 'right'
-            locations = [FVector(1000 + 200 * y, -600 if 'left' in self.side else 600, 0) for y in (-1, 0, 1)]
+            # random side for each actor: starting either from left
+            # (go to right) or from rigth (go to left)
+            locations = [FVector(1000 + 200 * y, -600
+                                 if bool(random.getrandbits(1)) else 600, 0)
+                         for y in (-1, 0, 1)]
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
@@ -121,7 +123,8 @@ class Test(Scene):
         if 'dynamic' in self.movement:
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
-                    actor.set_force(FVector(0, -5e6 if 'right' in self.side else 5e6, 0))
+                    y_location = actor.actor.get_actor_location().y
+                    actor.set_force(FVector(0, -2e6 if y_location > 0 else 2e6, 0))
 
     def stop_run(self, scene_index):
         if (type(self.runs[self.run]) is RunCheck):
