@@ -1,5 +1,5 @@
 import random
-
+import math
 import unreal_engine as ue
 from scenario.scene import Scene
 from scenario.run import RunCheck, RunPossible, RunImpossible
@@ -95,7 +95,8 @@ class Test(Scene):
                 moves=moves,
                 speed=1,
                 start_up=start_up)
-            if ('dynamic' in self.movement and self.movement.split('_')[1] == '2'):
+            if ('dynamic' in self.movement and
+                    self.movement.split('_')[1] == '2'):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
                     location=FVector(600, 300, 0),
@@ -105,9 +106,17 @@ class Test(Scene):
                     speed=1,
                     start_up=start_up)
 
-    def set_magic_tick(self, magic_tick):
-        if (magic_tick == -1):
+    def set_magic_tick(self, change_state):
+        """
+        """
+        # it is always an occluded test if you are here
+        # TODO check if only one state changment would be enough
+        if len(change_state) < 2:
             return False
+        if '2' in self.movement:
+            pass
+        else:
+            magic_tick = math.ceil((change_state[1] + change_state[0]) / 2)
         self.params['magic']['tick'] = magic_tick
         for run in self.runs:
             if (type(run) is RunImpossible):
@@ -116,10 +125,11 @@ class Test(Scene):
 
     def play_run(self):
         super().play_run()
-        if 'dynamic' in self.movement:
+        if 'static' not in self.movement:
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
                     actor.set_force(FVector(0, -5e6 if 'right' in self.side else 5e6, 0))
+                    # actor.set_force(FVector(-5e6, 0, -5e6))
 
     def stop_run(self, scene_index):
         if (type(self.runs[self.run]) is RunCheck):
@@ -131,7 +141,8 @@ class Test(Scene):
 
     def tick(self):
         super().tick()
-        if self.runs[self.run].ticker == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
+        if self.runs[self.run].ticker == self.params['magic']['tick'] and \
+                type(self.runs[self.run]) is RunImpossible:
             ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
             self.apply_magic_trick()
 

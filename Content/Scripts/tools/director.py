@@ -98,7 +98,7 @@ class Director(object):
                 self.stop_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = 20
+            self.pause = 50
             self.b_pause = True
             return
         self.b_pause = False

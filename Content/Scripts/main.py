@@ -51,6 +51,9 @@ class Main:
         size = (resolution[0], resolution[1], 100)
         self.director = Director(world, scenes_json, size, output_dir)
 
+    def catch_event(self):
+        ue.log("truc")
+
     def tick(self, dt):
         # let the director handle the tick
         self.director.tick(dt)
