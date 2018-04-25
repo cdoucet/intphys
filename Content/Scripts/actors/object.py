@@ -43,7 +43,9 @@ class Object(BaseMesh):
         'Sphere': '/Game/Meshes/Sphere.Sphere',
         'Cube': '/Game/Meshes/Cube.Cube',
         'Cone': '/Game/Meshes/Cone.Cone',
-        'Cylinder': '/Game/Meshes/Cylinder.Cylinder'
+        # we exclude cylinder because it looks like a cube (from a face)
+        # or like a sphere (from the other face)
+        # 'Cylinder': '/Game/Meshes/Cylinder.Cylinder'
     }
 
     def __init__(self, world=None, params=ObjectParams()):

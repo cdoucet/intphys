@@ -59,3 +59,7 @@ class Camera(BaseActor):
         status['aspect_ratio'] = self.aspect_ratio
         status['projection_mode'] = self.projection_mode
         return status
+
+    def on_actor_overlap(self, me, other):
+        super().on_actor_overlap(me, other)
+        self.is_valid = False

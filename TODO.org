@@ -3,7 +3,7 @@
   scenarii: apparition/disparition, teleportation, changement de
   texture, changement de forme (en vol ou glissant)
 
-** steps for test O1 [1/4]
+** steps for test O1 [2/4]
 *** DONE static visible
     CLOSED: [2018-03-24 sam. 19:15]
 - 1 actors
@@ -11,26 +11,24 @@
 *** TODO static occluded
 - implement check run
 - have working occluders
-*** TODO dynamic visible
+*** DONE dynamic visible
+    CLOSED: [2018-04-25 mer. 19:40]
 - implement the corridors and force
 - implement dynamic check
 *** TODO dynamic occluded
 ** TODO generate and validate a little database
-* various bugs [3/5]
+* various bugs [0/2]
 ** TODO lighting
    - bug: increasing illumination in some scenes (when walls)
    - we want 1 skylight and from 0 to 2 (random) directional lights.
 ** TODO packaged mode
-   Fix the Tools/build_package.sh and the code base to run in packaged
-   mode. (standalone binary independent of UE)
+*** DONE Fix the Tools/build_package.sh
+    CLOSED: [2018-04-25 mer. 13:40]
+*** TODO Fix the code base to run in packaged mode [0/3]
+- [ ] depth and mask capture
+- [ ] capture in headless mode
+- [ ] friction
 
-** DONE merge masks in a single one for walls
-** DONE Warning: Failed to set the rotation of Object_C_0
-   CLOSED: [2018-03-24 sam. 19:14]
-   bug in base_actor.set_rotation
-** DONE Tools/build_shaders.sh
-   CLOSED: [2018-03-19 lun. 18:02]
-   Compiled shaders are not found when runnong the game in standalone mode.
 * desired features
 ** TODO reset the sky sphere rotation between scenes
    - integrate SkySphere as a Pyhton class

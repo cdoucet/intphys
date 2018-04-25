@@ -36,7 +36,9 @@ class Scene:
     def play_run(self):
         if self.run >= len(self.runs):
             return
-        ue.log("Run {}/{}: {} run".format(self.run + 1, len(self.runs), type(self.runs[self.run]).__name__[3:]))
+        ue.log("Run {}/{}: {} run".format(self.run + 1, len(self.runs),
+                                          type(self.runs[self.run]).
+                                          __name__[3:]))
         self.runs[self.run].play()
 
     def is_over(self):
@@ -44,10 +46,14 @@ class Scene:
             return False
         return True
 
+    def is_valid(self):
+        return self.runs[self.run].is_valid()
+
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
-            return
-        if 'Check' not in type(self.runs[self.run]).__name__ and self.saver.is_dry_mode is False:
+            return True
+        if 'Check' not in type(self.runs[self.run]).__name__ and \
+                self.saver.is_dry_mode is False:
             self.saver.save(self.get_scene_subdir(scene_index))
             self.saver.reset()
         self.runs[self.run].del_actors()
@@ -70,6 +76,11 @@ class Scene:
             out = os.path.join(out, str(run_idx))
         return out
 
-    def tick(self, tick_index):
+    def capture(self):
+        if 'Check' not in type(self.runs[self.run]).__name__ and \
+                self.saver.is_dry_mode is False:
+            self.runs[self.run].capture()
+
+    def tick(self):
         if (self.run < len(self.runs)):
-            self.runs[self.run].tick(tick_index)
+            self.runs[self.run].tick()

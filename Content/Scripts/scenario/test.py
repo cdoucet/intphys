@@ -1,5 +1,5 @@
 import random
-
+import math
 import unreal_engine as ue
 from scenario.scene import Scene
 from scenario.run import RunCheck, RunPossible, RunImpossible
@@ -49,13 +49,15 @@ class Test(Scene):
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
-            side_bool = bool(random.getrandbits(1))
-            self.side = 'left' if side_bool is True else 'right'
-            locations = [FVector(1000 + 200 * y, -600 if 'left' in self.side else 600, 0) for y in (-1, 0, 1)]
+            # random side for each actor: starting either from left
+            # (go to right) or from rigth (go to left)
+            locations = [FVector(1000 + 200 * y, -600
+                                 if bool(random.getrandbits(1)) else 600, 0)
+                         for y in (-1, 0, 1)]
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1 + random.random() * 0.5
+            scale = 1# + random.random() * 0.5
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -63,56 +65,87 @@ class Test(Scene):
             # for texture variations)
             rotation = FRotator(
                 360*random.random(), 360*random.random(), 360*random.random())
-            self.params[f'object_{n+1}'] = ObjectParams(
+            self.params['object_{}'.format(n + 1)] = ObjectParams(
                 mesh='Sphere',
                 material=get_random_material('Object'),
                 location=locations[n],
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=100)
-        tick = -1 if self.is_occluded is True else 25
+                mass=1)
+
+        # magic tick is determined by the checks when occluded
+        if self.is_occluded:
+            tick = -1
+        elif '_2' in self.movement:
+            # non occluded with 2 magic changes at different ticks
+            tick = [random.randint(25, 40), random.randint(60, 75)]
+        else:
+            # non occluded with a single magic change
+            tick = random.randint(25, 75)
+
         self.params['magic'] = {
             'actor': f'object_{random.randint(1, nobjects)}',
             'tick': tick}
+
         if self.is_occluded:
             moves = []
             if 'dynamic' in self.movement:
                 if self.movement.split('_')[1] == '2':
-                    location = FVector(600, -200, 0)
+                    location = FVector(600, -300, 0)
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
             else:
-                start_up = False
-                moves.append(0)
-                moves.append(50)
-                location = FVector(400, self.params[self.params['magic']['actor']].location.y / 2, 0)
+                location = FVector(400, self.params[
+                    self.params['magic']['actor']].location.y / 2, 0)
+            start_up = False
+            moves.append(0)
+            moves.append(100)
             self.params['occluder_1'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=FRotator(0, 0, 90),
-                scale=FVector(0.5, 1, 1.5),
+                scale=FVector(1, 1, 1.5),
                 moves=moves,
-                speed=2,
+                speed=1,
                 start_up=start_up)
-            if ('dynamic' in self.movement and self.movement.split('_')[1] == '2'):
+            if ('dynamic' in self.movement and
+                    self.movement.split('_')[1] == '2'):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
-                    location=FVector(600, 200, 0),
+                    location=FVector(600, 300, 0),
                     rotation=FRotator(0, 0, 90),
-                    scale=FVector(0.5, 1, 1.5),
+                    scale=FVector(1, 1, 1.5),
                     moves=moves,
-                    speed=3,
+                    speed=1,
                     start_up=start_up)
 
-    def set_magic_tick(self, magic_tick):
-        if (magic_tick == -1):
+    def set_magic_tick(self, change_state):
+        """
+        """
+        # it is always an occluded test if you are here
+        # TODO check if only one state changment would be enough
+        if len(change_state) < 2:
             return False
+        if '2' in self.movement:
+            pass
+        else:
+            magic_tick = math.ceil((change_state[1] + change_state[0]) / 2)
         self.params['magic']['tick'] = magic_tick
         for run in self.runs:
             if (type(run) is RunImpossible):
                 run.actors_params['magic']['tick'] = magic_tick
         return True
+
+    def play_run(self):
+        super().play_run()
+        self.setup_magic_actor()
+
+        if 'static' not in self.movement:
+            for name, actor in self.runs[self.run].actors.items():
+                if 'object' in name.lower():
+                    y_location = actor.actor.get_actor_location().y
+                    actor.set_force(FVector(0, -2e6 if y_location > 0 else 2e6, 0))
 
     def stop_run(self, scene_index):
         if (type(self.runs[self.run]) is RunCheck):
@@ -122,14 +155,15 @@ class Test(Scene):
             self.runs[self.run].del_actors()
         super().stop_run(scene_index)
 
-    def tick(self, tick_index):
-        super().tick(tick_index)
-        if tick_index % 100 == 1 and 'dynamic' in self.movement:
-            for name, actor in self.runs[self.run].actors.items():
-                if 'object' in name.lower():
-                    actor.set_force(FVector(0, -1e9 if 'right' in self.side else 1e9, 5e8))
-        if tick_index % 100 == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
-            ue.log("tick {}: magic trick".format(tick_index % 100))
+    def tick(self):
+        super().tick()
+        magic_tick = self.params['magic']['tick']
+        if isinstance(magic_tick, int):
+            magic_tick = [magic_tick]
+
+        if self.runs[self.run].ticker in magic_tick \
+           and type(self.runs[self.run]) is RunImpossible:
+            ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
             self.apply_magic_trick()
 
     def is_possible(self):

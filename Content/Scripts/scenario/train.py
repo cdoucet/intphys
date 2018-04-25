@@ -1,5 +1,5 @@
 import random
-
+import math
 from scenario.scene import Scene
 from scenario.run import RunPossible
 from unreal_engine import FVector, FRotator
@@ -46,7 +46,7 @@ class Train(Scene):
                 location=location,
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=100)               
+                mass=1) 
         noccluders = random.randint(0, 2)
         for n in range(noccluders):
             location = FVector(
@@ -70,6 +70,18 @@ class Train(Scene):
                 moves=moves,
                 speed=1,
                 start_up=False)
+
+    def play_run(self):
+        super().play_run()
+        for name, actor in self.runs[self.run].actors.items():
+            if 'object' in name.lower() and random.randint(0, 1) == 0:
+                force = []
+                for i in range(3):
+                    force.append(random.randint(-9, 9))
+                    force.append(random.randint(4, 7))
+                actor.set_force(FVector(force[0] * math.pow(10, force[1]),
+                                        force[2] * math.pow(10, force[3]),
+                                        force[4] * math.pow(10, force[5])))
 
     def is_possible(self):
         return True
