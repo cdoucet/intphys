@@ -1,3 +1,4 @@
+"""Block O1 is apparition/disparition, spheres only"""
 from scenario.test import Test
 from scenario.train import Train
 

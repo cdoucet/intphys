@@ -1,3 +1,4 @@
+"""Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
 
 import unreal_engine as ue
@@ -47,7 +48,6 @@ class O2Test(O2Base, Test):
         magic_mesh = self.params[magic_actor].mesh
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
-
         self.params['magic']['mesh'] = new_mesh
 
     def setup_magic_actor(self):
