@@ -72,10 +72,21 @@ class Test(Scene):
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
                 mass=1)
-        tick = -1 if self.is_occluded is True else 25
+
+        # magic tick is determined by the checks when occluded
+        if self.is_occluded:
+            tick = -1
+        elif self.movement.split('_')[1] == '2':
+            # non occluded with 2 magic changes at different ticks
+            tick = [random.randint(25, 40), random.randint(60, 75)]
+        else:
+            # non occluded with a single magic change
+            tick = random.randint(25, 75)
+
         self.params['magic'] = {
             'actor': f'object_{random.randint(1, nobjects)}',
             'tick': tick}
+
         if self.is_occluded:
             moves = []
             if 'dynamic' in self.movement:
@@ -136,7 +147,10 @@ class Test(Scene):
 
     def tick(self):
         super().tick()
-        if self.runs[self.run].ticker == self.params['magic']['tick'] and type(self.runs[self.run]) is RunImpossible:
+        magic_tick = self.params['magic']['tick']
+        if isinstance(magic_tick, int):
+            magic_tick = [magic_tick]
+        if self.runs[self.run].ticker in magic_tick and type(self.runs[self.run]) is RunImpossible:
             ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
             self.apply_magic_trick()
 
