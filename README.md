@@ -139,6 +139,20 @@ Occured after an update of the nvidia graphic drivers. Just reboot and
 try again. `sudo glxinfo` helps.
 
 
+### Precompiled headers
+
+After a system update you may issue an error when running
+`./Tools/build_package.sh` about `.gch` precompiled headers. The issue is like:
+
+    fatal error: file '/usr/include/linux/version.h' has been modified since the precompiled header '.../UE4Editor/Development/Engine/SharedPCH.Engine.h.gch' was built
+    note: please rebuild precompiled header '.../UE4Editor/Development/Engine/SharedPCH.Engine.h.gch'
+
+In that case remove all the `.gch` files and recompile the engine:
+
+    cd $UE_ROOT
+    find Engine/Intermediate -type file -name *.gch -delete
+    ./GenerateProjectFiles.sh && make
+
 ### How to make a new project
 
 Steps to duplicate the intphys project into a fresh one in
