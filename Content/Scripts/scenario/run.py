@@ -83,14 +83,21 @@ class RunCheck(Run):
             ue.log("tick {}: actor becomes {}".format(self.ticker,
                    'occluded' if res is False else 'non occluded'))
 
-    def find_right_magic_tick(self):
-        # for frame in self.visible_frame:
-        return self.visible_frame.index(False) + 1
+    def process_visibility(self):
+        res = []
+        # visible_in_first_frame = self.visible_frame[0]
+        for frame_index in range(len(self.visible_frame) - 1):
+            if (frame_index > 0 and
+                    self.visible_frame[frame_index - 1] !=
+                    self.visible_frame[frame_index]):
+                res.append(frame_index)
+        return res
+        # return self.visible_frame.index(False) + 1
 
     def del_actors(self):
         super().del_actors()
         try:
-            return self.find_right_magic_tick()
+            return self.process_visibility()
         except ValueError:
             ue.log("Warning: the magic actor is never \
                     occluded in the check run")

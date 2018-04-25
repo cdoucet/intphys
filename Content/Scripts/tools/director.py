@@ -115,16 +115,20 @@ class Director(object):
             return
 
         # if one of the actors is not valid, restart the scene with
-        # new parameters
-        if not self.scenes[self.scene].is_valid():
-            self.scenes[self.scene].stop_run(self.scene)
-            self.restart_scene()
-            self.play_scene()
-            # pause to let textures load
-            self.pause = 10
-            self.b_pause = True
-            set_game_paused(self.world, True)
-            return
+        # new parameters, in a try/catch to deals with the very last
+        # scene once it have been stopped
+        try:
+            if not self.scenes[self.scene].is_valid():
+                self.scenes[self.scene].stop_run(self.scene)
+                self.restart_scene()
+                self.play_scene()
+                # pause to let textures load
+                self.pause = 10
+                self.b_pause = True
+                set_game_paused(self.world, True)
+                return
+        except IndexError:
+            pass
 
         self.b_pause = False
         set_game_paused(self.world, False)

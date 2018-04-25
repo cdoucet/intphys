@@ -47,7 +47,7 @@ class O2Test(O2Base, Test):
         magic_mesh = self.params[magic_actor].mesh
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
-        ue.log(f'magic trick is {magic_mesh} -> {new_mesh}')
+
         self.params['magic']['mesh'] = new_mesh
 
     def setup_magic_actor(self):
