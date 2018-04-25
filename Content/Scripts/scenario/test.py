@@ -76,7 +76,7 @@ class Test(Scene):
         # magic tick is determined by the checks when occluded
         if self.is_occluded:
             tick = -1
-        elif self.movement.split('_')[1] == '2':
+        elif '_2' in self.movement:
             # non occluded with 2 magic changes at different ticks
             tick = [random.randint(25, 40), random.randint(60, 75)]
         else:
