@@ -12,6 +12,7 @@ class Run:
         self.actors = None
         self.status_header = status_header
         self.ticker = 0
+        self.check_array = []
 
     def get_status(self):
         """Return the current status of each moving actor in the scene"""
@@ -65,12 +66,12 @@ class Run:
     def is_valid(self):
         return all([a.is_valid for a in self.actors.values()])
 
-
+"""
 class RunCheck(Run):
     def __init__(self, world, saver, actors_params, status_header):
         super().__init__(world, saver, actors_params, status_header)
-        self.visible_frame = []
-
+        self.check_array = []
+"""
     def tick(self):
         super().tick()
         if (self.actors is None):
@@ -86,35 +87,19 @@ class RunCheck(Run):
                     ignored_actors.append(actor.right.actor)
                 else:
                     ignored_actors.append(actor.actor)
-        res = ScreenshotManager.IsActorInLastFrame(magic_actor.actor,
-                                                   ignored_actors)[0]
-        self.visible_frame.append(res)
-        if (self.ticker > 1 and self.visible_frame[self.ticker - 2] != res):
-            ue.log("tick {}: actor becomes {}".format(self.ticker,
-                   'occluded' if res is False else 'non occluded'))
-
-    def process_visibility(self):
-        res = []
-        # visible_in_first_frame = self.visible_frame[0]
-        for frame_index in range(len(self.visible_frame) - 1):
-            if (frame_index > 0 and
-                    self.visible_frame[frame_index - 1] !=
-                    self.visible_frame[frame_index]):
-                res.append(frame_index)
-        return res
-        # return self.visible_frame.index(False) + 1
+        visible = ScreenshotManager.IsActorInLastFrame(magic_actor.actor,
+                                                       ignored_actors)[0]
+        grounded = True if magic_actor.actor.get_actor_location().z <= 100 else False
+        temp = [visible, grounded]
+        self.check_array.append(temp)
 
     def del_actors(self):
         super().del_actors()
-        try:
-            return self.process_visibility()
-        except ValueError:
-            ue.log("Warning: the magic actor is never \
-                    occluded in the check run")
-            return -1
+        return self.check_array
 
-
+"""
 class RunPossible(Run):
+"""
     def capture(self):
         ignored_actors = []
         self.saver.capture(ignored_actors,

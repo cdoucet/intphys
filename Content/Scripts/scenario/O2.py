@@ -1,6 +1,6 @@
 """Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
-
+import math
 import unreal_engine as ue
 from actors.object import Object
 from scenario.test import Test
@@ -80,3 +80,31 @@ class O2Test(O2Base, Test):
         mesh_2 = self.params[self.params['magic']['actor']].mesh
         new_mesh = mesh_1 if current_mesh == mesh_2 else mesh_2
         magic_actor.set_mesh_str(Object.shape[new_mesh])
+
+    def set_magic_tick(self, check_array):
+        # it is always an occluded test if you are here
+        # TODO check if only one state changment would be enough
+        grounded_changes = self.process(1, check_array)
+        if self.is_occluded is False:
+            count = 0
+            while count > 50:
+                count += 1
+                grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
+                if check_array[grounded_tick][0] is not True:
+                    continue
+                self.params['magic']['tick'] = grounded_tick
+                return True
+            return False
+        visibility_changes = self.process(0, check_array)
+        if len(visibility_changes) < 2:
+            return False
+        if '2' in self.movement:
+            pass
+        else:
+            visibility_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
+            grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
+            magic_tick = math.ceil((visibility_tick + grounded_tick) / 2)
+            if check_array[magic_tick][0] is True or check_array[magic_tick][1] is True:
+                return False
+        self.params['magic']['tick'] = magic_tick
+        return True

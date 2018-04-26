@@ -109,7 +109,7 @@ class Director(object):
                 self.stop_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = 10
+            self.pause = 25
             self.b_pause = True
             set_game_paused(self.world, True)
             return
@@ -123,7 +123,7 @@ class Director(object):
                 self.restart_scene()
                 self.play_scene()
                 # pause to let textures load
-                self.pause = 10
+                self.pause = 25
                 self.b_pause = True
                 set_game_paused(self.world, True)
                 return

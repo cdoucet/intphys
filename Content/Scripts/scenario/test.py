@@ -14,6 +14,7 @@ class Test(Scene):
         self.is_occluded = is_occluded
         self.movement = movement
         super().__init__(world, saver)
+        """
         for run in range(self.get_nchecks()):
             self.runs.append(RunCheck(self.world, self.saver, self.params,
                 {
@@ -21,7 +22,6 @@ class Test(Scene):
                     'type': 'test',
                     'is_possible': True}
                 ))
-        """
         for run in range(2):
             self.runs.append(RunImpossible(self.world, self.saver, self.params,
                 {
@@ -44,6 +44,7 @@ class Test(Scene):
             res += 1
             if 'dynamic_2' in self.movement:
                 res += 1
+        return 0
         return res
 
     def generate_parameters(self):
@@ -126,21 +127,6 @@ class Test(Scene):
                     speed=1,
                     start_up=start_up)
 
-    def set_magic_tick(self, change_state):
-        # it is always an occluded test if you are here
-        # TODO check if only one state changment would be enough
-        if len(change_state) < 2:
-            return False
-        if '2' in self.movement:
-            pass
-        else:
-            magic_tick = math.ceil((change_state[1] + change_state[0]) / 2)
-        self.params['magic']['tick'] = magic_tick
-        for run in self.runs:
-            if (type(run) is RunImpossible):
-                run.actors_params['magic']['tick'] = magic_tick
-        return True
-
     def play_run(self):
         super().play_run()
         self.setup_magic_actor()
@@ -215,3 +201,12 @@ class Test(Scene):
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False
+
+    def process(self, which, check_array):
+        res = []
+        for frame_index in range(len(check_array) - 1):
+            if (frame_index > 0 and
+                    check_array[frame_index - 1][which] !=
+                    check_array[frame_index][which]):
+                res.append(frame_index)
+        return res
