@@ -26,6 +26,11 @@ class O2Train(O2Base, Train):
     def generate_parameters(self):
         super().generate_parameters()
 
+        for name, params in self.params.items():
+            if 'object' in name:
+                # objects can be of any shapes, not only sphere
+                params.mesh = random.choice(list(Object.shape.keys()))
+
 
 class O2Test(O2Base, Test):
     def __init__(self, world, saver, is_occluded, movement):

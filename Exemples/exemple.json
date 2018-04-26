@@ -17,7 +17,7 @@
     },
     "scenario_O2" :
     {
-        "train" : 0,
+        "train" : 5,
         "test_visible" :
         {
             "static" : 0,
@@ -26,10 +26,9 @@
         },
         "test_occluded" :
         {
-            "static" : 1,
+            "static" : 0,
             "dynamic_1" : 0,
             "dynamic_2" : 0
         }
     }
-
 }

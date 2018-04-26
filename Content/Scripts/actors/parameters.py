@@ -4,6 +4,7 @@ from unreal_engine import FVector, FRotator
 from unreal_engine.enums import ECameraProjectionMode
 from tools.materials import get_random_material
 
+
 @dataclass
 class CameraParams:
     location: FVector = FVector(0, 0, 0)
@@ -16,7 +17,7 @@ class CameraParams:
 @dataclass
 class FloorParams:
     material: str = get_random_material('Floor')
-    scale: FVector = FVector(50, 50, 1)
+    scale: FVector = FVector(10, 20, 1)
     friction: float = 0.5
     restitution: float = 0.5
 
@@ -52,6 +53,7 @@ class ObjectParams:
     overlap: bool = False
     warning: bool = False
 
+
 @dataclass
 class OccluderParams:
     material: str = get_random_material('Wall')
@@ -66,6 +68,8 @@ class OccluderParams:
     overlap: bool = False
     warning: bool = False
     start_up: bool = False
+
+
 @dataclass
 class SkySphereParams:
     material: str = '/Game/Meshes/SkySphere/M_Sky_Panning_Clouds2'

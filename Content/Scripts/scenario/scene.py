@@ -32,14 +32,15 @@ class Scene:
                     material=get_random_material('Wall'),
                     height=random.uniform(1, 5),
                     length=random.uniform(3000, 5000),
-                    depth=random.uniform(1500, 5000))
+                    depth=random.uniform(1500, 3000))
 
     def play_run(self):
         if self.run >= len(self.runs):
             return
-        ue.log("Run {}/{}: {} run".format(self.run + 1, len(self.runs),
-                                          type(self.runs[self.run]).
-                                          __name__[3:]))
+
+        ue.log("Run {}/{}: {} run".format(
+            self.run + 1, len(self.runs),
+            type(self.runs[self.run]).__name__[3:]))
         self.runs[self.run].play()
 
     def is_over(self):

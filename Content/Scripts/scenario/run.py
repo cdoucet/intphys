@@ -33,9 +33,9 @@ class Run:
             # the class corresponding to the actor
             module_path = "actors.{}".format(actor.lower().split('_')[0])
             module = importlib.import_module(module_path)
-            inst = getattr(module, class_name)(world=self.world, params=params)
-            # just doing this to avoid make a line more than 80 caracters
-            self.actors[actor] = inst
+            self.actors[actor] = getattr(module, class_name)(
+                world=self.world, params=params)
+
             if 'object' in actor.lower():
                 # if 'Sphere' in self.actors[actor].mesh_str:
                 #    Friction.SetMassScale(self.actors[actor].get_mesh(), 1)

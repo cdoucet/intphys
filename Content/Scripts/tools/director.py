@@ -121,6 +121,7 @@ class Director(object):
             if not self.scenes[self.scene].is_valid():
                 self.scenes[self.scene].stop_run(self.scene)
                 self.restart_scene()
+                self.ticker = 0
                 self.play_scene()
                 # pause to let textures load
                 self.pause = 25

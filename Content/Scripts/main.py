@@ -2,7 +2,7 @@ import os
 import random
 import unreal_engine as ue
 from tools.director import Director
-from tools.utils import parse_scenes_json, exit_ue, set_game_resolution
+from tools.utils import exit_ue, set_game_resolution
 
 # the default game resolution, for both scene rendering and saved
 # images (width * height in pixels)

@@ -85,20 +85,14 @@ class BaseActor():
             return
         message = '{} overlapping {}'.format(
             self.actor.get_name(), other.get_name())
-        """
-        for actor in self.actor.all_actors():
-            if "Scene" in actor.get_name():
-                actor.call_function("catch_event")
-        """
         ue.log(message)
-        # ue.log_error(message)
 
     def on_actor_hit(self, me, other, *args):
         if (other.get_name()[:5] == "Floor"):
             return
-        message = '{} hitting {}'.format(
-            self.actor.get_name(), other.get_name())
-        ue.log(message)
+        # message = '{} hitting {}'.format(
+        #     self.actor.get_name(), other.get_name())
+        # ue.log(message)
         # ue.log_error(message)
 
     def set_hidden(self, hidden):

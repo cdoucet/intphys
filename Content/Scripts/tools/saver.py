@@ -83,7 +83,7 @@ class Saver:
         status = {'header': self.status_header, 'frames': self.status}
 
         # save the status as JSON file
-        json_file = os.path.join(self.output_dir, 'status.json')
+        json_file = os.path.join(output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
 
