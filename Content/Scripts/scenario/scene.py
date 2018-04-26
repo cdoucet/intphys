@@ -32,7 +32,7 @@ class Scene:
                     material=get_random_material('Wall'),
                     height=random.uniform(1, 5),
                     length=random.uniform(3000, 5000),
-                    depth=random.uniform(1500, 5000))
+                    depth=random.uniform(1500, 3000))
 
     def play_run(self):
         if self.run >= len(self.runs):

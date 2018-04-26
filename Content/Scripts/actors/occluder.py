@@ -135,7 +135,7 @@ class Occluder(BaseMesh):
         if 'occluder' in other.get_name().lower():
             self.is_valid = False
 
-    def on_actor_hit(self, me, other):
+    def on_actor_hit(self, me, other, *args):
         super().on_actor_hit(me, other)
         if 'occluder' in other.get_name().lower():
             self.is_valid = False

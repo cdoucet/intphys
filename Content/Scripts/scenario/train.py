@@ -10,13 +10,14 @@ from tools.materials import get_random_material
 class Train(Scene):
     def __init__(self, world, saver):
         super().__init__(world, saver)
-        self.runs.append(RunPossible(self.world, self.saver, self.params,
+        self.runs.append(RunPossible(
+            self.world, self.saver, self.params,
             {
                 'name': self.name,
                 'type': 'train',
                 'is_possible': True
-                }
-                ))
+            }
+        ))
 
     def random_location(self, index, side=None):
         if side is None:
@@ -46,7 +47,7 @@ class Train(Scene):
                 location=location,
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=1) 
+                mass=1)
         noccluders = random.randint(0, 2)
         for n in range(noccluders):
             location = FVector(
@@ -69,6 +70,7 @@ class Train(Scene):
                 scale=FVector(1, 1, 1),
                 moves=moves,
                 speed=1,
+                warning=True,
                 start_up=False)
 
     def play_run(self):

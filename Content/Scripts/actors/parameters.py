@@ -17,7 +17,7 @@ class CameraParams:
 @dataclass
 class FloorParams:
     material: str = get_random_material('Floor')
-    scale: FVector = FVector(50, 50, 1)
+    scale: FVector = FVector(10, 20, 1)
     friction: float = 0.5
     restitution: float = 0.5
 

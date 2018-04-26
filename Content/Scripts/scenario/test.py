@@ -9,6 +9,7 @@ from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
 from shutil import copyfile
 
+
 class Test(Scene):
     def __init__(self, world, saver, is_occluded, movement):
         self.is_occluded = is_occluded
@@ -60,7 +61,7 @@ class Test(Scene):
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1# + random.random() * 0.5
+            scale = 1 + random.random()
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -197,7 +198,7 @@ class Test(Scene):
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
-            for i in range(magic_tick, 101): 
+            for i in range(magic_tick, 101):
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
