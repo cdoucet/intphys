@@ -5,7 +5,7 @@ from unreal_engine.classes import Friction
 
 
 class Run:
-    def __init__(self, world, saver, actors_params, status_header):
+    def __init__(self, world, saver, actors_params, status_header, is_test):
         self.world = world
         self.saver = saver
         self.actors_params = actors_params
@@ -13,12 +13,15 @@ class Run:
         self.status_header = status_header
         self.ticker = 0
         self.check_array = []
+        self.b_is_valid = True
+        self.is_test = is_test
 
     def get_status(self):
         """Return the current status of each moving actor in the scene"""
         # TODO change actors appearing in status :
         # Camera ? Walls ? Floor ? SkySphere ? ect.
-        return {k: v.get_status() for k, v in self.actors.items()}
+        if self.actors is not None:
+            return {k: v.get_status() for k, v in self.actors.items()}
 
     def spawn_actors(self):
         self.actors = {}
@@ -46,15 +49,12 @@ class Run:
                     Friction.SetMassScale(self.actors[actor].get_mesh(),
                                           1.6962973279499)
 
-    def del_actors(self):
-        if (self.actors is not None):
-            for actor_name, actor in self.actors.items():
-                actor.actor_destroy()
-            self.actors = None
-
     def play(self):
         self.spawn_actors()
         self.saver.update_camera(self.actors['Camera'])
+
+    def is_valid(self):
+        return all([a.is_valid for a in self.actors.values()])
 
     def tick(self):
         if (self.actors is not None):
@@ -62,19 +62,9 @@ class Run:
                 if 'object' in actor_name or 'occluder' in actor_name:
                     actor.move()
         self.ticker += 1
-
-    def is_valid(self):
-        return all([a.is_valid for a in self.actors.values()])
-
-"""
-class RunCheck(Run):
-    def __init__(self, world, saver, actors_params, status_header):
-        super().__init__(world, saver, actors_params, status_header)
-        self.check_array = []
-"""
-    def tick(self):
-        super().tick()
         if (self.actors is None):
+            return
+        if self.is_test is False:
             return
         magic_actor = self.actors[self.actors_params['magic']['actor']]
         ignored_actors = []
@@ -94,12 +84,12 @@ class RunCheck(Run):
         self.check_array.append(temp)
 
     def del_actors(self):
-        super().del_actors()
+        if (self.actors is not None):
+            for actor_name, actor in self.actors.items():
+                actor.actor_destroy()
+            self.actors = None
         return self.check_array
 
-"""
-class RunPossible(Run):
-"""
     def capture(self):
         ignored_actors = []
         self.saver.capture(ignored_actors,

@@ -51,9 +51,9 @@ class O1Test(O1Base, Test):
         # TODO check if only one state changment would be enough
         if self.is_occluded is False:
             count = 0
-            while count > 50:
+            while count < 50:
                 count += 1
-                self.params['magic']['tick'] = random.randint(0, 200)
+                self.params['magic']['tick'] = random.randint(50, 150)
                 if check_array[self.params['magic']['tick']][0] is not True:
                     continue
                 return True

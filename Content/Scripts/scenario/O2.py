@@ -90,9 +90,14 @@ class O2Test(O2Base, Test):
         # it is always an occluded test if you are here
         # TODO check if only one state changment would be enough
         grounded_changes = self.process(1, check_array)
+        if len(grounded_changes) < 2 and 'static' not in self.movement:
+            return False
         if self.is_occluded is False:
+            if 'static' in self.movement:
+                self.params['magic']['tick'] = random.randint(0, 200)
+                return True
             count = 0
-            while count > 50:
+            while count < 50:
                 count += 1
                 grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
                 if check_array[grounded_tick][0] is not True:
@@ -107,9 +112,12 @@ class O2Test(O2Base, Test):
             pass
         else:
             visibility_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-            grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
-            magic_tick = math.ceil((visibility_tick + grounded_tick) / 2)
-            if check_array[magic_tick][0] is True or check_array[magic_tick][1] is True:
-                return False
+            if 'static' not in self.movement:
+                grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
+                magic_tick = math.ceil((visibility_tick + grounded_tick) / 2)
+                if check_array[magic_tick][0] is True or check_array[magic_tick][1] is True:
+                    return False
+            else:
+                magic_tick = visibility_tick
         self.params['magic']['tick'] = magic_tick
         return True

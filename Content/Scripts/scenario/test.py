@@ -3,7 +3,7 @@ import math
 import os
 import unreal_engine as ue
 from scenario.scene import Scene
-from scenario.run import RunCheck, RunPossible, RunImpossible
+from scenario.run import Run
 from unreal_engine import FVector, FRotator
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
@@ -14,6 +14,7 @@ class Test(Scene):
     def __init__(self, world, saver, is_occluded, movement):
         self.is_occluded = is_occluded
         self.movement = movement
+        self.magic_locations = [[],[]]
         super().__init__(world, saver)
         """
         for run in range(self.get_nchecks()):
@@ -32,12 +33,12 @@ class Test(Scene):
                 ))
         """
         for run in range(2):
-            self.runs.append(RunPossible(self.world, self.saver, self.params,
+            self.runs.append(Run(self.world, self.saver, self.params,
                 {
                     'name': self.name,
                     'type': 'test',
                     'is_possible': True}
-                ))
+                , True))
 
     def get_nchecks(self):
         res = 0
@@ -143,11 +144,8 @@ class Test(Scene):
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return True
-        if (type(self.runs[self.run]) is RunCheck):
-            if self.set_magic_tick(self.runs[self.run].del_actors()) is False:
-                return False
-        else:
-            self.runs[self.run].del_actors()
+        if self.set_magic_tick(self.runs[self.run].del_actors()) is False or self.runs[self.run].b_is_valid is False:
+            return False
         super().stop_run(scene_index)
         if self.run == 2  + self.get_nchecks() and self.saver.is_dry_mode is False:
             self.generate_magic_runs(scene_index)
@@ -158,15 +156,17 @@ class Test(Scene):
         if isinstance(magic_tick, int):
             magic_tick = [magic_tick]
 
-        if self.runs[self.run].ticker in magic_tick \
-           and type(self.runs[self.run]) is RunImpossible:
-            ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
-            self.apply_magic_trick()
+        self.magic_locations[self.run].append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+        """
+        if self.run == 0:
             self.magic_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-            if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
-                ue.log("Magic locations don't match")
-                self.runs[self.run].del_actors()
-                self.runs[self.run].is_valid = False
+        elif self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
+            self.runs[self.run].b_is_valid = False
+        if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
+            ue.log("Magic locations don't match")
+            self.runs[self.run].del_actors()
+            self.runs[self.run].b_is_valid = False
+        """
 
     def generate_magic_runs(self, scene_index):
         if (self.is_occluded is False and 'O2' in type(self).__name__):
