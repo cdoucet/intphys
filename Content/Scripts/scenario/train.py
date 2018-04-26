@@ -59,9 +59,9 @@ class Train(Scene):
             moves = []
             for m in range(nmoves):
                 if len(moves) == 0:
-                    moves.append(random.randint(0, 100))
+                    moves.append(random.randint(0, 200))
                 else:
-                    moves.append(random.randint(moves[-1], 100))
+                    moves.append(random.randint(moves[-1], 200))
             self.params[f'occluder_{n+1}'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=location,

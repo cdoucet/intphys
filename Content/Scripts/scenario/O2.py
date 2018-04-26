@@ -5,7 +5,7 @@ import unreal_engine as ue
 from actors.object import Object
 from scenario.test import Test
 from scenario.train import Train
-# from unreal_engine.classes import Friction
+from unreal_engine.classes import Friction
 from unreal_engine import FRotator
 
 
@@ -61,9 +61,16 @@ class O2Test(O2Base, Test):
 
         new_mesh = (self.params['magic']['mesh'] if is_magic_mesh
                     else self.params[magic_actor].mesh)
-
         self.runs[self.run].actors[magic_actor].set_mesh_str(
             Object.shape[new_mesh])
+        Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
+                              1)
+        if 'Cube' in self.runs[self.run].actors[magic_actor].mesh_str:
+            Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
+                                  0.6155297517867)
+        elif 'Cone' in self.runs[self.run].actors[magic_actor].mesh_str:
+            Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
+                                  1.6962973279499)
 
     def apply_magic_trick(self):
         # swap the mesh of the magic actor
