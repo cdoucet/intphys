@@ -54,8 +54,11 @@ class Scene:
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return True
-        self.saver.save(self.get_scene_subdir(scene_index))
-        self.saver.reset()
+
+        if not self.saver.is_dry_mode:
+            self.saver.save(self.get_scene_subdir(scene_index))
+            self.saver.reset()
+
         self.run += 1
         return True
 
