@@ -53,10 +53,10 @@ class Scene:
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return True
-        if 'Check' not in type(self.runs[self.run]).__name__ and \
-                self.saver.is_dry_mode is False:
-            self.saver.save(self.get_scene_subdir(scene_index))
-            self.saver.reset()
+        #if 'Check' not in type(self.runs[self.run]).__name__ and \
+        #        self.saver.is_dry_mode is False:
+        self.saver.save(self.get_scene_subdir(scene_index))
+        self.saver.reset()
         self.runs[self.run].del_actors()
         self.run += 1
         return True
@@ -78,9 +78,9 @@ class Scene:
         return out
 
     def capture(self):
-        if 'Check' not in type(self.runs[self.run]).__name__ and \
-                self.saver.is_dry_mode is False:
-            self.runs[self.run].capture()
+        #if 'Check' not in type(self.runs[self.run]).__name__ and \
+        #self.saver.is_dry_mode is False:
+        self.runs[self.run].capture()
 
     def tick(self):
         if (self.run < len(self.runs)):
