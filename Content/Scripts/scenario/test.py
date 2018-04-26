@@ -143,7 +143,7 @@ class Test(Scene):
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
-                    actor.set_force(FVector(0, -2e6 if y_location > 0 else 2e6, 0))
+                    actor.set_force(FVector(0, -2e6 if y_location > 0 else 2e6, 2e6))
 
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
@@ -152,7 +152,7 @@ class Test(Scene):
         if (self.last_locations[self.run] != self.last_locations[self.run - 1]):
             ue.log("Last locations don't match")
             self.runs[self.run].del_actors()
-            return False
+            # return False
         if (type(self.runs[self.run]) is RunCheck):
             if self.set_magic_tick(self.runs[self.run].del_actors()) is False:
                 return False
