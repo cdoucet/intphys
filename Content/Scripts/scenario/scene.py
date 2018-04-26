@@ -44,7 +44,7 @@ class Scene:
         self.runs[self.run].play()
 
     def is_over(self):
-        if (self.run < len(self.runs)):
+        if self.run < len(self.runs):
             return False
         return True
 
@@ -65,9 +65,9 @@ class Scene:
         idx = scene_index + 1
         padded_idx = '0{}'.format(idx)
         scene_name = (
-                padded_idx + '_' +
-                ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
-                self.name)
+            padded_idx + '_' +
+            ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
+            self.name)
         out = os.path.join(self.saver.output_dir, scene_name)
         if 'Test' in type(self).__name__:
             # 1, 2, 3 and 4 subdirectories for test scenes
@@ -79,5 +79,5 @@ class Scene:
         self.runs[self.run].capture()
 
     def tick(self):
-        if (self.run < len(self.runs)):
+        if self.run < len(self.runs):
             self.runs[self.run].tick()

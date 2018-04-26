@@ -62,20 +62,20 @@ class O2Test(O2Base, Test):
         # runs 3, 4 are possible).
         run = self.run - self.get_nchecks() + 1
         is_magic_mesh = True if run in (2, 4) else False
-        magic_actor = self.params['magic']['actor']
+        magic_actor_type = self.params['magic']['actor']
+        magic_actor = self.runs[self.run].actors[magic_actor_type]
 
         new_mesh = (self.params['magic']['mesh'] if is_magic_mesh
-                    else self.params[magic_actor].mesh)
-        self.runs[self.run].actors[magic_actor].set_mesh_str(
-            Object.shape[new_mesh])
-        Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
-                              1)
-        if 'Cube' in self.runs[self.run].actors[magic_actor].mesh_str:
-            Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
-                                  0.6155297517867)
-        elif 'Cone' in self.runs[self.run].actors[magic_actor].mesh_str:
-            Friction.SetMassScale(self.runs[self.run].actors[magic_actor].get_mesh(),
-                                  1.6962973279499)
+                    else self.params[magic_actor_type].mesh)
+        magic_actor.set_mesh_str(Object.shape[new_mesh])
+
+        Friction.SetMassScale(magic_actor.get_mesh(), 1)
+
+        if 'Cube' in magic_actor.mesh_str:
+            Friction.SetMassScale(magic_actor.get_mesh(), 0.6155297517867)
+
+        elif 'Cone' in magic_actor.mesh_str:
+            Friction.SetMassScale(magic_actor.get_mesh(), 1.6962973279499)
 
     def apply_magic_trick(self):
         # swap the mesh of the magic actor
@@ -92,22 +92,27 @@ class O2Test(O2Base, Test):
         grounded_changes = self.process(1, check_array)
         if len(grounded_changes) < 2 and 'static' not in self.movement:
             return False
+
         if self.is_occluded is False:
             if 'static' in self.movement:
                 self.params['magic']['tick'] = random.randint(0, 200)
                 return True
+
             count = 0
             while count < 50:
                 count += 1
-                grounded_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
+                grounded_tick = math.ceil(
+                    (grounded_changes[1] + grounded_changes[0]) / 2)
                 if check_array[grounded_tick][0] is not True:
                     continue
                 self.params['magic']['tick'] = grounded_tick
                 return True
             return False
+
         visibility_changes = self.process(0, check_array)
         if len(visibility_changes) < 2:
             return False
+
         if '2' in self.movement:
             pass
         else:

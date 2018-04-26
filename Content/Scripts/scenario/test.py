@@ -63,7 +63,7 @@ class Test(Scene):
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1 + random.random()
+            scale = 1  # + random.random()
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -147,7 +147,7 @@ class Test(Scene):
         if self.set_magic_tick(self.runs[self.run].del_actors()) is False or self.runs[self.run].b_is_valid is False:
             return False
         super().stop_run(scene_index)
-        if self.run == 2  + self.get_nchecks() and self.saver.is_dry_mode is False:
+        if self.run == 2 + self.get_nchecks() and self.saver.is_dry_mode is False:
             self.generate_magic_runs(scene_index)
 
     def tick(self):
@@ -156,19 +156,21 @@ class Test(Scene):
         if isinstance(magic_tick, int):
             magic_tick = [magic_tick]
 
-        self.magic_locations[self.run].append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-        """
-        if self.run == 0:
-            self.magic_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-        elif self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
-            self.runs[self.run].b_is_valid = False
-        if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
-            ue.log("Magic locations don't match")
-            self.runs[self.run].del_actors()
-            self.runs[self.run].b_is_valid = False
-        """
+        self.magic_locations[self.run].append(
+            self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+
+        # if self.run == 0:
+        #     self.magic_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+        # elif self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
+        #     self.runs[self.run].b_is_valid = False
+        # if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
+        #     ue.log("Magic locations don't match")
+        #     self.runs[self.run].del_actors()
+        #     self.runs[self.run].b_is_valid = False
 
     def generate_magic_runs(self, scene_index):
+        ue.log('generating magic runs')
+
         if (self.is_occluded is False and 'O2' in type(self).__name__):
             magic_tick = 50
         magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
