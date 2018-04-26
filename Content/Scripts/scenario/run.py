@@ -1,7 +1,7 @@
 import importlib
 import unreal_engine as ue
 from unreal_engine.classes import ScreenshotManager
-
+from unreal_engine.classes import Friction
 
 class Run:
     def __init__(self, world, saver, actors_params, status_header):
@@ -34,6 +34,16 @@ class Run:
             inst = getattr(module, class_name)(world=self.world, params=params)
             # just doing this to avoid make a line more than 80 caracters
             self.actors[actor] = inst
+            if 'object' in actor.lower():
+                ue.log(self.actors[actor].get_mesh().GetMass())
+                ue.log(self.actors[actor].mesh_str)
+                if 'Sphere' in self.actors[actor].mesh_str:
+                    Friction.SetMassScale(self.actors[actor].get_mesh(), 1)
+                elif 'Cube' in self.actors[actor].mesh_str:
+                    Friction.SetMassScale(self.actors[actor].get_mesh(), 0.6155297517867)
+                elif 'Cone' in self.actors[actor].mesh_str:
+                    Friction.SetMassScale(self.actors[actor].get_mesh(), 1.6962973279499)
+                ue.log(self.actors[actor].get_mesh().GetMass())
 
     def del_actors(self):
         if (self.actors is not None):

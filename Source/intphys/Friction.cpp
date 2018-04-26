@@ -34,3 +34,12 @@ void    UFriction::ExitEngine(bool force)
 {
 	FGenericPlatformMisc::RequestExit(force);
 }
+
+void	UFriction::SetMassScale(UStaticMeshComponent* Component, float MassScale)
+{
+		if(!Component) return;
+		FBodyInstance* BodyInst = Component->GetBodyInstance();
+		if(!BodyInst) return;
+		BodyInst->MassScale = MassScale;  
+		BodyInst->UpdateMassProperties();
+}

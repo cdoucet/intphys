@@ -23,4 +23,7 @@ public:
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void ExitEngine(bool force);
+
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static void SetMassScale(UStaticMeshComponent *Component, float MAssScale);
 };

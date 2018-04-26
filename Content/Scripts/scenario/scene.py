@@ -15,6 +15,7 @@ class Scene:
         self.runs = []
         self.run = 0
         self.saver = saver
+        self.last_locations = []
 
     def generate_parameters(self):
         self.params['Camera'] = CameraParams(
