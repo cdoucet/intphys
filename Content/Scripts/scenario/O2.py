@@ -87,7 +87,6 @@ class O2Test(O2Base, Test):
         magic_actor.set_mesh_str(Object.shape[new_mesh])
 
     def set_magic_tick(self, check_array):
-        # it is always an occluded test if you are here
         # TODO check if only one state changment would be enough
         grounded_changes = self.process(1, check_array)
         if len(grounded_changes) < 2 and 'static' not in self.movement:

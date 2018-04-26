@@ -44,25 +44,3 @@ class O1Test(O1Base, Test):
         # revert the hidden state of the actor (hidden -> visible or
         # visible -> hidden)
         self.magic_actor().set_hidden(not self.magic_actor().hidden)
-
-    def set_magic_tick(self, check_array):
-        # TODO check if only one state changment would be enough
-        if self.is_occluded is False:
-            count = 0
-            while count < 50:
-                count += 1
-                self.params['magic']['tick'] = random.randint(50, 150)
-                if check_array[self.params['magic']['tick']][0] is not True:
-                    continue
-                return True
-            return False
-
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 2:
-            return False
-        if '2' in self.movement:
-            pass
-        else:
-            magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        self.params['magic']['tick'] = magic_tick
-        return True
