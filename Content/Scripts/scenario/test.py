@@ -1,12 +1,13 @@
 import random
 import math
+import os
 import unreal_engine as ue
 from scenario.scene import Scene
 from scenario.run import RunCheck, RunPossible, RunImpossible
 from unreal_engine import FVector, FRotator
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
-
+from shutil import copyfile
 
 class Test(Scene):
     def __init__(self, world, saver, is_occluded, movement):
@@ -20,6 +21,7 @@ class Test(Scene):
                     'type': 'test',
                     'is_possible': True}
                 ))
+        """
         for run in range(2):
             self.runs.append(RunImpossible(self.world, self.saver, self.params,
                 {
@@ -27,6 +29,7 @@ class Test(Scene):
                     'type': 'test',
                     'is_possible': False}
                 ))
+        """
         for run in range(2):
             self.runs.append(RunPossible(self.world, self.saver, self.params,
                 {
@@ -159,6 +162,8 @@ class Test(Scene):
         else:
             self.runs[self.run].del_actors()
         super().stop_run(scene_index)
+        if self.run == 2  + self.get_nchecks() and self.saver.is_dry_mode is False:
+            self.generate_magic_runs(scene_index)
 
     def tick(self):
         super().tick()
@@ -170,6 +175,34 @@ class Test(Scene):
            and type(self.runs[self.run]) is RunImpossible:
             ue.log("tick {}: magic trick".format(self.runs[self.run].ticker))
             self.apply_magic_trick()
+
+    def generate_magic_runs(self, scene_index):
+        # TODO make the same thing for the status.json
+        # removing the run subdirectory from the path
+        subdir = self.get_scene_subdir(scene_index)[:-2]
+        pic_types = ["scene", "depth", "masks"]
+        for pic_type in pic_types:
+            if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
+                os.makedirs("{}/3/{}".format(subdir, pic_type))
+            for i in range(1, 50):
+                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                copyfile(src, dst)
+            for i in range(50, 101): 
+                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                copyfile(src, dst)
+        for pic_type in pic_types:
+            if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
+                os.makedirs("{}/4/{}".format(subdir, pic_type))
+            for i in range(1, 50):
+                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                copyfile(src, dst)
+            for i in range(50, 101):
+                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                copyfile(src, dst)
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False
