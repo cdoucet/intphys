@@ -41,13 +41,11 @@ class O1Test(O1Base, Test):
         magic_actor.set_hidden(is_hidden)
 
     def apply_magic_trick(self):
-        magic_actor = self.runs[self.run].actors[self.params['magic']['actor']]
         # revert the hidden state of the actor (hidden -> visible or
         # visible -> hidden)
-        magic_actor.set_hidden(not magic_actor.hidden)
+        self.magic_actor().set_hidden(not self.magic_actor().hidden)
 
     def set_magic_tick(self, check_array):
-        # it is always an occluded test if you are here
         # TODO check if only one state changment would be enough
         if self.is_occluded is False:
             count = 0
@@ -58,6 +56,7 @@ class O1Test(O1Base, Test):
                     continue
                 return True
             return False
+
         visibility_changes = self.process(0, check_array)
         if len(visibility_changes) < 2:
             return False

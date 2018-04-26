@@ -48,6 +48,14 @@ class Object(BaseMesh):
         # 'Cylinder': '/Game/Meshes/Cylinder.Cylinder'
     }
 
+    # factor to normalize the mass of meshes wrt the mass of a sphere
+    # at scale 1. This is usefull to force objects to have the same
+    # trajectories when submitted to the same force.
+    mass_factor = {
+        'Sphere': 1.0,
+        'Cube': 0.6155297517867,
+        'Cone': 1.6962973279499}
+
     def __init__(self, world=None, params=ObjectParams()):
         if world is not None:
             super().__init__(
@@ -87,6 +95,9 @@ class Object(BaseMesh):
     set the mass of the mesh
     to be honnest I don't really know what the second line do
     """
+    # TODO we want the mass scaling to occur here, ie don't use 'mass'
+    # but 'mass_factor[shape]*mass' to have a kind of "normalized
+    # mass" accross the shapes
     def set_mass(self, mass):
         self.mass = mass
         self.mesh.SetMassScale(

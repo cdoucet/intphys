@@ -11,10 +11,11 @@ class Scene:
     def __init__(self, world, saver):
         self.world = world
         self.params = {}
+        self.saver = saver
         self.generate_parameters()
+
         self.runs = []
         self.run = 0
-        self.saver = saver
         self.last_locations = []
 
     def generate_parameters(self):
@@ -40,7 +41,7 @@ class Scene:
 
         ue.log("Run {}/{}: {} run".format(
             self.run + 1, len(self.runs),
-            type(self.runs[self.run]).__name__[3:]))
+            type(self.runs[self.run]).__name__))
         self.runs[self.run].play()
 
     def is_over(self):

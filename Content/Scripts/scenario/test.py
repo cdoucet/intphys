@@ -157,11 +157,11 @@ class Test(Scene):
             magic_tick = [magic_tick]
 
         self.magic_locations[self.run].append(
-            self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+            self.magic_actor().actor.get_actor_location())
 
         # if self.run == 0:
-        #     self.magic_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-        # elif self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
+        #     self.magic_locations.append(self.magic_actor().actor.get_actor_location())
+        # elif self.magic_actor().actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
         #     self.runs[self.run].b_is_valid = False
         # if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
         #     ue.log("Magic locations don't match")
@@ -213,3 +213,18 @@ class Test(Scene):
                     check_array[frame_index][which]):
                 res.append(frame_index)
         return res
+
+    def magic_actor(self):
+        return self.runs[self.run].actors[self.params['magic']['actor']]
+
+    def capture(self):
+        """Overload of Scene.capture to ignore magic actor when hidden"""
+        run = self.runs[self.run]
+
+        # on O1 test we need to ignore the magic actor when it is
+        # hidden (to ignore it on depth and masks images)
+        if self.magic_actor().hidden:
+            ignored = [self.magic_actor().actor]
+        else:
+            ignored = []
+        run.capture(ignored_actors=ignored)
