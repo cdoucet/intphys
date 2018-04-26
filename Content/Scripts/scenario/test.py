@@ -54,8 +54,8 @@ class Test(Scene):
         else:
             # random side for each actor: starting either from left
             # (go to right) or from rigth (go to left)
-            locations = [FVector(1000 + 200 * y, -600
-                                 if bool(random.getrandbits(1)) else 600, 0)
+            locations = [FVector(1000 + 200 * y, -800
+                                 if bool(random.getrandbits(1)) else 800, 0)
                          for y in (-1, 0, 1)]
         random.shuffle(locations)
         for n in range(nobjects):
@@ -90,6 +90,8 @@ class Test(Scene):
             'actor': f'object_{random.randint(1, nobjects)}',
             'tick': tick}
 
+        if 'dynamic' in self.movement:
+            self.initial_force = FVector()
         if self.is_occluded:
             moves = []
             if 'dynamic' in self.movement:
@@ -142,12 +144,14 @@ class Test(Scene):
     def play_run(self):
         super().play_run()
         self.setup_magic_actor()
-
         if 'static' not in self.movement:
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
-                    actor.set_force(FVector(0, -26e5 if y_location > 0 else 26e5, 24e5))
+                    force = FVector(0, -27e5 if y_location > 0 else 27e5, 0)
+                    if 'O2' in type(self).__name__:
+                        force.z = 24e5
+                    actor.set_force(force)
 
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
@@ -178,9 +182,10 @@ class Test(Scene):
                 self.runs[self.run].is_valid = False
 
     def generate_magic_runs(self, scene_index):
-        if (self.is_occluded is False):
-            self.params['magic']['tick'] = 15
-        ue.log("magic tick = {}".format(self.params['magic']['tick']))
+        if (self.is_occluded is False and 'O2' in type(self).__name__):
+            magic_tick = 50
+        magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
+        ue.log("magic tick = {}".format(magic_tick))
         # TODO make the same thing for the status.json
         # removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]
@@ -188,22 +193,22 @@ class Test(Scene):
         for pic_type in pic_types:
             if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
                 os.makedirs("{}/3/{}".format(subdir, pic_type))
-            for i in range(1, self.params['magic']['tick'] + 1):
+            for i in range(1, magic_tick + 1):
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
-            for i in range(self.params['magic']['tick'], 101): 
+            for i in range(magic_tick, 101): 
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
         for pic_type in pic_types:
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))
-            for i in range(1, self.params['magic']['tick'] + 1):
+            for i in range(1, magic_tick + 1):
                 dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
-            for i in range(self.params['magic']['tick'], 101):
+            for i in range(magic_tick, 101):
                 dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)

@@ -89,8 +89,6 @@ class RunCheck(Run):
         res = ScreenshotManager.IsActorInLastFrame(magic_actor.actor,
                                                    ignored_actors)[0]
         self.visible_frame.append(res)
-        print(self.ticker)
-        print(res)
         if (self.ticker > 1 and self.visible_frame[self.ticker - 2] != res):
             ue.log("tick {}: actor becomes {}".format(self.ticker,
                    'occluded' if res is False else 'non occluded'))
@@ -115,11 +113,6 @@ class RunCheck(Run):
                     occluded in the check run")
             return -1
 
-    def capture(self):
-        ignored_actors = []
-        self.saver.capture(ignored_actors,
-                           self.status_header,
-                           self.get_status())
 
 class RunPossible(Run):
     def capture(self):
