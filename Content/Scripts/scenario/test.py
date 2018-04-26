@@ -121,8 +121,6 @@ class Test(Scene):
                     start_up=start_up)
 
     def set_magic_tick(self, change_state):
-        """
-        """
         # it is always an occluded test if you are here
         # TODO check if only one state changment would be enough
         if len(change_state) < 2:
@@ -148,6 +146,13 @@ class Test(Scene):
                     actor.set_force(FVector(0, -2e6 if y_location > 0 else 2e6, 0))
 
     def stop_run(self, scene_index):
+        if self.run >= len(self.runs):
+            return True
+        self.last_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+        if (self.last_locations[self.run] != self.last_locations[self.run - 1]):
+            ue.log("Last locations don't match")
+            self.runs[self.run].del_actors()
+            return False
         if (type(self.runs[self.run]) is RunCheck):
             if self.set_magic_tick(self.runs[self.run].del_actors()) is False:
                 return False

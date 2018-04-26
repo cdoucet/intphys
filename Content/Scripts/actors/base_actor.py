@@ -85,9 +85,11 @@ class BaseActor():
             return
         message = '{} overlapping {}'.format(
             self.actor.get_name(), other.get_name())
+        """
         for actor in self.actor.all_actors():
             if "Scene" in actor.get_name():
                 actor.call_function("catch_event")
+        """
         ue.log(message)
         # ue.log_error(message)
 
