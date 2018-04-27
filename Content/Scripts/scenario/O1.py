@@ -121,18 +121,18 @@ class O1Test(O1Base, Test):
         try:
             if self.is_occluded is True:
                 if 'static' in self.movement:
-                    self.static_occluded(check_array)
+                    return self.static_occluded(check_array)
                 elif 'dynamic_1' in self.movement:
-                    self.dynamic_1_occluded(check_array)
+                    return self.dynamic_1_occluded(check_array)
                 else:
-                    self.dynamic_2_occluded(check_array)
+                    return self.dynamic_2_occluded(check_array)
             else:
                 if 'static' in self.movement:
-                    self.static_visible(check_array)
+                    return self.static_visible(check_array)
                 elif 'dynamic_1' in self.movement:
-                    self.dynamic_1_visible(check_array)
+                    return self.dynamic_1_visible(check_array)
                 else:
-                    self.dynamic_2_visible(check_array)
+                    return self.dynamic_2_visible(check_array)
         except Exception as e:
             ue.log_warning(e)
             return False
