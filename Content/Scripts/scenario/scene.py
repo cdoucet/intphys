@@ -37,10 +37,7 @@ class Scene:
     def play_run(self):
         if self.run >= len(self.runs):
             return
-
-        ue.log("Run {}/{}: {} run".format(
-            self.run + 1, len(self.runs),
-            type(self.runs[self.run]).__name__[3:]))
+        ue.log("Run {}/4: Possible run".format(self.run + 1))
         self.runs[self.run].play()
 
     def is_over(self):

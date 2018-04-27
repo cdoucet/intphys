@@ -174,11 +174,14 @@ class Test(Scene):
         else:
             magic_tick = math.ceil((self.params['magic']['tick'][0] + 1) / 2) + 1
             magic_tick2 = math.ceil((self.params['magic']['tick'][1] + 1) / 2) + 1
-            ue.log("magic ticks = {} - {}".format(magic_tick, magic_tick2))
+            ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
         # TODO make the same thing for the status.json
         # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]
         pic_types = ["scene", "depth", "masks"]
+        json_1 = "{}/{}/{}".format(subdir, '1', 'status.json')
+        json_2 = "{}/{}/{}".format(subdir, '2', 'status.json')
+        ue.log('Run 3/4: Impossible run')
         for pic_type in pic_types:
             if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
                 os.makedirs("{}/3/{}".format(subdir, pic_type))
@@ -195,6 +198,8 @@ class Test(Scene):
                     dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     copyfile(src, dst)
+        ue.log('saved captures to {}/{}'.format(subdir, 3))
+        ue.log('Run 3/4: Impossible run')
         for pic_type in pic_types:
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))
@@ -211,6 +216,7 @@ class Test(Scene):
                     dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     copyfile(src, dst)
+        ue.log('saved captures to {}/{}'.format(subdir, 4))
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False

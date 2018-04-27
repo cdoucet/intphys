@@ -130,7 +130,6 @@ class Director(object):
                 set_game_paused(self.world, True)
                 return
         except IndexError:
-            ue.log_warning("Index error: director tick")
             pass
 
         self.b_pause = False

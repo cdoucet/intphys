@@ -70,7 +70,6 @@ class Saver:
         if self.is_dry_mode:
             return True
 
-        ue.log(f'saving capture to {output_dir}')
 
         # save the captured images as PNG
         done, max_depth, masks = ScreenshotManager.Save(output_dir)
@@ -86,7 +85,7 @@ class Saver:
         json_file = os.path.join(output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
-
+        ue.log(f'saved captures to {output_dir}')
         return True
 
     def update_camera(self, camera):

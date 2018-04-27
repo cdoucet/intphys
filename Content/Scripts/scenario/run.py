@@ -92,6 +92,8 @@ class Run:
 
     def capture(self):
         ignored_actors = []
+        if self.actors[self.actors_params['magic']['actor']].hidden:
+            ignored_actors.append(self.actors[self.actors_params['magic']['actor']].actor)
         self.saver.capture(ignored_actors,
                            self.status_header,
                            self.get_status())

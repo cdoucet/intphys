@@ -125,6 +125,7 @@ class O2Test(O2Base, Test):
                 check_array[magic_tick2][0] is not True:
             ue.log_warning("magic actor was not visible during magic trick")
             return False
+        self.params['magic']['tick'] = [0, 0]
         self.params['magic']['tick'][0] = magic_tick
         self.params['magic']['tick'][1] = magic_tick2
         return True

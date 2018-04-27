@@ -73,13 +73,14 @@ class O1Test(O1Base, Test):
 
     def dynamic_2_visible(self, check_array):
         count = 0
+        self.params['magic']['tick'] = [0, 0]
         while count < 50:
             count += 1
             self.params['magic']['tick'][0] = random.randint(50, 150)
             self.params['magic']['tick'][1] = random.randint(50, 150)
             # check if actor is not visible during magic ticks
-            if check_array[self.params['magic']['tick']][0] is not True or \
-                    check_array[self.params['magic']['tick']][1] is not True or \
+            if check_array[self.params['magic']['tick'][0]][0] is not True or \
+                    check_array[self.params['magic']['tick'][1]][0] is not True or \
                     self.params['magic']['tick'][0] == \
                     self.params['magic']['tick'][1]:
                 continue
