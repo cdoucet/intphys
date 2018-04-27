@@ -1,5 +1,6 @@
 import random
 import math
+import json
 import os
 import unreal_engine as ue
 from scenario.scene import Scene
@@ -69,7 +70,7 @@ class Test(Scene):
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1# + random.random()
+            scale = 1  # + random.random()
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -155,7 +156,7 @@ class Test(Scene):
         if self.set_magic_tick(self.runs[self.run].del_actors()) is False or self.runs[self.run].b_is_valid is False:
             return False
         super().stop_run(scene_index)
-        if self.run == 2  + self.get_nchecks() and self.saver.is_dry_mode is False:
+        if self.run == 2 + self.get_nchecks() and self.saver.is_dry_mode is False:
             self.generate_magic_runs(scene_index)
 
     def tick(self):
@@ -164,11 +165,22 @@ class Test(Scene):
         if isinstance(magic_tick, int):
             magic_tick = [magic_tick]
 
-        self.magic_locations[self.run].append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
+        self.magic_locations[self.run].append(
+            self.magic_actor().actor.get_actor_location())
+
+        # if self.run == 0:
+        #     self.magic_locations.append(self.magic_actor().actor.get_actor_location())
+        # elif self.magic_actor().actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
+        #     self.runs[self.run].b_is_valid = False
+        # if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
+        #     ue.log("Magic locations don't match")
+        #     self.runs[self.run].del_actors()
+        #     self.runs[self.run].b_is_valid = False
 
     def generate_magic_runs(self, scene_index):
+        #<<<<<<< HEAD
         if '2' not in self.movement:
-            magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
+            magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2) + 1
             magic_tick2 = 100
             ue.log("magic tick = {}".format(magic_tick))
         else:
@@ -217,11 +229,125 @@ class Test(Scene):
                     src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     copyfile(src, dst)
         ue.log('saved captures to {}/{}'.format(subdir, 4))
+        ue.log("generating json files")
+        self.generate_magic_status(subdir, [magic_tick, magic_tick2])
+
+        """
+=======
+        # tick from 200 (number of engine ticks) to 100 (number of
+        # captured images) TODO the visibility checks must be
+        # performed at the capture speed (ie 100 times only, not 200)
+        ue.log(self.params['magic']['tick'])
+        magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
+        ue.log(f'generating magic runs: magic tick = {magic_tick}')
+
+        # remove the run subdirectory from the path
+        subdir = self.get_scene_subdir(scene_index)[:-2]
+
+        # build the {3, 4}/{scene, depth, masks} from {1, 2}/{scene,
+        # depth, masks}
+        self.generate_magic_images(subdir, [magic_tick])
+
+        # build the {3, 4}/status.json from {1, 2}/status.json
+        self.generate_magic_status(subdir, [magic_tick])
+
+    def generate_magic_images(self, subdir, slice_index):
+        pic_types = ['scene', 'depth', 'masks']
+
+        # make sure the dest directories exist
+        for i in (3, 4):
+            for j in pic_types:
+                d = f'{subdir}/{i}/{j}'
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+
+        def _copy(dst, src, type, i):
+            idx = str(i).zfill(3)
+            src = f'{subdir}/{src}/{type}/{type}_{idx}.png'
+            dst = f'{subdir}/{dst}/{type}/{type}_{idx}.png'
+            copyfile(src, dst)
+
+        if len(slice_index) == 1:  # static or dynamic_1 cases
+            idx = slice_index[0]
+            for pic_type in pic_types:
+                for i in range(1, idx + 1):
+                    _copy(3, 1, pic_type, i)
+                for i in range(idx, 101):
+                    _copy(3, 2, pic_type, i)
+
+            for pic_type in pic_types:
+                for i in range(1, idx + 1):
+                    _copy(4, 2, pic_type, i)
+                for i in range(idx, 101):
+                    _copy(4, 1, pic_type, i)
+
+        else:  # dynamic_2 case
+            idx1, idx2 = slice_index[0], slice_index[1]
+            for pic_type in pic_types:
+                for i in range(1, idx1+1):
+                    _copy(3, 1, pic_type, i)
+                for i in range(idx1, idx2+1):
+                    _copy(3, 2, pic_type, i)
+                for i in range(idx2, 101):
+                    _copy(3, 1, pic_type, i)
+
+            for pic_type in pic_types:
+                for i in range(1, idx1+1):
+                    _copy(4, 2, pic_type, i)
+                for i in range(idx1, idx2+1):
+                    _copy(4, 1, pic_type, i)
+                for i in range(idx2, 101):
+                    _copy(4, 2, pic_type, i)
+    """
+    def generate_magic_status(self, subdir, slice_index):
+        # build the status.json, slice_index are magic_tick as a list
+        json_1 = json.load(open(f'{subdir}/1/status.json', 'r'))
+        json_2 = json.load(open(f'{subdir}/2/status.json', 'r'))
+
+        # the headers must be the same (excepted the actor names but do
+        # not impact the end user) TODO for now (as of commit e5e2c25) the
+        # 'masks' entry is different in runs 1 and 2 TODO to have same
+        # names, maybe change the runs implementation: spawn actors only
+        # at scene init, and destroy them at scene end but not between 2
+        # runs.
+        json_3 = {'header': json_1['header']}
+        json_4 = {'header': json_1['header']}
+        json_3['header']['is_possible'] = False
+        json_4['header']['is_possible'] = False
+
+        # update the frames according to the slice index
+        f1, f2 = json_1['frames'], json_2['frames']
+        if len(slice_index) == 2:  # dynamic_2 case
+            idx1, idx2 = slice_index[0], slice_index[1]
+            json_3['frames'] = f1[:idx1] + f2[idx1:idx2] + f1[idx2:]
+            json_4['frames'] = f2[:idx1] + f1[idx1:idx2] + f2[idx2:]
+        else:  # dynamic_1 or static cases
+            idx = slice_index[0]
+            json_3['frames'] = f1[:idx] + f2[idx:]
+            json_4['frames'] = f2[:idx] + f1[idx:]
+
+        # make sure the dest directories exist
+        for i in (3, 4):
+            d = f'{subdir}/{i}'
+            if not os.path.isdir(d):
+                os.makedirs(d)
+
+        # save the status as JSON files
+        with open(f'{subdir}/3/status.json', 'w') as fin:
+            fin.write(json.dumps(json_3, indent=4))
+        with open(f'{subdir}/4/status.json', 'w') as fin:
+            fin.write(json.dumps(json_4, indent=4))
+
+        # print('\n'.join('{} {}'.format(
+        #     f3[magic_object]['material'], f4[magic_object]['material'])
+        #     for f3, f4 in zip(json_3['frames'], json_4['frames'])))
+        #>>>>>>> f41bb1fd99aee142be9fd9e3d696dbe52c008ea8
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False
 
     def process(self, which, check_array):
+        # TODO comment
         res = []
         for frame_index in range(len(check_array) - 1):
             if (frame_index > 0 and
@@ -229,3 +355,50 @@ class Test(Scene):
                     check_array[frame_index][which]):
                 res.append(frame_index)
         return res
+
+    def magic_actor(self):
+        return self.runs[self.run].actors[self.params['magic']['actor']]
+
+    """
+    def capture(self):
+        # Overload of Scene.capture to ignore magic actor when hidden
+        run = self.runs[self.run]
+
+        # on O1 test we need to ignore the magic actor when it is
+        # hidden (to ignore it on depth and masks images)
+        if self.magic_actor().hidden:
+            ignored = [self.magic_actor().actor]
+        else:
+            ignored = []
+        run.capture(ignored_actors=ignored)
+    """
+
+    def set_magic_tick(self, check_array):
+        if self.is_occluded is False:
+            # try to get a tick where the magic actor is visible, do
+            # it 50 times or fail TODO built the list of visible
+            # ticks, exclude the 10 first and 10 last ones and take a
+            # random one in it (or two for dynamic_2).
+            count = 0
+            while count < 50:
+                count += 1
+                self.params['magic']['tick'] = random.randint(50, 150)
+                if check_array[self.params['magic']['tick']][0] is not True:
+                    continue
+                return True
+            return False
+
+        # in occluded case the magic tick is at the middle of the
+        # occlusion time. TODO check if only one state changment would
+        # be enough
+        visibility_changes = self.process(0, check_array)
+        if len(visibility_changes) < 2:
+            ue.log('check failed: bad occlusion')
+            return False
+        if '2' in self.movement:
+            pass
+        else:
+            magic_tick = math.ceil(
+                (visibility_changes[1] + visibility_changes[0]) / 2)
+        self.params['magic']['tick'] = magic_tick
+        return True

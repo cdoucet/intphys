@@ -42,10 +42,9 @@ class O1Test(O1Base, Test):
         magic_actor.set_hidden(is_hidden)
 
     def apply_magic_trick(self):
-        magic_actor = self.runs[self.run].actors[self.params['magic']['actor']]
         # revert the hidden state of the actor (hidden -> visible or
         # visible -> hidden)
-        magic_actor.set_hidden(not magic_actor.hidden)
+        self.magic_actor().set_hidden(not self.magic_actor().hidden)
 
     def static_visible(self, check_array):
         count = 0

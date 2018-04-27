@@ -11,10 +11,11 @@ class Scene:
     def __init__(self, world, saver):
         self.world = world
         self.params = {}
+        self.saver = saver
         self.generate_parameters()
+
         self.runs = []
         self.run = 0
-        self.saver = saver
         self.last_locations = []
 
     def generate_parameters(self):
@@ -26,7 +27,7 @@ class Scene:
                 material=get_random_material('Floor'))
         self.params['Light'] = LightParams(
                 type='SkyLight')
-        prob_walls = 0.5
+        prob_walls = 0  # no walls to avoid luminosity problems
         if random.uniform(0, 1) <= prob_walls:
             self.params['Walls'] = WallsParams(
                     material=get_random_material('Wall'),
@@ -41,7 +42,7 @@ class Scene:
         self.runs[self.run].play()
 
     def is_over(self):
-        if (self.run < len(self.runs)):
+        if self.run < len(self.runs):
             return False
         return True
 
@@ -51,9 +52,11 @@ class Scene:
     def stop_run(self, scene_index):
         if self.run >= len(self.runs):
             return True
-        if self.saver.is_dry_mode is False:
+
+        if not self.saver.is_dry_mode:
             self.saver.save(self.get_scene_subdir(scene_index))
             self.saver.reset()
+
         self.run += 1
         return True
 
@@ -63,9 +66,9 @@ class Scene:
         idx = scene_index + 1
         padded_idx = '0{}'.format(idx)
         scene_name = (
-                padded_idx + '_' +
-                ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
-                self.name)
+            padded_idx + '_' +
+            ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
+            self.name)
         out = os.path.join(self.saver.output_dir, scene_name)
         if 'Test' in type(self).__name__:
             # 1, 2, 3 and 4 subdirectories for test scenes
@@ -77,5 +80,5 @@ class Scene:
         self.runs[self.run].capture()
 
     def tick(self):
-        if (self.run < len(self.runs)):
+        if self.run < len(self.runs):
             self.runs[self.run].tick()

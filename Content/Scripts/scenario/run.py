@@ -57,16 +57,21 @@ class Run:
         return all([a.is_valid for a in self.actors.values()])
 
     def tick(self):
-        if (self.actors is not None):
+        if self.actors is not None:
             for actor_name, actor in self.actors.items():
                 if 'object' in actor_name or 'occluder' in actor_name:
                     actor.move()
+
         self.ticker += 1
-        if (self.actors is None):
+
+        if self.actors is None:
             return
+
         if self.is_test is False:
             return
-        magic_actor = self.actors[self.actors_params['magic']['actor']]
+
+        magic_actor = self.actors[self.actors_params['magic']['actor']].actor
+
         ignored_actors = []
         for actor_name, actor in self.actors.items():
             if 'object' not in actor_name.lower() and \
@@ -77,14 +82,20 @@ class Run:
                     ignored_actors.append(actor.right.actor)
                 else:
                     ignored_actors.append(actor.actor)
-        visible = ScreenshotManager.IsActorInLastFrame(magic_actor.actor,
-                                                       ignored_actors)[0]
-        grounded = True if magic_actor.actor.get_actor_location().z <= 100 else False
+
+        visible = ScreenshotManager.IsActorInLastFrame(
+            magic_actor, ignored_actors)[0]
+
+        if magic_actor.get_actor_location().z <= 100:
+            grounded = True
+        else:
+            grounded = False
+
         temp = [visible, grounded]
         self.check_array.append(temp)
 
     def del_actors(self):
-        if (self.actors is not None):
+        if self.actors is not None:
             for actor_name, actor in self.actors.items():
                 actor.actor_destroy()
             self.actors = None
@@ -99,12 +110,12 @@ class Run:
                            self.get_status())
 
 
-class RunImpossible(Run):
-    def capture(self):
-        ignored_actors = []
-        magic_actor = self.actors[self.actors_params['magic']['actor']]
-        if (magic_actor.hidden is True):
-            ignored_actors.append(magic_actor.actor)
-        self.saver.capture(ignored_actors,
-                           self.status_header,
-                           self.get_status())
+# class RunImpossible(Run):
+#     def capture(self):
+#         ignored_actors = []
+#         magic_actor = self.actors[self.actors_params['magic']['actor']]
+#         if (magic_actor.hidden is True):
+#             ignored_actors.append(magic_actor.actor)
+#         self.saver.capture(ignored_actors,
+#                            self.status_header,
+#                            self.get_status())
