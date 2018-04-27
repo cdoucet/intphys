@@ -52,8 +52,6 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
-        # TODO remove next line it's here only for test
-        nobjects = 3
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
