@@ -52,6 +52,8 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
+        # TODO remove next line it's here only for test
+        nobjects = 3
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
@@ -63,9 +65,9 @@ class Test(Scene):
             if '2' in self.movement:
                 for location in locations:
                     if location.y < 0:
-                        location.y = -550
+                        location.y = -600
                     else:
-                        location.y = 550
+                        location.y = 600
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
@@ -165,16 +167,6 @@ class Test(Scene):
             magic_tick = [magic_tick]
 
         self.magic_locations[self.run].append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-        """
-        if self.run == 0:
-            self.magic_locations.append(self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location())
-        elif self.runs[self.run].actors[self.params['magic']['actor']].actor.get_actor_location() != self.magic_locations[self.runs[self.run].ticker - 1]:
-            self.runs[self.run].b_is_valid = False
-        if (self.magic_locations[self.run] != self.magic_locations[self.run - 1]):
-            ue.log("Magic locations don't match")
-            self.runs[self.run].del_actors()
-            self.runs[self.run].b_is_valid = False
-        """
 
     def generate_magic_runs(self, scene_index):
         if '2' not in self.movement:
