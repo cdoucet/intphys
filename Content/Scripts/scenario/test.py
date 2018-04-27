@@ -170,41 +170,70 @@ class Test(Scene):
         #     self.runs[self.run].b_is_valid = False
 
     def generate_magic_runs(self, scene_index):
-        ue.log('generating magic runs')
-
+        # tick from 200 (number of engine ticks) to 100 (number of
+        # captured images) TODO the visibility checks must be
+        # performed at the capture speed (ie 100 times only, not 200)
+        ue.log(self.params['magic']['tick'])
         magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
-        ue.log(f'magic tick = {magic_tick}')
+        ue.log(f'generating magic runs: magic tick = {magic_tick}')
 
         # remove the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]
 
-        pic_types = ["scene", "depth", "masks"]
-        for pic_type in pic_types:
-            if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
-                os.makedirs("{}/3/{}".format(subdir, pic_type))
-            for i in range(1, magic_tick + 1):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            for i in range(magic_tick, 101):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
+        # build the {3, 4}/{scene, depth, masks} from {1, 2}/{scene,
+        # depth, masks}
+        self.generate_magic_images(subdir, [magic_tick])
 
-        for pic_type in pic_types:
-            if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
-                os.makedirs("{}/4/{}".format(subdir, pic_type))
-            for i in range(1, magic_tick + 1):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            for i in range(magic_tick, 101):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-
-        # build the status.json
+        # build the {3, 4}/status.json from {1, 2}/status.json
         self.generate_magic_status(subdir, [magic_tick])
+
+    def generate_magic_images(self, subdir, slice_index):
+        pic_types = ['scene', 'depth', 'masks']
+
+        # make sure the dest directories exist
+        for i in (3, 4):
+            for j in pic_types:
+                d = f'{subdir}/{i}/{j}'
+                if not os.path.isdir(d):
+                    os.makedirs(d)
+
+        def _copy(dst, src, type, i):
+            idx = str(i).zfill(3)
+            src = f'{subdir}/{src}/{type}/{type}_{idx}.png'
+            dst = f'{subdir}/{dst}/{type}/{type}_{idx}.png'
+            copyfile(src, dst)
+
+        if len(slice_index) == 1:  # static or dynamic_1 cases
+            idx = slice_index[0]
+            for pic_type in pic_types:
+                for i in range(1, idx + 1):
+                    _copy(3, 1, pic_type, i)
+                for i in range(idx, 101):
+                    _copy(3, 2, pic_type, i)
+
+            for pic_type in pic_types:
+                for i in range(1, idx + 1):
+                    _copy(4, 2, pic_type, i)
+                for i in range(idx, 101):
+                    _copy(4, 1, pic_type, i)
+
+        else:  # dynamic_2 case
+            idx1, idx2 = slice_index[0], slice_index[1]
+            for pic_type in pic_types:
+                for i in range(1, idx1+1):
+                    _copy(3, 1, pic_type, i)
+                for i in range(idx1, idx2+1):
+                    _copy(3, 2, pic_type, i)
+                for i in range(idx2, 101):
+                    _copy(3, 1, pic_type, i)
+
+            for pic_type in pic_types:
+                for i in range(1, idx1+1):
+                    _copy(4, 2, pic_type, i)
+                for i in range(idx1, idx2+1):
+                    _copy(4, 1, pic_type, i)
+                for i in range(idx2, 101):
+                    _copy(4, 2, pic_type, i)
 
     def generate_magic_status(self, subdir, slice_index):
         # build the status.json, slice_index are magic_tick as a list
@@ -280,8 +309,9 @@ class Test(Scene):
     def set_magic_tick(self, check_array):
         if self.is_occluded is False:
             # try to get a tick where the magic actor is visible, do
-            # it 50 times or fail TODO built the list of visible ticks
-            # and take a random one in it.
+            # it 50 times or fail TODO built the list of visible
+            # ticks, exclude the 10 first and 10 last ones and take a
+            # random one in it (or two for dynamic_2).
             count = 0
             while count < 50:
                 count += 1

@@ -22,13 +22,15 @@
    - bug: increasing illumination in some scenes (when walls)
    - we want 1 skylight and from 0 to 2 (random) directional lights.
 ** TODO packaged mode
-*** DONE Fix the Tools/build_package.sh
-    CLOSED: [2018-04-25 mer. 13:40]
+*** TODO Segmentation fault when more than 10 scenes to generate
+Seems to be related to the number of actors spawned but not sure.
 *** TODO Fix the code base to run in packaged mode [0/3]
 - [ ] depth and mask capture
 - [ ] capture in headless mode
 - [ ] friction
-
+*** TODO Unexpected crash at startup with
+Error: appError called: Assertion failed: ( Y*NumCells.X + X ) < Cells.Num()
+[File:Runtime/SlateCore/Public/Input/HittestGrid.h] [Line: 182]
 * desired features
 ** TODO reset the sky sphere rotation between scenes
    - integrate SkySphere as a Pyhton class
