@@ -60,10 +60,16 @@ class Test(Scene):
             locations = [FVector(1000 + 200 * y, -800
                                  if bool(random.getrandbits(1)) else 800, 0)
                          for y in (-1, 0, 1)]
+            if '2' in self.movement:
+                for location in locations:
+                    if location.y < 0:
+                        location.y = -550
+                    else:
+                        location.y = 550
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1 + random.random()
+            scale = 1# + random.random()
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -97,9 +103,11 @@ class Test(Scene):
             self.initial_force = FVector()
         if self.is_occluded:
             moves = []
+            scale = FVector(1, 1, 1.5)
             if 'dynamic' in self.movement:
                 if self.movement.split('_')[1] == '2':
-                    location = FVector(600, -300, 0)
+                    location = FVector(600, -175, 0)
+                    scale.x = 0.5
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
@@ -114,7 +122,7 @@ class Test(Scene):
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=FRotator(0, 0, 90),
-                scale=FVector(1, 1, 1.5),
+                scale=scale,
                 moves=moves,
                 speed=1,
                 start_up=start_up)
@@ -122,9 +130,9 @@ class Test(Scene):
                     self.movement.split('_')[1] == '2'):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
-                    location=FVector(600, 300, 0),
+                    location=FVector(600, 175, 0),
                     rotation=FRotator(0, 0, 90),
-                    scale=FVector(1, 1, 1.5),
+                    scale=scale,
                     moves=moves,
                     speed=1,
                     start_up=start_up)
@@ -136,7 +144,7 @@ class Test(Scene):
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
-                    force = FVector(0, -27e5 if y_location > 0 else 27e5, 0)
+                    force = FVector(0, -29e5 if y_location > 0 else 29e5, 0)
                     if 'O2' in type(self).__name__:
                         force.z = 24e5
                     actor.set_force(force)
@@ -169,12 +177,16 @@ class Test(Scene):
         """
 
     def generate_magic_runs(self, scene_index):
-        if (self.is_occluded is False and 'O2' in type(self).__name__):
-            magic_tick = 50
-        magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
-        ue.log("magic tick = {}".format(magic_tick))
+        if '2' not in self.movement:
+            magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2)
+            magic_tick2 = 100
+            ue.log("magic tick = {}".format(magic_tick))
+        else:
+            magic_tick = math.ceil((self.params['magic']['tick'][0] + 1) / 2) + 1
+            magic_tick2 = math.ceil((self.params['magic']['tick'][1] + 1) / 2) + 1
+            ue.log("magic ticks = {} - {}".format(magic_tick, magic_tick2))
         # TODO make the same thing for the status.json
-        # removing the run subdirectory from the path
+        # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]
         pic_types = ["scene", "depth", "masks"]
         for pic_type in pic_types:
@@ -184,10 +196,15 @@ class Test(Scene):
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
-            for i in range(magic_tick, 101):
+            for i in range(magic_tick, magic_tick2 + 1):
                 dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
+            if '2' in self.movement:
+                for i in range(magic_tick2, 101):
+                    dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    copyfile(src, dst)
         for pic_type in pic_types:
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))
@@ -195,10 +212,15 @@ class Test(Scene):
                 dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
-            for i in range(magic_tick, 101):
+            for i in range(magic_tick, magic_tick2 + 1):
                 dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                 copyfile(src, dst)
+            if '2' in self.movement:
+                for i in range(magic_tick2, 101):
+                    dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    copyfile(src, dst)
 
     def is_possible(self):
         return True if self.run_index - self.get_nchecks() in (3, 4) else False
