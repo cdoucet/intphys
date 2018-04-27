@@ -61,6 +61,12 @@ class Test(Scene):
             locations = [FVector(1000 + 200 * y, -800
                                  if bool(random.getrandbits(1)) else 800, 0)
                          for y in (-1, 0, 1)]
+            if '2' in self.movement:
+                for location in locations:
+                    if location.y < 0:
+                        location.y = -600
+                    else:
+                        location.y = 600
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
@@ -98,9 +104,11 @@ class Test(Scene):
             self.initial_force = FVector()
         if self.is_occluded:
             moves = []
+            scale = FVector(1, 1, 1.5)
             if 'dynamic' in self.movement:
                 if self.movement.split('_')[1] == '2':
-                    location = FVector(600, -300, 0)
+                    location = FVector(600, -175, 0)
+                    scale.x = 0.5
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
@@ -115,7 +123,7 @@ class Test(Scene):
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=FRotator(0, 0, 90),
-                scale=FVector(1, 1, 1.5),
+                scale=scale,
                 moves=moves,
                 speed=1,
                 start_up=start_up)
@@ -123,9 +131,9 @@ class Test(Scene):
                     self.movement.split('_')[1] == '2'):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
-                    location=FVector(600, 300, 0),
+                    location=FVector(600, 175, 0),
                     rotation=FRotator(0, 0, 90),
-                    scale=FVector(1, 1, 1.5),
+                    scale=scale,
                     moves=moves,
                     speed=1,
                     start_up=start_up)
@@ -137,7 +145,7 @@ class Test(Scene):
             for name, actor in self.runs[self.run].actors.items():
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
-                    force = FVector(0, -27e5 if y_location > 0 else 27e5, 0)
+                    force = FVector(0, -29e5 if y_location > 0 else 29e5, 0)
                     if 'O2' in type(self).__name__:
                         force.z = 24e5
                     actor.set_force(force)
