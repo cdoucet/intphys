@@ -128,6 +128,7 @@ class O2Test(O2Base, Test):
         self.params['magic']['tick'] = [0, 0]
         self.params['magic']['tick'][0] = magic_tick
         self.params['magic']['tick'][1] = magic_tick2
+        self.params['magic']['tick'] = sorted(self.params['magic']['tick'])
         return True
 
     def static_occluded(self, check_array):

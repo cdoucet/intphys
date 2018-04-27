@@ -70,7 +70,6 @@ class Saver:
         if self.is_dry_mode:
             return True
 
-
         # save the captured images as PNG
         done, max_depth, masks = ScreenshotManager.Save(output_dir)
         if not done:
