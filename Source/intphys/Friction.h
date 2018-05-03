@@ -19,11 +19,14 @@ public:
     static bool SetFriction(UMaterial* Material, float Friction);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static bool SetRestitution(UMaterial* Material, float restitution);
+    static bool SetRestitution(UMaterial* Material, float Restitution);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void ExitEngine(bool force);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void SetMassScale(UStaticMeshComponent *Component, float MAssScale);
+
+    UFUNCTION(BlueprintCallable, Category="IntPhys")
+    static bool SetVelocity(AActor *Actor, FVector Velocity);
 };

@@ -4,6 +4,7 @@ import unreal_engine as ue
 from unreal_engine.classes import Material
 from unreal_engine import FVector
 
+from actors.base_actor import BaseActor
 from actors.base_mesh import BaseMesh
 from actors.parameters import ObjectParams
 from tools.utils import as_dict
@@ -125,3 +126,14 @@ class Object(BaseMesh):
         status['mass'] = self.mass
         status['force'] = as_dict(self.force)
         return status
+
+    def reset(self, params):
+        # BaseActor.reset(params)
+        self.set_location(params.location)
+        self.set_rotation(params.rotation)
+        self.set_hidden(False)
+        self.set_mesh_str(self.shape[params.mesh])
+        self.set_scale(params.scale)
+        self.set_material(params.material)
+        self.set_friction(params.friction)
+        self.set_restitution(params.restitution)

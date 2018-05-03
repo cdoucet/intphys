@@ -35,10 +35,10 @@ class O1Test(O1Base, Test):
         # on run 1 and 3 the magic actor is visible at start, on runs
         # 2 and 4 it is hidden (runs 1, 2 are impossible, runs 3, 4
         # are possible).
-        run = self.run - self.get_nchecks() + 1
+        run = self.run + 1
         is_hidden = True if run in (2, 4) else False
 
-        magic_actor = self.runs[self.run].actors[self.params['magic']['actor']]
+        magic_actor = self.actors[self.params['magic']['actor']]
         magic_actor.set_hidden(is_hidden)
 
     def apply_magic_trick(self):
@@ -50,7 +50,7 @@ class O1Test(O1Base, Test):
         count = 0
         while count < 50:
             count += 1
-            self.params['magic']['tick'] = random.randint(50, 150)
+            self.params['magic']['tick'] = random.randint(10, 190)
             # check if actor is not visible during magic tick
             if check_array[self.params['magic']['tick']][0] is not True:
                 continue
@@ -62,7 +62,7 @@ class O1Test(O1Base, Test):
         count = 0
         while count < 50:
             count += 1
-            self.params['magic']['tick'] = random.randint(50, 150)
+            self.params['magic']['tick'] = random.randint(10, 190)
             # check if actor is not visible during magic tick
             if check_array[self.params['magic']['tick']][0] is not True:
                 continue
@@ -72,11 +72,27 @@ class O1Test(O1Base, Test):
 
     def dynamic_2_visible(self, check_array):
         count = 0
+        visibility_changes = self.process(0, check_array)
+        # if the actor is visible at the begining,
+        # the first possible magic tick is 0, else it is the first frame when
+        # the magic actor is visible
+        if len(visibility_changes) > 0:
+            start = 0 if check_array[0][0] is True else visibility_changes[0]
+            if check_array[0][0] is True:
+                end = visibility_changes[0] - 1
+            elif len(visibility_changes) > 1:
+                end = visibility_changes[1] - 1
+            else:
+                end = 199
+        else:
+            start = 0
+            end = 199
         self.params['magic']['tick'] = [0, 0]
         while count < 50:
             count += 1
-            self.params['magic']['tick'][0] = random.randint(50, 150)
-            self.params['magic']['tick'][1] = random.randint(50, 150)
+            self.params['magic']['tick'][0] = random.randint(start, end - 20)
+            # minimum 10 ticks between each magic tick
+            self.params['magic']['tick'][1] = random.randint(self.params['magic']['tick'][0] + 10, end)
             # check if actor is not visible during magic ticks
             if check_array[self.params['magic']['tick'][0]][0] is not True or \
                     check_array[self.params['magic']['tick'][1]][0] is not True or \

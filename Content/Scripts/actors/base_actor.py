@@ -105,3 +105,8 @@ class BaseActor():
             'location': as_dict(self.location),
             'rotation': as_dict(self.rotation)}
         return status
+
+    def reset(self, params):
+        self.set_location(params.location)
+        self.set_rotation(params.rotation)
+        self.set_hidden(False)

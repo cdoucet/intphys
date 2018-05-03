@@ -1,7 +1,6 @@
 import random
 import math
 from scenario.scene import Scene
-from scenario.run import Run
 from unreal_engine import FVector, FRotator
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
@@ -10,13 +9,6 @@ from tools.materials import get_random_material
 class Train(Scene):
     def __init__(self, world, saver):
         super().__init__(world, saver)
-        self.runs.append(Run(self.world, self.saver, self.params,
-            {
-                'name': self.name,
-                'type': 'train',
-                'is_possible': True
-                }
-                , False))
 
     def random_location(self, index, side=None):
         if side is None:
@@ -73,12 +65,12 @@ class Train(Scene):
                 start_up=False)
 
     def stop_run(self, scene_index):
-        self.runs[self.run].del_actors()
+        self.del_actors()
         super().stop_run(scene_index)
 
     def play_run(self):
         super().play_run()
-        for name, actor in self.runs[self.run].actors.items():
+        for name, actor in self.actors.items():
             if 'object' in name.lower() and random.randint(0, 1) == 0:
                 force = []
                 for i in range(3):
@@ -90,3 +82,7 @@ class Train(Scene):
 
     def is_possible(self):
         return True
+
+    def capture(self):
+        ignored_actors = []
+        self.saver.capture(ignored_actors, self.status_header, self.get_status())

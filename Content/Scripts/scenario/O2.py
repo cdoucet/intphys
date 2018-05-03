@@ -63,7 +63,7 @@ class O2Test(O2Base, Test):
         run = self.run - self.get_nchecks() + 1
         is_magic_mesh = True if run in (2, 4) else False
         magic_actor_type = self.params['magic']['actor']
-        magic_actor = self.runs[self.run].actors[magic_actor_type]
+        magic_actor = self.actors[magic_actor_type]
 
         new_mesh = (self.params['magic']['mesh'] if is_magic_mesh
                     else self.params[magic_actor_type].mesh)
@@ -79,7 +79,7 @@ class O2Test(O2Base, Test):
 
     def apply_magic_trick(self):
         # swap the mesh of the magic actor
-        magic_actor = self.runs[self.run].actors[self.params['magic']['actor']]
+        magic_actor = self.actors[self.params['magic']['actor']]
         current_mesh = magic_actor.mesh_str.split('.')[-1]
         mesh_1 = self.params['magic']['mesh']
         mesh_2 = self.params[self.params['magic']['actor']].mesh
@@ -90,7 +90,7 @@ class O2Test(O2Base, Test):
         count = 0
         while count < 50:
             count += 1
-            magic_tick = random.randint(50, 150)
+            magic_tick = random.randint(10, 190)
             # check if actor is not visible during magic tick
             if check_array[magic_tick][0] is not True:
                 continue

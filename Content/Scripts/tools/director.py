@@ -1,7 +1,6 @@
 import json
 import importlib
 import unreal_engine as ue
-from tools.tick import Tick
 from tools.utils import exit_ue, set_game_paused
 from tools.saver import Saver
 
@@ -66,12 +65,12 @@ class Director(object):
                 self.scene + 1, len(self.scenes),
                 self.scenes[self.scene].name))
 
-        self.scenes[self.scene].play_run()
+        if self.scenes[self.scene].run < 2:
+            self.scenes[self.scene].play_run()
 
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-
         if self.scenes[self.scene].stop_run(self.scene) is False:
             self.restart_scene()
         elif self.scenes[self.scene].is_over() and self.scene < len(self.scenes):

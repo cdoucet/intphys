@@ -60,8 +60,9 @@ class Occluder(BaseMesh):
         # normalization
         location = FVector(
                 params.location.x,
-                params.location.y - (200 * params.scale.x),
+                params.location.y,
                 params.location.z)
+        location.y = location.y - (params.scale.x * 200)
         super().get_parameters(
             location,
             params.rotation,
@@ -139,3 +140,12 @@ class Occluder(BaseMesh):
         super().on_actor_hit(me, other)
         if 'occluder' in other.get_name().lower():
             self.is_valid = False
+
+    def reset(self, params):
+        super().reset(params)
+        self.set_location(FVector(self.location.x, self.location.y - (self.scale.x * 200), self.location.z))
+        self.moving = False
+        self.count = -1
+        self.up = params.start_up
+        if (self.up is False):
+            self.rotation.roll = 90

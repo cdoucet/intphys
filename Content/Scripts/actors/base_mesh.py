@@ -6,7 +6,6 @@ from unreal_engine.classes import Material, StaticMesh, Friction
 from actors.base_actor import BaseActor
 from tools.utils import as_dict
 
-
 """
 Ok here we go:
 This is a recursive instantiate class.
@@ -120,3 +119,10 @@ class BaseMesh(BaseActor):
         status['restitution'] = self.restitution
         status['mesh'] = self.mesh_str
         return status
+
+    def reset(self, params):
+        super().reset(params)
+        self.set_scale(params.scale)
+        self.set_material(params.material)
+        self.set_friction(params.friction)
+        self.set_restitution(params.restitution)

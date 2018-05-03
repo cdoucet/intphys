@@ -5,7 +5,7 @@ from unreal_engine.classes import Friction
 
 
 class Run:
-    def __init__(self, world, saver, actors_params, status_header, is_test):
+    def __init__(self, saver, actors_params, status_header, is_test):
         self.world = world
         self.saver = saver
         self.actors_params = actors_params
@@ -23,7 +23,10 @@ class Run:
         if self.actors is not None:
             return {k: v.get_status() for k, v in self.actors.items()}
 
-    def spawn_actors(self):
+    def spawn_actors(self, actors=None):
+        if actors is not None:
+            self.actors = actors
+            return
         self.actors = {}
         for actor, params in self.actors_params.items():
             if ('magic' in actor):
@@ -49,9 +52,19 @@ class Run:
                     Friction.SetMassScale(self.actors[actor].get_mesh(),
                                           1.6962973279499)
 
-    def play(self):
-        self.spawn_actors()
-        self.saver.update_camera(self.actors['Camera'])
+    def play(self, actors=None):
+        if self.actors is None:
+            self.spawn_actors(actors)
+            self.saver.update_camera(self.actors['Camera'])
+            return self.actors
+        return None
+
+    def reset_actors(self):
+        for name, actor in self.actors.items():
+            if 'object' in name.lower():
+                actor.reset(self.actors_params[name])
+            elif "occluder" in name.lower():
+                actor.reset(self.actors_params[name])
 
     def is_valid(self):
         return all([a.is_valid for a in self.actors.values()])
@@ -99,7 +112,6 @@ class Run:
             for actor_name, actor in self.actors.items():
                 actor.actor_destroy()
             self.actors = None
-        return self.check_array
 
     def capture(self):
         ignored_actors = []
@@ -110,12 +122,8 @@ class Run:
                            self.get_status())
 
 
-# class RunImpossible(Run):
-#     def capture(self):
-#         ignored_actors = []
-#         magic_actor = self.actors[self.actors_params['magic']['actor']]
-#         if (magic_actor.hidden is True):
-#             ignored_actors.append(magic_actor.actor)
-#         self.saver.capture(ignored_actors,
-#                            self.status_header,
-#                            self.get_status())
+class TrainRun(Run):
+ 
+
+class TestRun(Run):
+    pass
