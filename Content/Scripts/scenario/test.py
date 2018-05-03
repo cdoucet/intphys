@@ -111,13 +111,7 @@ class Test(Scene):
     def play_run(self):
         super().play_run()
         self.setup_magic_actor()
-        # the actors keep their previous force in the second run. do something
-        for name, actor in self.actors.items():
-            if 'object' in name.lower():
-                Friction.SetVelocity(actor.actor, FVector(0, 0, 0))
-                actor.get_mesh().set_simulate_physics(False)
-                actor.get_mesh().set_simulate_physics()
-        if 'static' not in self.movement and self.run == 0:
+        if 'static' not in self.movement:
             for name, actor in self.actors.items():
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
@@ -199,7 +193,7 @@ class Test(Scene):
                     src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
                     copyfile(src, dst)
         ue.log('saved captures to {}/{}'.format(subdir, 3))
-        ue.log('Run 3/4: Impossible run')
+        ue.log('Run 4/4: Impossible run')
         for pic_type in pic_types:
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))

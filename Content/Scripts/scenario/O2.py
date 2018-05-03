@@ -60,7 +60,7 @@ class O2Test(O2Base, Test):
         # self.params[magic_actor].mesh at start, on runs 2 and 4 it
         # is self.params['magic']['mesh'] (runs 1, 2 are impossible,
         # runs 3, 4 are possible).
-        run = self.run - self.get_nchecks() + 1
+        run = self.run + 1
         is_magic_mesh = True if run in (2, 4) else False
         magic_actor_type = self.params['magic']['actor']
         magic_actor = self.actors[magic_actor_type]

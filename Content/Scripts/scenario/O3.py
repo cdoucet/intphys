@@ -43,9 +43,9 @@ class O3Test(O3Base, Test):
         # on run 1 and 3 the magic actor is visible at start, on runs
         # 2 and 4 it is hidden (runs 1, 2 are impossible, runs 3, 4
         # are possible).
-        run = self.run - self.get_nchecks() + 1
+        run = self.run + 1
         if run in (2, 4):
-            magic_actor = self.runs[self.run].actors[
+            magic_actor = self.actors[
                 self.params['magic']['actor']]
             magic_actor.set_material(self.params['magic']['material'])
 
@@ -54,14 +54,14 @@ class O3Test(O3Base, Test):
         material_1 = self.params['magic']['material']
         material_2 = self.params[self.params['magic']['actor']].material
 
-        magic_actor = self.runs[self.run].actors[self.params['magic']['actor']]
+        magic_actor = self.actors[self.params['magic']['actor']]
         if magic_actor.material.get_name() == material_2.split('.')[-1]:
             new_material = material_1
         else:
             new_material = material_2
         magic_actor.set_material(new_material)
 
-    ## TODO from here this is just a copy/paste from O1
+    # TODO from here this is just a copy/paste from O1
 
     def static_visible(self, check_array):
         count = 0

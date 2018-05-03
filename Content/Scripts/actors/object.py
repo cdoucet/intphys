@@ -4,7 +4,6 @@ import unreal_engine as ue
 from unreal_engine.classes import Material
 from unreal_engine import FVector
 
-from actors.base_actor import BaseActor
 from actors.base_mesh import BaseMesh
 from actors.parameters import ObjectParams
 from tools.utils import as_dict
@@ -129,7 +128,11 @@ class Object(BaseMesh):
 
     def reset(self, params):
         # BaseActor.reset(params)
-        self.set_location(params.location)
+        location = FVector(
+                params.location.x,
+                params.location.y,
+                params.location.z + (50 * params.scale.z))
+        self.set_location(location)
         self.set_rotation(params.rotation)
         self.set_hidden(False)
         self.set_mesh_str(self.shape[params.mesh])
@@ -137,3 +140,5 @@ class Object(BaseMesh):
         self.set_material(params.material)
         self.set_friction(params.friction)
         self.set_restitution(params.restitution)
+        self.get_mesh().set_simulate_physics(False)
+        self.get_mesh().set_simulate_physics()
