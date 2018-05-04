@@ -53,7 +53,7 @@ class Wall(BaseMesh):
     Disclaimer: if you change the size of the mesh, think about changing the formula
     """
     def __init__(self,
-                 world=None,
+                 world,
                  side='Front',
                  length=2000,
                  depth=1000,
@@ -66,13 +66,10 @@ class Wall(BaseMesh):
             'Left': self.left,
             'Right': self.right
         }
-        if (world is not None):
-            super().__init__(world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
-            self.get_parameters(side, length, depth,
-                                height, material, overlap, warning)
-            self.set_parameters()
-        else:
-            super().__init__()
+        super().__init__(world.actor_spawn(ue.load_class('/Game/Wall.Wall_C')))
+        self.get_parameters(side, length, depth,
+                            height, material, overlap, warning)
+        self.set_parameters()
 
     def get_parameters(self, side, length,
                        depth, height, material,

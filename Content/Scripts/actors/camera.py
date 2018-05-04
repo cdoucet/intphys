@@ -7,15 +7,11 @@ from actors.parameters import CameraParams
 
 
 class Camera(BaseActor):
-    def __init__(self, world=None, params=CameraParams()):
-        if world is not None:
-            super().__init__(world.actor_spawn(
+    def __init__(self, world, params=CameraParams()):
+        super().__init__(world.actor_spawn(
                 ue.load_class('/Game/Camera.Camera_C')))
-
-            self.get_parameters(params)
-            self.set_parameters(world)
-        else:
-            super().__init__()
+        self.get_parameters(params)
+        self.set_parameters(world)
 
     def get_parameters(self, params):
         self.field_of_view = params.field_of_view

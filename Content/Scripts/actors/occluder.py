@@ -45,14 +45,11 @@ down : it will rise again at the 50th frame
 
 
 class Occluder(BaseMesh):
-    def __init__(self, world=None, params=OccluderParams()):
-        if world is not None:
-            super().__init__(
-                world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
-            self.get_parameters(params)
-            self.set_parameters()
-        else:
-            super().__init__()
+    def __init__(self, world, params=OccluderParams()):
+        super().__init__(
+            world.actor_spawn(ue.load_class('/Game/Occluder.Occluder_C')))
+        self.get_parameters(params)
+        self.set_parameters()
 
     def get_parameters(self, params):
         # TODO this thing is a non-sense (we apply to the y location

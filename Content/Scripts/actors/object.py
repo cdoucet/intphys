@@ -56,14 +56,11 @@ class Object(BaseMesh):
         'Cube': 0.6155297517867,
         'Cone': 1.6962973279499}
 
-    def __init__(self, world=None, params=ObjectParams()):
-        if world is not None:
-            super().__init__(
-                world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
-            self.get_parameters(params)
-            self.set_parameters()
-        else:
-            super().__init__()
+    def __init__(self, world, params=ObjectParams()):
+        super().__init__(
+            world.actor_spawn(ue.load_class('/Game/Object.Object_C')))
+        self.get_parameters(params)
+        self.set_parameters()
 
     def get_parameters(self, params):
         # adjust the location.z to be placed at the bottom of the mesh

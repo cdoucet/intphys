@@ -21,25 +21,20 @@ class Light(BaseActor):
     If you don't send either the location and the rotation during the camera instantiation,
     the __init__ function will change it on its own
     """
-    def __init__(self, world=None, params=LightParams()):
+    def __init__(self, world, params=LightParams()):
         types = {
             'Directional': '/Game/DirectionalLight.DirectionalLight_C',
             'SkyLight': '/Game/SkyLight.SkyLight_C',
             'PointLight': '/Game/PointLight.PointLight_C'
             }
+        super().__init__(
+            world.actor_spawn(ue.load_class(types[params.type])))
 
-        if world is not None:
-            super().__init__(
-                world.actor_spawn(ue.load_class(types[params.type])))
-
-            # the position does not affect sky light
-            if params.type != 'SkyLight':
-                self.get_parameters(params)
-                self.set_parameters()
-
-            self.type = params.type
-        else:
-            super().__init__()
+        # the position does not affect sky light
+        if params.type != 'SkyLight':
+            self.get_parameters(params)
+            self.set_parameters()
+        self.type = params.type
 
     def get_parameters(self, params):
         super().get_parameters(params.location, params.rotation, True, False)

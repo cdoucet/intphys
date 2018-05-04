@@ -102,7 +102,6 @@ class Director(object):
         if self.pause != 0:
             self.pause -= 1
             return
-
         # launch new scene every 200 tick except if a pause just finished
         if self.b_pause is False and self.ticker % 100 == 0 and (self.ticker / 100) % 2 == 0:
             if self.ticker != 0:

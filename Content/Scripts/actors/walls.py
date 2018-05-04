@@ -8,7 +8,7 @@ Walls is a wrapper class that make 3 walls spawn.
 
 
 class Walls():
-    def __init__(self, world=None, params=WallsParams):
+    def __init__(self, world, params=WallsParams):
         self.get_parameters(params)
         self.front = Wall(
             world, "Front",

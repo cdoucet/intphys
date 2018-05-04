@@ -17,18 +17,16 @@ class BaseActor():
         The spawned actor
 
     """
-    def __init__(self, actor=None):
-        if (actor is not None):
-            self.actor = actor
+    def __init__(self, actor):
+        self.actor = actor
 
         # this flag becomes False when something illegal occurs to
         # that actor (e.g. an overlap)
         self.is_valid = True
 
     def actor_destroy(self):
-        if (self.get_actor() is not None):
-            self.get_actor().actor_destroy()
-            self.actor = None
+        self.get_actor().actor_destroy()
+        self.actor = None
 
     def get_parameters(self, location, rotation, overlap, warning):
         self.location = location

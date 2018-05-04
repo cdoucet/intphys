@@ -7,15 +7,12 @@ from actors.parameters import FloorParams
 
 
 class SkySphere(BaseMesh):
-    def __init__(self, world=None, params=FloorParams()):
-        if world is not None:
-            super().__init__(world.actor_spawn(
-                ue.load_class('/Game/Meshes/SkySphere/BP_Sky_Sphere.BP_Sky_Sphere_C')))
-            self.mesh_str = '/Game/Meshes/SkySphere/SM_SkySphere'
-            self.material = ue.load_object(Material, params.material)
-            self.set_mesh()
-        else:
-            super().__init__()
+    def __init__(self, world, params=FloorParams()):
+        super().__init__(world.actor_spawn(
+            ue.load_class('/Game/Meshes/SkySphere/BP_Sky_Sphere1.BP_Sky_Sphere1_C')))
+        self.mesh_str = '/Game/Meshes/SkySphere/SM_SkySphere'
+        self.material = ue.load_object(Material, params.material)
+        self.set_mesh()
 
     def get_parameters(self, params):
         location = FVector(0, 0, 0)
