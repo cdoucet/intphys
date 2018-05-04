@@ -49,7 +49,8 @@ class Scene:
                     depth=random.uniform(1500, 3000))
 
     def play_run(self):
-        ue.log("Run {}/4: Possible run".format(self.run + 1))
+        ue.log("Run {}/{}: Possible run".format(self.run + 1,
+               4 if self.saver.is_dry_mode is False else 2))
         if self.run == 0:
             self.spawn_actors()
             self.saver.update_camera(self.actors['Camera'])
@@ -62,7 +63,7 @@ class Scene:
         for actor, actor_params in self.params.items():
             if ('magic' in actor):
                 continue
-            if ('skysphere' in actor.lower()):
+            elif ('skysphere' in actor.lower()):
                 class_name = 'SkySphere'
             else:
                 class_name = actor.split('_')[0].title()
