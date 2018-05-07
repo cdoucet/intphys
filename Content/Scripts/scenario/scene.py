@@ -49,8 +49,11 @@ class Scene:
                     depth=random.uniform(1500, 3000))
 
     def play_run(self):
-        ue.log("Run {}/{}: Possible run".format(self.run + 1,
-               4 if self.saver.is_dry_mode is False else 2))
+        if 'Train' in type(self).__name__:
+            ue.log("Run {}/1: Possible run".format(self.run + 1))
+        else:
+            ue.log("Run {}/{}: Possible run".format(self.run + 1,
+                   4 if self.saver.is_dry_mode is False else 2))
         if self.run == 0:
             self.spawn_actors()
             self.saver.update(self.actors)

@@ -16,8 +16,7 @@ class Test(Scene):
     def __init__(self, world, saver, is_occluded, movement):
         self.is_occluded = is_occluded
         self.movement = movement
-        self.magic_locations = [[],[]]
-        self.check_array = []
+        self.check_array = [{}, {}]
         super().__init__(world, saver)
 
     def generate_parameters(self):
@@ -97,8 +96,7 @@ class Test(Scene):
                 moves=moves,
                 speed=1,
                 start_up=start_up)
-            if ('dynamic' in self.movement and
-                    self.movement.split('_')[1] == '2'):
+            if ('2' in self.movement):
                 self.params['occluder_2'] = OccluderParams(
                     material=get_random_material('Wall'),
                     location=FVector(600, 175, 0),
@@ -135,30 +133,7 @@ class Test(Scene):
 
     def tick(self):
         super().tick()
-        magic_tick = self.params['magic']['tick']
-        if isinstance(magic_tick, int):
-            magic_tick = [magic_tick]
-        self.magic_locations[self.run].append(
-            self.magic_actor().actor.get_actor_location())
-        magic_actor = self.actors[self.params['magic']['actor']].actor
-        ignored_actors = []
-        for actor_name, actor in self.actors.items():
-            if 'object' not in actor_name.lower() and \
-                    'occluder' not in actor_name.lower():
-                if 'walls' in actor_name.lower():
-                    ignored_actors.append(actor.front.actor)
-                    ignored_actors.append(actor.left.actor)
-                    ignored_actors.append(actor.right.actor)
-                else:
-                    ignored_actors.append(actor.actor)
-        visible = ScreenshotManager.IsActorInLastFrame(
-            magic_actor, ignored_actors)[0]
-        if magic_actor.get_actor_location().z <= 100:
-            grounded = True
-        else:
-            grounded = False
-        temp = [visible, grounded]
-        self.check_array.append(temp)
+        self.fill_check_array()
 
     def generate_magic_runs(self, scene_index):
         if '2' not in self.movement:
@@ -257,8 +232,9 @@ class Test(Scene):
         #     f3[magic_object]['material'], f4[magic_object]['material'])
         #     for f3, f4 in zip(json_3['frames'], json_4['frames'])))
 
-    def process(self, which, check_array):
-        # TODO comment
+    def checks_time_laps(self, which, check_array):
+        # looking for the state changes in a bool array and put them in another
+        # array (True becoming False and False becoming True)
         res = []
         for frame_index in range(len(check_array) - 1):
             if (frame_index > 0 and
@@ -275,3 +251,20 @@ class Test(Scene):
         if self.actors[self.params['magic']['actor']].hidden is True:
             ignored_actors.append(self.actors[self.params['magic']['actor']].actor)
         self.saver.capture(ignored_actors, self.status_header, self.get_status())
+
+    def set_magic_tick(self, check_array):
+        if self.is_occluded is True:
+            if 'static' in self.movement:
+                return self.static_occluded(check_array)
+            elif 'dynamic_1' in self.movement:
+                return self.dynamic_1_occluded(check_array)
+            else:
+                return self.dynamic_2_occluded(check_array)
+        else:
+            if 'static' in self.movement:
+                return self.static_visible(check_array)
+            elif 'dynamic_1' in self.movement:
+                return self.dynamic_1_visible(check_array)
+            else:
+                return self.dynamic_2_visible(check_array)
+

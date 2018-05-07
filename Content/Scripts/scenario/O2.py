@@ -5,7 +5,7 @@ import unreal_engine as ue
 from actors.object import Object
 from scenario.test import Test
 from scenario.train import Train
-from unreal_engine.classes import Friction
+from unreal_engine.classes import Friction, ScreenshotManager
 from unreal_engine import FRotator
 
 
@@ -35,10 +35,12 @@ class O2Train(O2Base, Train):
 class O2Test(O2Base, Test):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
+        self.check_array[0]['visibility'] = []
+        self.check_array[0]['location'] = []
+        self.check_array[0]['grounded'] = []
 
     def generate_parameters(self):
         super().generate_parameters()
-
         for name, params in self.params.items():
             if 'object' in name:
                 # objects can be of any shapes, not only sphere
@@ -54,6 +56,30 @@ class O2Test(O2Base, Test):
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
+
+    def fill_check_array(self):
+        magic_actor = self.actors[self.params['magic']['actor']].actor
+        self.check_array[self.run]['location'].append(
+            magic_actor.get_actor_location())
+        ignored_actors = []
+        for actor_name, actor in self.actors.items():
+            if 'object' not in actor_name.lower() and \
+                    'occluder' not in actor_name.lower():
+                if 'walls' in actor_name.lower():
+                    ignored_actors.append(actor.front.actor)
+                    ignored_actors.append(actor.left.actor)
+                    ignored_actors.append(actor.right.actor)
+                else:
+                    ignored_actors.append(actor.actor)
+        visible = ScreenshotManager.IsActorInLastFrame(
+            magic_actor, ignored_actors)[0]
+        self.check_array[self.run]['visibility'].append(visible)
+        # check if the magic actor is in the air
+        if magic_actor.get_actor_location().z <= 100:
+            grounded = True
+        else:
+            grounded = False
+        self.check_array[self.run]['grounded'].append(grounded)
 
     def setup_magic_actor(self):
         # on run 1 and 3 the magic actor mesh is
@@ -168,23 +194,3 @@ class O2Test(O2Base, Test):
         self.params['magic']['tick'].append(magic_tick)
         self.params['magic']['tick'].append(magic_tick2)
         return True
-
-    def set_magic_tick(self, check_array):
-        try:
-            if self.is_occluded is True:
-                if 'static' in self.movement:
-                    return self.static_occluded(check_array)
-                elif 'dynamic_1' in self.movement:
-                    return self.dynamic_1_occluded(check_array)
-                else:
-                    return self.dynamic_2_occluded(check_array)
-            else:
-                if 'static' in self.movement:
-                    return self.static_visible(check_array)
-                elif 'dynamic_1' in self.movement:
-                    return self.dynamic_1_visible(check_array)
-                else:
-                    return self.dynamic_2_visible(check_array)
-        except Exception as e:
-            ue.log_warning(e)
-            return False
