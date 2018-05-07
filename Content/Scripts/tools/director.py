@@ -80,7 +80,7 @@ class Director(object):
 
     def restart_scene(self):
         ue.log('restarting scene')
-        self.saver.reset()
+        self.saver.reset(True)
         is_test = True if 'test' in type(self.scenes[self.scene]).__name__.lower() else False
         module = importlib.import_module("scenario.{}".format(self.scenes[self.scene].name))
         if is_test is True:
