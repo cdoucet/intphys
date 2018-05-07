@@ -14,13 +14,13 @@ public:
 
     void SetOriginActor(AActor* Actor);
 
-    bool Capture(const TArray<AActor*>& IgnoredActors);
-	
-	void CaptureMasks(const TArray<AActor*>& IgnoredActors);
+    void SetActors(TArray<AActor*>& Actors);
 
+	bool Capture(const TArray<AActor*>& IgnoredActors);
+	
     bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
 
-    void Reset();
+    void Reset(bool delete_actors);
 
     bool IsActorInFrame(const AActor* Actor, const uint FrameIndex);
 
@@ -60,7 +60,7 @@ private:
 
     // Map the actors names to int ids
     TSet<FString> m_ActorsSet;
-    TMap<FString, uint8> m_ActorsMap;
+    TMap<FString, bool> m_ActorsMap;
 
     // Take a screenshot of the scene and push it in memory
     bool CaptureScene();

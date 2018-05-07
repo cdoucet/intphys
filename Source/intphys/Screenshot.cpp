@@ -98,17 +98,33 @@ FScreenshot::FScreenshot(const FIntVector& Size, AActor* OriginActor, bool Verbo
 FScreenshot::~FScreenshot()
 {}
 
+void FScreenshot::SetActors(TArray<AActor*>& Actors)
+{
+	for (auto& actor : Actors)
+	{
+		if (actor->GetName().Contains(FString(TEXT("Wall"))) == true &&
+				m_ActorsSet.Contains(TEXT("Walls")) == false)
+		{
+			m_ActorsSet.Add(FString(TEXT("Walls")));
+		}
+		else
+		{
+			m_ActorsSet.Add(actor->GetName());
+		}
+	}
+}
 
 void FScreenshot::SetOriginActor(AActor* Actor)
 {
     m_OriginActor = Actor;
 }
 
-
-void FScreenshot::Reset()
+void FScreenshot::Reset(bool delete_actors)
 {
     m_ImageIndex = 0;
-    m_ActorsSet.Empty();
+	// delete actors only if it's last run
+	if (delete_actors)
+		m_ActorsSet.Empty();
     m_ActorsMap.Empty();
 
     for (auto& Image : m_Scene)
@@ -141,56 +157,6 @@ bool FScreenshot::Capture(const TArray<AActor*>& IgnoredActors)
 
     return bDone1 and bDone2;
 }
-
-void FScreenshot::CaptureMasks(const TArray<AActor*>& IgnoredActors)
-{
-    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
-    for (auto& Actor : IgnoredActors)
-    {
-        CollisionQueryParams.AddIgnoredActor(Actor);
-    }
-
-    // Intitialize world and scene view
-    m_World = m_OriginActor->GetWorld();
-    m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
-
-    if (m_World == NULL || m_SceneView == NULL)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Screenshot: SceneView or World are null"));
-    }
-
-    // get the origin location and rotation for distance computation
-    FVector OriginLoc = m_OriginActor->GetActorLocation();
-    FVector OriginRot = FRotationMatrix(m_OriginActor->GetActorRotation()).GetScaledAxis(EAxis::X);
-    OriginRot.Normalize();
-
-    // for each pixel of the view, cast a ray in the scene and get the
-    // resulting hit actor and hit distance
-    FHitResult HitResult;
-    for (int y = 0; y < m_Size.Y; ++y)
-    {
-        for (int x = 0; x < m_Size.X; ++x)
-		{
-            FVector RayOrigin, RayDirection;
-            m_SceneView->DeprojectFVector2D(FVector2D(x, y), RayOrigin, RayDirection);
-
-            bool bHit = m_World->LineTraceSingleByChannel(
-                HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
-                ECollisionChannel::ECC_Visibility, CollisionQueryParams);
-
-            if(bHit)
-            {
-                uint PixelIndex = y * m_Size.X + x;
-                // compute mask
-                FString ActorName = HitResult.GetActor()->GetName();
-                int8 ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
-                m_ActorsMap.Add(ActorName, ActorIndex);
-                m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
-            }
-        }
-    }
-}
-
 
 bool FScreenshot::Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap)
 {
@@ -348,13 +314,17 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 
                 // compute mask
                 FString ActorName = HitResult.GetActor()->GetName();
-                int8 ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
+				if (HitResult.GetActor()->GetName().Contains(FString(TEXT("Wall"))) == true)
+					ActorName = FString(TEXT("Walls"));
+				int8 ActorIndex = -1;
+				ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
+				if (ActorIndex <= 0)
+					UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *ActorName);
                 m_ActorsMap.Add(ActorName, ActorIndex);
                 m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
             }
         }
     }
-
     return true;
 }
 
@@ -427,46 +397,6 @@ bool FScreenshot::SaveMasks(const FString& Directory, TMap<FString, uint8>& OutA
     // level) mappings
     OutActorsMap.Empty(m_ActorsSet.Num() + 1);
     OutActorsMap.Add(FString(TEXT("Sky")), 0);
-
-    TMap<uint8, uint8> ColorMap;
-    ColorMap.Empty(m_ActorsSet.Num());
-    ColorMap.Add(0, 0);
-
-    // merge all the wall actors to a single gray level
-    uint8 WallColor = 0;
-    for (const FString& ActorName : m_ActorsSet)
-    {
-        // true if the actor is a wall
-        bool bIsWall = ActorName.Contains(FString(TEXT("Wall")));
-
-        // index of the actor in raw images (0 is for the sky)
-        auto Index = m_ActorsSet.Add(ActorName).AsInteger() + 1;
-
-        // the grayscale color we will assign to that actor
-        uint8 Color;
-
-        // This is a wall and we already have a color for walls
-        if (bIsWall and WallColor != 0)
-        {
-            Color = WallColor;
-        }
-        else
-        {
-            // compute a graylevel in [0, 255] from the actor index in [0, nactors]
-            Color = static_cast<uint8>((Index) * 255.0 / m_ActorsSet.Num());
-
-            // this is the first wall we encouter, fix the color for
-            // all other walls
-            if (bIsWall)
-            {
-                WallColor = Color;
-            }
-        }
-
-        OutActorsMap.Add(ActorName, Color);
-        ColorMap.Add(Index, Color);
-    }
-
     if (m_Verbose)
     {
         FString MasksStr;
@@ -488,7 +418,7 @@ bool FScreenshot::SaveMasks(const FString& Directory, TMap<FString, uint8>& OutA
         FImageMasks& Image = m_Masks[i];
         for (uint j = 0; j < Image.Num(); ++j)
         {
-            auto Color = ColorMap[Image[j]];
+            auto Color = Image[j] * 255.0 / m_ActorsSet.Num();
             m_WriteBuffer[j] = FColor(Color, Color, Color, 255);
         }
 

@@ -58,10 +58,10 @@ class Saver:
             # save the current status
             self.status.append(status)
 
-    def reset(self):
+    def reset(self, reset_actors):
         """Reset the saver and delete all data in cache"""
         if not self.is_dry_mode:
-            ScreenshotManager.Reset()
+            ScreenshotManager.Reset(reset_actors)
             self.status_header = {}
             self.status = []
 
@@ -87,6 +87,15 @@ class Saver:
         ue.log(f'saved captures to {output_dir}')
         return True
 
-    def update_camera(self, camera):
-        self.camera = camera
-        ScreenshotManager.SetOriginActor(camera.actor)
+    def update(self, actors):
+        self.camera = actors['Camera']
+        ScreenshotManager.SetOriginActor(self.camera.actor)
+        res = []
+        for name, actor in actors.items():
+            if 'wall' in name.lower():
+                res.append(actor.left.actor)
+                res.append(actor.right.actor)
+                res.append(actor.front.actor)
+            else:
+                res.append(actor.actor)
+        ScreenshotManager.SetActors(res)

@@ -53,7 +53,7 @@ class Scene:
                4 if self.saver.is_dry_mode is False else 2))
         if self.run == 0:
             self.spawn_actors()
-            self.saver.update_camera(self.actors['Camera'])
+            self.saver.update(self.actors)
 
     def is_valid(self):
         return all([a.is_valid for a in self.actors.values()])
@@ -99,7 +99,8 @@ class Scene:
     def stop_run(self, scene_index):
         if not self.saver.is_dry_mode:
             self.saver.save(self.get_scene_subdir(scene_index))
-            self.saver.reset()
+            # reset actors if it is the last run
+            self.saver.reset(True if self.run == 1 else False)
         self.run += 1
         return True
 

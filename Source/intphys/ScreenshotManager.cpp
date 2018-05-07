@@ -23,20 +23,15 @@ bool UScreenshotManager::Capture(const TArray<AActor*>& IgnoredActors)
     return Screenshot->Capture(IgnoredActors);
 }
 
-void UScreenshotManager::CaptureMasks(const TArray<AActor*>& IgnoredActors)
-{
-	Screenshot->CaptureMasks(IgnoredActors);
-}
-
 bool UScreenshotManager::Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap)
 {
     return Screenshot->Save(Directory, OutMaxDepth, OutActorsMap);
 }
 
 
-void UScreenshotManager::Reset()
+void UScreenshotManager::Reset(bool delete_actors)
 {
-    Screenshot->Reset();
+    Screenshot->Reset(delete_actors);
 }
 
 
@@ -45,12 +40,15 @@ void UScreenshotManager::SetOriginActor(AActor* Actor)
     Screenshot->SetOriginActor(Actor);
 }
 
+void UScreenshotManager::SetActors(TArray<AActor*>& Actors)
+{
+    Screenshot->SetActors(Actors);
+}
 
 bool UScreenshotManager::IsActorInFrame(AActor* Actor, int FrameIndex)
 {
     return Screenshot->IsActorInFrame(Actor, static_cast<uint>(FrameIndex));
 }
-
 
 bool UScreenshotManager::IsActorInLastFrame(AActor* Actor, const TArray<AActor*>& IgnoredActors)
 {
