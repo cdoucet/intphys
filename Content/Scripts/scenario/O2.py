@@ -1,7 +1,5 @@
 """Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
-import math
-import unreal_engine as ue
 from actors.object import Object
 from scenario.test import Test
 from scenario.train import Train
@@ -160,15 +158,6 @@ class O2Test(O2Base, Test):
 
     def static_occluded(self):
         visibility_array = self.checks_time_laps('visibility', False)
-        temp_array = visibility_array
-        # remove the last occurences of not visible actor if
-        # it is out of the fieldview
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
         # if the number of frame where the magic actor is visible is less than
         # 4 time the number of magic tick required, scene need to be restarted
         if len(visibility_array) < 4:
@@ -228,9 +217,26 @@ class O2Test(O2Base, Test):
         # if there is less than 2 distinct occlusion the scene will restart
         # same if there is less than 2 frame where the actor is not grounded
         # in each occlusion
-        if len(occlusion) < 2 or len(occlusion[0]) < 4 or len(occlusion[1]) < 4:
+        if len(occlusion) < 2 or \
+                len(occlusion[0]) < 4 or len(occlusion[1]) < 4:
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
+
+    def set_magic_trick(self):
+        if super().set_magic_trick() is False:
+            return False
+        if isinstance(self.params['magic']['tick'], int):
+            magic_tick = self.params['magic']['tick']
+            if self.check_array[0]['location'][magic_tick] == \
+                    self.check_array[1]['location'][magic_tick]:
+                return False
+        else:
+            magic_tick = self.params['magic']['tick']
+            if self.check_array[0]['location'][magic_tick][0] == \
+                    self.check_array[1]['location'][magic_tick][0] or \
+                    self.check_array[0]['location'][magic_tick][1] == \
+                    self.check_array[1]['location'][magic_tick][1]:
+                return False

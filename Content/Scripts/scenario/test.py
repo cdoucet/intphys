@@ -135,12 +135,15 @@ class Test(Scene):
 
     def generate_magic_runs(self, scene_index):
         if '2' not in self.movement:
-            magic_tick = math.ceil((self.params['magic']['tick'] + 1) / 2) + 1
+            magic_tick = math.ceil(self.params['magic']['tick'] / 2) 
+            magic_tick += 1 if self.params['magic']['tick'] % 2 == 1 else 0
             magic_tick2 = 100
             ue.log("magic tick = {}".format(magic_tick))
         else:
-            magic_tick = math.ceil((self.params['magic']['tick'][0] + 1) / 2) + 1
-            magic_tick2 = math.ceil((self.params['magic']['tick'][1] + 1) / 2) + 1
+            magic_tick = math.ceil(self.params['magic']['tick'][0] / 2)
+            magic_tick += 1 if self.params['magic']['tick'][0] % 2 == 1 else 0
+            magic_tick2 = math.ceil(self.params['magic']['tick'][1] / 2)
+            magic_tick2 += 1 if self.params['magic']['tick'][1] % 2 == 1 else 0
             ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
         # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]

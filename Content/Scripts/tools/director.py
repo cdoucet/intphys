@@ -79,7 +79,7 @@ class Director(object):
         self.ticker = 0
 
     def restart_scene(self):
-        ue.log('restarting scene')
+        ue.log('Restarting scene')
         self.saver.reset(True)
         is_test = True if 'test' in type(self.scenes[self.scene]).__name__.lower() else False
         module = importlib.import_module("scenario.{}".format(self.scenes[self.scene].name))
@@ -137,5 +137,5 @@ class Director(object):
             if self.ticker % 2 == 0:
                 self.capture()
         else:
-            exit_ue("the end")
+            exit_ue("The end")
         self.ticker += 1
