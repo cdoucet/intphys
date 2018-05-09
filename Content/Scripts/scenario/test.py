@@ -73,11 +73,10 @@ class Test(Scene):
             self.initial_force = FVector()
         if self.is_occluded:
             moves = []
-            scale = FVector(1, 1, 1.5)
+            scale = FVector(0.5, 1, 1.5)
             if 'dynamic' in self.movement:
                 if self.movement.split('_')[1] == '2':
                     location = FVector(600, -175, 0)
-                    scale.x = 0.5
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
@@ -119,11 +118,10 @@ class Test(Scene):
                     actor.set_force(force)
 
     def stop_run(self, scene_index):
-        if self.set_magic_tick(self.check_array) is False:
+        if self.run == 1 and self.set_magic_tick() is False:
             self.del_actors()
             return False
         if self.run == 0:
-            self.check_array = []
             self.reset_actors()
         else:
             self.del_actors()
@@ -144,7 +142,6 @@ class Test(Scene):
             magic_tick = math.ceil((self.params['magic']['tick'][0] + 1) / 2) + 1
             magic_tick2 = math.ceil((self.params['magic']['tick'][1] + 1) / 2) + 1
             ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
-        # TODO make the same thing for the status.json
         # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index)[:-2]
         pic_types = ["scene", "depth", "masks"]
@@ -232,15 +229,18 @@ class Test(Scene):
         #     f3[magic_object]['material'], f4[magic_object]['material'])
         #     for f3, f4 in zip(json_3['frames'], json_4['frames'])))
 
-    def checks_time_laps(self, which, check_array):
-        # looking for the state changes in a bool array and put them in another
-        # array (True becoming False and False becoming True)
+    def checks_time_laps(self, which, desired_bool):
+        # looking for the state we want in the check
+        # array of both run and put the corresponding frame in res array
         res = []
-        for frame_index in range(len(check_array) - 1):
-            if (frame_index > 0 and
-                    check_array[frame_index - 1][which] !=
-                    check_array[frame_index][which]):
-                res.append(frame_index)
+        nb = len(self.check_array[0][which])
+        for frame in range(nb):
+            # append True if both run's check_array are the desired bool
+            # else False
+            if (self.check_array[0][which][frame] ==
+                    self.check_array[1][which][frame] and
+                    self.check_array[1][which][frame] == desired_bool):
+                res.append(frame)
         return res
 
     def magic_actor(self):
@@ -252,19 +252,18 @@ class Test(Scene):
             ignored_actors.append(self.actors[self.params['magic']['actor']].actor)
         self.saver.capture(ignored_actors, self.status_header, self.get_status())
 
-    def set_magic_tick(self, check_array):
+    def set_magic_tick(self):
         if self.is_occluded is True:
             if 'static' in self.movement:
-                return self.static_occluded(check_array)
+                return self.static_occluded()
             elif 'dynamic_1' in self.movement:
-                return self.dynamic_1_occluded(check_array)
+                return self.dynamic_1_occluded()
             else:
-                return self.dynamic_2_occluded(check_array)
+                return self.dynamic_2_occluded()
         else:
             if 'static' in self.movement:
-                return self.static_visible(check_array)
+                return self.static_visible()
             elif 'dynamic_1' in self.movement:
-                return self.dynamic_1_visible(check_array)
+                return self.dynamic_1_visible()
             else:
-                return self.dynamic_2_visible(check_array)
-
+                return self.dynamic_2_visible()

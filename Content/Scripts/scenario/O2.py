@@ -38,6 +38,9 @@ class O2Test(O2Base, Test):
         self.check_array[0]['visibility'] = []
         self.check_array[0]['location'] = []
         self.check_array[0]['grounded'] = []
+        self.check_array[1]['visibility'] = []
+        self.check_array[1]['location'] = []
+        self.check_array[1]['grounded'] = []
 
     def generate_parameters(self):
         super().generate_parameters()
@@ -112,85 +115,122 @@ class O2Test(O2Base, Test):
         new_mesh = mesh_1 if current_mesh == mesh_2 else mesh_2
         magic_actor.set_mesh_str(Object.shape[new_mesh])
 
-    def static_visible(self, check_array):
-        count = 0
-        while count < 50:
-            count += 1
-            magic_tick = random.randint(10, 190)
-            # check if actor is not visible during magic tick
-            if check_array[magic_tick][0] is not True:
-                continue
-            self.params['magic']['tick'] = magic_tick
-            return True
-        ue.log_warning("to many try to find a magic tick")
-        return False
-
-    def dynamic_1_visible(self, check_array):
-        grounded_changes = self.process(1, check_array)
-        if len(grounded_changes) < 2:
-            ue.log_warning("not enough grounded changes")
+    def static_visible(self):
+        visibility_array = self.checks_time_laps("visibility", True)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
             return False
-        magic_tick = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
-        # check if actor is not visible during magic tick
-        if check_array[magic_tick][0] is not True:
-            ue.log_warning("actor was not visible during magic trick")
-            return False
-        self.params['magic']['tick'] = magic_tick
+        self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
-    def dynamic_2_visible(self, check_array):
-        grounded_changes = self.process(1, check_array)
-        if len(grounded_changes) < 2:
-            ue.log_warning("not enough grounded changes")
+    def dynamic_1_visible(self):
+        visibility_array = self.checks_time_laps("visibility", True)
+        grounded_array = self.checks_time_laps("grounded", False)
+        # check if the actor is visible AND up in the air
+        final_array = []
+        for frame in grounded_array:
+            if frame in visibility_array:
+                final_array.append(frame)
+        # if the number of frame where the magic actor is not grounded is less
+        # than 4 time the number of magic tick required, scene will restart
+        if len(final_array) < 4:
             return False
-        middle = math.ceil((grounded_changes[1] + grounded_changes[0]) / 2)
-        magic_tick = math.ceil((middle + grounded_changes[0]) / 2)
-        magic_tick2 = math.ceil((middle + grounded_changes[1]) / 2)
-        # check if actor is not visible during magic tick
-        if check_array[magic_tick][0] is not True and \
-                check_array[magic_tick2][0] is not True:
-            ue.log_warning("magic actor was not visible during magic trick")
-            return False
-        self.params['magic']['tick'] = [0, 0]
-        self.params['magic']['tick'][0] = magic_tick
-        self.params['magic']['tick'][1] = magic_tick2
-        self.params['magic']['tick'] = sorted(self.params['magic']['tick'])
+        self.params['magic']['tick'] = random.choice(final_array)
         return True
 
-    def static_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 2:
-            ue.log_warning("not enough visibility changes")
-            return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        self.params['magic']['tick'] = magic_tick
-        return True
-
-    def dynamic_1_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 2:
-            ue.log_warning("not enough visibility changes")
-            return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        if check_array[magic_tick][1] is True:
-            ue.log_warning("the actor was grounded during magic trick")
-            return False
-        self.params['magic']['tick'] = magic_tick
-        return True
-
-    def dynamic_2_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 4:
-            ue.log_warning("not enough visibility changes")
-            return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        magic_tick2 = math.ceil((visibility_changes[2] + visibility_changes[3]) / 2)
-        # check is actor is in the air for both magic ticks
-        if check_array[magic_tick][1] is True or \
-                check_array[magic_tick2][1] is True:
-            ue.log_warning("the actor was grounded during magic trick")
+    def dynamic_2_visible(self):
+        visibility_array = self.checks_time_laps("visibility", True)
+        grounded_array = self.checks_time_laps("grounded", False)
+        # check if the actor is visible AND up in the air
+        final_array = []
+        for frame in grounded_array:
+            if frame in visibility_array:
+                final_array.append(frame)
+        # if the number of frame where the magic actor is not grounded is less
+        # than 4 time the number of magic tick required, scene will restart
+        if len(final_array) < 8:
             return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(magic_tick)
-        self.params['magic']['tick'].append(magic_tick2)
+        self.params['magic']['tick'].append(random.choice(final_array))
+        final_array.remove(self.params['magic']['tick'][0])
+        self.params['magic']['tick'].append(random.choice(final_array))
+        self.params['magic']['tick'].sort()
+        return True
+
+    def static_occluded(self):
+        visibility_array = self.checks_time_laps('visibility', False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
+            return False
+        self.params['magic']['tick'] = random.choice(visibility_array)
+        return True
+
+    def dynamic_1_occluded(self):
+        visibility_array = self.checks_time_laps("visibility", False)
+        grounded_array = self.checks_time_laps("grounded", False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        # check if the actor is visible AND up in the air
+        final_array = []
+        for frame in grounded_array:
+            if frame in visibility_array:
+                final_array.append(frame)
+        # if the number of frame where the magic actor is not grounded is less
+        # than 4 time the number of magic tick required, scene will restart
+        if len(final_array) < 4:
+            return False
+        self.params['magic']['tick'] = random.choice(final_array)
+        return True
+
+    def dynamic_2_occluded(self):
+        visibility_array = self.checks_time_laps("visibility", False)
+        grounded_array = self.checks_time_laps("grounded", False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        temp_array = visibility_array
+        occlusion = []
+        occlusion.append([])
+        i = 0
+        previous_frame = temp_array[0] - 1
+        # distinguish the different occlusion time laps
+        for frame in temp_array:
+            if frame - 1 != previous_frame:
+                i += 1
+                occlusion.append([])
+            if frame in grounded_array:
+                occlusion[i].append(frame)
+            previous_frame = frame
+        # if there is less than 2 distinct occlusion the scene will restart
+        # same if there is less than 2 frame where the actor is not grounded
+        # in each occlusion
+        if len(occlusion) < 2 or len(occlusion[0]) < 4 or len(occlusion[1]) < 4:
+            return False
+        self.params['magic']['tick'] = []
+        self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True

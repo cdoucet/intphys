@@ -1,5 +1,4 @@
 """Block O1 is apparition/disparition, spheres only"""
-import math
 import random
 import unreal_engine as ue
 from scenario.test import Test
@@ -23,9 +22,11 @@ class O1Train(O1Base, Train):
 
 class O1Test(O1Base, Test):
     def __init__(self, world, saver, is_occluded, movement):
-        super().__init__(self, world, saver, is_occluded, movement)
+        super().__init__(world, saver, is_occluded, movement)
         self.check_array[0]['visibility'] = []
         self.check_array[0]['location'] = []
+        self.check_array[1]['visibility'] = []
+        self.check_array[1]['location'] = []
 
     def setup_magic_actor(self):
         # magic actor spawn hidden if it is the second possible run
@@ -51,89 +52,100 @@ class O1Test(O1Base, Test):
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
 
-    def static_visible(self, check_array):
-        count = 0
-        while count < 50:
-            count += 1
-            self.params['magic']['tick'] = random.randint(10, 190)
-            # check if actor is not visible during magic tick
-            if check_array[self.params['magic']['tick']][0] is not True:
-                continue
-            return True
-        ue.log_warning("to many try to find a magic tick")
-        return False
-
-    def dynamic_1_visible(self, check_array):
-        count = 0
-        while count < 50:
-            count += 1
-            self.params['magic']['tick'] = random.randint(10, 190)
-            # check if actor is not visible during magic tick
-            if check_array[self.params['magic']['tick']][0] is not True:
-                continue
-            return True
-        ue.log_warning("to many try to find a magic tick")
-        return False
-
-    def dynamic_2_visible(self, check_array):
-        count = 0
-        visibility_changes = self.process(0, check_array)
-        # if the actor is visible at the begining,
-        # the first possible magic tick is 0, else it is the first frame when
-        # the magic actor is visible
-        if len(visibility_changes) > 0:
-            start = 0 if check_array[0][0] is True else visibility_changes[0]
-            if check_array[0][0] is True:
-                end = visibility_changes[0] - 1
-            elif len(visibility_changes) > 1:
-                end = visibility_changes[1] - 1
-            else:
-                end = 199
-        else:
-            start = 0
-            end = 199
-        self.params['magic']['tick'] = [0, 0]
-        while count < 50:
-            count += 1
-            self.params['magic']['tick'][0] = random.randint(start, end - 20)
-            # minimum 10 ticks between each magic tick
-            self.params['magic']['tick'][1] = random.randint(self.params['magic']['tick'][0] + 10, end)
-            # check if actor is not visible during magic ticks
-            if check_array[self.params['magic']['tick'][0]][0] is not True or \
-                    check_array[self.params['magic']['tick'][1]][0] is not True or \
-                    self.params['magic']['tick'][0] == \
-                    self.params['magic']['tick'][1]:
-                continue
-            return True
-        ue.log_warning("to many try to find a magic tick")
-        return False
-
-    def static_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 2:
-            ue.log_warning("not enough visibility changes")
+    def static_visible(self):
+        visibility_array = self.checks_time_laps("visibility", True)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
             return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        self.params['magic']['tick'] = magic_tick
+        self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
-    def dynamic_1_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 2:
-            ue.log_warning("not enough visibility changes")
+    def dynamic_1_visible(self):
+        visibility_array = self.checks_time_laps('visibility', True)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
             return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        self.params['magic']['tick'] = magic_tick
+        self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
-    def dynamic_2_occluded(self, check_array):
-        visibility_changes = self.process(0, check_array)
-        if len(visibility_changes) < 4:
-            ue.log_warning("not enough visibility changes")
+    def dynamic_2_visible(self):
+        visibility_array = self.checks_time_laps('visibility', True)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 8:
             return False
-        magic_tick = math.ceil((visibility_changes[1] + visibility_changes[0]) / 2)
-        magic_tick2 = math.ceil((visibility_changes[2] + visibility_changes[3]) / 2)
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(magic_tick)
-        self.params['magic']['tick'].append(magic_tick2)
+        self.params['magic']['tick'].append(random.choice(visibility_array))
+        visibility_array.remove(self.params['magic']['tick'][0])
+        self.params['magic']['tick'].append(random.choice(visibility_array))
+        self.params['magic']['tick'].sort()
+        return True
+
+    def static_occluded(self):
+        visibility_array = self.checks_time_laps('visibility', False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
+            return False
+        self.params['magic']['tick'] = random.choice(visibility_array)
+        return True
+
+    def dynamic_1_occluded(self):
+        visibility_array = self.checks_time_laps('visibility', False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        # if the number of frame where the magic actor is visible is less than
+        # 4 time the number of magic tick required, scene need to be restarted
+        if len(visibility_array) < 4:
+            return False
+        self.params['magic']['tick'] = random.choice(visibility_array)
+        return True
+
+    def dynamic_2_occluded(self):
+        visibility_array = self.checks_time_laps('visibility', False)
+        temp_array = visibility_array
+        # remove the last occurences of not visible actor if
+        # it is out of the fieldview
+        if visibility_array[-1] == 199:
+            previous_frame = 0
+            for frame in reversed(temp_array):
+                if frame == 199 or frame + 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        temp_array = visibility_array
+        occlusion = []
+        occlusion.append([])
+        i = 0
+        previous_frame = temp_array[0] - 1
+        # distinguish the different occlusion time laps
+        for frame in temp_array:
+            if frame - 1 != previous_frame:
+                i += 1
+                occlusion.append([])
+            occlusion[i].append(frame)
+            previous_frame = frame
+        # if there is less than 2 distinct occlusion the scene will restart
+        if len(occlusion) < 2:
+            return False
+        self.params['magic']['tick'] = []
+        self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
