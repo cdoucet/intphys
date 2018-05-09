@@ -1,5 +1,6 @@
 import json
 import importlib
+import time
 import unreal_engine as ue
 from tools.utils import exit_ue, set_game_paused
 from tools.saver import Saver
@@ -25,8 +26,8 @@ class Director(object):
         # self.ticker = Tick(tick_interval=tick_interval)
         # self.ticker.start()
         self.ticker = 0
-        self.pause = 0
-        self.b_pause = False
+        self.pause = False
+        self.was_paused = False
 
     def generate_scenes(self, params_file):
         for scenario, a in self.scenarios_dict.items():
@@ -99,17 +100,18 @@ class Director(object):
 
     def tick(self, dt):
         """ this method is called at each game tick by UE """
-        if self.pause != 0:
-            self.pause -= 1
+        if self.pause is True:
+            time.sleep(2)
+            self.pause = False
             return
         # launch new scene every 200 tick except if a pause just finished
-        if self.b_pause is False and self.ticker % 100 == 0 and (self.ticker / 100) % 2 == 0:
+        if self.was_paused is False and self.ticker % 100 == 0 and (self.ticker / 100) % 2 == 0:
             if self.ticker != 0:
                 self.stop_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = 50
-            self.b_pause = True
+            self.pause = True
+            self.was_paused = True
             set_game_paused(self.world, True)
             return
 
@@ -123,14 +125,14 @@ class Director(object):
                 self.ticker = 0
                 self.play_scene()
                 # pause to let textures load
-                self.pause = 50
-                self.b_pause = True
+                self.pause = True
+                self.was_paused = True
                 set_game_paused(self.world, True)
                 return
         except IndexError:
             pass
 
-        self.b_pause = False
+        self.was_paused = False
         set_game_paused(self.world, False)
         if self.scene < len(self.scenes):
             self.scenes[self.scene].tick()
