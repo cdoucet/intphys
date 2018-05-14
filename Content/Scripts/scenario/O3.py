@@ -186,8 +186,10 @@ class O3Test(O3Base, Test):
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
+    """
     def set_magic_tick(self):
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(12)
         self.params['magic']['tick'].append(44)
         return True
+    """
