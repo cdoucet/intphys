@@ -2,6 +2,7 @@ import json
 import importlib
 import time
 import unreal_engine as ue
+import tools.materials
 from tools.utils import exit_ue, set_game_paused
 from tools.saver import Saver
 
@@ -28,6 +29,7 @@ class Director(object):
         self.ticker = 0
         self.pause = False
         self.was_paused = False
+        tools.materials.load()
 
     def generate_scenes(self, params_file):
         for scenario, a in self.scenarios_dict.items():
@@ -105,7 +107,7 @@ class Director(object):
             self.pause = False
             return
         # launch new scene every 200 tick except if a pause just finished
-        if self.was_paused is False and self.ticker % 100 == 0 and (self.ticker / 100) % 2 == 0:
+        if self.was_paused is False and self.ticker % 200 == 0:
             if self.ticker != 0:
                 self.stop_scene()
             self.play_scene()
@@ -136,7 +138,7 @@ class Director(object):
         set_game_paused(self.world, False)
         if self.scene < len(self.scenes):
             self.scenes[self.scene].tick()
-            if self.ticker % 2 == 0:
+            if self.ticker % 2 == 1:
                 self.capture()
         else:
             exit_ue("The end")

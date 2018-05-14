@@ -3,7 +3,7 @@ import random
 import unreal_engine as ue
 from tools.director import Director
 from tools.utils import exit_ue, set_game_resolution
-
+from unreal_engine.enums import ETickingGroup
 # the default game resolution, for both scene rendering and saved
 # images (width * height in pixels)
 DEFAULT_RESOLUTION = (288, 288)
@@ -13,7 +13,8 @@ class Main:
     def begin_play(self):
         # get the world from the attached component
         world = self.uobject.get_world()
-
+        # execute main tick after physic played
+        self.uobject.SetTickGroup(ETickingGroup.TG_PostPhysics)
         # the main loop continues to tick when the game is paused (but
         # all other actors are paused)
         self.uobject.SetTickableWhenPaused(True)

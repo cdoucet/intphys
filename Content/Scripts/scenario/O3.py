@@ -47,17 +47,23 @@ class O3Test(O3Base, Test):
             target_location = FVector(0, 0, 0)
             if 'static' in self.movement:
                 target_location = FVector(current_location.x +
-                                          random.randint(10, 200),
+                                          random.randint(-500, 500),
                                           current_location.y,
                                           current_location.z)
             elif '1' in self.movement:
                 target_location = FVector(current_location.x,
-                                          current_location.y + 50,
+                                          current_location.y +
+                                          random.randint(50, 75) if magic_actor.actor.get_actor_location().y < 0 else random.randint(-75, 50),
                                           current_location.z)
             else:
                 target_location = FVector(current_location.x,
-                                          current_location.y + 75,
+                                          current_location.y +
+                                          100,
                                           current_location.z)
+                """
+                                          random.randint(50, 75) if magic_actor.actor.get_actor_location().y < 0 else random.randint(-75, 50),
+                                          current_location.z)
+                """
             magic_actor.set_location(target_location)
 
     # this function is here so you can put only the attribute that please you
@@ -180,3 +186,8 @@ class O3Test(O3Base, Test):
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
+    def set_magic_tick(self):
+        self.params['magic']['tick'] = []
+        self.params['magic']['tick'].append(12)
+        self.params['magic']['tick'].append(44)
+        return True

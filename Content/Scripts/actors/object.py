@@ -139,3 +139,7 @@ class Object(BaseMesh):
         self.set_restitution(params.restitution)
         self.get_mesh().set_simulate_physics(False)
         self.get_mesh().set_simulate_physics()
+
+    def reset_force(self):
+        self.get_mesh().set_simulate_physics(False)
+        self.get_mesh().set_simulate_physics()
