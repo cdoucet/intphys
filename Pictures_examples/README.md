@@ -2,30 +2,53 @@
 
 ## SCENARIOS
 
-Each scenario has a physical principle which will be broken in impossible videos and a computational challenge which will be tested by eponym videos.
+Each scenario has a physical principle which will be broken in impossible runs and a computational challenge which will be tested by eponym videos.
 
 ## VIDEO TYPES LEXICON
 
-### TRAIN
+### Run
 
-Train videos are all possibles sequences.
+A run is composed of 3 videos:
+
+#### Scene
+
+![scene](Test/visible/static/1/scene/video.gif)
+
+#### Mask
+
+![mask](Test/visible/static/1/masks/video.gif)
+
+#### Depth
+
+![depth](Test/visible/static/1/depth/video.gif)
+
+### Train
+
+Train runs are all possibles sequences.
 They are much random.
-There is one video per train scene.
+There is one run per train scene.
 
-### TEST
+### Test
 
-Tests videos are less random than the trains videos.
+Tests runs are less random than the trains runs.
 A single actor is chosen to be the magic actor.
 
-#### There are 4 videos per test scene :
+#### There are 4 runs per test scene : 2 possibles and 2 impossibles
 
-##### Some possible videos
+##### Possible run examples
 
-ICI 4 VIDEOS POSSIBLES (SCENES DIFFERENTES, SEULEMENT LES RGB - PAS DE DEPTH OU MASKS). ON VA ENLEVER LES NOTIONS DE 1ST 2ND 3RD 4TH VIDEOS PARCE QUE ELLES SERONT MELANGEES ET C'EST PAS EVIDENT A COMPRENDS AU PREMIER ABORD.
+![scene](Test/visible/static/1/scene/video.gif)
+![scene2](Test/occluded/dynamic_1/1/scene/video.gif)
+![scene3](Test/occluded/dynamic_2/1/scene/video.gif)
+![scene4](Test/visible/dynamic_1/1/scene/video.gif)
 
-##### Some impossible videos
 
-ICI 4 VIDEOS IMPOSSIBLES (SCENES DIFFERENTES, SEULEMENT LES RGB - PAS DE DEPTH OU MASKS)
+##### Impossible run examples
+
+![scene](Test/visible/static/3/scene/video.gif)
+![scene2](Test/occluded/dynamic_1/3/scene/video.gif)
+![scene3](Test/occluded/dynamic_2/3/scene/video.gif)
+![scene4](Test/visible/dynamic_1/3/scene/video.gif)
 
 #### A test scene can be :
 

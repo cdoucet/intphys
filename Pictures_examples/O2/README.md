@@ -46,7 +46,7 @@ Appearance-robust object tracking.
 
 * The actor(s) do(es)n't move.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -54,15 +54,15 @@ Appearance-robust object tracking.
 ![mask](Test/visible/static/1/masks/video.gif)
 ![scene](Test/visible/static/1/scene/video.gif)
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but it is another one than the previous video).
+* Magic actor keeps its shape and texture (but it is another one than the previous run).
 
 ![depth](Test/visible/static/2/depth/video.gif)
 ![mask](Test/visible/static/2/masks/video.gif)
 ![scene](Test/visible/static/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor start with a shape and changes it in a random frame.
 
@@ -70,9 +70,9 @@ Appearance-robust object tracking.
 ![mask](Test/visible/static/3/masks/video.gif)
 ![scene](Test/visible/static/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous video).
+* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
 ![depth](Test/visible/static/4/depth/video.gif)
 ![mask](Test/visible/static/4/masks/video.gif)
@@ -83,7 +83,7 @@ Appearance-robust object tracking.
 * The actor(s) can either spawn at the left or the right of the scene.
 * A force will apply to it/them, making it/them fly to the other side of the scene.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -92,15 +92,15 @@ Appearance-robust object tracking.
 ![scene](Test/visible/dynamic_1/1/scene/video.gif)
 
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous video).
+* Magic actor keeps its shape and texture (but not the same from the previous run).
 
 ![depth](Test/visible/dynamic_1/2/depth/video.gif)
 ![mask](Test/visible/dynamic_1/2/masks/video.gif)
 ![scene](Test/visible/dynamic_1/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor start with a shape and changes it in a random frame.
 
@@ -108,9 +108,9 @@ Appearance-robust object tracking.
 ![mask](Test/visible/dynamic_1/3/masks/video.gif)
 ![scene](Test/visible/dynamic_1/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous video).
+* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
 ![depth](Test/visible/dynamic_1/4/depth/video.gif)
 ![mask](Test/visible/dynamic_1/4/masks/video.gif)
@@ -121,7 +121,7 @@ Appearance-robust object tracking.
 * The actor(s) can either spawn at the left or the right of the scene.
 * A force will apply to it/them, making it/them fly to the other side of the scene.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -129,15 +129,15 @@ Appearance-robust object tracking.
 ![mask](Test/visible/dynamic_2/1/masks/video.gif)
 ![scene](Test/visible/dynamic_2/1/scene/video.gif)
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous video).
+* Magic actor keeps its shape and texture (but not the same from the previous run).
 
 ![depth](Test/visible/dynamic_2/2/depth/video.gif)
 ![mask](Test/visible/dynamic_2/2/masks/video.gif)
 ![scene](Test/visible/dynamic_2/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame.
 
@@ -145,9 +145,9 @@ Appearance-robust object tracking.
 ![mask](Test/visible/dynamic_2/3/masks/video.gif)
 ![scene](Test/visible/dynamic_2/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame (but the other way around than in the previous video).
+* Magic actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame (but the other way around than in the previous run).
 
 ![depth](Test/visible/dynamic_2/4/depth/video.gif)
 ![mask](Test/visible/dynamic_2/4/masks/video.gif)
@@ -160,7 +160,7 @@ Appearance-robust object tracking.
 * One occluder spawns, down, between the camera and the magic actor.
 * The occluder stands up then gets down.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -168,15 +168,15 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/static/1/masks/video.gif)
 ![scene](Test/occluded/static/1/scene/video.gif)
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous video).
+* Magic actor keeps its shape and texture (but not the same from the previous run).
 
 ![depth](Test/occluded/static/2/depth/video.gif)
 ![mask](Test/occluded/static/2/masks/video.gif)
 ![scene](Test/occluded/static/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor starts with a shape and changes it when the occluder gets down.
 
@@ -184,9 +184,9 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/static/3/masks/video.gif)
 ![scene](Test/occluded/static/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor starts with a shape and changes it when the occluder gets down (but the other way around than in the previous video).
+* Magic actor starts with a shape and changes it when the occluder gets down (but the other way around than in the previous run).
 
 ![depth](Test/occluded/static/4/depth/video.gif)
 ![mask](Test/occluded/static/4/masks/video.gif)
@@ -199,7 +199,7 @@ Appearance-robust object tracking.
 * The actor(s) can either spawn at the left or the right of the scene.
 * A force will apply to it/them, making it/them fly to the other side of the scene.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -207,15 +207,15 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/dynamic_1/1/masks/video.gif)
 ![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous video).
+* Magic actor keeps its shape and texture (but not the same from the previous run).
 
 ![depth](Test/occluded/dynamic_1/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/2/masks/video.gif)
 ![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor starts with a shape and changes it as it goes behind the occluder.
 
@@ -223,9 +223,9 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/dynamic_1/3/masks/video.gif)
 ![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor starts with a shape and changes it as it goes behind the occluder (but the other way around than in the previous video).
+* Magic actor starts with a shape and changes it as it goes behind the occluder (but the other way around than in the previous run).
 
 ![depth](Test/occluded/dynamic_1/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/4/masks/video.gif)
@@ -238,7 +238,7 @@ Appearance-robust object tracking.
 * The actor(s) can either spawn at the left or the right of the scene.
 * A force will apply to it/them, making it/them fly to the other side of the scene.
 
-###### 1st video
+###### Possible 1
 
 * Magic actor keeps its shape and texture.
 
@@ -246,15 +246,15 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/dynamic_2/1/masks/video.gif)
 ![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 
-###### 2nd video
+###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous video).
+* Magic actor keeps its shape and texture (but not the same from the previous run).
 
 ![depth](Test/occluded/dynamic_2/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/2/masks/video.gif)
 ![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 
-###### 3rd video
+###### Impossible 1
 
 * Magic actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one.
 
@@ -262,9 +262,9 @@ Appearance-robust object tracking.
 ![mask](Test/occluded/dynamic_2/3/masks/video.gif)
 ![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 
-###### 4th video
+###### Impossible 2
 
-* Magic actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one (but the other way around than it was in the previous video).
+* Magic actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one (but the other way around than it was in the previous run).
 
 ![depth](Test/occluded/dynamic_2/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/4/masks/video.gif)
