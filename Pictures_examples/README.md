@@ -19,25 +19,15 @@ A single actor is chosen to be the magic actor.
 
 #### There are 4 videos per test scene :
 
-##### 1st video
+##### Some possible videos
 
-* It is always possible (therefore, no magic trick).
+ICI 4 VIDEOS POSSIBLES (SCENES DIFFERENTES, SEULEMENT LES RGB - PAS DE DEPTH OU MASKS). ON VA ENLEVER LES NOTIONS DE 1ST 2ND 3RD 4TH VIDEOS PARCE QUE ELLES SERONT MELANGEES ET C'EST PAS EVIDENT A COMPRENDS AU PREMIER ABORD.
 
-##### 2nd video
+##### Some impossible videos
 
-* It is always possible (therefore, no magic trick).
-* It is the opposit from the first video (the meaning of that depends on scenarios).
+ICI 4 VIDEOS IMPOSSIBLES (SCENES DIFFERENTES, SEULEMENT LES RGB - PAS DE DEPTH OU MASKS)
 
-##### 3rd video
-
-* It is always impossible (therefore, there is a magic trick).
-
-##### 4th video
-
-* It is always impossible (therefore, there is a magic trick).
-* It is the opposit from the third video (the meaning of that depends on scenarios).
-
-#### A test scene will be :
+#### A test scene can be :
 
 ##### Visible
 
@@ -49,7 +39,7 @@ A single actor is chosen to be the magic actor.
 * There is occluders in this one.
 * The magic trick always occures when the magic actor is behind an occluder.
 
-#### A test scene will also be :
+#### A test scene can be :
 
 ##### Static
 
