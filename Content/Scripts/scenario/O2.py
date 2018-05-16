@@ -4,7 +4,7 @@ from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import Friction, ScreenshotManager
-from unreal_engine import FRotator
+from unreal_engine import FRotator, FVector
 import unreal_engine as ue
 
 
@@ -58,6 +58,13 @@ class O2Test(O2Base, MirrorTest):
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
+
+    def play_run(self):
+        super().play_run()
+        if 'static' not in self.movement:
+            for name, actor in self.actors.items():
+                if 'object' in name.lower():
+                    actor.set_force(FVector(0, 0, 24e5))
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor

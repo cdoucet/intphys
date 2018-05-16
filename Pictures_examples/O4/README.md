@@ -44,7 +44,7 @@ Tracking/predicting object trajectories.
 
 ##### Static
 
-* The actor(s) do(es)n't move.
+* The actor(s) do(es)n't move at the start.
 
 ###### Possible 1
 
@@ -56,7 +56,7 @@ Tracking/predicting object trajectories.
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
+* Magic actor starts somewhere in the scene.
 
 ![depth](Test/visible/static/2/depth/video.gif)
 ![mask](Test/visible/static/2/masks/video.gif)
@@ -169,7 +169,7 @@ Tracking/predicting object trajectories.
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
+* Magic actor starts somewhere in the scene.
 
 ![depth](Test/occluded/static/2/depth/video.gif)
 ![mask](Test/occluded/static/2/masks/video.gif)

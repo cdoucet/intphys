@@ -1,6 +1,5 @@
 """Block O4 is energy/momentum, spheres only"""
 import random
-import copy
 from scenario.test import Test
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
@@ -72,7 +71,8 @@ class O4Test(O4Base, Test):
                 else 29e5
         else:
             force.x = -29e5 if random.choice([0, 1]) == 0 else 29e5
-            force.y = -29e5 if magic_actor.actor.get_actor_location().y > 0 else 29e5
+            force.y = -29e5 if magic_actor.actor.get_actor_location().y > 0 \
+                else 29e5
             # must do that else the actor desapear behind the occluder
             if self.is_occluded is True:
                 force.y *= -1 if force.y < 0 else 1

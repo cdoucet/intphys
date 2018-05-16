@@ -8,28 +8,6 @@ from actors.base_mesh import BaseMesh
 from actors.parameters import ObjectParams
 from tools.utils import as_dict
 
-
-# Ok here we go: This is a recursive instantiate class.  The general
-# principle is to instantiate a class twice to avoid making two
-# distinct classes.  I needed to instantiate a python component with
-# parameters but UnrealEnginePython wouldn't let me do that.
-# Furthermore, I couldn't spawn the actor without instanciate the
-# class and thus, I couldn't spawn it with any parameter.
-
-# Let me explain myself : In the main, I call the constructor of the
-# class Object (for instance, or Floor, or Occluder), which call the
-# __init__ function of Object with at least 1 argument, world which
-# call the __init__function of BaseMesh with at least 1 argument,
-# mesh_str.  In the Object __init__ function, I call actor_spawn,
-# which implicitely instanciate Object (yes, again) BUT during the
-# second instantiation, no parameters is given to __init__ (of Object
-# and BaseMesh) (this is why there is default values to every
-# parameters of __init__).  Thus, if __init__ is called without any
-# parameters, I know that it is the second instantiation, so I don't
-# spawn the actor again.  Once the object spawned, all I have to do is
-# to set the parameters in the second instantiation (location,
-# rotation,...).  Et voilà !
-
 # Object is the python component for the main actors of the magic
 # tricks (the sphere, the cube, or else).  It inherits from BaseMesh.
 
