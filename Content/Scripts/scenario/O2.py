@@ -1,10 +1,11 @@
 """Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
 from actors.object import Object
-from scenario.test import Test
+from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import Friction, ScreenshotManager
 from unreal_engine import FRotator
+import unreal_engine as ue
 
 
 class O2Base:
@@ -30,7 +31,7 @@ class O2Train(O2Base, Train):
                 params.mesh = random.choice(list(Object.shape.keys()))
 
 
-class O2Test(O2Base, Test):
+class O2Test(O2Base, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
         self.check_array[0]['visibility'] = []
@@ -232,6 +233,8 @@ class O2Test(O2Base, Test):
             magic_tick = self.params['magic']['tick']
             if self.check_array[0]['location'][magic_tick] == \
                     self.check_array[1]['location'][magic_tick]:
+                ue.log_warning("Magic actor location doesn't match in \
+                               each possible run")
                 return False
         else:
             magic_tick = self.params['magic']['tick']
@@ -239,4 +242,6 @@ class O2Test(O2Base, Test):
                     self.check_array[1]['location'][magic_tick][0] or \
                     self.check_array[0]['location'][magic_tick][1] == \
                     self.check_array[1]['location'][magic_tick][1]:
+                ue.log_warning("Magic actor location doesn't match in \
+                               each possible run")
                 return False

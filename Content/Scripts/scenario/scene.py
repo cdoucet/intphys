@@ -49,11 +49,6 @@ class Scene:
                     depth=random.uniform(1500, 3000))
 
     def play_run(self):
-        if 'Train' in type(self).__name__:
-            ue.log("Run {}/1: Possible run".format(self.run + 1))
-        else:
-            ue.log("Run {}/{}: Possible run".format(self.run + 1,
-                   4 if self.saver.is_dry_mode is False else 2))
         if self.run == 0:
             self.spawn_actors()
             self.saver.update(self.actors)
@@ -98,14 +93,6 @@ class Scene:
             for actor_name, actor in self.actors.items():
                 actor.actor_destroy()
             self.actors = None
-
-    def stop_run(self, scene_index):
-        if not self.saver.is_dry_mode:
-            self.saver.save(self.get_scene_subdir(scene_index))
-            # reset actors if it is the last run
-            self.saver.reset(True if self.run == 1 else False)
-        self.run += 1
-        return True
 
     def is_over(self):
         if 'Train' in type(self).__name__:

@@ -4,7 +4,7 @@ from scenario.scene import Scene
 from unreal_engine import FVector, FRotator
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
-
+import unreal_engine as ue
 
 class Train(Scene):
     def __init__(self, world, saver):
@@ -66,16 +66,23 @@ class Train(Scene):
 
     def stop_run(self, scene_index):
         self.del_actors()
-        super().stop_run(scene_index)
+        if not self.saver.is_dry_mode:
+            self.saver.save(self.get_scene_subdir(scene_index))
+            # reset actors if it is the last run
+            self.saver.reset(True)
+        self.run += 1
 
     def play_run(self):
+        if self.run == 1:
+            return
+        ue.log("Run 1/1: Possible run")
         super().play_run()
         for name, actor in self.actors.items():
             if 'object' in name.lower() and random.randint(0, 1) == 0:
                 force = []
                 for i in range(3):
-                    force.append(random.randint(-9, 9))
-                    force.append(random.randint(4, 7))
+                    force.append(random.randint(-1, 1))
+                    force.append(random.randint(4, 6))
                 actor.set_force(FVector(force[0] * math.pow(10, force[1]),
                                         force[2] * math.pow(10, force[3]),
                                         force[4] * math.pow(10, force[5])))
@@ -86,3 +93,6 @@ class Train(Scene):
     def capture(self):
         ignored_actors = []
         self.saver.capture(ignored_actors, self.status_header, self.get_status())
+
+    def is_over(self):
+        return True if self.run == 1 else False

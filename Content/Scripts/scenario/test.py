@@ -17,6 +17,7 @@ class Test(Scene):
         self.is_occluded = is_occluded
         self.movement = movement
         self.check_array = [{}, {}]
+        self.ticker = 0
         super().__init__(world, saver)
 
     def generate_parameters(self):
@@ -106,6 +107,9 @@ class Test(Scene):
                     start_up=start_up)
 
     def play_run(self):
+        if self.run == 4:
+            return
+        ue.log("Run {}/4: Possible run".format(self.run + 1))
         super().play_run()
         self.setup_magic_actor()
         if 'static' not in self.movement:
@@ -118,119 +122,32 @@ class Test(Scene):
                     actor.set_force(force)
 
     def stop_run(self, scene_index):
+        self.ticker = 0
         if self.run == 1 and self.set_magic_tick() is False:
             self.del_actors()
             return False
-        if self.run == 0:
+        if self.run != 3:
             self.reset_actors()
         else:
             self.del_actors()
-        super().stop_run(scene_index)
-        if self.run == 2 and self.saver.is_dry_mode is False:
-            self.generate_magic_runs(scene_index)
+        if not self.saver.is_dry_mode:
+            self.saver.save(self.get_scene_subdir(scene_index))
+            # reset actors if it is the last run
+            self.saver.reset(True if self.run == 3 else False)
+        self.run += 1
+        return True
 
     def tick(self):
         super().tick()
-        self.fill_check_array()
-
-    def generate_magic_runs(self, scene_index):
-        if '2' not in self.movement:
-            magic_tick = math.ceil(self.params['magic']['tick'] / 2) 
-            magic_tick += 1 if self.params['magic']['tick'] % 2 == 1 else 0
-            magic_tick2 = 100
-            ue.log("magic tick = {}".format(magic_tick))
-        else:
-            magic_tick = math.ceil(self.params['magic']['tick'][0] / 2)
-            magic_tick += 1 if self.params['magic']['tick'][0] % 2 == 1 else 0
-            magic_tick2 = math.ceil(self.params['magic']['tick'][1] / 2)
-            magic_tick2 += 1 if self.params['magic']['tick'][1] % 2 == 1 else 0
-            ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
-        # next line is removing the run subdirectory from the path
-        subdir = self.get_scene_subdir(scene_index)[:-2]
-        pic_types = ["scene", "depth", "masks"]
-        json_1 = "{}/{}/{}".format(subdir, '1', 'status.json')
-        json_2 = "{}/{}/{}".format(subdir, '2', 'status.json')
-        ue.log('Run 3/4: Impossible run')
-        for pic_type in pic_types:
-            if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
-                os.makedirs("{}/3/{}".format(subdir, pic_type))
-            for i in range(1, magic_tick + 1):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            for i in range(magic_tick, magic_tick2 + 1):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            if '2' in self.movement:
-                for i in range(magic_tick2, 101):
-                    dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    copyfile(src, dst)
-        ue.log('saved captures to {}/{}'.format(subdir, 3))
-        ue.log('Run 4/4: Impossible run')
-        for pic_type in pic_types:
-            if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
-                os.makedirs("{}/4/{}".format(subdir, pic_type))
-            for i in range(1, magic_tick + 1):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            for i in range(magic_tick, magic_tick2 + 1):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                copyfile(src, dst)
-            if '2' in self.movement:
-                for i in range(magic_tick2, 101):
-                    dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    copyfile(src, dst)
-        ue.log('saved captures to {}/{}'.format(subdir, 4))
-        ue.log("generating json files")
-        self.generate_magic_status(subdir, [magic_tick, magic_tick2])
-
-    def generate_magic_status(self, subdir, slice_index):
-        # build the status.json, slice_index are magic_tick as a list
-        json_1 = json.load(open(f'{subdir}/1/status.json', 'r'))
-        json_2 = json.load(open(f'{subdir}/2/status.json', 'r'))
-
-        # the headers must be the same (excepted the actor names but do
-        # not impact the end user) TODO for now (as of commit e5e2c25) the
-        # 'masks' entry is different in runs 1 and 2 TODO to have same
-        # names, maybe change the runs implementation: spawn actors only
-        # at scene init, and destroy them at scene end but not between 2
-        # runs.
-        json_3 = {'header': json_1['header']}
-        json_4 = {'header': json_1['header']}
-        json_3['header']['is_possible'] = False
-        json_4['header']['is_possible'] = False
-
-        # update the frames according to the slice index
-        f1, f2 = json_1['frames'], json_2['frames']
-        if len(slice_index) == 2:  # dynamic_2 case
-            idx1, idx2 = slice_index[0], slice_index[1]
-            json_3['frames'] = f1[:idx1] + f2[idx1:idx2] + f1[idx2:]
-            json_4['frames'] = f2[:idx1] + f1[idx1:idx2] + f2[idx2:]
-        else:  # dynamic_1 or static cases
-            idx = slice_index[0]
-            json_3['frames'] = f1[:idx] + f2[idx:]
-            json_4['frames'] = f2[:idx] + f1[idx:]
-
-        # make sure the dest directories exist
-        for i in (3, 4):
-            d = f'{subdir}/{i}'
-            if not os.path.isdir(d):
-                os.makedirs(d)
-
-        # save the status as JSON files
-        with open(f'{subdir}/3/status.json', 'w') as fin:
-            fin.write(json.dumps(json_3, indent=4))
-        with open(f'{subdir}/4/status.json', 'w') as fin:
-            fin.write(json.dumps(json_4, indent=4))
-
-        # print('\n'.join('{} {}'.format(
-        #     f3[magic_object]['material'], f4[magic_object]['material'])
-        #     for f3, f4 in zip(json_3['frames'], json_4['frames'])))
+        if self.run <= 1:
+            self.fill_check_array()
+        elif isinstance(self.params['magic']['tick'], int) and \
+                self.ticker == self.params['magic']['tick']:
+            self.play_magic_trick()
+        elif not isinstance(self.params['magic']['tick'], int) and \
+                self.ticker in self.params['magic']['tick']:
+            self.play_magic_trick()
+        self.ticker += 1
 
     def checks_time_laps(self, which, desired_bool):
         # looking for the state we want in the check
@@ -270,3 +187,6 @@ class Test(Scene):
                 return self.dynamic_1_visible()
             else:
                 return self.dynamic_2_visible()
+
+    def is_over(self):
+        return True if self.run == 4 else False

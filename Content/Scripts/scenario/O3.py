@@ -1,9 +1,10 @@
 """Block O3 is spatio-temporal continuity, spheres only"""
 import random
-from scenario.test import Test
+from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine import FVector
 from unreal_engine.classes import ScreenshotManager
+import unreal_engine as ue
 
 
 class O3Base:
@@ -20,7 +21,7 @@ class O3Train(O3Base, Train):
     pass
 
 
-class O3Test(O3Base, Test):
+class O3Test(O3Base, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
         self.check_array[0]['visibility'] = []
@@ -186,10 +187,22 @@ class O3Test(O3Base, Test):
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
-    """
-    def set_magic_tick(self):
-        self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(12)
-        self.params['magic']['tick'].append(44)
-        return True
-    """
+    def set_magic_trick(self):
+        if super().set_magic_trick() is False:
+            return False
+        if isinstance(self.params['magic']['tick'], int):
+            magic_tick = self.params['magic']['tick']
+            if self.check_array[0]['location'][magic_tick] == \
+                    self.check_array[1]['location'][magic_tick]:
+                ue.log_warning("Magic actor location doesn't match in \
+                               each possible run")
+                return False
+        else:
+            magic_tick = self.params['magic']['tick']
+            if self.check_array[0]['location'][magic_tick][0] == \
+                    self.check_array[1]['location'][magic_tick][0] or \
+                    self.check_array[0]['location'][magic_tick][1] == \
+                    self.check_array[1]['location'][magic_tick][1]:
+                ue.log_warning("Magic actor location doesn't match in \
+                               each possible run")
+                return False

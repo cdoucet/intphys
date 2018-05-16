@@ -1,8 +1,11 @@
 """Block O4 is energy/momentum, spheres only"""
 import random
+import copy
 from scenario.test import Test
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
+from unreal_engine import FVector
+import unreal_engine as ue
 
 
 class O4Base:
@@ -27,11 +30,54 @@ class O4Test(O4Base, Test):
         self.check_array[1]['visibility'] = []
         self.check_array[1]['location'] = []
 
+    """
+    def generate_parameters(self):
+        super().generate_paramaters()
+        temp = self.params[self.params["magic"]["actor"]].location
+        # the actors needs to be hidden from the screen
+        for name, actor in self.params.items():
+            if 'object' in name:
+                actor.location.y = 1250 * -1 if temp < 0 else 1
+    """
+
     def setup_magic_actor(self):
-        # magic actor spawn hidden if it is the second possible run
-        is_hidden = True if self.run == 1 else False
+        # two run out of four
+        if self.run % 2 == 0:
+            return
         magic_actor = self.actors[self.params['magic']['actor']]
-        magic_actor.set_hidden(is_hidden)
+        new_location = magic_actor.actor.get_actor_location()
+        if 'dynamic' in self.movement:
+            new_location.y *= -1
+        else:
+            new_location.y *= -1
+            for name, actor in self.actors.items():
+                temp = actor.actor.get_actor_location()
+                if temp == new_location and \
+                        name != self.params['magic']['actor']:
+                    temp.y *= -1
+                    magic_actor.actor.set_actor_location(new_location + 1000)
+                    actor.actor.set_actor_location(temp)
+                elif 'occluder' in name:
+                    temp = FVector(400, (new_location.y / 2) -
+                                   (actor.scale.x * 200), 0)
+                    actor.actor.set_actor_location(temp)
+        magic_actor.actor.set_actor_location(new_location)
+
+    def play_magic_trick(self):
+        ue.log("magic tick: {}".format(self.ticker))
+        magic_actor = self.actors[self.params['magic']['actor']]
+        force = FVector(0, 0, 0)
+        if 'dynamic' in self.movement:
+            force.y = -29e5 if magic_actor.actor.get_actor_velocity().y >= 0 \
+                else 29e5
+        else:
+            force.x = -29e5 if random.choice([0, 1]) == 0 else 29e5
+            force.y = -29e5 if magic_actor.actor.get_actor_location().y > 0 else 29e5
+            # must do that else the actor desapear behind the occluder
+            if self.is_occluded is True:
+                force.y *= -1 if force.y < 0 else 1
+        magic_actor.reset_force()
+        magic_actor.set_force(force, False)
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -89,6 +135,7 @@ class O4Test(O4Base, Test):
         if len(visibility_array) < 4:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 100
         return True
 
     def dynamic_1_occluded(self):
@@ -136,22 +183,14 @@ class O4Test(O4Base, Test):
         if len(occlusion) < 2:
             return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        self.params['magic']['tick'].append(41)
+        self.params['magic']['tick'].append(69)
+        """
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        """
         return True
 
-    def set_magic_trick(self):
-        if super().set_magic_trick() is False:
-            return False
-        if isinstance(self.params['magic']['tick'], int):
-            magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick] == \
-                    self.check_array[1]['location'][magic_tick]:
-                return False
-        else:
-            magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick][0] == \
-                    self.check_array[1]['location'][magic_tick][0] or \
-                    self.check_array[0]['location'][magic_tick][1] == \
-                    self.check_array[1]['location'][magic_tick][1]:
-                return False
+    def set_magick_tick(self):
+        res = super().set_magic_tick()
+        return res

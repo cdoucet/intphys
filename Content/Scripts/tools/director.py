@@ -67,9 +67,7 @@ class Director(object):
             ue.log("Scene {}/{}: scenario {}".format(
                 self.scene + 1, len(self.scenes),
                 self.scenes[self.scene].name))
-
-        if self.scenes[self.scene].run < 2:
-            self.scenes[self.scene].play_run()
+        self.scenes[self.scene].play_run()
 
     def stop_scene(self):
         if self.scene >= len(self.scenes):
@@ -78,7 +76,6 @@ class Director(object):
             self.restart_scene()
         elif self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
             self.scene += 1
-
         self.ticker = 0
 
     def restart_scene(self):
