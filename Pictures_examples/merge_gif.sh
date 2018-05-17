@@ -18,7 +18,11 @@ function create_gif {
 			return 1
 		fi
 	done
-	convert -delay 20 -loop 0 temp/video_*.png video.gif
+	for ((i=101;i<=104;i++));
+	do
+		convert -size 864x288 xc:rgba\(0,0,0,255\) temp/video_$i.png
+	done
+	convert -delay 10 -loop 0 temp/video_*.png video.gif
 	echo "created "$PWD"/video.gif"
 	rm -rf temp
 	return 0
