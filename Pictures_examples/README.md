@@ -12,15 +12,15 @@ A run is composed of 3 videos:
 
 #### Scene
 
-![scene](Test/visible/static/1/scene/video.gif)
-
-#### Depth
-
-![depth](Test/visible/static/1/depth/video.gif)
+![scene](O1/Test/visible/static/1/scene/video.gif)
 
 #### Mask
 
-![mask](Test/visible/static/1/masks/video.gif)
+![mask](O1/Test/visible/static/1/masks/video.gif)
+
+#### Depth
+
+![depth](O1/Test/visible/static/1/depth/video.gif)
 
 ### Train
 
@@ -36,18 +36,18 @@ Tests runs are less random than the trains runs.
 
 ##### Possible run examples
 
-![scene](Test/visible/static/1/scene/video.gif)
-![scene2](Test/occluded/dynamic_1/1/scene/video.gif)
-![scene3](Test/occluded/dynamic_2/1/scene/video.gif)
-![scene4](Test/visible/dynamic_1/1/scene/video.gif)
+![scene](O1/Test/visible/static/1/scene/video.gif)
+![scene2](O1/Test/occluded/dynamic_1/1/scene/video.gif)
+![scene3](O1/Test/occluded/dynamic_2/1/scene/video.gif)
+![scene4](O1/Test/visible/dynamic_1/1/scene/video.gif)
 
 
 ##### Impossible run examples
 
-![scene](Test/visible/static/3/scene/video.gif)
-![scene2](Test/occluded/dynamic_1/3/scene/video.gif)
-![scene3](Test/occluded/dynamic_2/3/scene/video.gif)
-![scene4](Test/visible/dynamic_1/3/scene/video.gif)
+![scene](O1/Test/visible/static/3/scene/video.gif)
+![scene2](O1/Test/occluded/dynamic_1/3/scene/video.gif)
+![scene3](O1/Test/occluded/dynamic_2/3/scene/video.gif)
+![scene4](O1/Test/visible/dynamic_1/3/scene/video.gif)
 
 #### A test scene can be :
 
