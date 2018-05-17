@@ -1,7 +1,6 @@
 import random
 import os
 import importlib
-import unreal_engine as ue
 from unreal_engine.classes import Friction
 from unreal_engine import FVector, FRotator
 from actors.parameters import SkySphereParams, FloorParams
@@ -35,11 +34,13 @@ class Scene:
         self.params['Camera'] = CameraParams(
                 location=FVector(0, 0, 200),
                 rotation=FRotator(0, 0, 0))
-        self.params['SkySphere'] = SkySphereParams()
+        self.params['SkySphere'] = SkySphereParams(rotation=FRotator(180, 180, 180))
         self.params['Floor'] = FloorParams(
                 material=get_random_material('Floor'))
+        """
         self.params['Light'] = LightParams(
                 type='SkyLight')
+        """
         prob_walls = 0  # no walls to avoid luminosity problems
         if random.uniform(0, 1) <= prob_walls:
             self.params['Walls'] = WallsParams(
@@ -120,4 +121,6 @@ class Scene:
         if self.actors is not None:
             for actor_name, actor in self.actors.items():
                 if 'object' in actor_name or 'occluder' in actor_name:
+                    actor.move()
+                if 'sky' in actor_name:
                     actor.move()

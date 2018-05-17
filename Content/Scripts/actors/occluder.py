@@ -1,6 +1,5 @@
 # coding: utf-8
 
-import copy
 import unreal_engine as ue
 from unreal_engine.classes import Material
 from unreal_engine import FVector

@@ -26,9 +26,9 @@ Occlusion-resistent object tracking
 * Occluders movements are random and sporadic.
 * Actors can only be spheres.
 
+![Scene](Train/scene/video.gif)
 ![Depth](Train/depth/video.gif)
 ![Mask](Train/masks/video.gif)
-![Scene](Train/scene/video.gif)
 
 ### Test
 
@@ -36,7 +36,6 @@ Occlusion-resistent object tracking
 * From 1 to 3 actors per scene.
 * Actors can only be spheres.
 * Random textures are applied to the floor, the occluders and the actors.
-* A magic actor is randomly chosen in the spawned actors.
 
 #### Visible
 
@@ -48,35 +47,31 @@ Occlusion-resistent object tracking
 
 ###### Possible 1
 
-* Magic actor is visible.
-
+![scene](Test/visible/static/1/scene/video.gif)
 ![depth](Test/visible/static/1/depth/video.gif)
 ![mask](Test/visible/static/1/masks/video.gif)
-![scene](Test/visible/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor is invisible.
-
+![scene](Test/visible/static/2/scene/video.gif)
 ![depth](Test/visible/static/2/depth/video.gif)
 ![mask](Test/visible/static/2/masks/video.gif)
-![scene](Test/visible/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor start visible and become invisible in a random frame.
+* One actor start visible and become invisible in a random frame.
 
+![scene](Test/visible/static/3/scene/video.gif)
 ![depth](Test/visible/static/3/depth/video.gif)
 ![mask](Test/visible/static/3/masks/video.gif)
-![scene](Test/visible/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor start invisible and become visible in a random frame.
+* One actor start invisible and become visible in a random frame.
 
+![scene](Test/visible/static/4/scene/video.gif)
 ![depth](Test/visible/static/4/depth/video.gif)
 ![mask](Test/visible/static/4/masks/video.gif)
-![scene](Test/visible/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -85,36 +80,32 @@ Occlusion-resistent object tracking
 
 ###### Possible 1
 
-* Magic actor is visible.
-
+![scene](Test/visible/dynamic_1/1/scene/video.gif)
 ![depth](Test/visible/dynamic_1/1/depth/video.gif)
 ![mask](Test/visible/dynamic_1/1/masks/video.gif)
-![scene](Test/visible/dynamic_1/1/scene/video.gif)
 
 
 ###### Possible 2
 
-* Magic actor is invisible.
-
+![scene](Test/visible/dynamic_1/2/scene/video.gif)
 ![depth](Test/visible/dynamic_1/2/depth/video.gif)
 ![mask](Test/visible/dynamic_1/2/masks/video.gif)
-![scene](Test/visible/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor start visible and become invisible in a random frame.
+* One actor start visible and become invisible in a random frame.
 
+![scene](Test/visible/dynamic_1/3/scene/video.gif)
 ![depth](Test/visible/dynamic_1/3/depth/video.gif)
 ![mask](Test/visible/dynamic_1/3/masks/video.gif)
-![scene](Test/visible/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor start invisible and become visible in a random frame.
+* One actor start invisible and become visible in a random frame.
 
+![scene](Test/visible/dynamic_1/4/scene/video.gif)
 ![depth](Test/visible/dynamic_1/4/depth/video.gif)
 ![mask](Test/visible/dynamic_1/4/masks/video.gif)
-![scene](Test/visible/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -123,74 +114,69 @@ Occlusion-resistent object tracking
 
 ###### Possible 1
 
-* Magic actor is visible.
+* One actor is visible.
 
+![scene](Test/visible/dynamic_2/1/scene/video.gif)
 ![depth](Test/visible/dynamic_2/1/depth/video.gif)
 ![mask](Test/visible/dynamic_2/1/masks/video.gif)
-![scene](Test/visible/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor is invisible.
+* One actor is invisible.
 
+![scene](Test/visible/dynamic_2/2/scene/video.gif)
 ![depth](Test/visible/dynamic_2/2/depth/video.gif)
 ![mask](Test/visible/dynamic_2/2/masks/video.gif)
-![scene](Test/visible/dynamic_2/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor starts visible, becomes invisible in a random frame, then becomes visible again in another random frame.
+* One actor starts visible, becomes invisible in a random frame, then becomes visible again in another random frame.
 
+![scene](Test/visible/dynamic_2/3/scene/video.gif)
 ![depth](Test/visible/dynamic_2/3/depth/video.gif)
 ![mask](Test/visible/dynamic_2/3/masks/video.gif)
-![scene](Test/visible/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts invisible, becomes visible in a random frame, then becomes invisible again in another random frame.
+* One actor starts invisible, becomes visible in a random frame, then becomes invisible again in another random frame.
 
+![scene](Test/visible/dynamic_2/4/scene/video.gif)
 ![depth](Test/visible/dynamic_2/4/depth/video.gif)
 ![mask](Test/visible/dynamic_2/4/masks/video.gif)
-![scene](Test/visible/dynamic_2/4/scene/video.gif)
 
 #### Occluded
 
 ##### Static
 
-* One occluder spawns, down, between the camera and the magic actor.
 * The occluder stands up then gets down.
 
 ###### Possible 1
 
-* Magic actor is visible.
-
+![scene](Test/occluded/static/1/scene/video.gif)
 ![depth](Test/occluded/static/1/depth/video.gif)
 ![mask](Test/occluded/static/1/masks/video.gif)
-![scene](Test/occluded/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor is invisible.
-
+![scene](Test/occluded/static/2/scene/video.gif)
 ![depth](Test/occluded/static/2/depth/video.gif)
 ![mask](Test/occluded/static/2/masks/video.gif)
-![scene](Test/occluded/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor is visible and disapear when the occluder get down.
+* One actor is visible and disapear when the occluder get down.
 
+![scene](Test/occluded/static/3/scene/video.gif)
 ![depth](Test/occluded/static/3/depth/video.gif)
 ![mask](Test/occluded/static/3/masks/video.gif)
-![scene](Test/occluded/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor is invisible and apear when the occluder get down.
+* One actor is invisible and apear when the occluder get down.
 
+![scene](Test/occluded/static/4/scene/video.gif)
 ![depth](Test/occluded/static/4/depth/video.gif)
 ![mask](Test/occluded/static/4/masks/video.gif)
-![scene](Test/occluded/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -201,35 +187,31 @@ Occlusion-resistent object tracking
 
 ###### Possible 1
 
-* Magic actor is visible.
-
+![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/1/masks/video.gif)
-![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor is invisible.
-
+![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/2/masks/video.gif)
-![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor is visible and disapear as it goes behind the occluder.
+* One actor is visible and disapear as it goes behind the occluder.
 
+![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/3/masks/video.gif)
-![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor is invisible and apear coming from the back of the occluder.
+* One actor is invisible and apear coming from the back of the occluder.
 
+![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/4/masks/video.gif)
-![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -240,32 +222,28 @@ Occlusion-resistent object tracking
 
 ###### Possible 1
 
-* Magic actor is visible.
-
+![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/1/masks/video.gif)
-![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor is invisible.
-
+![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/2/masks/video.gif)
-![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 
-###### Imossible 1
+###### Impossible 1
 
-* Magic actor starts visible, becomes invisible as it goes behind the first occluder, then becomes visible again as it goes behind the second one.
+* One actor starts visible, becomes invisible as it goes behind the first occluder, then becomes visible again as it goes behind the second one.
 
+![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/3/masks/video.gif)
-![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts invisible, becomes invisible coming from behind the first occluder, then becomes invisible again as it goes behind the second one.
+* One actor starts invisible, becomes invisible coming from behind the first occluder, then becomes invisible again as it goes behind the second one.
 
+![scene](Test/occluded/dynamic_2/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/4/masks/video.gif)
-![scene](Test/occluded/dynamic_2/4/scene/video.gif)

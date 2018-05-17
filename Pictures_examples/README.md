@@ -14,13 +14,13 @@ A run is composed of 3 videos:
 
 ![scene](Test/visible/static/1/scene/video.gif)
 
-#### Mask
-
-![mask](Test/visible/static/1/masks/video.gif)
-
 #### Depth
 
 ![depth](Test/visible/static/1/depth/video.gif)
+
+#### Mask
+
+![mask](Test/visible/static/1/masks/video.gif)
 
 ### Train
 
@@ -31,7 +31,6 @@ There is one run per train scene.
 ### Test
 
 Tests runs are less random than the trains runs.
-A single actor is chosen to be the magic actor.
 
 #### There are 4 runs per test scene : 2 possibles and 2 impossibles
 
@@ -55,12 +54,10 @@ A single actor is chosen to be the magic actor.
 ##### Visible
 
 * There is no occluder in this one.
-* The magic trick always occures when the magic actor is visible.
 
 ##### Occluded
 
 * There is occluders in this one.
-* The magic trick always occures when the magic actor is behind an occluder.
 
 #### A test scene can be :
 
@@ -69,7 +66,6 @@ A single actor is chosen to be the magic actor.
 * The actors don't move.
 * If the scene is occluded, there is one occluder.
 * The occluder (if present) can rotate.
-* There is one magic trick.
 
 ##### Dynamic 1
 
@@ -78,7 +74,6 @@ A single actor is chosen to be the magic actor.
 * The occluder (if present) can rotate.
 * The actors can spawn either at the left or the right of the scene.
 * The actors go alongside in the direction of the other side of the scene.
-* There is one magic trick.
 
 ##### Dynamic 2
 
@@ -87,7 +82,6 @@ A single actor is chosen to be the magic actor.
 * The occluder (if present) can rotate.
 * The actors can spawn either at the left or the right of the scene.
 * The actors go alongside in the direction of the other side of the scene.
-* There is two magic tricks.
 
 ## OBJECTS LEXICON
 
@@ -95,7 +89,6 @@ A single actor is chosen to be the magic actor.
 
 * An actor can be a sphere, a cube or a cone from differents textures.
 * Forces can be applied to them in trains or dynamic tests.
-* In tests videos, a magic actor will be chosen among all the actors.
 * They submit to the physic laws.
 
 ### Occluder
@@ -104,5 +97,4 @@ A single actor is chosen to be the magic actor.
 * It will stand up and go down during video.
 * Movement speed can change.
 * It can spawn in occluded tests or trains.
-* In occluded test video, it will hides the magic trick.
 * They don't submit to physic laws.

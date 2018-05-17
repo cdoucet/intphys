@@ -5,22 +5,18 @@ import unreal_engine as ue
 from actors.base_actor import BaseActor
 from actors.parameters import LightParams
 
+"""
+The light is... a light ? which is... lighting something ?
+There is 3 kinds of lights :
+    Directionnal : like a spot, it points toward somewhere, you chose
+        location and rotation
+    SkyLight : Diffuse light which doesn't need location or rotation.
+        It comes from the skysphere (therefore it needs the skyshpere)
+    PointLight : like a bulb. It requires a location
+"""
+
 
 class Light(BaseActor):
-    """
-    __init__ instantiate the class
-    parameters ->
-    world: UEngine world instance
-    location: location of the actor (FVector). Default value: 0, 0, 0
-    rotation: rotation of the actor (FRotator). Default value: 0, 0, 0
-    field_of_view: angle of the camera field of view (int). Default value: 90
-    aspect_ratio: I don't know what it is :(
-    projection mode: I redirect you to the Unreal Engine Doc
-
-    Warning !
-    If you don't send either the location and the rotation during the camera instantiation,
-    the __init__ function will change it on its own
-    """
     def __init__(self, world, params=LightParams()):
         types = {
             'Directional': '/Game/DirectionalLight.DirectionalLight_C',

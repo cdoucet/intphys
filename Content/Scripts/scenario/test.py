@@ -55,20 +55,9 @@ class Test(Scene):
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
                 mass=1)
-
-        # magic tick is determined by the checks when occluded
-        if self.is_occluded:
-            tick = -1
-        elif '_2' in self.movement:
-            # non occluded with 2 magic changes at different ticks
-            tick = [random.randint(25, 40), random.randint(60, 75)]
-        else:
-            # non occluded with a single magic change
-            tick = random.randint(25, 75)
-
         self.params['magic'] = {
             'actor': f'object_{random.randint(1, nobjects)}',
-            'tick': tick}
+            'tick': -1}
 
         if 'dynamic' in self.movement:
             self.initial_force = FVector()
@@ -76,15 +65,16 @@ class Test(Scene):
             moves = []
             scale = FVector(0.5, 1, 1.5)
             if 'dynamic' in self.movement:
-                if self.movement.split('_')[1] == '2':
+                if '2' in self.movement:
                     location = FVector(600, -175, 0)
                 else:
                     location = FVector(600, 0, 0)
                 start_up = True
                 moves.append(100)
             else:
-                location = FVector(400, self.params[
+                location = FVector(600, self.params[
                     self.params['magic']['actor']].location.y / 2, 0)
+                scale.z = 1
                 start_up = False
                 moves.append(0)
                 moves.append(100)
@@ -107,9 +97,6 @@ class Test(Scene):
                     start_up=start_up)
 
     def play_run(self):
-        if self.run == 4:
-            return
-        ue.log("Run {}/4: Possible run".format(self.run + 1))
         super().play_run()
         self.setup_magic_actor()
         if 'static' not in self.movement:
@@ -117,37 +104,7 @@ class Test(Scene):
                 if 'object' in name.lower():
                     y_location = actor.actor.get_actor_location().y
                     force = FVector(0, -29e5 if y_location > 0 else 29e5, 0)
-                    if 'O2' in type(self).__name__:
-                        force.z = 24e5
                     actor.set_force(force)
-
-    def stop_run(self, scene_index):
-        self.ticker = 0
-        if self.run == 1 and self.set_magic_tick() is False:
-            self.del_actors()
-            return False
-        if self.run != 3:
-            self.reset_actors()
-        else:
-            self.del_actors()
-        if not self.saver.is_dry_mode:
-            self.saver.save(self.get_scene_subdir(scene_index))
-            # reset actors if it is the last run
-            self.saver.reset(True if self.run == 3 else False)
-        self.run += 1
-        return True
-
-    def tick(self):
-        super().tick()
-        if self.run <= 1:
-            self.fill_check_array()
-        elif isinstance(self.params['magic']['tick'], int) and \
-                self.ticker == self.params['magic']['tick']:
-            self.play_magic_trick()
-        elif not isinstance(self.params['magic']['tick'], int) and \
-                self.ticker in self.params['magic']['tick']:
-            self.play_magic_trick()
-        self.ticker += 1
 
     def checks_time_laps(self, which, desired_bool):
         # looking for the state we want in the check
@@ -169,8 +126,10 @@ class Test(Scene):
     def capture(self):
         ignored_actors = []
         if self.actors[self.params['magic']['actor']].hidden is True:
-            ignored_actors.append(self.actors[self.params['magic']['actor']].actor)
-        self.saver.capture(ignored_actors, self.status_header, self.get_status())
+            ignored_actors.append(self.actors[self.params['magic']['actor']]
+                                  .actor)
+        self.saver.capture(ignored_actors, self.status_header,
+                           self.get_status())
 
     def set_magic_tick(self):
         if self.is_occluded is True:
@@ -187,6 +146,3 @@ class Test(Scene):
                 return self.dynamic_1_visible()
             else:
                 return self.dynamic_2_visible()
-
-    def is_over(self):
-        return True if self.run == 4 else False

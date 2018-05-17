@@ -26,9 +26,9 @@ Tracking/predicting object trajectories.
 * Occluders movements are random and sporadic.
 * Actors can only be spheres.
 
+![Scene](Train/scene/video.gif)
 ![Depth](Train/depth/video.gif)
 ![Mask](Train/masks/video.gif)
-![Scene](Train/scene/video.gif)
 
 ### Test
 
@@ -36,7 +36,6 @@ Tracking/predicting object trajectories.
 * From 1 to 3 actors per scene.
 * Actors can only be spheres.
 * Random textures are applied to the floor, the occluders and the actors.
-* A magic actor is randomly chosen in the spawned actors.
 
 #### Visible
 
@@ -48,35 +47,31 @@ Tracking/predicting object trajectories.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/visible/static/1/scene/video.gif)
 ![depth](Test/visible/static/1/depth/video.gif)
 ![mask](Test/visible/static/1/masks/video.gif)
-![scene](Test/visible/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/visible/static/2/scene/video.gif)
 ![depth](Test/visible/static/2/depth/video.gif)
 ![mask](Test/visible/static/2/masks/video.gif)
-![scene](Test/visible/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor spawns and then teleports somewhere else at a random frame.
+* One actor spawns and then teleports somewhere else at a random frame.
 
+![scene](Test/visible/static/3/scene/video.gif)
 ![depth](Test/visible/static/3/depth/video.gif)
 ![mask](Test/visible/static/3/masks/video.gif)
-![scene](Test/visible/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor spawns and then teleports somewhere else at a random frame (but at a different place than the previous video).
+* One actor spawns and then teleports somewhere else at a random frame (but at a different place than the previous video).
 
+![scene](Test/visible/static/4/scene/video.gif)
 ![depth](Test/visible/static/4/depth/video.gif)
 ![mask](Test/visible/static/4/masks/video.gif)
-![scene](Test/visible/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -85,35 +80,31 @@ Tracking/predicting object trajectories.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/visible/dynamic_1/1/scene/video.gif)
 ![depth](Test/visible/dynamic_1/1/depth/video.gif)
 ![mask](Test/visible/dynamic_1/1/masks/video.gif)
-![scene](Test/visible/dynamic_1/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/visible/dynamic_1/2/scene/video.gif)
 ![depth](Test/visible/dynamic_1/2/depth/video.gif)
 ![mask](Test/visible/dynamic_1/2/masks/video.gif)
-![scene](Test/visible/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor spawns and then teleports somewhere else at a random frame.
+* One actor spawns and then teleports somewhere else at a random frame.
 
+![scene](Test/visible/dynamic_1/3/scene/video.gif)
 ![depth](Test/visible/dynamic_1/3/depth/video.gif)
 ![mask](Test/visible/dynamic_1/3/masks/video.gif)
-![scene](Test/visible/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor spawns and then teleports somewhere else at a random frame (but at a different place than the previous video).
+* One actor spawns and then teleports somewhere else at a random frame (but at a different place than the previous video).
 
+![scene](Test/visible/dynamic_1/4/scene/video.gif)
 ![depth](Test/visible/dynamic_1/4/depth/video.gif)
 ![mask](Test/visible/dynamic_1/4/masks/video.gif)
-![scene](Test/visible/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -122,74 +113,65 @@ Tracking/predicting object trajectories.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/visible/dynamic_2/1/scene/video.gif)
 ![depth](Test/visible/dynamic_2/1/depth/video.gif)
 ![mask](Test/visible/dynamic_2/1/masks/video.gif)
-![scene](Test/visible/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/visible/dynamic_2/2/scene/video.gif)
 ![depth](Test/visible/dynamic_2/2/depth/video.gif)
 ![mask](Test/visible/dynamic_2/2/masks/video.gif)
-![scene](Test/visible/dynamic_2/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor spawns, teleports somewhere else at a random frame, then teleports again somewhere else.
+* One actor spawns, teleports somewhere else at a random frame, then teleports again somewhere else.
 
+![scene](Test/visible/dynamic_2/3/scene/video.gif)
 ![depth](Test/visible/dynamic_2/3/depth/video.gif)
 ![mask](Test/visible/dynamic_2/3/masks/video.gif)
-![scene](Test/visible/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor spawns, teleports somewhere else at a random frame, then teleports again somewhere else.
+* One actor spawns, teleports somewhere else at a random frame, then teleports again somewhere else.
 
+![scene](Test/visible/dynamic_2/4/scene/video.gif)
 ![depth](Test/visible/dynamic_2/4/depth/video.gif)
 ![mask](Test/visible/dynamic_2/4/masks/video.gif)
-![scene](Test/visible/dynamic_2/4/scene/video.gif)
 
 #### Occluded
 
 ##### Static
 
-* One occluder spawns, down, between the camera and the magic actor.
 * The occluder stands up then gets down.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/occluded/static/1/scene/video.gif)
 ![depth](Test/occluded/static/1/depth/video.gif)
 ![mask](Test/occluded/static/1/masks/video.gif)
-![scene](Test/occluded/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/occluded/static/2/scene/video.gif)
 ![depth](Test/occluded/static/2/depth/video.gif)
 ![mask](Test/occluded/static/2/masks/video.gif)
-![scene](Test/occluded/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor changed location when occluder gets down.
+* One actor changed location when occluder gets down.
 
+![scene](Test/occluded/static/3/scene/video.gif)
 ![depth](Test/occluded/static/3/depth/video.gif)
 ![mask](Test/occluded/static/3/masks/video.gif)
-![scene](Test/occluded/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor changed location when occluder gets down.
+* One actor changed location when occluder gets down.
 
+![scene](Test/occluded/static/4/scene/video.gif)
 ![depth](Test/occluded/static/4/depth/video.gif)
 ![mask](Test/occluded/static/4/masks/video.gif)
-![scene](Test/occluded/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -200,35 +182,31 @@ Tracking/predicting object trajectories.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/1/masks/video.gif)
-![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/2/masks/video.gif)
-![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor teleports himself when going behind the occluder (the time it takes for it to go through an occluder is odd)
+* One actor teleports himself when going behind the occluder (the time it takes for it to go through an occluder is odd)
 
+![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/3/masks/video.gif)
-![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor teleports himself when going behind the occluder (the time it takes for it to go through an occluder is odd)
+* One actor teleports himself when going behind the occluder (the time it takes for it to go through an occluder is odd)
 
+![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/4/masks/video.gif)
-![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -239,32 +217,28 @@ Tracking/predicting object trajectories.
 
 ###### Possible 1
 
-* Magic actor starts somewhere in the scene.
-
+![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/1/masks/video.gif)
-![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor starts somewhere in the scene (but at a different place than the previous run).
-
+![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/2/masks/video.gif)
-![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor teleports himself when going behind each occluder (the time it takes for it to go through an occluder is odd)
+* One actor teleports himself when going behind each occluder (the time it takes for it to go through an occluder is odd)
 
+![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/3/masks/video.gif)
-![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor teleports himself when going behind each occluder (the time it takes for it to go through an occluder is odd)
+* One actor teleports himself when going behind each occluder (the time it takes for it to go through an occluder is odd)
 
+![scene](Test/occluded/dynamic_2/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/4/masks/video.gif)
-![scene](Test/occluded/dynamic_2/4/scene/video.gif)

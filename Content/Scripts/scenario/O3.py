@@ -29,19 +29,7 @@ class O3Test(O3Base, MirrorTest):
         self.check_array[1]['visibility'] = []
         self.check_array[1]['location'] = []
 
-    """
-    def generate_parameters(self):
-        super().generate_parameters()
-        if self.is_occluded is True:
-            if '1' in self.movement:
-                self.params['occluder_1'].scale = FVector(1.5, 1, 1.5)
-            elif '2' in self.movement:
-                self.params['occluder_1'].scale = FVector(1, 1, 1.5)
-                self.params['occluder_2'].scale = FVector(1, 1, 1.5)
-    """
-
     def setup_magic_actor(self):
-        # magic actor spawn hidden if it is the second possible run
         if self.run == 1:
             magic_actor = self.actors[self.params['magic']['actor']]
             current_location = magic_actor.actor.get_actor_location()
@@ -49,7 +37,8 @@ class O3Test(O3Base, MirrorTest):
             if 'static' in self.movement:
                 target_location = FVector(current_location.x +
                                           random.randint(-500, 500),
-                                          current_location.y,
+                                          current_location.y + 
+                                          random.randint(-500, 500),
                                           current_location.z)
             elif '1' in self.movement:
                 target_location = FVector(current_location.x,
@@ -61,10 +50,6 @@ class O3Test(O3Base, MirrorTest):
                                           current_location.y +
                                           100,
                                           current_location.z)
-                """
-                                          random.randint(50, 75) if magic_actor.actor.get_actor_location().y < 0 else random.randint(-75, 50),
-                                          current_location.z)
-                """
             magic_actor.set_location(target_location)
 
     # this function is here so you can put only the attribute that please you

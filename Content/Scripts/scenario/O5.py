@@ -1,6 +1,6 @@
 """Block O5 is energy/momentum, spheres only"""
 import random
-from scenario.test import Test
+from scenario.fullTest import FullTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
 from unreal_engine import FVector
@@ -21,7 +21,7 @@ class O5Train(O5Base, Train):
     pass
 
 
-class O5Test(O5Base, Test):
+class O5Test(O5Base, FullTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
         self.check_array[0]['visibility'] = []

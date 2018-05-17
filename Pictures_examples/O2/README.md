@@ -26,9 +26,9 @@ Appearance-robust object tracking.
 * Occluders movements are random and sporadic.
 * Actors can be spheres, cubes or cones.
 
+![Scene](Train/scene/video.gif)
 ![Depth](Train/depth/video.gif)
 ![Mask](Train/masks/video.gif)
-![Scene](Train/scene/video.gif)
 
 ### Test
 
@@ -36,7 +36,6 @@ Appearance-robust object tracking.
 * From 1 to 3 actors per scene.
 * Actors can be spheres, cubes or cones.
 * Random textures are applied to the floor, the occluders and the actors.
-* A magic actor is randomly chosen among the spawned actors.
 
 #### Visible
 
@@ -48,35 +47,31 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/visible/static/1/scene/video.gif)
 ![depth](Test/visible/static/1/depth/video.gif)
 ![mask](Test/visible/static/1/masks/video.gif)
-![scene](Test/visible/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but it is another one than the previous run).
-
+![scene](Test/visible/static/2/scene/video.gif)
 ![depth](Test/visible/static/2/depth/video.gif)
 ![mask](Test/visible/static/2/masks/video.gif)
-![scene](Test/visible/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor start with a shape and changes it in a random frame.
+* One actor start with a shape and changes it in a random frame.
 
+![scene](Test/visible/static/3/scene/video.gif)
 ![depth](Test/visible/static/3/depth/video.gif)
 ![mask](Test/visible/static/3/masks/video.gif)
-![scene](Test/visible/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
+* One actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
+![scene](Test/visible/static/4/scene/video.gif)
 ![depth](Test/visible/static/4/depth/video.gif)
 ![mask](Test/visible/static/4/masks/video.gif)
-![scene](Test/visible/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -85,36 +80,32 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/visible/dynamic_1/1/scene/video.gif)
 ![depth](Test/visible/dynamic_1/1/depth/video.gif)
 ![mask](Test/visible/dynamic_1/1/masks/video.gif)
-![scene](Test/visible/dynamic_1/1/scene/video.gif)
 
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous run).
-
+![scene](Test/visible/dynamic_1/2/scene/video.gif)
 ![depth](Test/visible/dynamic_1/2/depth/video.gif)
 ![mask](Test/visible/dynamic_1/2/masks/video.gif)
-![scene](Test/visible/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor start with a shape and changes it in a random frame.
+* One actor start with a shape and changes it in a random frame.
 
+![scene](Test/visible/dynamic_1/3/scene/video.gif)
 ![depth](Test/visible/dynamic_1/3/depth/video.gif)
 ![mask](Test/visible/dynamic_1/3/masks/video.gif)
-![scene](Test/visible/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
+* One actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
+![scene](Test/visible/dynamic_1/4/scene/video.gif)
 ![depth](Test/visible/dynamic_1/4/depth/video.gif)
 ![mask](Test/visible/dynamic_1/4/masks/video.gif)
-![scene](Test/visible/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -123,74 +114,65 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/visible/dynamic_2/1/scene/video.gif)
 ![depth](Test/visible/dynamic_2/1/depth/video.gif)
 ![mask](Test/visible/dynamic_2/1/masks/video.gif)
-![scene](Test/visible/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous run).
-
+![scene](Test/visible/dynamic_2/2/scene/video.gif)
 ![depth](Test/visible/dynamic_2/2/depth/video.gif)
 ![mask](Test/visible/dynamic_2/2/masks/video.gif)
-![scene](Test/visible/dynamic_2/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame.
+* One actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame.
 
+![scene](Test/visible/dynamic_2/3/scene/video.gif)
 ![depth](Test/visible/dynamic_2/3/depth/video.gif)
 ![mask](Test/visible/dynamic_2/3/masks/video.gif)
-![scene](Test/visible/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame (but the other way around than in the previous run).
+* One actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame (but the other way around than in the previous run).
 
+![scene](Test/visible/dynamic_2/4/scene/video.gif)
 ![depth](Test/visible/dynamic_2/4/depth/video.gif)
 ![mask](Test/visible/dynamic_2/4/masks/video.gif)
-![scene](Test/visible/dynamic_2/4/scene/video.gif)
 
 #### Occluded
 
 ##### Static
 
-* One occluder spawns, down, between the camera and the magic actor.
 * The occluder stands up then gets down.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/occluded/static/1/scene/video.gif)
 ![depth](Test/occluded/static/1/depth/video.gif)
 ![mask](Test/occluded/static/1/masks/video.gif)
-![scene](Test/occluded/static/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous run).
-
+![scene](Test/occluded/static/2/scene/video.gif)
 ![depth](Test/occluded/static/2/depth/video.gif)
 ![mask](Test/occluded/static/2/masks/video.gif)
-![scene](Test/occluded/static/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor starts with a shape and changes it when the occluder gets down.
+* One actor starts with a shape and changes it when the occluder gets down.
 
+![scene](Test/occluded/static/3/scene/video.gif)
 ![depth](Test/occluded/static/3/depth/video.gif)
 ![mask](Test/occluded/static/3/masks/video.gif)
-![scene](Test/occluded/static/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts with a shape and changes it when the occluder gets down (but the other way around than in the previous run).
+* One actor starts with a shape and changes it when the occluder gets down (but the other way around than in the previous run).
 
+![scene](Test/occluded/static/4/scene/video.gif)
 ![depth](Test/occluded/static/4/depth/video.gif)
 ![mask](Test/occluded/static/4/masks/video.gif)
-![scene](Test/occluded/static/4/scene/video.gif)
 
 ##### Dynamic 1
 
@@ -201,35 +183,31 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/1/masks/video.gif)
-![scene](Test/occluded/dynamic_1/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous run).
-
+![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/2/masks/video.gif)
-![scene](Test/occluded/dynamic_1/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor starts with a shape and changes it as it goes behind the occluder.
+* One actor starts with a shape and changes it as it goes behind the occluder.
 
+![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/3/masks/video.gif)
-![scene](Test/occluded/dynamic_1/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts with a shape and changes it as it goes behind the occluder (but the other way around than in the previous run).
+* One actor starts with a shape and changes it as it goes behind the occluder (but the other way around than in the previous run).
 
+![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_1/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_1/4/masks/video.gif)
-![scene](Test/occluded/dynamic_1/4/scene/video.gif)
 
 ##### Dynamic 2
 
@@ -240,32 +218,28 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-* Magic actor keeps its shape and texture.
-
+![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/1/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/1/masks/video.gif)
-![scene](Test/occluded/dynamic_2/1/scene/video.gif)
 
 ###### Possible 2
 
-* Magic actor keeps its shape and texture (but not the same from the previous run).
-
+![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/2/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/2/masks/video.gif)
-![scene](Test/occluded/dynamic_2/2/scene/video.gif)
 
 ###### Impossible 1
 
-* Magic actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one.
+* One actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one.
 
+![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/3/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/3/masks/video.gif)
-![scene](Test/occluded/dynamic_2/3/scene/video.gif)
 
 ###### Impossible 2
 
-* Magic actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one (but the other way around than it was in the previous run).
+* One actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one (but the other way around than it was in the previous run).
 
+![scene](Test/occluded/dynamic_2/4/scene/video.gif)
 ![depth](Test/occluded/dynamic_2/4/depth/video.gif)
 ![mask](Test/occluded/dynamic_2/4/masks/video.gif)
-![scene](Test/occluded/dynamic_2/4/scene/video.gif)

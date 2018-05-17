@@ -1,7 +1,6 @@
 from actors.wall import Wall
 from actors.parameters import WallsParams
 
-
 """
 Walls is a wrapper class that make 3 walls spawn.
 """
