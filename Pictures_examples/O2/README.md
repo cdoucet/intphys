@@ -26,9 +26,7 @@ Appearance-robust object tracking.
 * Occluders movements are random and sporadic.
 * Actors can be spheres, cubes or cones.
 
-![Scene](Train/scene/video.gif)
-![Depth](Train/depth/video.gif)
-![Mask](Train/masks/video.gif)
+![Scene](Train/video.gif)
 
 ### Test
 
@@ -47,31 +45,23 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/visible/static/1/scene/video.gif)
-![depth](Test/visible/static/1/depth/video.gif)
-![mask](Test/visible/static/1/masks/video.gif)
+![scene](Test/visible/static/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/visible/static/2/scene/video.gif)
-![depth](Test/visible/static/2/depth/video.gif)
-![mask](Test/visible/static/2/masks/video.gif)
+![scene](Test/visible/static/2/video.gif)
 
 ###### Impossible 1
 
 * One actor start with a shape and changes it in a random frame.
 
-![scene](Test/visible/static/3/scene/video.gif)
-![depth](Test/visible/static/3/depth/video.gif)
-![mask](Test/visible/static/3/masks/video.gif)
+![scene](Test/visible/static/3/video.gif)
 
 ###### Impossible 2
 
 * One actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
-![scene](Test/visible/static/4/scene/video.gif)
-![depth](Test/visible/static/4/depth/video.gif)
-![mask](Test/visible/static/4/masks/video.gif)
+![scene](Test/visible/static/4/video.gif)
 
 ##### Dynamic 1
 
@@ -80,32 +70,23 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/visible/dynamic_1/1/scene/video.gif)
-![depth](Test/visible/dynamic_1/1/depth/video.gif)
-![mask](Test/visible/dynamic_1/1/masks/video.gif)
-
+![scene](Test/visible/dynamic_1/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/visible/dynamic_1/2/scene/video.gif)
-![depth](Test/visible/dynamic_1/2/depth/video.gif)
-![mask](Test/visible/dynamic_1/2/masks/video.gif)
+![scene](Test/visible/dynamic_1/2/video.gif)
 
 ###### Impossible 1
 
 * One actor start with a shape and changes it in a random frame.
 
-![scene](Test/visible/dynamic_1/3/scene/video.gif)
-![depth](Test/visible/dynamic_1/3/depth/video.gif)
-![mask](Test/visible/dynamic_1/3/masks/video.gif)
+![scene](Test/visible/dynamic_1/3/video.gif)
 
 ###### Impossible 2
 
 * One actor start with a shape and changes it in a random frame (but the other way around than in the previous run).
 
-![scene](Test/visible/dynamic_1/4/scene/video.gif)
-![depth](Test/visible/dynamic_1/4/depth/video.gif)
-![mask](Test/visible/dynamic_1/4/masks/video.gif)
+![scene](Test/visible/dynamic_1/4/video.gif)
 
 ##### Dynamic 2
 
@@ -114,31 +95,23 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/visible/dynamic_2/1/scene/video.gif)
-![depth](Test/visible/dynamic_2/1/depth/video.gif)
-![mask](Test/visible/dynamic_2/1/masks/video.gif)
+![scene](Test/visible/dynamic_2/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/visible/dynamic_2/2/scene/video.gif)
-![depth](Test/visible/dynamic_2/2/depth/video.gif)
-![mask](Test/visible/dynamic_2/2/masks/video.gif)
+![scene](Test/visible/dynamic_2/2/video.gif)
 
 ###### Impossible 1
 
 * One actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame.
 
-![scene](Test/visible/dynamic_2/3/scene/video.gif)
-![depth](Test/visible/dynamic_2/3/depth/video.gif)
-![mask](Test/visible/dynamic_2/3/masks/video.gif)
+![scene](Test/visible/dynamic_2/3/video.gif)
 
 ###### Impossible 2
 
 * One actor starts with a shape, changes it in a random frame, then comes back to its original state in another random frame (but the other way around than in the previous run).
 
-![scene](Test/visible/dynamic_2/4/scene/video.gif)
-![depth](Test/visible/dynamic_2/4/depth/video.gif)
-![mask](Test/visible/dynamic_2/4/masks/video.gif)
+![scene](Test/visible/dynamic_2/4/video.gif)
 
 #### Occluded
 
@@ -148,31 +121,23 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/occluded/static/1/scene/video.gif)
-![depth](Test/occluded/static/1/depth/video.gif)
-![mask](Test/occluded/static/1/masks/video.gif)
+![scene](Test/occluded/static/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/occluded/static/2/scene/video.gif)
-![depth](Test/occluded/static/2/depth/video.gif)
-![mask](Test/occluded/static/2/masks/video.gif)
+![scene](Test/occluded/static/2/video.gif)
 
 ###### Impossible 1
 
 * One actor starts with a shape and changes it when the occluder gets down.
 
-![scene](Test/occluded/static/3/scene/video.gif)
-![depth](Test/occluded/static/3/depth/video.gif)
-![mask](Test/occluded/static/3/masks/video.gif)
+![scene](Test/occluded/static/3/video.gif)
 
 ###### Impossible 2
 
 * One actor starts with a shape and changes it when the occluder gets down (but the other way around than in the previous run).
 
-![scene](Test/occluded/static/4/scene/video.gif)
-![depth](Test/occluded/static/4/depth/video.gif)
-![mask](Test/occluded/static/4/masks/video.gif)
+![scene](Test/occluded/static/4/video.gif)
 
 ##### Dynamic 1
 
@@ -183,31 +148,23 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/occluded/dynamic_1/1/scene/video.gif)
-![depth](Test/occluded/dynamic_1/1/depth/video.gif)
-![mask](Test/occluded/dynamic_1/1/masks/video.gif)
+![scene](Test/occluded/dynamic_1/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/occluded/dynamic_1/2/scene/video.gif)
-![depth](Test/occluded/dynamic_1/2/depth/video.gif)
-![mask](Test/occluded/dynamic_1/2/masks/video.gif)
+![scene](Test/occluded/dynamic_1/2/video.gif)
 
 ###### Impossible 1
 
 * One actor starts with a shape and changes it as it goes behind the occluder.
 
-![scene](Test/occluded/dynamic_1/3/scene/video.gif)
-![depth](Test/occluded/dynamic_1/3/depth/video.gif)
-![mask](Test/occluded/dynamic_1/3/masks/video.gif)
+![scene](Test/occluded/dynamic_1/3/video.gif)
 
 ###### Impossible 2
 
 * One actor starts with a shape and changes it as it goes behind the occluder (but the other way around than in the previous run).
 
-![scene](Test/occluded/dynamic_1/4/scene/video.gif)
-![depth](Test/occluded/dynamic_1/4/depth/video.gif)
-![mask](Test/occluded/dynamic_1/4/masks/video.gif)
+![scene](Test/occluded/dynamic_1/4/video.gif)
 
 ##### Dynamic 2
 
@@ -218,28 +175,20 @@ Appearance-robust object tracking.
 
 ###### Possible 1
 
-![scene](Test/occluded/dynamic_2/1/scene/video.gif)
-![depth](Test/occluded/dynamic_2/1/depth/video.gif)
-![mask](Test/occluded/dynamic_2/1/masks/video.gif)
+![scene](Test/occluded/dynamic_2/1/video.gif)
 
 ###### Possible 2
 
-![scene](Test/occluded/dynamic_2/2/scene/video.gif)
-![depth](Test/occluded/dynamic_2/2/depth/video.gif)
-![mask](Test/occluded/dynamic_2/2/masks/video.gif)
+![scene](Test/occluded/dynamic_2/2/video.gif)
 
 ###### Impossible 1
 
 * One actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one.
 
-![scene](Test/occluded/dynamic_2/3/scene/video.gif)
-![depth](Test/occluded/dynamic_2/3/depth/video.gif)
-![mask](Test/occluded/dynamic_2/3/masks/video.gif)
+![scene](Test/occluded/dynamic_2/3/video.gif)
 
 ###### Impossible 2
 
 * One actor starts with a shape, changes it as it goes behind the first occluder, then comes back as it was when it goes behind the second one (but the other way around than it was in the previous run).
 
-![scene](Test/occluded/dynamic_2/4/scene/video.gif)
-![depth](Test/occluded/dynamic_2/4/depth/video.gif)
-![mask](Test/occluded/dynamic_2/4/masks/video.gif)
+![scene](Test/occluded/dynamic_2/4/video.gif)

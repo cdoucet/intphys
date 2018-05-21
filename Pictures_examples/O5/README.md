@@ -28,7 +28,7 @@ Predicting object trajectories.
 
 ![Depth](Train/depth/video.gif)
 ![Mask](Train/masks/video.gif)
-![Scene](Train/scene/video.gif)
+![Scene](Train/video.gif)
 
 ### Test
 
@@ -47,31 +47,23 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/visible/static/1/depth/video.gif)
-![mask](Test/visible/static/1/masks/video.gif)
-![scene](Test/visible/static/1/scene/video.gif)
+![scene](Test/visible/static/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/visible/static/2/depth/video.gif)
-![mask](Test/visible/static/2/masks/video.gif)
-![scene](Test/visible/static/2/scene/video.gif)
+![scene](Test/visible/static/2/video.gif)
 
 ###### Impossible 1
 
 * One actor spawns and suddenly start to fly.
 
-![depth](Test/visible/static/3/depth/video.gif)
-![mask](Test/visible/static/3/masks/video.gif)
-![scene](Test/visible/static/3/scene/video.gif)
+![scene](Test/visible/static/3/video.gif)
 
 ###### Impossible 2
 
 * One actor spawns and suddenly start to fly.
 
-![depth](Test/visible/static/4/depth/video.gif)
-![mask](Test/visible/static/4/masks/video.gif)
-![scene](Test/visible/static/4/scene/video.gif)
+![scene](Test/visible/static/4/video.gif)
 
 ##### Dynamic 1
 
@@ -80,31 +72,23 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/visible/dynamic_1/1/depth/video.gif)
-![mask](Test/visible/dynamic_1/1/masks/video.gif)
-![scene](Test/visible/dynamic_1/1/scene/video.gif)
+![scene](Test/visible/dynamic_1/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/visible/dynamic_1/2/depth/video.gif)
-![mask](Test/visible/dynamic_1/2/masks/video.gif)
-![scene](Test/visible/dynamic_1/2/scene/video.gif)
+![scene](Test/visible/dynamic_1/2/video.gif)
 
 ###### Impossible 1
 
 * One actor spawns and then the gravity stops applying to it.
 
-![depth](Test/visible/dynamic_1/3/depth/video.gif)
-![mask](Test/visible/dynamic_1/3/masks/video.gif)
-![scene](Test/visible/dynamic_1/3/scene/video.gif)
+![scene](Test/visible/dynamic_1/3/video.gif)
 
 ###### Impossible 2
 
 * One actor spawns (but at a different place than the previous run) and then the gravity stops applying to it.
 
-![depth](Test/visible/dynamic_1/4/depth/video.gif)
-![mask](Test/visible/dynamic_1/4/masks/video.gif)
-![scene](Test/visible/dynamic_1/4/scene/video.gif)
+![scene](Test/visible/dynamic_1/4/video.gif)
 
 ##### Dynamic 2
 
@@ -113,31 +97,23 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/visible/dynamic_2/1/depth/video.gif)
-![mask](Test/visible/dynamic_2/1/masks/video.gif)
-![scene](Test/visible/dynamic_2/1/scene/video.gif)
+![scene](Test/visible/dynamic_2/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/visible/dynamic_2/2/depth/video.gif)
-![mask](Test/visible/dynamic_2/2/masks/video.gif)
-![scene](Test/visible/dynamic_2/2/scene/video.gif)
+![scene](Test/visible/dynamic_2/2/video.gif)
 
 ###### Impossible 1
 
 * Gravity stops applying to an actor at a random frame, then comes back.
 
-![depth](Test/visible/dynamic_2/3/depth/video.gif)
-![mask](Test/visible/dynamic_2/3/masks/video.gif)
-![scene](Test/visible/dynamic_2/3/scene/video.gif)
+![scene](Test/visible/dynamic_2/3/video.gif)
 
 ###### Impossible 2
 
 * Gravity stops applying to an actor at a random frame, then comes back.
 
-![depth](Test/visible/dynamic_2/4/depth/video.gif)
-![mask](Test/visible/dynamic_2/4/masks/video.gif)
-![scene](Test/visible/dynamic_2/4/scene/video.gif)
+![scene](Test/visible/dynamic_2/4/video.gif)
 
 #### Occluded
 
@@ -147,31 +123,23 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/occluded/static/1/depth/video.gif)
-![mask](Test/occluded/static/1/masks/video.gif)
-![scene](Test/occluded/static/1/scene/video.gif)
+![scene](Test/occluded/static/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/occluded/static/2/depth/video.gif)
-![mask](Test/occluded/static/2/masks/video.gif)
-![scene](Test/occluded/static/2/scene/video.gif)
+![scene](Test/occluded/static/2/video.gif)
 
 ###### Impossible 1
 
 * One actor start moving when occluder is up.
 
-![depth](Test/occluded/static/3/depth/video.gif)
-![mask](Test/occluded/static/3/masks/video.gif)
-![scene](Test/occluded/static/3/scene/video.gif)
+![scene](Test/occluded/static/3/video.gif)
 
 ###### Impossible 2
 
 * One actor start moving when occluder is up.
 
-![depth](Test/occluded/static/4/depth/video.gif)
-![mask](Test/occluded/static/4/masks/video.gif)
-![scene](Test/occluded/static/4/scene/video.gif)
+![scene](Test/occluded/static/4/video.gif)
 
 ##### Dynamic 1
 
@@ -182,31 +150,23 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/occluded/dynamic_1/1/depth/video.gif)
-![mask](Test/occluded/dynamic_1/1/masks/video.gif)
-![scene](Test/occluded/dynamic_1/1/scene/video.gif)
+![scene](Test/occluded/dynamic_1/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/occluded/dynamic_1/2/depth/video.gif)
-![mask](Test/occluded/dynamic_1/2/masks/video.gif)
-![scene](Test/occluded/dynamic_1/2/scene/video.gif)
+![scene](Test/occluded/dynamic_1/2/video.gif)
 
 ###### Impossible 1
 
 * Gravity stops applying to an actor when going behind occluder.
 
-![depth](Test/occluded/dynamic_1/3/depth/video.gif)
-![mask](Test/occluded/dynamic_1/3/masks/video.gif)
-![scene](Test/occluded/dynamic_1/3/scene/video.gif)
+![scene](Test/occluded/dynamic_1/3/video.gif)
 
 ###### Impossible 2
 
 * Gravity stops applying to an actor when going behind occluder.
 
-![depth](Test/occluded/dynamic_1/4/depth/video.gif)
-![mask](Test/occluded/dynamic_1/4/masks/video.gif)
-![scene](Test/occluded/dynamic_1/4/scene/video.gif)
+![scene](Test/occluded/dynamic_1/4/video.gif)
 
 ##### Dynamic 2
 
@@ -217,28 +177,20 @@ Predicting object trajectories.
 
 ###### Possible 1
 
-![depth](Test/occluded/dynamic_2/1/depth/video.gif)
-![mask](Test/occluded/dynamic_2/1/masks/video.gif)
-![scene](Test/occluded/dynamic_2/1/scene/video.gif)
+![scene](Test/occluded/dynamic_2/1/video.gif)
 
 ###### Possible 2
 
-![depth](Test/occluded/dynamic_2/2/depth/video.gif)
-![mask](Test/occluded/dynamic_2/2/masks/video.gif)
-![scene](Test/occluded/dynamic_2/2/scene/video.gif)
+![scene](Test/occluded/dynamic_2/2/video.gif)
 
 ###### Impossible 1
 
 * Gravity stop applying to an actor when going behind first occluder and come back behind the second one.
 
-![depth](Test/occluded/dynamic_2/3/depth/video.gif)
-![mask](Test/occluded/dynamic_2/3/masks/video.gif)
-![scene](Test/occluded/dynamic_2/3/scene/video.gif)
+![scene](Test/occluded/dynamic_2/3/video.gif)
 
 ###### Impossible 2
 
 * Gravity stop applying to an actor when going behind first occluder and come back behind the second one.
 
-![depth](Test/occluded/dynamic_2/4/depth/video.gif)
-![mask](Test/occluded/dynamic_2/4/masks/video.gif)
-![scene](Test/occluded/dynamic_2/4/scene/video.gif)
+![scene](Test/occluded/dynamic_2/4/video.gif)
