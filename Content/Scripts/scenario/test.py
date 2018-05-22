@@ -40,7 +40,7 @@ class Test(Scene):
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1  # + random.random()
+            scale = 1 + random.uniform(0, 0.5)
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -69,6 +69,7 @@ class Test(Scene):
                     location = FVector(600, -175, 0)
                 else:
                     location = FVector(600, 0, 0)
+                    scale.x = 1
                 start_up = True
                 moves.append(100)
             else:

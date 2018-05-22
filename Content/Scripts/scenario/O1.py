@@ -141,8 +141,8 @@ class O1Test(O1Base, MirrorTest):
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
-    def set_magic_trick(self):
-        if super().set_magic_trick() is False:
+    def set_magic_tick(self):
+        if super().set_magic_tick() is False:
             return False
         if isinstance(self.params['magic']['tick'], int):
             magic_tick = self.params['magic']['tick']

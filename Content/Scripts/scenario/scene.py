@@ -34,7 +34,9 @@ class Scene:
         self.params['Camera'] = CameraParams(
                 location=FVector(0, 0, 200),
                 rotation=FRotator(0, 0, 0))
+        """
         self.params['SkySphere'] = SkySphereParams(rotation=FRotator(180, 180, 180))
+        """
         self.params['Floor'] = FloorParams(
                 material=get_random_material('Floor'))
         """
@@ -101,11 +103,13 @@ class Scene:
         else:
             return True if self.run == 2 else False
 
-    def get_scene_subdir(self, scene_index):
+    def get_scene_subdir(self, scene_index, total):
         # build the scene sub-directory name, for exemple
-        # '027_test_O1/3' or '028_train_O1'
+        # '027_test_O1/3' or '028_train_O1' or '001_train_O1'
         idx = scene_index + 1
-        padded_idx = '0{}'.format(idx)
+        # putting as much zeroes as necessary according
+        # to the total number of scenes
+        padded_idx = str(idx).zfill(len(str(total)))
         scene_name = (
             padded_idx + '_' +
             ('train' if 'Train' in type(self).__name__ else 'test') + '_' +

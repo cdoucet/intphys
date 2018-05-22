@@ -231,7 +231,7 @@ bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>
             {
                 uint PixelIndex = y * m_Size.X + x;
                 // compute mask
-   				// UE_LOG(LogTemp, Log, TEXT("%d: Target -> %s, HitActor --> %s"), PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
+   				// UE_LOG(LogTemp, Log, TEXT("%d: Hitresult -> %s, Target --> %s"), PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
                 if (HitResult.GetActor() == Target)
 					return (true);
            }

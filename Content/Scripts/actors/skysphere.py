@@ -5,10 +5,9 @@ from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
 from actors.parameters import FloorParams
 
-
 """
 It is the sky.
-You could change the skin to a night sky (with stars and so on)
+You can change the skin to a night sky (with stars and so on)
 """
 
 

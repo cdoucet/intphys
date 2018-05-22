@@ -72,7 +72,7 @@ class Director(object):
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-        if self.scenes[self.scene].stop_run(self.scene) is False:
+        if self.scenes[self.scene].stop_run(self.scene, len(self.scenes)) is False:
             self.restart_scene()
         elif self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
             self.scene += 1
@@ -119,7 +119,7 @@ class Director(object):
         # scene once it have been stopped
         try:
             if not self.scenes[self.scene].is_valid():
-                self.scenes[self.scene].stop_run(self.scene)
+                self.scenes[self.scene].stop_run(self.scene, len(self.scenes))
                 self.restart_scene()
                 self.ticker = 0
                 self.play_scene()
