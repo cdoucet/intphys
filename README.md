@@ -39,13 +39,30 @@ format.
 
 ## Installation details
 
-This installation process succeeded on Debian stable (Jessie) and
-Ubuntu 16.04. It may be fine for other Unices as well, but this have
-not been tested.
+This installation process succeeded on Debian stable (Jessie), Ubuntu
+16.04 and Ubuntu 18.04. It may be fine for other Unices as well, but
+this have not been tested.
 
 * First of all setup an Epic Games account at
   https://github.com/EpicGames/Signup/, needed to clone the Unreal
   Engine repository from github.
+
+* Make sure you have `clang-3.9` installed and that `/usr/bin/clang++`
+  effectively points to the `3.9` version. The compilation fails with
+  a more recent version of the compiler. To check it, have a `clang++
+  --version`, it should output something like:
+
+        clang version 3.9.1-19ubuntu1 (tags/RELEASE_391/rc2)
+        Target: x86_64-pc-linux-gnu
+        Thread model: posix
+        InstalledDir: /usr/bin
+
+  If this is not the case, install it and update `/usr/bin/clang` to
+  point to the right version:
+
+        sudo apt install clang-3.9
+        sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.9 100
+        sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.9 100
 
 * Install Unreal Engine as documented
   [here](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Build/BatchFiles/Linux/README.md).
