@@ -15,7 +15,7 @@ PROJ_NAME=intphys
 
 ${UE_ROOT}/Engine/Build/BatchFiles/Linux/RunMono.sh \
           ${UE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe \
-          $PROJ_NAME -ModuleWithSuffix $PROJ_NAME $RANDNUM Linux Development \
+          $PROJ_NAME -Module=$PROJ_NAME,$RANDNUM Linux Development \
           -editorrecompile -canskiplink "${INTPHYS_DIR}/${PROJ_NAME}.uproject" -progress || exit 1
 
 exit 0

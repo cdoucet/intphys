@@ -122,9 +122,9 @@ void FScreenshot::SetOriginActor(AActor* Actor)
 void FScreenshot::Reset(bool delete_actors)
 {
     m_ImageIndex = 0;
-	// delete actors only if it's last run
-	if (delete_actors)
-		m_ActorsSet.Empty();
+    // delete actors only if it's last run
+    if (delete_actors)
+        m_ActorsSet.Empty();
     m_ActorsMap.Empty();
 
     for (auto& Image : m_Scene)
@@ -231,7 +231,8 @@ bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>
             {
                 uint PixelIndex = y * m_Size.X + x;
                 // compute mask
-   				// UE_LOG(LogTemp, Log, TEXT("%d: Target -> %s, HitActor --> %s"), PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
+   		// UE_LOG(LogTemp, Log, TEXT("%d: Target -> %s, HitActor --> %s"),
+                //        PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
                 if (HitResult.GetActor() == Target)
 					return (true);
            }
@@ -282,7 +283,7 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 
     if (m_World == NULL || m_SceneView == NULL)
     {
-        UE_LOG(LogTemp, Error, TEXT("Screenshot: SceneView or World are null"));
+        UE_LOG(LogTemp, Error, TEXT("Screenshot:DepthAndMask: SceneView or World are null"));
     }
 
     // get the origin location and rotation for distance computation
@@ -293,6 +294,7 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
     // for each pixel of the view, cast a ray in the scene and get the
     // resulting hit actor and hit distance
     FHitResult HitResult;
+    bool bHitDetected = false;
     for (int y = 0; y < m_Size.Y; ++y)
     {
         for (int x = 0; x < m_Size.X; ++x)
@@ -306,6 +308,7 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 
             if(bHit)
             {
+                bHitDetected = true;
                 uint PixelIndex = y * m_Size.X + x;
 
                 // compute depth
@@ -314,18 +317,24 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 
                 // compute mask
                 FString ActorName = HitResult.GetActor()->GetName();
-				if (HitResult.GetActor()->GetName().Contains(FString(TEXT("Wall"))) == true)
-					ActorName = FString(TEXT("Walls"));
-				int8 ActorIndex = -1;
-				ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
-				if (ActorIndex <= 0)
-					UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *ActorName);
+                if (HitResult.GetActor()->GetName().Contains(FString(TEXT("Wall"))) == true)
+                    ActorName = FString(TEXT("Walls"));
+                int8 ActorIndex = -1;
+                ActorIndex = static_cast<uint8>(m_ActorsSet.Add(ActorName).AsInteger() + 1);
+                if (ActorIndex <= 0)
+                    UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *ActorName);
                 m_ActorsMap.Add(ActorName, ActorIndex);
                 m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
             }
         }
     }
-    return true;
+
+    if (not bHitDetected)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Screenshot:DepthAndMask: No hit detected during raytracing"));
+    }
+
+    return bHitDetected;
 }
 
 bool FScreenshot::SaveScene(const FString& Directory)
