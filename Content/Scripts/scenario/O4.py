@@ -66,13 +66,12 @@ class O4Test(O4Base, FullTest):
         ue.log("magic tick: {}".format(self.ticker))
         magic_actor = self.actors[self.params['magic']['actor']]
         force = FVector(0, 0, 0)
+        value = 50e5 * 3
         if 'dynamic' in self.movement:
-            force.y = -29e5 if magic_actor.actor.get_actor_velocity().y >= 0 \
-                else 29e5
+            force.y = value * -1 if magic_actor.actor.get_actor_velocity().y >= 0 else 1
         else:
-            force.x = -29e5 if random.choice([0, 1]) == 0 else 29e5
-            force.y = -29e5 if magic_actor.actor.get_actor_location().y > 0 \
-                else 29e5
+            force.x = value * -1 if random.choice([0, 1]) == 0 else 1
+            force.y = value * -1 if magic_actor.actor.get_actor_location().y > 0 else 1
             # must do that else the actor desapear behind the occluder
             if self.is_occluded is True:
                 force.y *= -1 if force.y < 0 else 1
@@ -113,6 +112,7 @@ class O4Test(O4Base, FullTest):
         if len(visibility_array) < 4:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 130
         return True
 
     def dynamic_2_visible(self):
@@ -154,6 +154,7 @@ class O4Test(O4Base, FullTest):
         if len(visibility_array) < 4:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 140
         return True
 
     def dynamic_2_occluded(self):
@@ -190,7 +191,3 @@ class O4Test(O4Base, FullTest):
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         """
         return True
-
-    def set_magick_tick(self):
-        res = super().set_magic_tick()
-        return res

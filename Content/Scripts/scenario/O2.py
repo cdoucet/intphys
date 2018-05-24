@@ -1,10 +1,12 @@
 """Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
+import math
 from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import Friction, ScreenshotManager
 from unreal_engine import FRotator, FVector
+from scenario.scene import Scene
 import unreal_engine as ue
 
 
@@ -58,13 +60,21 @@ class O2Test(O2Base, MirrorTest):
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
-
-    def play_run(self):
-        super().play_run()
-        if 'static' not in self.movement:
-            for name, actor in self.actors.items():
-                if 'object' in name.lower():
-                    actor.set_force(FVector(0, 0, 24e5))
+   
+    def tick(self):
+        Scene.tick(self)
+        self.fill_check_array()
+        if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
+            if 'static' not in self.movement:
+                for name, actor in self.actors.items():
+                    force = FVector(0, -25e6 if actor.actor.get_actor_location().y > 0 else 25e6, 14e6)
+                    if 'object' in name.lower() and \
+                            (math.ceil(actor.actor.get_actor_velocity().y) == 0 or
+                             math.ceil(actor.actor.get_actor_velocity().y) == 1 or
+                             math.ceil(actor.actor.get_actor_velocity().y) == -1):
+                        actor.set_force(force)
+                        break
+        self.ticker += 1
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -179,6 +189,9 @@ class O2Test(O2Base, MirrorTest):
         temp_array = visibility_array
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
+        if len(visibility_array) < 2:
+            ue.log_warning("Not enough initial visibility")
+            return False
         if visibility_array[-1] == 199:
             previous_frame = 0
             for frame in reversed(temp_array):
@@ -193,6 +206,7 @@ class O2Test(O2Base, MirrorTest):
         # if the number of frame where the magic actor is not grounded is less
         # than 4 time the number of magic tick required, scene will restart
         if len(final_array) < 4:
+            ue.log_warning("Not enough final choices")
             return False
         self.params['magic']['tick'] = random.choice(final_array)
         return True
@@ -229,12 +243,14 @@ class O2Test(O2Base, MirrorTest):
                 len(occlusion[0]) < 4 or len(occlusion[1]) < 4:
             return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        #self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        #self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        self.params['magic']['tick'].append(118)
+        self.params['magic']['tick'].append(132)
         return True
 
-    def set_magic_trick(self):
-        if super().set_magic_trick() is False:
+    def set_magic_tick(self):
+        if super().set_magic_tick() is False:
             return False
         if isinstance(self.params['magic']['tick'], int):
             magic_tick = self.params['magic']['tick']

@@ -21,7 +21,7 @@ class MirrorTest(Test):
         ue.log("Run {}/{}: Possible run".format(self.run + 1,
                4 if self.saver.is_dry_mode is False else 2))
 
-    def stop_run(self, scene_index):
+    def stop_run(self, scene_index, total):
         if self.run == 1 and self.set_magic_tick() is False:
             self.del_actors()
             return False
@@ -30,32 +30,29 @@ class MirrorTest(Test):
         else:
             self.del_actors()
         if not self.saver.is_dry_mode:
-            self.saver.save(self.get_scene_subdir(scene_index))
+            self.saver.save(self.get_scene_subdir(scene_index, total))
             # reset actors if it is the last run
             self.saver.reset(True if self.run == 1 else False)
         self.run += 1
         if self.run == 2 and self.saver.is_dry_mode is False:
-            self.generate_magic_runs(scene_index)
+            self.generate_magic_runs(scene_index, total)
         return True
 
     def tick(self):
         super().tick()
         self.fill_check_array()
 
-    def generate_magic_runs(self, scene_index):
+    def generate_magic_runs(self, scene_index, total):
         if '2' not in self.movement:
-            magic_tick = math.ceil(self.params['magic']['tick'] / 2) 
-            magic_tick += 1 if self.params['magic']['tick'] % 2 == 1 else 0
+            magic_tick = math.ceil(self.params['magic']['tick'] / 2) + 1 
             magic_tick2 = 100
             ue.log("magic tick = {}".format(magic_tick))
         else:
-            magic_tick = math.ceil(self.params['magic']['tick'][0] / 2)
-            magic_tick += 1 if self.params['magic']['tick'][0] % 2 == 1 else 0
-            magic_tick2 = math.ceil(self.params['magic']['tick'][1] / 2)
-            magic_tick2 += 1 if self.params['magic']['tick'][1] % 2 == 1 else 0
+            magic_tick = math.ceil(self.params['magic']['tick'][0] / 2) + 1
+            magic_tick2 = math.ceil(self.params['magic']['tick'][1] / 2) + 1
             ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
         # next line is removing the run subdirectory from the path
-        subdir = self.get_scene_subdir(scene_index)[:-2]
+        subdir = self.get_scene_subdir(scene_index, total)[:-2]
         pic_types = ["scene", "depth", "masks"]
         ue.log('Run 3/4: Impossible run')
         for pic_type in pic_types:

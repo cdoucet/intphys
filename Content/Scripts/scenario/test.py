@@ -23,24 +23,21 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
+        nobjects = 3
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
             # random side for each actor: starting either from left
             # (go to right) or from rigth (go to left)
-            locations = [FVector(1000 + 200 * y, -800
-                                 if bool(random.getrandbits(1)) else 800, 0)
+            locations = [FVector(1000 + 300 * y, -1250
+                                 if bool(random.getrandbits(1)) else 1250, 0)
                          for y in (-1, 0, 1)]
-            if '2' in self.movement:
-                for location in locations:
-                    if location.y < 0:
-                        location.y = -600
-                    else:
-                        location.y = 600
+            locations[1].y += 200 if locations[1].y > 0 else -200
+            locations[2].y += 300 if locations[2].y > 0 else -300
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
-            scale = 1  # + random.random()
+            scale = 2# + random.uniform(0, 0.5)
             force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
@@ -63,14 +60,16 @@ class Test(Scene):
             self.initial_force = FVector()
         if self.is_occluded:
             moves = []
-            scale = FVector(0.5, 1, 1.5)
+            scale = FVector(0.5, 1, 2.7)
             if 'dynamic' in self.movement:
                 if '2' in self.movement:
                     location = FVector(600, -175, 0)
                 else:
                     location = FVector(600, 0, 0)
-                start_up = True
-                moves.append(100)
+                    scale.x = 1
+                start_up = False
+                moves.append(0)
+                moves.append(110)
             else:
                 location = FVector(600, self.params[
                     self.params['magic']['actor']].location.y / 2, 0)
@@ -98,13 +97,20 @@ class Test(Scene):
 
     def play_run(self):
         super().play_run()
+        self.ticker = 0
         self.setup_magic_actor()
-        if 'static' not in self.movement:
-            for name, actor in self.actors.items():
-                if 'object' in name.lower():
-                    y_location = actor.actor.get_actor_location().y
-                    force = FVector(0, -29e5 if y_location > 0 else 29e5, 0)
-                    actor.set_force(force)
+
+    def tick(self):
+        super().tick()
+        if self.ticker == 80:
+            if 'static' not in self.movement:
+                for name, actor in self.actors.items():
+                    if 'object' in name.lower():
+                        y_location = actor.actor.get_actor_location().y
+                        force = FVector(0, -25e6 if y_location > 0 else 25e6, 0)
+                        actor.set_force(force)
+        self.ticker += 1
+
 
     def checks_time_laps(self, which, desired_bool):
         # looking for the state we want in the check

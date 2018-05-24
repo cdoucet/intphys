@@ -30,6 +30,10 @@ class Light(BaseActor):
         if params.type != 'SkyLight':
             self.get_parameters(params)
             self.set_parameters()
+        """
+        if 'Directional' in params.type:
+            self.actor.bUsedAsAtmosphereSunLight = True
+        """
         self.type = params.type
 
     def get_parameters(self, params):

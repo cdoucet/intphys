@@ -23,7 +23,8 @@ class Main:
         try:
             scenes_json = os.environ['INTPHYS_SCENES']
         except KeyError:
-            exit_ue(world, 'fatal error, INTPHYS_SCENES not defined, exiting')
+            exit_ue('fatal error, INTPHYS_SCENES not defined, exiting')
+            return
 
         # init random number generator
         try:
@@ -51,9 +52,6 @@ class Main:
         # images per video at the game resolution
         size = (resolution[0], resolution[1], 100)
         self.director = Director(world, scenes_json, size, output_dir)
-
-    def catch_event(self):
-        ue.log("truc")
 
     def tick(self, dt):
         # let the director handle the tick
