@@ -44,12 +44,20 @@ class O3Test(O3Base, MirrorTest):
             elif '1' in self.movement:
                 if magic_actor.actor.get_actor_location().y < 0:
                     length = random.randint(50, 150)
+                    length = 300
                 else:
                     length = random.randint(-150, 50)
+                    length = -300
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
             else:
+                if magic_actor.actor.get_actor_location().y < 0:
+                    length = random.randint(50, 150)
+                    length = 300
+                else:
+                    length = random.randint(-150, 50)
+                    length = -300
                 length = 100
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
@@ -93,6 +101,7 @@ class O3Test(O3Base, MirrorTest):
         if len(visibility_array) <= 0:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 120
         return True
 
     def dynamic_2_visible(self):

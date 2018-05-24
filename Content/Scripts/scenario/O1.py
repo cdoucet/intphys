@@ -3,6 +3,7 @@ import random
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
+from unreal_engine import FVector
 import unreal_engine as ue
 
 
@@ -51,6 +52,25 @@ class O1Test(O1Base, MirrorTest):
         visible = ScreenshotManager.IsActorInLastFrame(
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
+
+    def set_magic_tick(self):
+        if super().set_magic_tick() is False:
+            return False
+        if isinstance(self.params['magic']['tick'], int):
+            magic_tick = self.params['magic']['tick']
+            if self.check_array[0]['location'][magic_tick] == \
+                    self.check_array[1]['location'][magic_tick]:
+                ue.log_warning("Magic actor location doesn't match in \
+                               each possible run")
+                return False
+
+    def tick(self):
+        super().tick()
+        if self.ticker == 80:
+            if 'static' not in self.movement:
+                for name, actor in self.actors.items():
+                    if 'object' in name.lower():
+                        actor.set_force(FVector(0, 0, 65e5))
 
     def static_visible(self):
         visibility_array = self.checks_time_laps("visibility", True)
@@ -108,6 +128,7 @@ class O1Test(O1Base, MirrorTest):
         if len(visibility_array) < 4:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 130 
         return True
 
     def dynamic_2_occluded(self):
@@ -137,26 +158,28 @@ class O1Test(O1Base, MirrorTest):
         if len(occlusion) < 2:
             return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        # self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        # self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        self.params['magic']['tick'].append(120)
+        self.params['magic']['tick'].append(140)
         return True
 
     def set_magic_tick(self):
         if super().set_magic_tick() is False:
             return False
+        """
         if isinstance(self.params['magic']['tick'], int):
             magic_tick = self.params['magic']['tick']
             if self.check_array[0]['location'][magic_tick] == \
                     self.check_array[1]['location'][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match in \
-                               each possible run")
+                ue.log_warning("Magic actor location doesn't match in each possible run")
                 return False
-        else:
+        elif isinstance(self.params['magic']['tick'], list):
             magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick][0] == \
-                    self.check_array[1]['location'][magic_tick][0] or \
-                    self.check_array[0]['location'][magic_tick][1] == \
-                    self.check_array[1]['location'][magic_tick][1]:
-                ue.log_warning("Magic actor location doesn't match in \
-                               each possible run")
+            if self.check_array[0]['location'][magic_tick[0]] == \
+                    self.check_array[1]['location'][magic_tick[0]] or \
+                    self.check_array[0]['location'][magic_tick[1]] == \
+                    self.check_array[1]['location'][magic_tick[1]]:
+                ue.log_warning("Magic actor location doesn't match in each possible run")
                 return False
+        """

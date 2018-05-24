@@ -35,7 +35,6 @@ class FullTest(Test):
         elif not isinstance(self.params['magic']['tick'], int) and \
                 self.ticker in self.params['magic']['tick']:
             self.play_magic_trick()
-        self.ticker += 1
 
     def is_over(self):
         return True if self.run == 4 else False
