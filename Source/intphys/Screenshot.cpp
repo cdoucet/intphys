@@ -24,56 +24,6 @@ static bool VerifyOrCreateDirectory(const FString& Directory)
 }
 
 
-// Looks up the player's SceneView object modeled after
-// APlayerController::GetHitResultAtScreenPosition. From UETorch.
-static FSceneView* GetSceneView(APlayerController* PlayerController, UWorld* World)
-{
-    if(GEngine == NULL)
-    {
-        UE_LOG(LogTemp, Error, TEXT("GEngine null"));
-        return NULL;
-    }
-
-    if(GEngine->GameViewport == NULL)
-    {
-        UE_LOG(LogTemp, Error, TEXT("GameViewport null"));
-        return NULL;
-    }
-
-    if(GEngine->GameViewport->Viewport == NULL)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Viewport null"));
-        return NULL;
-    }
-    auto Viewport = GEngine->GameViewport->Viewport;
-
-    // Create a view family for the game viewport
-    FSceneViewFamilyContext ViewFamily(
-        FSceneViewFamily::ConstructionValues(
-            Viewport, World->Scene, GEngine->GameViewport->EngineShowFlags)
-        .SetRealtimeUpdate(true));
-
-    // Calculate a view where the origin is to update the streaming
-    // from the players start location
-    FVector ViewLocation;
-    FRotator ViewRotation;
-    ULocalPlayer* LocalPlayer = Cast<ULocalPlayer>(PlayerController->Player);
-    if (LocalPlayer == NULL)
-    {
-        UE_LOG(LogTemp, Error, TEXT("Local Player null"));
-        return NULL;
-    }
-
-    FSceneView* SceneView = LocalPlayer->CalcSceneView(
-        &ViewFamily,
-        /*out*/ ViewLocation,
-        /*out*/ ViewRotation,
-        Viewport);
-
-    return SceneView;
-}
-
-
 FScreenshot::FScreenshot(const FIntVector& Size, AActor* OriginActor, bool Verbose)
     : m_Size(Size), m_OriginActor(OriginActor), m_Verbose(Verbose), m_ImageIndex(0)
 {
@@ -98,26 +48,29 @@ FScreenshot::FScreenshot(const FIntVector& Size, AActor* OriginActor, bool Verbo
 FScreenshot::~FScreenshot()
 {}
 
+
 void FScreenshot::SetActors(TArray<AActor*>& Actors)
 {
-	for (auto& actor : Actors)
-	{
-		if (actor->GetName().Contains(FString(TEXT("Wall"))) == true &&
-				m_ActorsSet.Contains(TEXT("Walls")) == false)
-		{
-			m_ActorsSet.Add(FString(TEXT("Walls")));
-		}
-		else
-		{
-			m_ActorsSet.Add(actor->GetName());
-		}
-	}
+    for (auto& actor : Actors)
+    {
+        if (actor->GetName().Contains(FString(TEXT("Wall"))) == true &&
+            m_ActorsSet.Contains(TEXT("Walls")) == false)
+        {
+            m_ActorsSet.Add(FString(TEXT("Walls")));
+        }
+        else
+        {
+            m_ActorsSet.Add(actor->GetName());
+        }
+    }
 }
+
 
 void FScreenshot::SetOriginActor(AActor* Actor)
 {
     m_OriginActor = Actor;
 }
+
 
 void FScreenshot::Reset(bool delete_actors)
 {
@@ -158,6 +111,7 @@ bool FScreenshot::Capture(const TArray<AActor*>& IgnoredActors)
     return bDone1 and bDone2;
 }
 
+
 bool FScreenshot::Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap)
 {
     // Create the subdirectories where to write the PNGs
@@ -193,20 +147,28 @@ bool FScreenshot::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
     return m_Masks[FrameIndex].Contains(ActorId);
 }
 
+
 bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>& IgnoredActors)
 {
-	FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
+    FCollisionQueryParams CollisionQueryParams("ClickableTrace", false);
     for (auto& Actor : IgnoredActors)
     {
         CollisionQueryParams.AddIgnoredActor(Actor);
     }
-    // Intitialize world and scene view
-    m_World = m_OriginActor->GetWorld();
-    m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
 
-    if (m_World == NULL || m_SceneView == NULL)
+    // Intitialize world and player controler
+    m_World = m_OriginActor->GetWorld();
+    if (m_World == NULL)
     {
-        UE_LOG(LogTemp, Error, TEXT("Screenshot: SceneView or World are null"));
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: World is null"));
+        return false;
+    }
+
+    APlayerController* PlayerControler = UGameplayStatics::GetPlayerController(m_World, 0);
+    if (PlayerControler == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: PlayerControler is null"));
+        return false;
     }
 
     // get the origin location and rotation for distance computation
@@ -220,25 +182,25 @@ bool FScreenshot::IsActorInLastFrame(const AActor* Target, const TArray<AActor*>
     for (int y = 0; y < m_Size.Y; ++y)
     {
         for (int x = 0; x < m_Size.X; ++x)
-		{
+        {
             FVector RayOrigin, RayDirection;
-            m_SceneView->DeprojectFVector2D(FVector2D(x, y), RayOrigin, RayDirection);
+            UGameplayStatics::DeprojectScreenToWorld(
+                PlayerControler, FVector2D(x, y), RayOrigin, RayDirection);
 
             bool bHit = m_World->LineTraceSingleByChannel(
                 HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
                 ECollisionChannel::ECC_Visibility, CollisionQueryParams);
+
             if(bHit)
             {
                 uint PixelIndex = y * m_Size.X + x;
-                // compute mask
-   		// UE_LOG(LogTemp, Log, TEXT("%d: Target -> %s, HitActor --> %s"),
-                //        PixelIndex, *HitResult.GetActor()->GetName(), *Target->GetName());
                 if (HitResult.GetActor() == Target)
-					return (true);
-           }
+                    return true;
+            }
         }
     }
-    return (false);
+
+    return false;
 }
 
 
@@ -277,13 +239,19 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
         CollisionQueryParams.AddIgnoredActor(Actor);
     }
 
-    // Intitialize world and scene view
+    // Intitialize world and player controler
     m_World = m_OriginActor->GetWorld();
-    m_SceneView = GetSceneView(UGameplayStatics::GetPlayerController(m_OriginActor, 0), m_World);
-
-    if (m_World == NULL || m_SceneView == NULL)
+    if (m_World == NULL)
     {
-        UE_LOG(LogTemp, Error, TEXT("Screenshot:DepthAndMask: SceneView or World are null"));
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: World is null"));
+        return false;
+    }
+
+    APlayerController* PlayerControler = UGameplayStatics::GetPlayerController(m_World, 0);
+    if (PlayerControler == NULL)
+    {
+        UE_LOG(LogTemp, Error, TEXT("Screenshot: PlayerControler is null"));
+        return false;
     }
 
     // get the origin location and rotation for distance computation
@@ -300,7 +268,8 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
         for (int x = 0; x < m_Size.X; ++x)
 	{
             FVector RayOrigin, RayDirection;
-            m_SceneView->DeprojectFVector2D(FVector2D(x, y), RayOrigin, RayDirection);
+            UGameplayStatics::DeprojectScreenToWorld(
+                PlayerControler, FVector2D(x, y), RayOrigin, RayDirection);
 
             bool bHit = m_World->LineTraceSingleByChannel(
                 HitResult, RayOrigin, RayOrigin + RayDirection * 1000000.f,
@@ -336,6 +305,7 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
 
     return bHitDetected;
 }
+
 
 bool FScreenshot::SaveScene(const FString& Directory)
 {
