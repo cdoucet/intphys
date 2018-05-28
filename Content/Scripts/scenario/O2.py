@@ -1,6 +1,5 @@
 """Bloc O2 is change of shape. Spheres, cubes and cones."""
 import random
-import math
 from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
@@ -53,7 +52,6 @@ class O2Test(O2Base, MirrorTest):
                     params.initial_force.z = 14e6
                 # force the rotation to be 0 (roll excepted)
                 params.rotation = FRotator(0, 0, 360*random.random())
-
         # specify an alternative mesh for the magic actor (different
         # from the original one)
         magic_actor = self.params['magic']['actor']
@@ -69,13 +67,15 @@ class O2Test(O2Base, MirrorTest):
             if 'static' not in self.movement:
                 for name, actor in self.actors.items():
                     if 'object' in name.lower() and \
-                            int(round(actor.actor.get_actor_velocity().y)) == 0:
-                        force = FVector(0, -25e6 if actor.actor.get_actor_location().y > 0 else 25e6, 14e6)
+                            int(round(actor.actor.
+                                      get_actor_velocity().y)) == 0:
+                        force = FVector(0, -25e6 if
+                                        actor.actor.get_actor_location().y > 0
+                                        else 25e6, 14e6)
                         # One chance out of two to fly
                         actor.set_force(force)
                         break
         self.ticker += 1
-
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -95,11 +95,13 @@ class O2Test(O2Base, MirrorTest):
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
         # check if the magic actor is in the air
-        if magic_actor.get_actor_location().z <= 100:
+        if (magic_actor.get_actor_location().z <= 100 +
+                self.actors[self.params['magic']['actor']].scale.z * 50):
             grounded = True
         else:
             grounded = False
         self.check_array[self.run]['grounded'].append(grounded)
+        # ue.log("{}: {}".format(self.ticker, visible))
 
     def setup_magic_actor(self):
         # on run 1 and 3 the magic actor mesh is
@@ -134,9 +136,8 @@ class O2Test(O2Base, MirrorTest):
 
     def static_visible(self):
         visibility_array = self.checks_time_laps("visibility", True)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        if len(visibility_array) < 1:
+            ue.log_warning("not enough occluded frame")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
@@ -149,9 +150,8 @@ class O2Test(O2Base, MirrorTest):
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        # if the number of frame where the magic actor is not grounded is less
-        # than 4 time the number of magic tick required, scene will restart
-        if len(final_array) < 4:
+        if len(final_array) < 1:
+            ue.log_warning("not enough occluded frame")
             return False
         self.params['magic']['tick'] = random.choice(final_array)
         return True
@@ -286,7 +286,7 @@ class O2Test(O2Base, MirrorTest):
                     self.check_array[1]['location'][magic_tick[0]] or \
                     self.check_array[0]['location'][magic_tick[1]] == \
                     self.check_array[1]['location'][magic_tick[1]]:
-                ue.log_warning("Magic actor location doesn't match in" + 
+                ue.log_warning("Magic actor location doesn't match in" +
                                "each possible run")
                 return False
         """

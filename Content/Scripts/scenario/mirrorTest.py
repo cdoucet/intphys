@@ -1,15 +1,8 @@
-import random
 import math
 import json
 import os
 import unreal_engine as ue
 from scenario.test import Test
-from unreal_engine.classes import ScreenshotManager
-from scenario.scene import Scene
-from unreal_engine import FVector, FRotator
-from unreal_engine.classes import Friction
-from actors.parameters import ObjectParams, OccluderParams
-from tools.materials import get_random_material
 from shutil import copyfile
 
 
@@ -44,7 +37,7 @@ class MirrorTest(Test):
 
     def generate_magic_runs(self, scene_index, total):
         if '2' not in self.movement:
-            magic_tick = math.ceil(self.params['magic']['tick'] / 2) + 1 
+            magic_tick = math.ceil(self.params['magic']['tick'] / 2) + 1
             magic_tick2 = 100
             ue.log("magic tick = {}".format(magic_tick))
         else:
@@ -59,17 +52,23 @@ class MirrorTest(Test):
             if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
                 os.makedirs("{}/3/{}".format(subdir, pic_type))
             for i in range(1, magic_tick + 1):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
+                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
                 copyfile(src, dst)
             for i in range(magic_tick, magic_tick2 + 1):
-                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
+                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
                 copyfile(src, dst)
             if '2' in self.movement:
                 for i in range(magic_tick2, 101):
-                    dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    dst = "{}/3/{}/{}_{}.png".format(subdir, pic_type,
+                                                     pic_type, str(i).zfill(3))
+                    src = "{}/1/{}/{}_{}.png".format(subdir, pic_type,
+                                                     pic_type, str(i).zfill(3))
                     copyfile(src, dst)
         ue.log('saved captures to {}/{}'.format(subdir, 3))
         ue.log('Run 4/4: Impossible run')
@@ -77,17 +76,23 @@ class MirrorTest(Test):
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))
             for i in range(1, magic_tick + 1):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
+                src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
                 copyfile(src, dst)
             for i in range(magic_tick, magic_tick2 + 1):
-                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
+                src = "{}/1/{}/{}_{}.png".format(subdir, pic_type, pic_type,
+                                                 str(i).zfill(3))
                 copyfile(src, dst)
             if '2' in self.movement:
                 for i in range(magic_tick2, 101):
-                    dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
-                    src = "{}/2/{}/{}_{}.png".format(subdir, pic_type, pic_type, str(i).zfill(3))
+                    dst = "{}/4/{}/{}_{}.png".format(subdir, pic_type,
+                                                     pic_type, str(i).zfill(3))
+                    src = "{}/2/{}/{}_{}.png".format(subdir, pic_type,
+                                                     pic_type, str(i).zfill(3))
                     copyfile(src, dst)
         ue.log('saved captures to {}/{}'.format(subdir, 4))
         self.generate_magic_status(subdir, [magic_tick, magic_tick2])
@@ -95,8 +100,8 @@ class MirrorTest(Test):
 
     def generate_magic_status(self, subdir, slice_index):
         # build the status.json, slice_index are magic_tick as a list
-        json_1 = json.load(open(f'{subdir}/1/status.json', 'r'))
-        json_2 = json.load(open(f'{subdir}/2/status.json', 'r'))
+        json_1 = json.load(open('{}/1/status.json'.format(subdir), 'r'))
+        json_2 = json.load(open('{}/2/status.json'.format(subdir), 'r'))
 
         # the headers must be the same (excepted the actor names but do
         # not impact the end user) TODO for now (as of commit e5e2c25) the
@@ -122,14 +127,14 @@ class MirrorTest(Test):
 
         # make sure the dest directories exist
         for i in (3, 4):
-            d = f'{subdir}/{i}'
+            d = '{}/{}'.format(subdir, i)
             if not os.path.isdir(d):
                 os.makedirs(d)
 
         # save the status as JSON files
-        with open(f'{subdir}/3/status.json', 'w') as fin:
+        with open('{}/3/status.json'.format(subdir), 'w') as fin:
             fin.write(json.dumps(json_3, indent=4))
-        with open(f'{subdir}/4/status.json', 'w') as fin:
+        with open('{}/4/status.json'.format(subdir), 'w') as fin:
             fin.write(json.dumps(json_4, indent=4))
 
         # print('\n'.join('{} {}'.format(

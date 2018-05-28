@@ -52,6 +52,12 @@ class O1Test(O1Base, MirrorTest):
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
 
+    def tick(self):
+        super().tick()
+        magic_actor = self.actors[self.params['magic']['actor']].actor
+        if ScreenshotManager.IsActorInFrame(magic_actor, self.ticker) is True:
+            ue.log("{}: True".format(self.ticker))
+
     def static_visible(self):
         visibility_array = self.checks_time_laps("visibility", True)
         if len(visibility_array) < 1:
@@ -145,6 +151,7 @@ class O1Test(O1Base, MirrorTest):
             previous_frame = frame
         # if there is less than 2 distinct occlusion the scene will restart
         if len(occlusion) < 2:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
@@ -154,7 +161,6 @@ class O1Test(O1Base, MirrorTest):
     def set_magic_tick(self):
         if super().set_magic_tick() is False:
             return False
-        """
         if isinstance(self.params['magic']['tick'], int):
             magic_tick = self.params['magic']['tick']
             if self.check_array[0]['location'][magic_tick] == \
@@ -168,7 +174,6 @@ class O1Test(O1Base, MirrorTest):
                     self.check_array[1]['location'][magic_tick[0]] or \
                     self.check_array[0]['location'][magic_tick[1]] == \
                     self.check_array[1]['location'][magic_tick[1]]:
-                ue.log_warning("Magic actor location doesn't match " +"
-                               in each possible run")
+                ue.log_warning("Magic actor location doesn't match " +
+                               "in each possible run")
                 return False
-        """

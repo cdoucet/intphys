@@ -23,7 +23,6 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
-        nobjects = 1
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
@@ -75,7 +74,7 @@ class Test(Scene):
                 location = FVector(600, self.params[
                     self.params['magic']['actor']].location.y / 2, 0)
                 scale.z = 1.5
-                scale.x = 1
+                scale.x = 0.75
                 start_up = False
                 moves.append(0)
                 moves.append(110)
