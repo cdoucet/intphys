@@ -23,7 +23,7 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
-        nobjects = 3
+        nobjects = 1
         if 'static' in self.movement:
             locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
         else:
@@ -33,14 +33,17 @@ class Test(Scene):
                                  if bool(random.getrandbits(1)) else 1250, 0)
                          for y in (-1, 0, 1)]
             locations[1].y += 200 if locations[1].y > 0 else -200
-            locations[2].y += 300 if locations[2].y > 0 else -300
+            locations[2].y += 350 if locations[2].y > 0 else -350
         random.shuffle(locations)
         for n in range(nobjects):
             # scale in [1, 1.5]
             scale = 2# + random.uniform(0, 0.5)
-            force = FVector(0, 0, 0)
+            initial_force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
+                initial_force = FVector(0, -25e6 if locations[n].y > 0 else 25e6, 0)
+                if random.choice([0, 1]) == 1:
+                    initial_force.z = 14e6 
             # full random rotation (does not matter on spheres, except
             # for texture variations)
             rotation = FRotator(
@@ -51,13 +54,11 @@ class Test(Scene):
                 location=locations[n],
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=1)
+                mass=1,
+                initial_force=initial_force)
         self.params['magic'] = {
             'actor': f'object_{random.randint(1, nobjects)}',
             'tick': -1}
-
-        if 'dynamic' in self.movement:
-            self.initial_force = FVector()
         if self.is_occluded:
             moves = []
             scale = FVector(0.5, 1, 2.7)
@@ -73,10 +74,11 @@ class Test(Scene):
             else:
                 location = FVector(600, self.params[
                     self.params['magic']['actor']].location.y / 2, 0)
-                scale.z = 1
+                scale.z = 1.5
+                scale.x = 1
                 start_up = False
                 moves.append(0)
-                moves.append(100)
+                moves.append(110)
             self.params['occluder_1'] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=location,
@@ -102,24 +104,27 @@ class Test(Scene):
 
     def tick(self):
         super().tick()
-        if self.ticker == 80:
-            if 'static' not in self.movement:
-                for name, actor in self.actors.items():
-                    if 'object' in name.lower():
-                        y_location = actor.actor.get_actor_location().y
-                        force = FVector(0, -25e6 if y_location > 0 else 25e6, 0)
-                        actor.set_force(force)
+        if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
+            # print(self.actors[self.params['magic']['actor']].initial_force)
+            for name, actor in self.actors.items():
+                if 'object' in name and int(round(actor.actor.get_actor_velocity().y)) == 0:
+                    actor.set_force(actor.initial_force)
+                    break
         self.ticker += 1
-
 
     def checks_time_laps(self, which, desired_bool):
         # looking for the state we want in the check
         # array of both run and put the corresponding frame in res array
         res = []
         nb = len(self.check_array[0][which])
+        previous = 0
         for frame in range(nb):
             # append True if both run's check_array are the desired bool
             # else False
+            """
+            if "vi" in which:
+                ue.log("{}: {} and {} want {}".format(frame, self.check_array[0][which][frame], self.check_array[1][which][frame], desired_bool))
+            """
             if (self.check_array[0][which][frame] ==
                     self.check_array[1][which][frame] and
                     self.check_array[1][which][frame] == desired_bool):

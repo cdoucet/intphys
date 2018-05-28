@@ -28,7 +28,16 @@ class O3Test(O3Base, MirrorTest):
         self.check_array[0]['location'] = []
         self.check_array[1]['visibility'] = []
         self.check_array[1]['location'] = []
-        self.machin = 0
+
+    def generate_parameters(self):
+        super().generate_parameters()
+        self.params['Camera'].location.x = -200
+        if 'dynamic' in self.movement:
+            for name, params in self.params.items():
+                if 'ccluder' in name:
+                    params.scale.x = 2
+                elif 'bject' in name:
+                    params.location.y += 500 if params.location.y > 0 else -500
 
     def setup_magic_actor(self):
         if self.run == 1:
@@ -44,10 +53,10 @@ class O3Test(O3Base, MirrorTest):
             elif '1' in self.movement:
                 if magic_actor.actor.get_actor_location().y < 0:
                     length = random.randint(50, 150)
-                    length = 300
+                    length = 540
                 else:
                     length = random.randint(-150, 50)
-                    length = -300
+                    length = -540
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
@@ -85,9 +94,6 @@ class O3Test(O3Base, MirrorTest):
         visible = ScreenshotManager.IsActorInLastFrame(
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
-        self.machin += 1
-        if self.machin == 200:
-            self.machin = 0
 
     def static_visible(self):
         visibility_array = self.checks_time_laps("visibility", True)
@@ -124,18 +130,25 @@ class O3Test(O3Base, MirrorTest):
 
     def dynamic_1_occluded(self):
         visibility_array = self.checks_time_laps('visibility', False)
-        temp_array = visibility_array
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
+        first = 0
+        last = 199
+        while True:
+            quit = False
+            if visibility_array[0] == first:
+                visibility_array.remove(first)
+                first += 1
+            else:
+                quit = True
+            if visibility_array[-1] == last:
+                visibility_array.remove(last)
+                last -= 1
+            elif quit is True:
+                break
         if len(visibility_array) <= 0:
             return False
-        self.params['magic']['tick'] = random.choice(visibility_array)
+        self.params['magic']['tick'] = 120
         return True
 
     def dynamic_2_occluded(self):

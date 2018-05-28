@@ -97,12 +97,6 @@ class Scene:
                 actor.actor_destroy()
             self.actors = None
 
-    def is_over(self):
-        if 'Train' in type(self).__name__:
-            return True if self.run == 1 else False
-        else:
-            return True if self.run == 2 else False
-
     def get_scene_subdir(self, scene_index, total):
         # build the scene sub-directory name, for exemple
         # '027_test_O1/3' or '028_train_O1' or '001_train_O1'

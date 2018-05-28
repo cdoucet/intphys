@@ -49,7 +49,8 @@ class O2Test(O2Base, MirrorTest):
             if 'object' in name:
                 # objects can be of any shapes, not only sphere
                 params.mesh = random.choice(list(Object.shape.keys()))
-
+                if name in self.params['magic']['actor']:
+                    params.initial_force.z = 14e6
                 # force the rotation to be 0 (roll excepted)
                 params.rotation = FRotator(0, 0, 360*random.random())
 
@@ -60,21 +61,21 @@ class O2Test(O2Base, MirrorTest):
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
-   
+
     def tick(self):
         Scene.tick(self)
         self.fill_check_array()
         if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
             if 'static' not in self.movement:
                 for name, actor in self.actors.items():
-                    force = FVector(0, -25e6 if actor.actor.get_actor_location().y > 0 else 25e6, 14e6)
                     if 'object' in name.lower() and \
-                            (math.ceil(actor.actor.get_actor_velocity().y) == 0 or
-                             math.ceil(actor.actor.get_actor_velocity().y) == 1 or
-                             math.ceil(actor.actor.get_actor_velocity().y) == -1):
+                            int(round(actor.actor.get_actor_velocity().y)) == 0:
+                        force = FVector(0, -25e6 if actor.actor.get_actor_location().y > 0 else 25e6, 14e6)
+                        # One chance out of two to fly
                         actor.set_force(force)
                         break
         self.ticker += 1
+
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -82,7 +83,7 @@ class O2Test(O2Base, MirrorTest):
             magic_actor.get_actor_location())
         ignored_actors = []
         for actor_name, actor in self.actors.items():
-            if 'object' not in actor_name.lower() and \
+            if self.params['magic']['actor'] not in actor_name and \
                     'occluder' not in actor_name.lower():
                 if 'walls' in actor_name.lower():
                     ignored_actors.append(actor.front.actor)
@@ -214,15 +215,36 @@ class O2Test(O2Base, MirrorTest):
     def dynamic_2_occluded(self):
         visibility_array = self.checks_time_laps("visibility", False)
         grounded_array = self.checks_time_laps("grounded", False)
-        temp_array = visibility_array
-        # remove the last occurences of not visible actor if
+        # remove the last and the first occurences of not visible actor if
         # it is out of the fieldview
+        first = 0
+        last = 199
+        while True:
+            quit = False
+            if visibility_array[0] == first:
+                visibility_array.remove(first)
+                first += 1
+            else:
+                quit = True
+            if visibility_array[-1] == last:
+                visibility_array.remove(last)
+                last -= 1
+            elif quit is True:
+                break
+        """
         if visibility_array[-1] == 199:
             previous_frame = 0
             for frame in reversed(temp_array):
                 if frame == 199 or frame + 1 == previous_frame:
                     previous_frame = frame
                     visibility_array.remove(frame)
+        if visibility_array[0] == 0:
+            previous_frame = 0
+            for frame in temp_array:
+                if frame == 0 or frame - 1 == previous_frame:
+                    previous_frame = frame
+                    visibility_array.remove(frame)
+        """
         temp_array = visibility_array
         occlusion = []
         occlusion.append([])
@@ -239,32 +261,32 @@ class O2Test(O2Base, MirrorTest):
         # if there is less than 2 distinct occlusion the scene will restart
         # same if there is less than 2 frame where the actor is not grounded
         # in each occlusion
-        if len(occlusion) < 2 or \
-                len(occlusion[0]) < 4 or len(occlusion[1]) < 4:
+        if len(occlusion) < 2:
+            ue.log_warning("not enough occluded frame")
             return False
         self.params['magic']['tick'] = []
-        #self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        #self.params['magic']['tick'].append(random.choice(occlusion[1]))
-        self.params['magic']['tick'].append(118)
-        self.params['magic']['tick'].append(132)
+        self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
     def set_magic_tick(self):
         if super().set_magic_tick() is False:
             return False
+        """
         if isinstance(self.params['magic']['tick'], int):
             magic_tick = self.params['magic']['tick']
             if self.check_array[0]['location'][magic_tick] == \
                     self.check_array[1]['location'][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match in \
-                               each possible run")
+                ue.log_warning("Magic actor location doesn't match in" +
+                               "each possible run")
                 return False
         else:
             magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick][0] == \
-                    self.check_array[1]['location'][magic_tick][0] or \
-                    self.check_array[0]['location'][magic_tick][1] == \
-                    self.check_array[1]['location'][magic_tick][1]:
-                ue.log_warning("Magic actor location doesn't match in \
-                               each possible run")
+            if self.check_array[0]['location'][magic_tick[0]] == \
+                    self.check_array[1]['location'][magic_tick[0]] or \
+                    self.check_array[0]['location'][magic_tick[1]] == \
+                    self.check_array[1]['location'][magic_tick[1]]:
+                ue.log_warning("Magic actor location doesn't match in" + 
+                               "each possible run")
                 return False
+        """

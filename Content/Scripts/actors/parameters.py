@@ -47,6 +47,7 @@ class ObjectParams:
     rotation: FRotator = FRotator(0, 0, 0)
     scale: FVector = FVector(1, 1, 1)
     force: FVector = FVector(0, 0, 0)
+    initial_force: FVector = FVector(0, 0, 0)
     mass: float = 1
     friction: float = 0.5
     restitution: float = 0.5

@@ -59,6 +59,7 @@ class Object(BaseMesh):
         self.material = ue.load_object(Material, params.material)
         self.mass = params.mass
         self.force = params.force
+        self.initial_force = params.initial_force
 
     def set_parameters(self):
         super().set_parameters()

@@ -29,26 +29,25 @@ class O4Test(O4Base, FullTest):
         self.check_array[1]['visibility'] = []
         self.check_array[1]['location'] = []
 
-    """
     def generate_parameters(self):
-        super().generate_paramaters()
+        super().generate_parameters()
+        self.params['Camera'].location.x = -1000
+        """
         temp = self.params[self.params["magic"]["actor"]].location
         # the actors needs to be hidden from the screen
         for name, actor in self.params.items():
             if 'object' in name:
                 actor.location.y = 1250 * -1 if temp < 0 else 1
-    """
+        """
 
     def setup_magic_actor(self):
-        # two run out of four
-        if self.run % 2 == 0:
-            return
         magic_actor = self.actors[self.params['magic']['actor']]
-        new_location = magic_actor.actor.get_actor_location()
+        new_location = magic_actor.location
         if 'dynamic' in self.movement:
             new_location.y *= -1
         else:
             new_location.y *= -1
+            # if static must change place between left actor and right actor
             for name, actor in self.actors.items():
                 temp = actor.actor.get_actor_location()
                 if temp == new_location and \
@@ -56,27 +55,24 @@ class O4Test(O4Base, FullTest):
                     temp.y *= -1
                     magic_actor.actor.set_actor_location(new_location + 1000)
                     actor.actor.set_actor_location(temp)
+                    actor.location = temp
                 elif 'occluder' in name:
                     temp = FVector(400, (new_location.y / 2) -
                                    (actor.scale.x * 200), 0)
                     actor.actor.set_actor_location(temp)
+        print(magic_actor.actor.get_actor_location())
+        print(new_location)
         magic_actor.actor.set_actor_location(new_location)
+        print(magic_actor.actor.get_actor_location())
+        magic_actor.location = new_location
+        magic_actor.initial_force.y *= -1
 
     def play_magic_trick(self):
         ue.log("magic tick: {}".format(self.ticker))
         magic_actor = self.actors[self.params['magic']['actor']]
-        force = FVector(0, 0, 0)
-        value = 50e5 * 3
-        if 'dynamic' in self.movement:
-            force.y = value * -1 if magic_actor.actor.get_actor_velocity().y >= 0 else 1
-        else:
-            force.x = value * -1 if random.choice([0, 1]) == 0 else 1
-            force.y = value * -1 if magic_actor.actor.get_actor_location().y > 0 else 1
-            # must do that else the actor desapear behind the occluder
-            if self.is_occluded is True:
-                force.y *= -1 if force.y < 0 else 1
         magic_actor.reset_force()
-        magic_actor.set_force(force, False)
+        if random.choice([0, 1]) == 1:
+            magic_actor.set_force(magic_actor.initial_force, False)
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -110,6 +106,7 @@ class O4Test(O4Base, FullTest):
         # if the number of frame where the magic actor is visible is less than
         # 4 time the number of magic tick required, scene need to be restarted
         if len(visibility_array) < 4:
+            print("salut")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         self.params['magic']['tick'] = 130
@@ -120,6 +117,7 @@ class O4Test(O4Base, FullTest):
         # if the number of frame where the magic actor is visible is less than
         # 4 time the number of magic tick required, scene need to be restarted
         if len(visibility_array) < 8:
+            print("truc")
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))

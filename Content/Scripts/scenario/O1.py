@@ -3,7 +3,6 @@ import random
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
-from unreal_engine import FVector
 import unreal_engine as ue
 
 
@@ -53,48 +52,26 @@ class O1Test(O1Base, MirrorTest):
             magic_actor, ignored_actors)[0]
         self.check_array[self.run]['visibility'].append(visible)
 
-    def set_magic_tick(self):
-        if super().set_magic_tick() is False:
-            return False
-        if isinstance(self.params['magic']['tick'], int):
-            magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick] == \
-                    self.check_array[1]['location'][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match in \
-                               each possible run")
-                return False
-
-    def tick(self):
-        super().tick()
-        if self.ticker == 80:
-            if 'static' not in self.movement:
-                for name, actor in self.actors.items():
-                    if 'object' in name.lower():
-                        actor.set_force(FVector(0, 0, 65e5))
-
     def static_visible(self):
         visibility_array = self.checks_time_laps("visibility", True)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        if len(visibility_array) < 1:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
     def dynamic_1_visible(self):
         visibility_array = self.checks_time_laps('visibility', True)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        if len(visibility_array) < 1:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
     def dynamic_2_visible(self):
         visibility_array = self.checks_time_laps('visibility', True)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 8:
+        if len(visibility_array) < 2:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))
@@ -105,43 +82,55 @@ class O1Test(O1Base, MirrorTest):
 
     def static_occluded(self):
         visibility_array = self.checks_time_laps('visibility', False)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        if len(visibility_array) < 1:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
     def dynamic_1_occluded(self):
         visibility_array = self.checks_time_laps('visibility', False)
-        temp_array = visibility_array
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        first = 0
+        last = 199
+        while True:
+            quit = False
+            if visibility_array[0] == first:
+                visibility_array.remove(first)
+                first += 1
+            else:
+                quit = True
+            if visibility_array[-1] == last:
+                visibility_array.remove(last)
+                last -= 1
+            elif quit is True:
+                break
+        if len(visibility_array) < 1:
+            ue.log_warning("Not enough visibility")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
-        self.params['magic']['tick'] = 130 
         return True
 
     def dynamic_2_occluded(self):
         visibility_array = self.checks_time_laps('visibility', False)
         temp_array = visibility_array
-        # remove the last occurences of not visible actor if
+        # remove the first and last occurences of not visible actor if
         # it is out of the fieldview
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
+        first = 0
+        last = 199
+        while True:
+            quit = False
+            if visibility_array[0] == first:
+                visibility_array.remove(first)
+                first += 1
+            else:
+                quit = True
+            if visibility_array[-1] == last:
+                visibility_array.remove(last)
+                last -= 1
+            elif quit is True:
+                break
         temp_array = visibility_array
         occlusion = []
         occlusion.append([])
@@ -158,10 +147,8 @@ class O1Test(O1Base, MirrorTest):
         if len(occlusion) < 2:
             return False
         self.params['magic']['tick'] = []
-        # self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        # self.params['magic']['tick'].append(random.choice(occlusion[1]))
-        self.params['magic']['tick'].append(120)
-        self.params['magic']['tick'].append(140)
+        self.params['magic']['tick'].append(random.choice(occlusion[0]))
+        self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
 
     def set_magic_tick(self):
@@ -172,7 +159,8 @@ class O1Test(O1Base, MirrorTest):
             magic_tick = self.params['magic']['tick']
             if self.check_array[0]['location'][magic_tick] == \
                     self.check_array[1]['location'][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match in each possible run")
+                ue.log_warning("Magic actor location doesn't match" +
+                               "in each possible run")
                 return False
         elif isinstance(self.params['magic']['tick'], list):
             magic_tick = self.params['magic']['tick']
@@ -180,6 +168,7 @@ class O1Test(O1Base, MirrorTest):
                     self.check_array[1]['location'][magic_tick[0]] or \
                     self.check_array[0]['location'][magic_tick[1]] == \
                     self.check_array[1]['location'][magic_tick[1]]:
-                ue.log_warning("Magic actor location doesn't match in each possible run")
+                ue.log_warning("Magic actor location doesn't match " +"
+                               in each possible run")
                 return False
         """

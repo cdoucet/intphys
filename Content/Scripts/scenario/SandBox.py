@@ -1,135 +1,136 @@
+"""Block SandBox is apparition/disparition, spheres only"""
 import random
-import os
-from unreal_engine.classes import Friction
-import importlib
-from actors.parameters import SkySphereParams, FloorParams
-from actors.parameters import LightParams, WallsParams, CameraParams
 from unreal_engine import FVector, FRotator
+from scenario.fullTest import FullTest
+from scenario.train import Train
+from scenario.scene import Scene
+from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
+# import unreal_engine as ue
 
 
-class SandBox:
-    def __init__(self, world, saver=None, is_occluded=False,
-                 movement='static'):
-        super().__init__(world, saver)
-        self.generate_parameters()
-        self.world = world
-        self.params = {}
-        self.saver = saver
-        self.generate_parameters()
-        self.actors = None
-        self.run = 0
-        self.last_locations = []
-        self.status_header = {
-                'name': self.name,
-                'type': 'test',
-                'is_possible': True if 'Trai' in type(self).__name__ else False
-                }
-
+class SandBoxBase:
     @property
     def name(self):
         return 'SandBox'
 
+    @property
+    def description(self):
+        return 'bloc SandBox'
+
+
+class SandBoxTrain(SandBoxBase, Train):
+    pass
+
+
+class SandBoxTest(SandBoxBase, FullTest):
+    def __init__(self, world, saver, is_occluded, movement):
+        super().__init__(world, saver, True, "dynamic_1")
+
     def generate_parameters(self):
-        self.params['Camera'] = CameraParams(
-                location=FVector(0, 0, 200),
-                rotation=FRotator(0, 0, 0))
-        self.params['SkySphere'] = SkySphereParams()
-        self.params['Floor'] = FloorParams(
-                material=get_random_material('Floor'))
-        self.params['Light'] = LightParams(
-                type='SkyLight')
-        prob_walls = 1  # no walls to avoid luminosity problems
-        if random.uniform(0, 1) <= prob_walls:
-            self.params['Walls'] = WallsParams(
-                    material=get_random_material('Wall'),
-                    height=random.uniform(1, 5),
-                    length=random.uniform(3000, 5000),
-                    depth=random.uniform(1500, 3000))
-
-    def play_run(self):
-        self.spawn_actors()
-        self.saver.update(self.actors)
-
-    def spawn_actors(self):
-        self.actors = {}
-        for actor, actor_params in self.params.items():
-            if ('magic' in actor):
-                continue
-            elif ('skysphere' in actor.lower()):
-                class_name = 'SkySphere'
+        Scene.generate_parameters(self)
+        nobjects = 2
+        if 'static' in self.movement:
+            locations = [FVector(1000, 500 * y, 0) for y in (-1, 0, 1)]
+        else:
+            # random side for each actor: starting either from left
+            # (go to right) or from rigth (go to left)
+            locations = [FVector(1000 + 300 * y, -1250, 0)
+                         for y in (-1, 0, 1)]
+            locations[1].y += 200 if locations[1].y > 0 else -200
+            locations[2].y += 350 if locations[2].y > 0 else -350
+        # random.shuffle(locations)
+        for n in range(nobjects):
+            # scale in [1, 1.5]
+            scale = 2
+            initial_force = FVector(0, 0, 0)
+            if 'static' not in self.movement:
+                locations[n].x = locations[n].x + 50 * scale
+                initial_force = FVector(0, -25e6 if locations[n].y > 0
+                                        else 25e6, 0)
+                # initial_force.z = 14e6
+            # full random rotation (does not matter on spheres, except
+            # for texture variations)
+            rotation = FRotator(
+                360*random.random(), 360*random.random(), 360*random.random())
+            self.params['object_{}'.format(n + 1)] = ObjectParams(
+                mesh='Sphere',
+                material=get_random_material('Object'),
+                location=locations[n],
+                rotation=rotation,
+                scale=FVector(scale, scale, scale),
+                mass=1,
+                initial_force=initial_force)
+        self.params['magic'] = {
+            'actor': 'object_2',
+            'tick': -1}
+        if self.is_occluded:
+            moves = []
+            scale = FVector(0.5, 1, 2.7)
+            if 'dynamic' in self.movement:
+                if '2' in self.movement:
+                    location = FVector(600, -175, 0)
+                else:
+                    location = FVector(600, 0, 0)
+                    scale.x = 1
+                start_up = False
+                moves.append(0)
+                moves.append(110)
             else:
-                class_name = actor.split('_')[0].title()
-            # dynamically import and instantiate
-            # the class corresponding to the actor
-            module_path = "actors.{}".format(actor.lower().split('_')[0])
-            module = importlib.import_module(module_path)
-            self.actors[actor] = getattr(module, class_name)(
-                world=self.world, params=actor_params)
-            if 'object' in actor.lower():
-                # if 'Sphere' in self.actors[actor].mesh_str:
-                #    Friction.SetMassScale(self.actors[actor].get_mesh(), 1)
-                if 'Cube' in self.actors[actor].mesh_str:
-                    Friction.SetMassScale(self.actors[actor].get_mesh(),
-                                          0.6155297517867)
-                elif 'Cone' in self.actors[actor].mesh_str:
-                    Friction.SetMassScale(self.actors[actor].get_mesh(),
-                                          1.6962973279499)
+                location = FVector(600, self.params[
+                    self.params['magic']['actor']].location.y / 2, 0)
+                scale.z = 1.5
+                scale.x = 1
+                start_up = False
+                moves.append(0)
+                moves.append(110)
+            self.params['occluder_1'] = OccluderParams(
+                material=get_random_material('Wall'),
+                location=location,
+                rotation=FRotator(0, 0, 90),
+                scale=scale,
+                moves=moves,
+                speed=1,
+                start_up=start_up)
+            if ('2' in self.movement):
+                self.params['occluder_2'] = OccluderParams(
+                    material=get_random_material('Wall'),
+                    location=FVector(600, 175, 0),
+                    rotation=FRotator(0, 0, 90),
+                    scale=scale,
+                    moves=moves,
+                    speed=1,
+                    start_up=start_up)
 
-    def reset_actors(self):
-        if self.actors is None:
-            return
-        for name, actor in self.actors.items():
-            if 'object' in name.lower() or 'occluder' in name.lower():
-                actor.reset(self.params[name])
+    def setup_magic_actor(self):
+        pass
 
-    def del_actors(self):
-        if self.actors is not None:
-            for actor_name, actor in self.actors.items():
-                actor.actor_destroy()
-            self.actors = None
+    def play_magic_trick(self):
+        magic = self.actors[self.params['magic']['actor']]
+        magic.reset_force()
+        magic.set_force(FVector(0, magic.initial_force.y * -1, 0))
 
-    def stop_run(self, scene_index):
-        if not self.saver.is_dry_mode:
-            self.saver.save(self.get_scene_subdir(scene_index))
-            # reset actors if it is the last run
-            self.saver.reset(True if self.run == 1 else False)
-        self.run += 1
-        return True
-
-    def get_scene_subdir(self, scene_index):
-        # build the scene sub-directory name, for exemple
-        # '027_test_O1/3' or '028_train_O1'
-        idx = scene_index + 1
-        padded_idx = '0{}'.format(idx)
-        scene_name = (
-            padded_idx + '_' +
-            ('train' if 'Train' in type(self).__name__ else 'test') + '_' +
-            self.name)
-        out = os.path.join(self.saver.output_dir, scene_name)
-        if 'Test' in type(self).__name__:
-            # 1, 2, 3 and 4 subdirectories for test scenes
-            run_idx = self.run + 1
-            out = os.path.join(out, str(run_idx))
-        return out
-
-    def tick(self):
-        if self.actors is not None:
-            for actor_name, actor in self.actors.items():
-                if 'object' in actor_name or 'occluder' in actor_name:
-                    actor.move()
-
-    def capture(self):
-        ignored_actors = []
-        self.saver.capture(ignored_actors, self.status_header,
-                           self.get_status())
+    def fill_check_array(self):
+        self.params['magic']['tick'] = 120
 
     def set_magic_tick(self):
-        self.params['magic']['tick'] = 25
+        pass
 
-    def is_over(self):
-        return True
-
-
-SandBoxTrain = SandBox
-SandBoxTest = SandBox
+    def tick(self):
+        Scene.tick(self)
+        if self.run <= 1:
+            self.fill_check_array()
+        elif isinstance(self.params['magic']['tick'], int) and \
+                self.ticker == self.params['magic']['tick']:
+            self.play_magic_trick()
+        elif not isinstance(self.params['magic']['tick'], int) and \
+                self.ticker in self.params['magic']['tick']:
+            self.play_magic_trick()
+        if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
+            # print(self.actors[self.params['magic']['actor']].initial_force)
+            for name, actor in self.actors.items():
+                if 'object' in name and int(round(actor.actor.
+                                            get_actor_velocity().y)) == 0:
+                    actor.set_force(actor.initial_force)
+                    break
+        self.ticker += 1
