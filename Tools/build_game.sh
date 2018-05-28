@@ -9,13 +9,11 @@
 
 # abspath to the root directory of intphys
 INTPHYS_DIR=$(dirname $(dirname $(readlink -f $0)))
-
-RANDNUM=$(( ( RANDOM % 1000 ) + 1000 ))
 PROJ_NAME=intphys
 
 ${UE_ROOT}/Engine/Build/BatchFiles/Linux/RunMono.sh \
           ${UE_ROOT}/Engine/Binaries/DotNET/UnrealBuildTool.exe \
-          $PROJ_NAME -ModuleWithSuffix $PROJ_NAME $RANDNUM Linux Development \
+          $PROJ_NAME -Module=$PROJ_NAME Linux Development \
           -editorrecompile -canskiplink "${INTPHYS_DIR}/${PROJ_NAME}.uproject" -progress || exit 1
 
 exit 0

@@ -16,8 +16,8 @@ public:
 
     void SetActors(TArray<AActor*>& Actors);
 
-	bool Capture(const TArray<AActor*>& IgnoredActors);
-	
+    bool Capture(const TArray<AActor*>& IgnoredActors);
+
     bool Save(const FString& Directory, float& OutMaxDepth, TMap<FString, uint8>& OutActorsMap);
 
     void Reset(bool delete_actors);
