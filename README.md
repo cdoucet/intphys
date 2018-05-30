@@ -43,44 +43,62 @@ This installation process succeeded on Debian stable (Jessie), Ubuntu
 16.04 and Ubuntu 18.04. It may be fine for other Unices as well, but
 this have not been tested.
 
-* First of all setup an Epic Games account at
+* **Setup an Epic Games account** at
   https://github.com/EpicGames/Signup/, needed to clone the Unreal
   Engine repository from github.
 
-* Make sure you have `clang-3.9` installed and that `/usr/bin/clang++`
-  effectively points to the `3.9` version. The compilation fails with
-  a more recent version of the compiler. To check it, have a `clang++
-  --version`, it should output something like:
+* **Setup the compiler**. You need `clang-3.8` on Ubuntu 16.04 or
+  below, or `clang-3.9` on Ubuntu 18.04 (because 3.8 is no more
+  available on that distribution). The compilation will fail if using
+  a more recent version of `clang`.
+
+  Make sure you have `clang` installed and that `/usr/bin/clang++`
+  effectively points to the 3.8 or 3.9 version. To check it, have a
+  `/usr/bin/clang++ --version`, it should output something like:
 
         clang version 3.9.1-19ubuntu1 (tags/RELEASE_391/rc2)
         Target: x86_64-pc-linux-gnu
         Thread model: posix
         InstalledDir: /usr/bin
 
-  If this is not the case, install it and update `/usr/bin/clang` to
-  point to the right version:
+  If this is not the case, install it and update `clang` to
+  point to the right version (here 3.9 as example, adapt it for 3.8):
 
         sudo apt install clang-3.9
         sudo update-alternatives --install /usr/bin/clang clang /usr/bin/clang-3.9 100
         sudo update-alternatives --install /usr/bin/clang++ clang++ /usr/bin/clang++-3.9 100
 
-* Install Unreal Engine as documented
+* **Install Unreal Engine** as documented
   [here](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Build/BatchFiles/Linux/README.md).
-  Basically have a:
+
+  * First clone the Engine sources:
 
         git clone https://github.com/EpicGames/UnrealEngine -b release
         cd UnrealEngine
+
+  * If compiling with `clang-3.9` you need to modify a file in the
+    engine sources (else the next step will fail, see
+    [here](https://github.com/20tab/UnrealEnginePython/pull/417#issuecomment-393077579)
+    for details). Edit the file
+    *Engine/Source/ThirdParty/FBX/2018.1.1/include/fbxsdk/core/fbxproperty.h* and replace the line 1188 as:
+
+          return StaticInit(pObject, pName, FbxGetDataTypeFromEnum(eFbxEnum), pValue, pForceSet, pFlags);
+          // return StaticInit(pObject, pName, FbxGetDataTypeFromEnum(FbxTypeOf(*((FbxReference*)0))), pValue, pForceSet, pFlags);
+
+  * Then compile the engine:
+
         ./Setup.sh
         ./GenerateProjectFiles.sh
         make
 
-* Install intphys in a separate directory. Clone the repository and
+
+* **Install intphys** in a separate directory. Clone the repository and
   its UnrealEnginePython submodule from github. Do not forget the
   `--recursive` option to download the submodule:
 
         git clone --recursive git@github.com:bootphon/intphys.git
 
-* You need Python>=3.6 installed as `/usr/bin/python3.6` (else you
+* You need **Python>=3.6** installed as `/usr/bin/python3.6` (else you
   need to tweak the UnrealEnginePython plugin
   [here](https://github.com/20tab/UnrealEnginePython/blob/master/Source/UnrealEnginePython/UnrealEnginePython.Build.cs#L11)
   so that it can find python>=3.6 in a non-standard path, for exemple
@@ -93,15 +111,16 @@ this have not been tested.
         sudo apt-get install python3.6 python3.6-dev
         /usr/bin/python3.6 -m pip install dataclasses
 
-* The intphys code reads the path to UnrealEngine and the path to the
-  Python scripts from the `UE_ROOT` and `PYTHONPATH` environment
-  variables repectively. Add that to your `~/.bashrc`:
+* **Setup your `~/.bashrc`**: The intphys code reads the path to
+  UnrealEngine and the path to the Python scripts from the `UE_ROOT`
+  and `PYTHONPATH` environment variables repectively. Add that to your
+  `~/.bashrc`:
 
         export UE_ROOT=/absolute/path/to/UnrealEngine
 		export PYTHONPATH=$PYTHONPATH:/absolute/path/to/intphys/Content/Scripts
 
-* We now need to package the intphys project into a standalone binary
-  program. Just have a:
+* **Build `intphys` package**: We now need to package the intphys
+  project into a standalone binary program. Just have a:
 
         ./Tools/build_package.sh
 
