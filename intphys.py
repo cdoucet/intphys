@@ -502,6 +502,12 @@ def Main():
         output_dir = os.path.abspath(args.output_dir)
         if os.path.exists(output_dir):
             if args.force:
+                print('Are you sure you want to ' +
+                      'delete pictures directory ? y/n')
+                if (raw_input() != 'y'):
+                    raise IOError(
+                        'Existing output directory {}\n'
+                        .format(output_dir))
                 shutil.rmtree(output_dir)
             else:
                 raise IOError(

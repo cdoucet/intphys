@@ -79,8 +79,11 @@ class O3Test(O3Base, MirrorTest):
     # there is two dictionaries : one for each run
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
-        self.check_array[self.run]['location'].append(
-            magic_actor.get_actor_location())
+        location = FVector()
+        location.x = int(round(magic_actor.get_actor_location().x))
+        location.y = int(round(magic_actor.get_actor_location().y))
+        location.z = int(round(magic_actor.get_actor_location().z))
+        self.check_array['location'][self.run].append(location)
         ignored_actors = []
         for actor_name, actor in self.actors.items():
             if 'object' not in actor_name.lower() and \

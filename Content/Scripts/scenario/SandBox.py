@@ -1,7 +1,7 @@
 """Block SandBox is apparition/disparition, spheres only"""
 import random
 from unreal_engine import FVector, FRotator
-from scenario.fullTest import FullTest
+from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from scenario.scene import Scene
 from actors.parameters import ObjectParams, OccluderParams
@@ -23,9 +23,9 @@ class SandBoxTrain(SandBoxBase, Train):
     pass
 
 
-class SandBoxTest(SandBoxBase, FullTest):
+class SandBoxTest(SandBoxBase, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
-        super().__init__(world, saver, True, "dynamic_1")
+        super().__init__(world, saver, False, "dynamic_1")
 
     def generate_parameters(self):
         Scene.generate_parameters(self)
@@ -37,6 +37,7 @@ class SandBoxTest(SandBoxBase, FullTest):
             # (go to right) or from rigth (go to left)
             locations = [FVector(1000 + 300 * y, -1250, 0)
                          for y in (-1, 0, 1)]
+            locations[0].y = 1350
             locations[1].y += 200 if locations[1].y > 0 else -200
             locations[2].y += 350 if locations[2].y > 0 else -350
         # random.shuffle(locations)
@@ -46,9 +47,16 @@ class SandBoxTest(SandBoxBase, FullTest):
             initial_force = FVector(0, 0, 0)
             if 'static' not in self.movement:
                 locations[n].x = locations[n].x + 50 * scale
-                initial_force = FVector(0, -25e6 if locations[n].y > 0
-                                        else 25e6, 0)
-                # initial_force.z = 14e6
+                if n == 1:
+                    initial_force = FVector(0, -15e6 if locations[n].y > 0
+                                            else 15e6, 0)
+                elif n == 0:
+                    initial_force = FVector(0, -10e6 if locations[n].y > 0
+                                            else 10e6, 0)
+                    initial_force.z = 14e6
+                else:
+                    initial_force = FVector(0, -35e6 if locations[n].y > 0
+                                            else 35e6, 0)
             # full random rotation (does not matter on spheres, except
             # for texture variations)
             rotation = FRotator(
@@ -62,11 +70,11 @@ class SandBoxTest(SandBoxBase, FullTest):
                 mass=1,
                 initial_force=initial_force)
         self.params['magic'] = {
-            'actor': 'object_2',
+            'actor': 'object_1',
             'tick': -1}
         if self.is_occluded:
             moves = []
-            scale = FVector(0.5, 1, 2.7)
+            scale = FVector(0.5, 1, 1.5)
             if 'dynamic' in self.movement:
                 if '2' in self.movement:
                     location = FVector(600, -175, 0)
@@ -80,7 +88,7 @@ class SandBoxTest(SandBoxBase, FullTest):
                 location = FVector(600, self.params[
                     self.params['magic']['actor']].location.y / 2, 0)
                 scale.z = 1.5
-                scale.x = 1
+                scale.x = 0.8
                 start_up = False
                 moves.append(0)
                 moves.append(110)
@@ -103,7 +111,12 @@ class SandBoxTest(SandBoxBase, FullTest):
                     start_up=start_up)
 
     def setup_magic_actor(self):
-        pass
+        if self.run == 1:
+            magic_actor = self.actors[self.params['magic']['actor']]
+            current_location = magic_actor.actor.get_actor_location()
+            target_location = current_location
+            target_location.y += 400 if current_location.y < 0 else -400
+            magic_actor.set_location(target_location)
 
     def play_magic_trick(self):
         magic = self.actors[self.params['magic']['actor']]
@@ -111,26 +124,16 @@ class SandBoxTest(SandBoxBase, FullTest):
         magic.set_force(FVector(0, magic.initial_force.y * -1, 0))
 
     def fill_check_array(self):
-        self.params['magic']['tick'] = 120
+        self.params['magic']['tick'] = 18
 
     def set_magic_tick(self):
         pass
 
     def tick(self):
         Scene.tick(self)
-        if self.run <= 1:
-            self.fill_check_array()
-        elif isinstance(self.params['magic']['tick'], int) and \
-                self.ticker == self.params['magic']['tick']:
-            self.play_magic_trick()
-        elif not isinstance(self.params['magic']['tick'], int) and \
-                self.ticker in self.params['magic']['tick']:
-            self.play_magic_trick()
-        if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
-            # print(self.actors[self.params['magic']['actor']].initial_force)
-            for name, actor in self.actors.items():
-                if 'object' in name and int(round(actor.actor.
-                                            get_actor_velocity().y)) == 0:
-                    actor.set_force(actor.initial_force)
-                    break
+        for name, actor in self.actors.items():
+            if 'object' in name and int(round(actor.actor.
+                                        get_actor_velocity().y)) == 0:
+                actor.set_force(actor.initial_force)
+                break
         self.ticker += 1

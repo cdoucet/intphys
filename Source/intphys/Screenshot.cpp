@@ -140,11 +140,14 @@ bool FScreenshot::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
 {
     if (FrameIndex >= m_ImageIndex)
     {
-        return false;
+     	return false;
     }
 
-    uint8 ActorId = m_ActorsMap[Actor->GetName()];
-    return m_Masks[FrameIndex].Contains(ActorId);
+    int8 ActorIndex = -1;
+	ActorIndex = static_cast<uint8>(m_ActorsSet.Add(Actor->GetName()).AsInteger() + 1);
+	if (ActorIndex <= 0)
+		UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *Actor->GetName());
+    return m_Masks[FrameIndex].Contains(ActorIndex);
 }
 
 

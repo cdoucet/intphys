@@ -49,15 +49,24 @@ class Director(object):
                     elif ('visible' in scene):
                         is_occluded = False
                     else:
-                        raise BufferError("Didn't find 'occluded' nor 'visible' in one scene of the json file")
+                        raise BufferError("Didn't find 'occluded' nor 'visi" +
+                                          "ble' in one scene of the json file")
                     for movement, nb in b.items():
-                        if ('static' not in movement and 'dynamic_1' not in movement and 'dynamic_2' not in movement):
-                            raise BufferError("Didn't find 'static', 'dynamic_1' nor 'dynamic_2' in one scene of the json file")
+                        if ('static' not in movement and
+                                'dynamic_1' not in movement and
+                                'dynamic_2' not in movement):
+                            raise BufferError("Didn't find 'static', " +
+                                              "'dynamic_1' nor 'dynamic_2' " +
+                                              "in one scene of the json file")
                         else:
                             for i in range(nb):
-                                self.scenes.append(test_class(self.world, self.saver, is_occluded, movement))
+                                self.scenes.append(test_class(self.world,
+                                                              self.saver,
+                                                              is_occluded,
+                                                              movement))
                 else:
-                    raise BufferError("Didn't find 'train' nor 'test' in one scenario of the json file")
+                    raise BufferError("Didn't find 'train' nor 'test' in one" +
+                                      "scenario of the json file")
 
     def play_scene(self):
         if self.scene >= len(self.scenes):
@@ -72,26 +81,36 @@ class Director(object):
     def stop_scene(self):
         if self.scene >= len(self.scenes):
             return
-        if self.scenes[self.scene].stop_run(self.scene, len(self.scenes)) is False:
+        if self.scenes[self.scene].stop_run(self.scene,
+                                            len(self.scenes)) is False:
             self.restart_scene()
-        elif self.scenes[self.scene].is_over() and self.scene < len(self.scenes):
+        elif (self.scenes[self.scene].is_over() and
+                self.scene < len(self.scenes)):
             self.scene += 1
         self.ticker = 0
 
     def restart_scene(self):
         ue.log('Restarting scene')
         self.saver.reset(True)
-        is_test = True if 'test' in type(self.scenes[self.scene]).__name__.lower() else False
-        module = importlib.import_module("scenario.{}".format(self.scenes[self.scene].name))
+        is_test = True if 'test' in \
+            type(self.scenes[self.scene]).__name__.lower() else False
+        module = importlib.import_module("scenario.{}".
+                                         format(self.scenes[self.scene].name))
         if is_test is True:
-            test_class = getattr(module, "{}Test".format(self.scenes[self.scene].name))
+            test_class = getattr(module,
+                                 "{}Test".format(self.scenes[self.scene].name))
             is_occluded = self.scenes[self.scene].is_occluded
             movement = self.scenes[self.scene].movement
-            self.scenes.insert(self.scene + 1, test_class(self.world, self.saver, is_occluded, movement))
+            self.scenes.insert(self.scene + 1, test_class(self.world,
+                                                          self.saver,
+                                                          is_occluded,
+                                                          movement))
             self.scenes.pop(0)
         else:
-            train_class = getattr(module, "{}Train".format(self.scenes[self.scene].name))
-            self.scenes.insert(self.scene + 1, train_class(self.world, self.saver))
+            train_class = \
+                getattr(module, "{}Train".format(self.scenes[self.scene].name))
+            self.scenes.insert(self.scene + 1,
+                               train_class(self.world, self.saver))
             self.scenes.pop(0)
 
     def capture(self):
