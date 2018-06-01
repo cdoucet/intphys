@@ -91,22 +91,21 @@ class O1Test(O1Base, MirrorTest):
         # it is out of the fieldview
         first = 0
         last = 99
-        while True:
-            quit = False
-            if len(visibility_array) == 0:
-                return False
-            if visibility_array[0] == first:
-                visibility_array.remove(first)
-                first += 1
-            else:
-                quit = True
-            if len(visibility_array) == 0:
-                return False
-            if visibility_array[-1] == last:
-                visibility_array.remove(last)
-                last -= 1
-            elif quit is True:
-                break
+        try:
+            while True:
+                quit = False
+                if visibility_array[0] == first:
+                    visibility_array.remove(first)
+                    first += 1
+                else:
+                    quit = True
+                if visibility_array[-1] == last:
+                    visibility_array.remove(last)
+                    last -= 1
+                elif quit is True:
+                    break
+        except IndexError:
+            pass
         if len(visibility_array) < 1:
             ue.log_warning("Not enough visibility")
             return False
@@ -121,18 +120,21 @@ class O1Test(O1Base, MirrorTest):
         # it is out of the fieldview
         first = 0
         last = 99
-        while True:
-            quit = False
-            if visibility_array[0] == first:
-                visibility_array.remove(first)
-                first += 1
-            else:
-                quit = True
-            if visibility_array[-1] == last:
-                visibility_array.remove(last)
-                last -= 1
-            elif quit is True:
-                break
+        try:
+            while True:
+                quit = False
+                if visibility_array[0] == first:
+                    visibility_array.remove(first)
+                    first += 1
+                else:
+                    quit = True
+                if visibility_array[-1] == last:
+                    visibility_array.remove(last)
+                    last -= 1
+                elif quit is True:
+                    break
+        except IndexError:
+            pass
         temp_array = visibility_array
         occlusion = []
         occlusion.append([])

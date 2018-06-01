@@ -19,8 +19,6 @@ class Test(Scene):
         super().generate_parameters()
         # random number of object
         nobjects = random.randint(1, 3)
-        # TODO remove
-        nobjects = 3
         # random number of occluder if it's not dynamic 2
         # TODO implement it
         noccluders = random.randint(1 if '2' not in self.movement else 2, 2)
@@ -67,16 +65,16 @@ class Test(Scene):
                                    else 1), 0)
                 # the more far they are, the more force we apply on them
                 # an object has one chance out of two to fly
-                force = FVector(0, (4e4 + abs(location.y - 1500) * 10) *
+                force = FVector(0, (4e4 + (abs(location.y) - 1500) * 10) *
                                 (-1 if location.y > 0 else 1),
                                 1e6 if bool(random.getrandbits(1)) else 0)
                 # if an object is not a sphere, it will necessarly fly
                 if self.params[object_names[n]].mesh != 'Sphere':
-                    force.z = 3e4 + (location.y - 1500) * 5
+                    force.z = 3e4 + (abs(location.y) - 1500) * 4
                 # if at least on object will fly,
                 # the occluder needs to be higher
                 if force.z != 0:
-                    occluder_scale.z = 1.95
+                    occluder_scale.z = 2.2
             self.params[object_names[n]].location = location
             self.params[object_names[n]].initial_force = force
         # random magic object
