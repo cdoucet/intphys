@@ -1,0 +1,11 @@
+{
+    "scenario_O2" :
+    {
+        "train" : 1,
+        "test" :
+        {
+            "occluded" : 2,
+            "visible" : 1
+        }
+    }
+}
