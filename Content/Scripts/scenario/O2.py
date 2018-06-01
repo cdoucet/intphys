@@ -4,8 +4,7 @@ from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import Friction, ScreenshotManager
-from unreal_engine import FRotator, FVector
-from scenario.scene import Scene
+from unreal_engine import FVector
 import unreal_engine as ue
 
 
@@ -41,38 +40,11 @@ class O2Test(O2Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
-        for name, params in self.params.items():
-            if 'object' in name:
-                # objects can be of any shapes, not only sphere
-                params.mesh = random.choice(list(Object.shape.keys()))
-                if name in self.params['magic']['actor']:
-                    params.initial_force.z = 14e6
-                # force the rotation to be 0 (roll excepted)
-                params.rotation = FRotator(0, 0, 360*random.random())
-        # specify an alternative mesh for the magic actor (different
-        # from the original one)
         magic_actor = self.params['magic']['actor']
         magic_mesh = self.params[magic_actor].mesh
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
-
-    def tick(self):
-        Scene.tick(self)
-        self.fill_check_array()
-        if self.ticker == 80 or self.ticker == 90 or self.ticker == 100:
-            if 'static' not in self.movement:
-                for name, actor in self.actors.items():
-                    if 'object' in name.lower() and \
-                            int(round(actor.actor.
-                                      get_actor_velocity().y)) == 0:
-                        force = FVector(0, -25e6 if
-                                        actor.actor.get_actor_location().y > 0
-                                        else 25e6, 14e6)
-                        # One chance out of two to fly
-                        actor.set_force(force)
-                        break
-        self.ticker += 1
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
@@ -81,19 +53,9 @@ class O2Test(O2Base, MirrorTest):
         location.y = int(round(magic_actor.get_actor_location().y))
         location.z = int(round(magic_actor.get_actor_location().z))
         self.check_array['location'][self.run].append(location)
-        ignored_actors = []
-        for actor_name, actor in self.actors.items():
-            if self.params['magic']['actor'] not in actor_name and \
-                    'occluder' not in actor_name.lower():
-                if 'walls' in actor_name.lower():
-                    ignored_actors.append(actor.front.actor)
-                    ignored_actors.append(actor.left.actor)
-                    ignored_actors.append(actor.right.actor)
-                else:
-                    ignored_actors.append(actor.actor)
-        visible = ScreenshotManager.IsActorInLastFrame(
-            magic_actor, ignored_actors)[0]
-        self.check_array['visibility'][self.run].append(visible)
+        frame = (self.ticker / 2) - 0.5
+        IsActorInFrame = ScreenshotManager.IsActorInFrame(magic_actor, frame)
+        self.check_array['visibility'][self.run].append(IsActorInFrame)
         # check if the magic actor is in the air
         if (magic_actor.get_actor_location().z <= 100 +
                 self.actors[self.params['magic']['actor']].scale.z * 50):
@@ -101,7 +63,6 @@ class O2Test(O2Base, MirrorTest):
         else:
             grounded = False
         self.check_array['grounded'][self.run].append(grounded)
-        # ue.log("{}: {}".format(self.ticker, visible))
 
     def setup_magic_actor(self):
         # on run 1 and 3 the magic actor mesh is
@@ -112,19 +73,16 @@ class O2Test(O2Base, MirrorTest):
         is_magic_mesh = True if run in (2, 4) else False
         magic_actor_type = self.params['magic']['actor']
         magic_actor = self.actors[magic_actor_type]
-
         new_mesh = (self.params['magic']['mesh'] if is_magic_mesh
                     else self.params[magic_actor_type].mesh)
         magic_actor.set_mesh_str(Object.shape[new_mesh])
-
         Friction.SetMassScale(magic_actor.get_mesh(), 1)
-
         if 'Cube' in magic_actor.mesh_str:
             Friction.SetMassScale(magic_actor.get_mesh(), 0.6155297517867)
-
         elif 'Cone' in magic_actor.mesh_str:
             Friction.SetMassScale(magic_actor.get_mesh(), 1.6962973279499)
 
+    """
     def apply_magic_trick(self):
         # swap the mesh of the magic actor
         magic_actor = self.actors[self.params['magic']['actor']]
@@ -133,6 +91,7 @@ class O2Test(O2Base, MirrorTest):
         mesh_2 = self.params[self.params['magic']['actor']].mesh
         new_mesh = mesh_1 if current_mesh == mesh_2 else mesh_2
         magic_actor.set_mesh_str(Object.shape[new_mesh])
+    """
 
     def static_visible(self):
         visibility_array = \
@@ -195,18 +154,25 @@ class O2Test(O2Base, MirrorTest):
             self.checks_time_laps(self.check_array["visibility"], False)
         grounded_array = \
             self.checks_time_laps(self.check_array["grounded"], False)
-        temp_array = visibility_array
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
-        if len(visibility_array) < 2:
-            ue.log_warning("Not enough initial visibility")
-            return False
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
+        first = 0
+        last = 99
+        try:
+            while True:
+                quit = False
+                if visibility_array[0] == first:
+                    visibility_array.remove(first)
+                    first += 1
+                else:
+                    quit = True
+                if visibility_array[-1] == last:
+                    visibility_array.remove(last)
+                    last -= 1
+                elif quit is True:
+                    break
+        except IndexError:
+            pass
         # check if the actor is visible AND up in the air
         final_array = []
         for frame in grounded_array:
@@ -228,19 +194,22 @@ class O2Test(O2Base, MirrorTest):
         # remove the last and the first occurences of not visible actor if
         # it is out of the fieldview
         first = 0
-        last = 199
-        while True:
-            quit = False
-            if visibility_array[0] == first:
-                visibility_array.remove(first)
-                first += 1
-            else:
-                quit = True
-            if visibility_array[-1] == last:
-                visibility_array.remove(last)
-                last -= 1
-            elif quit is True:
-                break
+        last = 99
+        try:
+            while True:
+                quit = False
+                if visibility_array[0] == first:
+                    visibility_array.remove(first)
+                    first += 1
+                else:
+                    quit = True
+                if visibility_array[-1] == last:
+                    visibility_array.remove(last)
+                    last -= 1
+                elif quit is True:
+                    break
+        except IndexError:
+            pass
         temp_array = visibility_array
         occlusion = []
         occlusion.append([])

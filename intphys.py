@@ -426,7 +426,7 @@ def Main():
         if os.path.exists(output_dir):
             if args.force:
                 print('Are you sure you want to ' +
-                      'delete pictures directory ? y/n')
+                      'delete {} directory ? y/n'.format(output_dir))
                 if (raw_input() != 'y'):
                     raise IOError(
                         'Existing output directory {}\n'
