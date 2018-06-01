@@ -2,14 +2,11 @@
 
 """High-level wrapper for intphys data generation
 
-This programm wraps the intphys binary (as packaged by Unreal Engine)
+This program wraps the intphys binary (as packaged by Unreal Engine)
 into a simple to use command-line interface. It defines few
-environment variables (namely input JSon scenes file, output
-directory and random seed), launch the binary and filter its log
-messages at runtime, keeping only relevant messages.
-
-The INTPHYS_BINARY variable must be defined in your environment
-(this is done for you by the activate-intphys script).
+environment variables (namely input JSon scenes file, output directory
+and random seed), launch the binary and filter its log messages at
+runtime, keeping only relevant messages.
 
 To see command-line arguments, have a::
 
@@ -335,9 +332,7 @@ def RunEditor(output_dir, scenes_file, seed=None,
 def FindDuplicates(directory):
     """Find any duplicated scenes in `directory`
 
-    Having two identical scenes is very unlikely but was a problem
-    while coding the '--njobs' option...
-
+    Having two identical scenes is very unlikely but... who knows.
     Load and compare all 'params.json' files found in
     `directory`. Print duplicate on stdout.
 
@@ -375,7 +370,7 @@ def Main():
         if os.path.exists(output_dir):
             if args.force:
                 print('Are you sure you want to ' +
-                      'delete pictures directory ? y/n')
+                      'delete {} directory ? y/n'.format(output_dir))
                 if (raw_input() != 'y'):
                     raise IOError(
                         'Existing output directory {}\n'

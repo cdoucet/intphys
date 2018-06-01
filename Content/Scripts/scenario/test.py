@@ -1,4 +1,5 @@
 import random
+import math
 import unreal_engine as ue
 from scenario.scene import Scene
 from unreal_engine import FVector, FRotator
@@ -59,7 +60,7 @@ class Test(Scene):
                 # if dynamic, initial force and differents initial locations
                 # they are more and more far. The more far they are,
                 # the more they are far from the center of the screen
-                location = FVector(1000 + (50 + (scale * 50)) * n,
+                location = FVector(1000 + scale * 100 * math.sqrt(3) * n,
                                    (1500 + 250 * (n - 1)) *
                                    (-1 if bool(random.getrandbits(1))
                                    else 1), 0)
@@ -89,6 +90,8 @@ class Test(Scene):
             for n in range(noccluders):
                 self.params['occluder_{}'.format(n)] = OccluderParams()
                 self.params['occluder_{}'.format(n)].scale = occluder_scale
+                self.params['occluder_{}'.format(n)].material = \
+                    get_random_material('Wall')
                 # the occluder start down
                 self.params['occluder_{}'.format(n)].start_up = False
                 self.params['occluder_{}'.format(n)].rotation = \

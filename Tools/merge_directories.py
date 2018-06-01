@@ -6,8 +6,7 @@ import sys
 
 
 def usage():
-    print('Usage: {} <input-dir> <output-dir>'
-          .format(sys.argv[0]))
+    print('Usage: {} <input-dir> <output-dir>'.format(sys.argv[0]))
     sys.exit(1)
 
 
@@ -21,12 +20,12 @@ def main():
 
     output_dir = os.path.abspath(sys.argv[2])
     input_dir = os.path.abspath(sys.argv[1])
-    input_dirs = [os.path.join(input_dir, v) for v in os.listdir(input_dir)]
+    input_subdirs = [os.path.join(input_dir, v) for v in os.listdir(input_dir)]
     print('merging {} directories into {} ...'.format(
-        len(input_dirs), output_dir))
+        len(input_subdirs), output_dir))
 
-    scenes = sorted(os.path.join(d, sd)
-                    for d in input_dirs for sd in os.listdir(d))
+    scenes = sorted(
+        os.path.join(d, sd) for d in input_subdirs for sd in os.listdir(d))
 
     count = 1
     for scene in scenes:

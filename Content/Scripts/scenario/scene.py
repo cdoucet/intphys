@@ -3,9 +3,9 @@ import os
 import importlib
 from unreal_engine.classes import Friction
 from unreal_engine import FVector, FRotator
-from actors.parameters import SkySphereParams, FloorParams
-from actors.parameters import LightParams, WallsParams, CameraParams
+from actors.parameters import FloorParams, WallsParams, CameraParams
 from tools.materials import get_random_material
+import unreal_engine as ue
 
 
 class Scene:
@@ -35,7 +35,8 @@ class Scene:
                 location=FVector(0, 0, 200),
                 rotation=FRotator(0, 0, 0))
         """
-        self.params['SkySphere'] = SkySphereParams(rotation=FRotator(180, 180, 180))
+        self.params['SkySphere'] = \
+            SkySphereParams(rotation=FRotator(180, 180, 180))
         """
         self.params['Floor'] = FloorParams(
                 material=get_random_material('Floor'))
@@ -60,6 +61,7 @@ class Scene:
         return all([a.is_valid for a in self.actors.values()])
 
     def spawn_actors(self):
+        ue.log("spawn actors")
         self.actors = {}
         for actor, actor_params in self.params.items():
             if ('magic' in actor):
@@ -85,6 +87,7 @@ class Scene:
                                           1.6962973279499)
 
     def reset_actors(self):
+        ue.log("reset actors")
         if self.actors is None:
             return
         for name, actor in self.actors.items():
@@ -92,6 +95,7 @@ class Scene:
                 actor.reset(self.params[name])
 
     def del_actors(self):
+        ue.log("del actors")
         if self.actors is not None:
             for actor_name, actor in self.actors.items():
                 actor.actor_destroy()

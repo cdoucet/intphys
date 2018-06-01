@@ -8,6 +8,22 @@ import sys
 
 
 def balance_int(l, n):
+    """Return a list L such as sum(L) == l and len(L) == n
+
+    L is sorted in reverse order.
+
+    Example
+    -------
+
+    >>> balance_int(3, 2)
+    [2, 1]
+    >>> balance_int(3, 3)
+    [1, 1, 1]
+    >>> balance_int(3, 5)
+    [1, 1, 1, 0, 0]
+
+
+    """
     if l == n:
         L = [1] * n
     if l < n:
@@ -18,10 +34,24 @@ def balance_int(l, n):
 
     assert sum(L) == l
     assert len(L) == n
+    assert sorted(L, reverse=True) == L
     return L
 
 
 def balance_list(L, n):
+    """Return a matrix M such as sum(M[:]) == L and len(M) == n
+
+    Example
+    -------
+
+    >>> balance_list([1, 2], 2)
+    [[1, 1], [0, 1]]
+    >>> balance_list([1, 2], 3)
+    [[1, 0], [0, 1], [0, 1]]
+    >>> balance_list([1, 2], 4)
+    [[1, 0], [0, 1], [0, 1]]
+
+    """
     idx = list(range(n))
     M = [[] * n] * len(L)
     for i, l in enumerate(L):
@@ -37,6 +67,16 @@ def balance_list(L, n):
 
 
 def unroll_dict(D, head=[]):
+    """Convert a nested dict into a pair of lists (nested keys, values)
+
+    Example
+    -------
+
+    >>> D = {'a': {'a': 1, 'b': 2}, 'b': {'a': 3, 'b': 4}}
+    >>> unroll_dict(D)
+    ([['a', 'a'], ['a', 'b'], ['b', 'a'], ['b', 'b']], [1, 2, 3, 4])
+
+    """
     keys, values = [], []
     for k, v in D.items():
         k = head + [k]
@@ -51,6 +91,17 @@ def unroll_dict(D, head=[]):
 
 
 def roll_dict(D, K, V):
+    """Convert back a pair of lists (nested keys, values) as a nested dict
+
+    Example
+    -------
+
+    >>> D = {'a': {'a': 1, 'b': 2}, 'b': {'a': 3, 'b': 4}}
+    >>> K, V = unroll_dict(D)
+    >>> roll_dict(D, K, V)
+    {'a': {'a': 1, 'b': 2}, 'b': {'a': 3, 'b': 4}}
+
+    """
     def _aux(D, K, V, idx):
         if len(K) == 1:
             D[K[0]] = V[idx]
@@ -66,17 +117,20 @@ def roll_dict(D, K, V):
     return D
 
 
-def split_json(input_json, n, output_dir):
-    """Split the workload one one json into `n` ones"""
-    input_json = json.load(open(input_json, 'r'))
-    keys, values = unroll_dict(input_json)
-    configs = balance_list(values, n)
+def split_dict(D, n):
+    """Return a list of `n` dicts [D_1, ... D_n] sharing the values of `D`
 
-    for i, config in enumerate(configs, start=1):
-        assert len(keys) == len(config)
-        d = roll_dict(input_json, keys, config)
-        output_json = os.path.join(output_dir, '{}.json'.format(i))
-        open(output_json, 'w').write(json.dumps(d) + '\n')
+    Example
+    -------
+
+    >>> D = {'a': {'a': 1, 'b': 2}, 'b': 5}
+    >>> split_json.split_dict(D, 2)
+    [{'a': {'a': 1, 'b': 1}, 'b': 3}, {'a': {'a': 0, 'b': 1}, 'b': 2}]
+
+
+    """
+    K, V = unroll_dict(D)
+    return [roll_dict(D, K, W) for W in balance_list(V, n)]
 
 
 def main():
@@ -86,10 +140,12 @@ def main():
     parser.add_argument('json_file', help='the input JSON file to split')
     parser.add_argument('n', type=int, help="the number of splits to generate")
     parser.add_argument('output_dir', help='directory where to write JSONs')
-
     args = parser.parse_args()
 
-    split_json(args.json_file, args.n, args.output_dir)
+    D = json.load(open(args.json_file, 'r'))
+    for i, E in enumerate(split_dict(D, args.n), start=1):
+        output_json = os.path.join(args.output_dir, '{}.json'.format(i))
+        open(output_json, 'w').write(json.dumps(E) + '\n')
 
 
 if __name__ == '__main__':

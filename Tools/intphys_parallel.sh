@@ -1,14 +1,15 @@
 #!/bin/bash
 #
 # Run multiple instances of intphys.py in parallel. Assumes GNU
-# parallel is installed and intphys is built in Packaged mode (with
+# parallel is installed and intphys is built in packaged mode (with
 # Tools/build_package.sh)
 
 
 # absolute path to intphys.py
 intphys=$(readlink -f $(dirname $(readlink -f $0))/../intphys.py)
 
-# display a usage message if bad params
+
+# a usage message displayed on bad params or --help
 usage()
 {
     echo "Usage: $0 <json-file> <output-dir> [<njobs>] [<height>x<width>]"
@@ -19,7 +20,7 @@ usage()
     echo "2 - call n instances of intphys.py in parallel on each of the sub-json"
     echo "3 - merge the n resulted dirs into a single output-dir"
 
-    exit 0
+    exit 1
 }
 
 # display usage if needed
@@ -53,8 +54,10 @@ if ! [ -f $json ]; then echo "Error: file $1 not found"; exit 1; fi
 tmpdir=$(mktemp -d)
 trap "rm -rf $tmpdir" EXIT
 $(dirname $0)/split_json.py $json $njobs $tmpdir || exit 1
+njsons=$(( $(ls -l $tmpdir | wc -l) - 1 ))
 
 
+# a function to run a single intphys instance
 export intphys output_dir resolution tmpdir
 run_intphys()
 {
@@ -63,8 +66,8 @@ run_intphys()
 export -f run_intphys
 
 
-# run the jobs in parallel
-parallel -j $njobs run_intphys ::: $(seq 1 $njobs) || exit 1
+# run the instances in parallel
+parallel -j $njobs run_intphys ::: $(seq 1 $njsons) || exit 1
 
 
 # merge the output directories
