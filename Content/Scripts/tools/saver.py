@@ -73,7 +73,7 @@ class Saver:
         # save the captured images as PNG
         done, max_depth, masks = ScreenshotManager.Save(output_dir)
         if not done:
-            ue.log_warning(f'failed to save images to {output_dir}')
+            ue.log_warning('failed to save images to {}'.format(output_dir))
             return False
 
         # save images max depth and actors's masks to status
@@ -84,7 +84,7 @@ class Saver:
         json_file = os.path.join(output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
-        ue.log(f'saved captures to {output_dir}')
+        ue.log('saved captures to {}'.format(output_dir))
         return True
 
     def update(self, actors):

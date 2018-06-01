@@ -1,4 +1,3 @@
-import math
 import json
 import os
 import unreal_engine as ue
@@ -31,18 +30,18 @@ class MirrorTest(Test):
             self.generate_magic_runs(scene_index, total)
         return True
 
-    def tick(self):
-        super().tick()
+    def capture(self):
+        super().capture()
         self.fill_check_array()
 
     def generate_magic_runs(self, scene_index, total):
         if '2' not in self.movement:
-            magic_tick = math.ceil(self.params['magic']['tick'] / 2) + 1
+            magic_tick = self.params['magic']['tick'] + 2
             magic_tick2 = 100
             ue.log("magic tick = {}".format(magic_tick))
         else:
-            magic_tick = math.ceil(self.params['magic']['tick'][0] / 2) + 1
-            magic_tick2 = math.ceil(self.params['magic']['tick'][1] / 2) + 1
+            magic_tick = self.params['magic']['tick'][0] + 2
+            magic_tick2 = self.params['magic']['tick'][1] + 2
             ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
         # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index, total)[:-2]
@@ -143,3 +142,23 @@ class MirrorTest(Test):
 
     def is_over(self):
         return True if self.run == 2 else False
+
+    def set_magic_tick(self):
+        if super().set_magic_tick() is False:
+            return False
+        if isinstance(self.params['magic']['tick'], int):
+            magic_tick = self.params['magic']['tick']
+            if self.check_array['location'][0][magic_tick] != \
+                    self.check_array['location'][1][magic_tick]:
+                ue.log_warning("Magic actor location doesn't match" +
+                               " in each possible run")
+                return False
+        elif isinstance(self.params['magic']['tick'], list):
+            magic_tick = self.params['magic']['tick']
+            if self.check_array['location'][0][magic_tick[0]] != \
+                    self.check_array['location'][1][magic_tick[0]] or \
+                    self.check_array['location'][0][magic_tick[1]] != \
+                    self.check_array['location'][1][magic_tick[1]]:
+                ue.log_warning("Magic actor location doesn't match " +
+                               " in each possible run")
+                return False

@@ -35,12 +35,9 @@ class O2Train(O2Base, Train):
 class O2Test(O2Base, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
-        self.check_array[0]['visibility'] = []
-        self.check_array[0]['location'] = []
-        self.check_array[0]['grounded'] = []
-        self.check_array[1]['visibility'] = []
-        self.check_array[1]['location'] = []
-        self.check_array[1]['grounded'] = []
+        self.check_array['visibility'] = [[], []]
+        self.check_array['location'] = [[], []]
+        self.check_array['grounded'] = [[], []]
 
     def generate_parameters(self):
         super().generate_parameters()
@@ -79,8 +76,11 @@ class O2Test(O2Base, MirrorTest):
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
-        self.check_array[self.run]['location'].append(
-            magic_actor.get_actor_location())
+        location = FVector()
+        location.x = int(round(magic_actor.get_actor_location().x))
+        location.y = int(round(magic_actor.get_actor_location().y))
+        location.z = int(round(magic_actor.get_actor_location().z))
+        self.check_array['location'][self.run].append(location)
         ignored_actors = []
         for actor_name, actor in self.actors.items():
             if self.params['magic']['actor'] not in actor_name and \
@@ -93,14 +93,14 @@ class O2Test(O2Base, MirrorTest):
                     ignored_actors.append(actor.actor)
         visible = ScreenshotManager.IsActorInLastFrame(
             magic_actor, ignored_actors)[0]
-        self.check_array[self.run]['visibility'].append(visible)
+        self.check_array['visibility'][self.run].append(visible)
         # check if the magic actor is in the air
         if (magic_actor.get_actor_location().z <= 100 +
                 self.actors[self.params['magic']['actor']].scale.z * 50):
             grounded = True
         else:
             grounded = False
-        self.check_array[self.run]['grounded'].append(grounded)
+        self.check_array['grounded'][self.run].append(grounded)
         # ue.log("{}: {}".format(self.ticker, visible))
 
     def setup_magic_actor(self):
@@ -135,7 +135,8 @@ class O2Test(O2Base, MirrorTest):
         magic_actor.set_mesh_str(Object.shape[new_mesh])
 
     def static_visible(self):
-        visibility_array = self.checks_time_laps("visibility", True)
+        visibility_array = \
+            self.checks_time_laps(self.check_array["visibility"], True)
         if len(visibility_array) < 1:
             ue.log_warning("not enough occluded frame")
             return False
@@ -143,8 +144,10 @@ class O2Test(O2Base, MirrorTest):
         return True
 
     def dynamic_1_visible(self):
-        visibility_array = self.checks_time_laps("visibility", True)
-        grounded_array = self.checks_time_laps("grounded", False)
+        visibility_array = \
+            self.checks_time_laps(self.check_array["visibility"], True)
+        grounded_array = \
+            self.checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
         final_array = []
         for frame in grounded_array:
@@ -157,8 +160,10 @@ class O2Test(O2Base, MirrorTest):
         return True
 
     def dynamic_2_visible(self):
-        visibility_array = self.checks_time_laps("visibility", True)
-        grounded_array = self.checks_time_laps("grounded", False)
+        visibility_array = \
+            self.checks_time_laps(self.check_array["visibility"], True)
+        grounded_array = \
+            self.checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
         final_array = []
         for frame in grounded_array:
@@ -176,7 +181,8 @@ class O2Test(O2Base, MirrorTest):
         return True
 
     def static_occluded(self):
-        visibility_array = self.checks_time_laps('visibility', False)
+        visibility_array = \
+            self.checks_time_laps(self.check_array['visibility'], False)
         # if the number of frame where the magic actor is visible is less than
         # 4 time the number of magic tick required, scene need to be restarted
         if len(visibility_array) < 4:
@@ -185,8 +191,10 @@ class O2Test(O2Base, MirrorTest):
         return True
 
     def dynamic_1_occluded(self):
-        visibility_array = self.checks_time_laps("visibility", False)
-        grounded_array = self.checks_time_laps("grounded", False)
+        visibility_array = \
+            self.checks_time_laps(self.check_array["visibility"], False)
+        grounded_array = \
+            self.checks_time_laps(self.check_array["grounded"], False)
         temp_array = visibility_array
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
@@ -213,8 +221,10 @@ class O2Test(O2Base, MirrorTest):
         return True
 
     def dynamic_2_occluded(self):
-        visibility_array = self.checks_time_laps("visibility", False)
-        grounded_array = self.checks_time_laps("grounded", False)
+        visibility_array = \
+            self.checks_time_laps(self.check_array["visibility"], False)
+        grounded_array = \
+            self.checks_time_laps(self.check_array["grounded"], False)
         # remove the last and the first occurences of not visible actor if
         # it is out of the fieldview
         first = 0
@@ -231,20 +241,6 @@ class O2Test(O2Base, MirrorTest):
                 last -= 1
             elif quit is True:
                 break
-        """
-        if visibility_array[-1] == 199:
-            previous_frame = 0
-            for frame in reversed(temp_array):
-                if frame == 199 or frame + 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
-        if visibility_array[0] == 0:
-            previous_frame = 0
-            for frame in temp_array:
-                if frame == 0 or frame - 1 == previous_frame:
-                    previous_frame = frame
-                    visibility_array.remove(frame)
-        """
         temp_array = visibility_array
         occlusion = []
         occlusion.append([])
@@ -268,25 +264,3 @@ class O2Test(O2Base, MirrorTest):
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
         return True
-
-    def set_magic_tick(self):
-        if super().set_magic_tick() is False:
-            return False
-        """
-        if isinstance(self.params['magic']['tick'], int):
-            magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick] == \
-                    self.check_array[1]['location'][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match in" +
-                               "each possible run")
-                return False
-        else:
-            magic_tick = self.params['magic']['tick']
-            if self.check_array[0]['location'][magic_tick[0]] == \
-                    self.check_array[1]['location'][magic_tick[0]] or \
-                    self.check_array[0]['location'][magic_tick[1]] == \
-                    self.check_array[1]['location'][magic_tick[1]]:
-                ue.log_warning("Magic actor location doesn't match in" +
-                               "each possible run")
-                return False
-        """

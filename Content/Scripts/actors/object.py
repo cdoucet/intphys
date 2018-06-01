@@ -87,7 +87,8 @@ class Object(BaseMesh):
     def set_force(self, force, persistent=False):
         if (persistent):
             self.force = force
-        self.get_mesh().add_force(force)
+        # teh heavier the object is, the more violent the applied force will be
+        self.get_mesh().add_force(force * self.mesh.GetMass())
 
     """
     Apply force to the mesh
