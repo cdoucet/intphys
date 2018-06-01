@@ -1,6 +1,9 @@
 #!/bin/bash
 #
-# Run multiple instances of intphys.py in parallel
+# Run multiple instances of intphys.py in parallel. Assumes GNU
+# parallel is installed and intphys is built in Packaged mode (with
+# Tools/build_package.sh)
+
 
 # absolute path to intphys.py
 intphys=$(readlink -f $(dirname $(readlink -f $0))/../intphys.py)
@@ -51,7 +54,6 @@ tmpdir=$(mktemp -d)
 trap "rm -rf $tmpdir" EXIT
 $(dirname $0)/split_json.py $json $njobs $tmpdir || exit 1
 
-exit
 
 export intphys output_dir resolution tmpdir
 run_intphys()
@@ -60,10 +62,13 @@ run_intphys()
 }
 export -f run_intphys
 
+
 # run the jobs in parallel
 parallel -j $njobs run_intphys ::: $(seq 1 $njobs) || exit 1
 
 
-# TODO merge the output directories
+# merge the output directories
+$(dirname $0)/merge_directories.py $output_dir $output_dir/parallel || exit 1
+
 
 exit 0

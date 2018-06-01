@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
-
 import argparse
+import copy
 import json
 import os
+import sys
 
 
 def balance_int(l, n):
@@ -49,50 +50,33 @@ def unroll_dict(D, head=[]):
     return keys, values
 
 
-def roll_dict(keys, values):
-    def _aux(k, v):
-        if len(k) == 1:
-            return {k[0]: v}
+def roll_dict(D, K, V):
+    def _aux(D, K, V, idx):
+        if len(K) == 1:
+            D[K[0]] = V[idx]
+            idx += 1
         else:
-            return {k[0]: _aux(k[1:], v)}
+            D[K[0]], idx = _aux(D[K[0]], K[1:], V, idx)
+        return D, idx
 
-    L = [_aux(k, v) for k, v in zip(keys, values)]
-
-    D = {}
-    for l in L:
-        for k, v in l.items():
-            if k in D:
-                D[k] += [v]
-            else:
-                D[k] = [v]
-
-    # E = {}
-    # for k, v in D.items():
-    #     if isinstance(v, list):
-    #         for d in v:
-    #             for k, vv in d.items():
-    #                 if k not in E:
-    #                     E[k] = {}
-    #                 E[k].update(vv)
-    #     else:
-    #         E[k] = v
-    #         # k: vv for d in v for k, vv in d.items()}
+    D = copy.deepcopy(D)
+    idx = 0
+    for k in K:
+        D, idx = _aux(D, k, V, idx)
     return D
 
 
 def split_json(input_json, n, output_dir):
     """Split the workload one one json into `n` ones"""
     input_json = json.load(open(input_json, 'r'))
-    print(input_json)
     keys, values = unroll_dict(input_json)
     configs = balance_list(values, n)
 
     for i, config in enumerate(configs, start=1):
         assert len(keys) == len(config)
-        d = roll_dict(keys, config)
-        output_json = os.path.join(output_dir, f'{i}.json')
+        d = roll_dict(input_json, keys, config)
+        output_json = os.path.join(output_dir, '{}.json'.format(i))
         open(output_json, 'w').write(json.dumps(d) + '\n')
-        print(json.dumps(d))
 
 
 def main():

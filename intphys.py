@@ -186,11 +186,6 @@ def ParseArgs():
         help='''optionnal flag which doesn't kill immediately the program after
         a crash to let time to the debug to print''')
 
-    # parser.add_argument(
-    #     '-j', '--njobs', type=int, default=1, metavar='<int>',
-    #     help='''number of data generation to run in parallel,
-    #     this option is ignored if --editor is specified''')
-
     group = parser.add_mutually_exclusive_group()
     group.add_argument(
         '-e', '--editor', action='store_true',
@@ -281,19 +276,10 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
         sys.exit(job.returncode)
 
 
-def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
+def RunBinary(output_dir, scenes_file, seed=None,
               resolution=DEFAULT_RESOLUTION, headless=False,
               verbose=False, debug=False):
-    """Run the intphys packaged binary as a subprocess
-
-    If `njobs` is greater than 1, split the json configuration file
-    into subparts of equivalent workload and run several jobs in
-    parallel
-
-    """
-    if type(njobs) is not int or njobs < 1:
-        raise IOError('njobs argument must be a strictly positive integer')
-
+    """Run the intphys packaged binary as a subprocess"""
     # overload binary if defined in the environment
     if 'INTPHYS_BINARY' in os.environ:
         intphys_binary = os.environ['INTPHYS_BINARY']
@@ -306,56 +292,19 @@ def RunBinary(output_dir, scenes_file, njobs=1, seed=None,
     if not os.path.isfile(scenes_file):
         raise IOError('Json file not found: {}'.format(scenes_file))
 
-    print('running {}{}'.format(
-        intphys_binary,
-        '' if njobs == 1 else ' in {} jobs'.format(njobs)))
+    print('running {}'.format(intphys_binary))
 
     # on packaged game, UnrealEnginePython expect the script to be in
     # ../../../intphys/Content/Scripts. Here we go to a directory
     # where that relative path works.
     cwd = os.path.join(INTPHYS_ROOT, 'Package/LinuxNoEditor')
 
-    if njobs == 1:
-        res = resolution.split('x')
-        _Run(intphys_binary + ' {} -windowed ResX={} ResY={}'.format(
-            '-NullRHI' if headless else '', res[0], res[1]),
-             GetLogger(verbose=verbose),
-             scenes_file, output_dir, seed=seed,
-             resolution=resolution, cwd=cwd, debug=debug)
-    else:
-        raise NotImplementedError('njobs option not yet implemented')
-        # # split the json configuration file into balanced subparts
-        # subconfigs, nruns, njobs = _BalanceConfig(
-        #     json.load(open(config_file, 'r')), njobs)
-
-        # # increase artificially the nruns to have margin for retries
-        # # (this can occur for test runs)
-        # nruns = [10 * r for r in nruns]
-
-        # # write them in subdirectories
-        # for i, config in enumerate(subconfigs, 1):
-        #     path = os.path.join(output_dir, str(i))
-        #     os.makedirs(path)
-        #     open(os.path.join(path, 'config.json'), 'w').write(
-        #         json.dumps(config, indent=4))
-
-        # # parallel must defines a different seed for each job
-        # seed = int(round(time.time() * 1000)) if seed is None else seed
-
-        # # define arguments list for each jobs
-        # _out = [os.path.join(output_dir, str(i)) for i in range(1, njobs+1)]
-        # _conf = [os.path.join(output_dir, str(i), 'config.json')
-        #          for i in range(1, njobs+1)]
-        # _seed = [str(seed + sum(nruns[:i])) for i in range(njobs)]
-        # _log = [GetLogger(name='job {}'.format(i))
-        #         for i in range(1, njobs+1)]
-
-        # # run the subprocesses
-        # joblib.Parallel(n_jobs=njobs, backend='threading')(
-        #     joblib.delayed(_Run)(
-        #         INTPHYS_BINARY, _log[i], _conf[i], _out[i],
-        #         seed=_seed[i], resolution=resolution)
-        #     for i in range(njobs))
+    res = resolution.split('x')
+    _Run(intphys_binary + ' {} -windowed ResX={} ResY={}'.format(
+        '-NullRHI' if headless else '', res[0], res[1]),
+         GetLogger(verbose=verbose),
+         scenes_file, output_dir, seed=seed,
+         resolution=resolution, cwd=cwd, debug=debug)
 
 
 def RunEditor(output_dir, scenes_file, seed=None,
@@ -464,8 +413,8 @@ def Main():
             verbose=args.verbose, standalone_game=True)
     else:
         RunBinary(
-            output_dir, args.scenes_file, njobs=1,  # args.njobs,
-            seed=args.seed, resolution=args.resolution, headless=args.headless,
+            output_dir, args.scenes_file, seed=args.seed,
+            resolution=args.resolution, headless=args.headless,
             verbose=args.verbose, debug=args.debug)
 
     if output_dir:
