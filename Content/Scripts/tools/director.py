@@ -30,6 +30,7 @@ class Director(object):
         self.pause = False
         self.was_paused = False
         tools.materials.load()
+        self.restarted = 0
 
     def generate_scenes(self, params_file):
         for scenario, a in self.scenarios_dict.items():
@@ -91,6 +92,7 @@ class Director(object):
 
     def restart_scene(self):
         ue.log('Restarting scene')
+        self.restarted += 1
         self.saver.reset(True)
         is_test = True if 'test' in \
             type(self.scenes[self.scene]).__name__.lower() else False
@@ -157,5 +159,6 @@ class Director(object):
             if self.ticker % 2 == 1:
                 self.capture()
         else:
+            ue.log("Restarted {} scenes.".format(self.restarted))
             exit_ue("The end")
         self.ticker += 1

@@ -47,6 +47,12 @@ class O1Test(O1Base, MirrorTest):
     def static_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'], True)
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         if len(visibility_array) < 1:
             ue.log_warning("Not enough visibility")
             return False
@@ -56,6 +62,12 @@ class O1Test(O1Base, MirrorTest):
     def dynamic_1_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'], True)
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         if len(visibility_array) < 1:
             ue.log_warning("Not enough visibility")
             return False
@@ -65,6 +77,12 @@ class O1Test(O1Base, MirrorTest):
     def dynamic_2_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'], True)
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         if len(visibility_array) < 2:
             ue.log_warning("Not enough visibility")
             return False
@@ -139,6 +157,9 @@ class O1Test(O1Base, MirrorTest):
         occlusion = []
         occlusion.append([])
         i = 0
+        if len(temp_array) < 2:
+            ue.log_warning("not enough occluded frame")
+            return False
         previous_frame = temp_array[0] - 1
         # distinguish the different occlusion time laps
         for frame in temp_array:
@@ -148,8 +169,10 @@ class O1Test(O1Base, MirrorTest):
             occlusion[i].append(frame)
             previous_frame = frame
         # if there is less than 2 distinct occlusion the scene will restart
-        if len(occlusion) < 2:
-            ue.log_warning("Not enough visibility")
+        if (len(occlusion) < 2 or
+                len(occlusion[0]) == 0 or
+                len(occlusion[1]) == 0):
+            ue.log_warning("not enough occluded frame")
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
