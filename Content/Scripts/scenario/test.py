@@ -21,8 +21,8 @@ class Test(Scene):
         # random number of object
         nobjects = random.randint(1, 3)
         # random number of occluder if it's not dynamic 2
-        # TODO implement it
-        noccluders = random.randint(1 if '2' not in self.movement else 2, 2)
+        # TODO implement random number of occluders
+        noccluders = 1 if '2' not in self.movement else 2
         # occluder scale
         occluder_scale = FVector(0.5, 1, 1)
         # array that will contains object names
@@ -85,7 +85,6 @@ class Test(Scene):
         # array that will contain occluders name
         occluder_names = []
         # TODO remove once it is implemented
-        noccluders = 1
         if self.is_occluded:
             for n in range(noccluders):
                 self.params['occluder_{}'.format(n)] = OccluderParams()
@@ -105,9 +104,20 @@ class Test(Scene):
             # if static, a random occluder will go between the magic
             # actor and the occluder
             if 'static' in self.movement:
-                self.params[random.choice(occluder_names)].location = \
+                first = random.choice(occluder_names)
+                occluder_names.remove(first)
+                self.params[first].location = \
                     FVector(600,
                             self.params[self.params['magic']['actor']].location.y / 2 + (50 * occluder_scale.x * (-1 if self.params[self.params['magic']['actor']].location.y < 0 else 1)),
+                            0)
+            if len(occluder_names) == 2:
+                self.params[occluder_names[0]].location = \
+                    FVector(600,
+                            200,
+                            0)
+                self.params[occluder_names[1]].location = \
+                    FVector(600,
+                            -200,
                             0)
 
     def play_run(self):

@@ -96,6 +96,12 @@ class O2Test(O2Base, MirrorTest):
     def static_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array["visibility"], True)
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         if len(visibility_array) < 1:
             ue.log_warning("not enough occluded frame")
             return False
@@ -109,6 +115,12 @@ class O2Test(O2Base, MirrorTest):
             self.checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
         final_array = []
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
@@ -121,6 +133,12 @@ class O2Test(O2Base, MirrorTest):
     def dynamic_2_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array["visibility"], True)
+        try:
+            for frame in range(5):
+                visibility_array.remove(visibility_array[0])
+                visibility_array.remove(visibility_array[-1])
+        except IndexError:
+            pass
         grounded_array = \
             self.checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
@@ -210,11 +228,14 @@ class O2Test(O2Base, MirrorTest):
                     break
         except IndexError:
             pass
-        temp_array = visibility_array
         occlusion = []
         occlusion.append([])
-        i = 0
+        temp_array = visibility_array
+        if len(temp_array) < 2:
+            ue.log_warning("not enough occluded frame")
+            return False
         previous_frame = temp_array[0] - 1
+        i = 0
         # distinguish the different occlusion time laps
         for frame in temp_array:
             if frame - 1 != previous_frame:
@@ -226,7 +247,9 @@ class O2Test(O2Base, MirrorTest):
         # if there is less than 2 distinct occlusion the scene will restart
         # same if there is less than 2 frame where the actor is not grounded
         # in each occlusion
-        if len(occlusion) < 2:
+        if (len(occlusion) < 2 or
+                len(occlusion[0]) == 0 or
+                len(occlusion[1]) == 0):
             ue.log_warning("not enough occluded frame")
             return False
         self.params['magic']['tick'] = []
