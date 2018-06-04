@@ -30,19 +30,16 @@ class O3Test(O3Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
-        """
         for name, params in self.params.items():
             if 'ccluder' in name:
                 if 'dynamic_1' in self.movement:
-                    params.scale.z = 1
-                pass
+                    params.moves[:] = []
+                    params.start_up = True
+                    params.scale.x = 1.5
             elif name == self.params['magic']['actor']:
-                if 'dynamic' in self.movement:
-                    params.location.y += 400 if params.location.y > 0 else -400
-            elif 'bject' in name:
-
                 pass
-        """
+            elif 'bject' in name:
+                pass
 
     # We avoid comparing the locations of the magic actor during magic tick
     def set_magic_tick(self):
