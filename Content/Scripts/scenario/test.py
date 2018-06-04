@@ -61,9 +61,9 @@ class Test(Scene):
                 # they are more and more far. The more far they are,
                 # the more they are far from the center of the screen
                 location = FVector(1000 + scale * 100 * math.sqrt(3) * n,
-                                   (1500 + 250 * (n - 1)) *
-                                   (-1 if bool(random.getrandbits(1))
-                                   else 1), 0)
+                                   1000 + scale * 100 * math.sqrt(3) * n
+                                   + scale * 100 * math.sqrt(2),
+                                   0)
                 # the more far they are, the more force we apply on them
                 # an object has one chance out of two to fly
                 force = FVector(0, (4e4 + (abs(location.y) - 1500) * 10) *
@@ -170,6 +170,10 @@ class Test(Scene):
                            self.get_status())
 
     def set_magic_tick(self):
+        if (self.check_array['visibility'][0][0] == 1 or
+                self.check_array['visibility'][1][0] == 1):
+            ue.log_warning("object is not invisible at first tick")
+            return False
         if self.is_occluded is True:
             if 'static' in self.movement:
                 return self.static_occluded()
