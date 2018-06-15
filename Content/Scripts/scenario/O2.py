@@ -162,7 +162,7 @@ class O2Test(O2Base, MirrorTest):
             self.checks_time_laps(self.check_array['visibility'], False)
         # if the number of frame where the magic actor is visible is less than
         # 4 time the number of magic tick required, scene need to be restarted
-        if len(visibility_array) < 4:
+        if len(visibility_array) < 1:
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
@@ -198,7 +198,7 @@ class O2Test(O2Base, MirrorTest):
                 final_array.append(frame)
         # if the number of frame where the magic actor is not grounded is less
         # than 4 time the number of magic tick required, scene will restart
-        if len(final_array) < 4:
+        if len(final_array) < 1:
             ue.log_warning("Not enough final choices")
             return False
         self.params['magic']['tick'] = random.choice(final_array)

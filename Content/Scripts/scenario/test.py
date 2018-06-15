@@ -18,8 +18,12 @@ class Test(Scene):
 
     def generate_parameters(self):
         super().generate_parameters()
+        if '2' in self.movement and self.is_occluded is True:
+            self.params['Camera'].location.x -= 100
         # random number of object
         nobjects = random.randint(1, 3)
+        # TODO remove
+        nobjects = 1
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if '2' not in self.movement else 2
@@ -64,11 +68,13 @@ class Test(Scene):
                                    1000 + scale * 100 * math.sqrt(3) * n
                                    + scale * 100 * math.sqrt(2),
                                    0)
+                if random.choice([0, 1]) == 1:
+                    location.y *= -1
                 # the more far they are, the more force we apply on them
                 # an object has one chance out of two to fly
                 force = FVector(0, (4e4 + (abs(location.y) - 1500) * 10) *
                                 (-1 if location.y > 0 else 1),
-                                1e6 if bool(random.getrandbits(1)) else 0)
+                                3e4 + (abs(location.y) - 1500) * 4)
                 # if an object is not a sphere, it will necessarly fly
                 if self.params[object_names[n]].mesh != 'Sphere':
                     force.z = 3e4 + (abs(location.y) - 1500) * 4
@@ -106,9 +112,13 @@ class Test(Scene):
             if 'static' in self.movement:
                 first = random.choice(occluder_names)
                 occluder_names.remove(first)
+                magic_location_y = \
+                    self.params[self.params['magic']['actor']].location.y
                 self.params[first].location = \
                     FVector(600,
-                            self.params[self.params['magic']['actor']].location.y / 2 + (50 * occluder_scale.x * (-1 if self.params[self.params['magic']['actor']].location.y < 0 else 1)),
+                            magic_location_y / 2 + (50 * occluder_scale.x *
+                                                    (-1 if magic_location_y < 0
+                                                        else 1)),
                             0)
             if len(occluder_names) == 2:
                 self.params[occluder_names[0]].location = \
@@ -129,11 +139,16 @@ class Test(Scene):
         super().tick()
         if self.ticker == 60 or self.ticker == 70 or self.ticker == 80:
             # print(self.actors[self.params['magic']['actor']].initial_force)
+            max_name = ""
+            max_x = 10000000
             for name, actor in self.actors.items():
                 if ('object' in name and
                         int(round(actor.actor.get_actor_velocity().y)) == 0):
-                    actor.set_force(actor.initial_force)
-                    break
+                    if actor.actor.get_actor_location().x < max_x:
+                        max_x = actor.actor.get_actor_location().x
+                        max_name = name
+            self.actors[max_name].set_force(self.actors[max_name].
+                                            initial_force)
         self.ticker += 1
 
     def checks_time_laps(self, check_array, desired_bool):
@@ -170,8 +185,9 @@ class Test(Scene):
                            self.get_status())
 
     def set_magic_tick(self):
-        if (self.check_array['visibility'][0][0] == 1 or
-                self.check_array['visibility'][1][0] == 1):
+        if ('dynamic' in self.movement and
+                (self.check_array['visibility'][0][0] == 1 or
+                 self.check_array['visibility'][1][0] == 1)):
             ue.log_warning("object is not invisible at first tick")
             return False
         if self.is_occluded is True:

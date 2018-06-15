@@ -24,10 +24,8 @@ class O4Train(O4Base, Train):
 class O4Test(O4Base, FullTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
-        self.check_array[0]['visibility'] = []
-        self.check_array[0]['location'] = []
-        self.check_array[1]['visibility'] = []
-        self.check_array[1]['location'] = []
+        self.check_array['visibility'] = [[], []]
+        self.check_array['location'] = [[], []]
 
     def generate_parameters(self):
         super().generate_parameters()

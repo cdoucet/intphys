@@ -18,6 +18,8 @@ class CameraParams:
 class FloorParams:
     material: str = get_random_material('Floor')
     scale: FVector = FVector(10, 20, 1)
+    location: FVector = FVector(0, 0, 0)
+    rotation: FRotator = FRotator(0, 0, 0)
     friction: float = 0.5
     restitution: float = 0.5
 

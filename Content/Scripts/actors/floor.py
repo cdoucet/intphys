@@ -7,27 +7,6 @@ from unreal_engine.classes import Material
 from actors.base_mesh import BaseMesh
 from actors.parameters import FloorParams
 
-# Ok here we go: This is a recursive instantiate class.  The general
-# principle is to instantiate a class twice to avoid making two
-# distinct classes.  I needed to instantiate a python component with
-# parameters but UnrealEnginePython wouldn't let me do that.
-# Furthermore, I couldn't spawn the actor without instanciate the
-# class and thus, I couldn't spawn it with any parameter.
-
-# Let me explain myself : In the main, I call the constructor of the
-# class Object (for instance, or Floor, or Occluder), which call the
-# __init__ function of Object with at least 1 argument, world which
-# call the __init__function of BaseMesh with at least 1 argument,
-# mesh_str.  In the Object __init__ function, I call actor_spawn,
-# which implicitely instanciate Object (yes, again) BUT during the
-# second instantiation, no parameters is given to __init__ (of Object
-# and BaseMesh) (this is why there is default values to every
-# parameters of __init__).  Thus, if __init__ is called without any
-# parameters, I know that it is the second instantiation, so I don't
-# spawn the actor again.  Once the object spawned, all I have to do is
-# to set the parameters in the second instantiation (location,
-# rotation,...).
-
 # Floor is the plane thing which is the ground of the magic tricks.
 # It inherits from BaseMesh.
 
@@ -64,12 +43,15 @@ class Floor(BaseMesh):
 
     def get_parameters(self, params):
         location = FVector(
-            0,  # 0 - ((400 * params.scale.x) / 2),
-            0 - (400 * params.scale.y / 2),
-            0)
-
+            params.location.x,  # 0 - ((400 * params.scale.x) / 2),
+            params.location.y - (400 * params.scale.y / 2),
+            params.location.z)
+        rotation = FRotator(
+            params.rotation.pitch,
+            params.rotation.roll,
+            params.rotation.yaw)
         super().get_parameters(
-            location, FRotator(0, 0, 0), params.scale,
+            location, rotation, params.scale,
             params.friction, params.restitution, False, False,
             '/Game/Meshes/Floor_400x400')
 
