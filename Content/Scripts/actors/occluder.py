@@ -32,13 +32,8 @@ class Occluder(BaseMesh):
         # TODO this thing is a non-sense (we apply to the y location
         # the x scale...)  maybe it's time to drop out the
         # normalization
-        location = FVector(
-                params.location.x,
-                params.location.y,
-                params.location.z)
-        location.y = location.y - (params.scale.x * 200)
         super().get_parameters(
-            location,
+            params.location,
             params.rotation,
             params.scale,
             params.friction,
