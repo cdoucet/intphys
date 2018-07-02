@@ -18,7 +18,6 @@ class Test(Scene):
 
     def generate_parameters(self):
         super().generate_parameters()
-        self.params['Camera'].location.x += 200
         # random number of object
         nobjects = random.randint(1, 3)
         # random number of occluder if it's not dynamic 2
@@ -36,7 +35,7 @@ class Test(Scene):
         for n in range(3):
             self.params[object_names[n]] = ObjectParams()
             # random scale between [1, 1.5]
-            scale = 1 + random.uniform(0, 0.5)
+            scale = 2 + random.uniform(0, 0.5)
             self.params[object_names[n]].scale = FVector(scale, scale, scale)
             self.params[object_names[n]].mass = 1
             # full random yaw rotation (z axis)
@@ -55,13 +54,25 @@ class Test(Scene):
                 location = FVector(1000, (n - 1) * (500 + (scale * 50)), 0)
                 force = FVector(0, 0, 0)
             else:
-                # if dynamic, initial force and differents initial locations
-                # they are more and more far. The more far they are,
-                # the more they are far from the center of the screen
-                location = FVector(1000 + scale * 100 * math.sqrt(3) * n,
+                """
+                if dynamic, there is an initial force and differents initial locations
+                the x axis:
+                  the closest object is located at 1000 from the camera
+                  the second object is more far, calculated from the diagonal of a cube mesh
+                  (to be sure mesh won't collide)
+                  same for the third object
+                the y axis:
+                  they need to be off the screen at first frame, so we put it at 1000 from the center
+                  then we offset the second object (and the third one) because the ifeld of view of the camera is an angle
+                  then we offset again every object calculated from the diagonal of a cube mesh
+                  (to be sure mesh won't collide)
+                  then we offset them a last time to be sure their shadows won't be visible
+                """
+                location = FVector(1000 +
+                                   scale * 100 * math.sqrt(3) * n,
                                    1000 + abs(self.params['Camera'].location.x)
                                    + scale * 100 * math.sqrt(3) * n
-                                   + scale * 100 * math.sqrt(2),
+                                   + scale * 100 * math.sqrt(3) * (n + 1),
                                    0)
                 if random.choice([0, 1]) == 1:
                     location.y *= -1
