@@ -152,10 +152,7 @@ class MirrorTest(Test):
                     self.check_array['location'][1][magic_tick]:
                 ue.log_warning("Magic actor location doesn't match" +
                                " in each possible run")
-                ue.log("magic tick {}".format(magic_tick))
-                ue.log_warning("run 1: {} run 2: {}".format(self.check_array['location'][0][magic_tick], self.check_array['location'][1][magic_tick]))
-                # TODO change to false
-                return True
+                return False
         elif isinstance(self.params['magic']['tick'], list):
             magic_tick = self.params['magic']['tick']
             if self.check_array['location'][0][magic_tick[0]] != \

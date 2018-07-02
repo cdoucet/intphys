@@ -5,7 +5,7 @@
         "test_visible" :
         {
             "static" : 0,
-            "dynamic_1" : 10,
+            "dynamic_1" : 0,
             "dynamic_2" : 0
         },
         "test_occluded" :
@@ -21,7 +21,7 @@
         "test_visible" :
         {
             "static" : 0,
-            "dynamic_1" : 0,
+            "dynamic_1" : 100,
             "dynamic_2" : 0
         },
         "test_occluded" :

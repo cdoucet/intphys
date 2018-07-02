@@ -4,7 +4,7 @@
     "train" : 0,
 	"test_visible" :
 	{
-	    "static" : 1
+	    "static" : 100
 	}
     }
 }
