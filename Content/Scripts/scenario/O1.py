@@ -45,8 +45,10 @@ class O1Test(O1Base, MirrorTest):
         self.check_array['visibility'][self.run].append(IsActorInFrame)
 
     def static_visible(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], True)
+            self.checks_time_laps(self.check_array['visibility'][0], True)
         try:
             for frame in range(5):
                 visibility_array.remove(visibility_array[0])
@@ -60,8 +62,10 @@ class O1Test(O1Base, MirrorTest):
         return True
 
     def dynamic_1_visible(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], True)
+            self.checks_time_laps(self.check_array['visibility'][0], True)
         try:
             for frame in range(5):
                 visibility_array.remove(visibility_array[0])
@@ -75,8 +79,10 @@ class O1Test(O1Base, MirrorTest):
         return True
 
     def dynamic_2_visible(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], True)
+            self.checks_time_laps(self.check_array['visibility'][0], True)
         try:
             for frame in range(5):
                 visibility_array.remove(visibility_array[0])
@@ -94,8 +100,10 @@ class O1Test(O1Base, MirrorTest):
         return True
 
     def static_occluded(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], False)
+            self.checks_time_laps(self.check_array['visibility'][0], False)
         if len(visibility_array) < 1:
             ue.log_warning("Not enough visibility")
             return False
@@ -103,8 +111,10 @@ class O1Test(O1Base, MirrorTest):
         return True
 
     def dynamic_1_occluded(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], False)
+            self.checks_time_laps(self.check_array['visibility'][0], False)
         # remove the last occurences of not visible actor if
         # it is out of the fieldview
         first = 0
@@ -131,8 +141,10 @@ class O1Test(O1Base, MirrorTest):
         return True
 
     def dynamic_2_occluded(self):
+        # we only check the visibility of the first run because in the second
+        # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], False)
+            self.checks_time_laps(self.check_array['visibility'][0], False)
         temp_array = visibility_array
         # remove the first and last occurences of not visible actor if
         # it is out of the fieldview

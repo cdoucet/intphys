@@ -28,12 +28,12 @@ class Test(Scene):
         occluder_scale = FVector(0.5, 1, 1)
         # array that will contains object names
         object_names = []
-        for n in range(nobjects):
+        for n in range(3):
             object_names.append('object_{}'.format(n+1))
         # shuffle names to make that the "object_1" is
         # not always the closest one on the screen
         random.shuffle(object_names)
-        for n in range(nobjects):
+        for n in range(3):
             self.params[object_names[n]] = ObjectParams()
             # random scale between [1, 1.5]
             scale = 1 + random.uniform(0, 0.5)
@@ -82,6 +82,13 @@ class Test(Scene):
                     occluder_scale.z = 1.5
             self.params[object_names[n]].location = location
             self.params[object_names[n]].initial_force = force
+        # remove object if there should not be 3 objects on the scene
+        # because we created three objects
+        if nobjects <= 2:
+            del self.params['object_3']
+            # remove if there should not be 2 objects on the scene
+            if nobjects == 1:
+                del self.params['object_2']
         # random magic object
         self.params['magic'] = {
             'actor': 'object_{}'.format(random.randint(1, nobjects)),
@@ -138,7 +145,7 @@ class Test(Scene):
         if self.ticker == 60 or self.ticker == 70 or self.ticker == 80:
             # print(self.actors[self.params['magic']['actor']].initial_force)
             max_name = ""
-            # it just must be a very big big value
+            # it just must be a very very big value
             max_x = 10000000
             for name, actor in self.actors.items():
                 if ('object' in name and
