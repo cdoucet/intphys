@@ -1,18 +1,14 @@
 """Block SandBox is apparition/disparition, spheres only"""
 import random
 import math
-from unreal_engine.classes import ScreenshotManager
-from unreal_engine.classes import Friction
 from unreal_engine import FVector, FRotator
-from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
-from scenario.test import Test
 from scenario.scene import Scene
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
 from actors.object import Object
 import unreal_engine as ue
-from scenario.O3 import O3Test
+from scenario.mirrorTest import MirrorTest
 
 
 class SandBoxBase:
@@ -29,19 +25,16 @@ class SandBoxTrain(SandBoxBase, Train):
     pass
 
 
-class SandBoxTest(SandBoxBase, O3Test):
+class SandBoxTest(SandBoxBase, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
-        super().__init__(world, saver, True, "dynamic_1")
+        super().__init__(world, saver, False, "dynamic_1")
 
     def generate_parameters(self):
         Scene.generate_parameters(self)
-        if '2' in self.movement and self.is_occluded is True:
-            self.params['Camera'].location.x -= 300
-            self.params['Floor'].location.x -= 300
         # random number of object
         nobjects = random.randint(1, 3)
         # TODO remove
-        nobjects = 3
+        nobjects = 1
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if '2' not in self.movement else 2
@@ -85,10 +78,11 @@ class SandBoxTest(SandBoxBase, O3Test):
                 # the more they are far from the center of the screen
                 # Plus, the y location depends on the camera x location
                 location = FVector(1000 + scale * 100 * math.sqrt(3) * n,
-                                   1000 + abs(self.params['Camera'].location.x) +
-                                   scale * 100 * math.sqrt(3) * n
+                                   1000 + abs(self.params['Camera'].location.x)
+                                   + scale * 100 * math.sqrt(3) * n
                                    + scale * 100 * math.sqrt(2),
                                    0)
+                location = FVector(1000, 1000, 0)
                 if random.choice([0, 1]) == 1:
                     location.y *= -1
                 # the more far they are, the more force we apply on them
@@ -99,7 +93,8 @@ class SandBoxTest(SandBoxBase, O3Test):
                 # if an object is not a sphere, it will necessarly fly
                 if self.params[object_names[n]].mesh != 'Sphere':
                     force.z = 3e4 + (abs(location.y) - 1500) * 4
-                force.z = 0
+                force = FVector(0, -1 * (location.y / abs(location.y)) *
+                                1000 + 980, 1000 + 980)
                 # force.z = 0
                 # if at least on object will fly,
                 # the occluder needs to be higher
@@ -153,63 +148,11 @@ class SandBoxTest(SandBoxBase, O3Test):
                             -200,
                             0)
 
-        # O3
-        max_name = ""
-        max_x = 10000000
-        for name, actor in self.params.items():
-            if ('object' in name):
-                if actor.location.x < max_x:
-                    max_x = actor.location.x
-                    max_name = name
-        self.params['magic']['actor'] = max_name
-        self.params
-        for name, params in self.params.items():
-            if 'ccluder' in name:
-                if 'dynamic_1' in self.movement:
-                    params.scale.x = 1.5
-                elif 'dynamic_2' in self.movement:
-                    params.scale.x = 1
-                    params.location.y += 130 * (1 if params.location.y > 0
-                                                else -1)
-            elif name == self.params['magic']['actor']:
-                pass
-            elif 'bject' in name:
-                pass
-
     def setup_magic_actor(self):
-        if self.run == 1:
-            magic_actor = self.actors[self.params['magic']['actor']]
-            current_location = magic_actor.actor.get_actor_location()
-            length = 0
-            target_location = FVector(0, 0, 0)
-            if 'static' in self.movement:
-                length = random.randint(300, 500)
-                length = 500
-                target_location = FVector(current_location.x + length,
-                                          current_location.y,
-                                          current_location.z)
-            elif '1' in self.movement:
-                if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(300, 500)
-                    length = 800
-                else:
-                    length = random.randint(-500, -300)
-                    length = -800
-                target_location = FVector(current_location.x,
-                                          current_location.y + length,
-                                          current_location.z)
-            else:
-                if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(200, 250)
-                    length = 350
-                else:
-                    length = random.randint(-250, -200)
-                    length = -350
-                target_location = FVector(current_location.x,
-                                          current_location.y + length,
-                                          current_location.z)
-            ue.log("jump length = {}".format(length))
-            magic_actor.set_location(target_location)
+        pass
+
+    def fill_check_array(self):
+        pass
 
     def set_magic_tick(self):
-        self.params['magic']['tick'] = 56
+        pass

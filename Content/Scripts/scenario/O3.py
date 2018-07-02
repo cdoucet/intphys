@@ -57,21 +57,17 @@ class O3Test(O3Base, MirrorTest):
                                           current_location.z)
             elif '1' in self.movement:
                 if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(300, 500)
-                    # length = 540
+                    length = random.randint(300, 800)
                 else:
-                    length = random.randint(-500, -300)
-                    # length = -540
+                    length = random.randint(-800, -300)
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
             else:
                 if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(200, 250)
-                    # length = 300
+                    length = random.randint(200, 350)
                 else:
-                    length = random.randint(-250, -200)
-                    # length = -300
+                    length = random.randint(-350, -200)
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
@@ -153,33 +149,49 @@ class O3Test(O3Base, MirrorTest):
     def dynamic_1_occluded(self):
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'], False)
-        # remove the last occurences of not visible actor if
+        temp_array = visibility_array
+        # remove the first and last occurences of not visible actor if
         # it is out of the fieldview
         first = 0
         last = 99
-        for frame in visibility_array:
-            ue.log(frame)
         try:
             while True:
                 quit = False
                 if visibility_array[0] == first:
-                    ue.log("remove {}".format(first))
                     visibility_array.remove(first)
                     first += 1
                 else:
                     quit = True
                 if visibility_array[-1] == last:
-                    ue.log("remove {}".format(last))
                     visibility_array.remove(last)
                     last -= 1
                 elif quit is True:
                     break
         except IndexError:
-            ue.log_warning("IndexError")
-        if len(visibility_array) < 1:
-            ue.log_warning("Not enough visibility")
+            pass
+        temp_array = visibility_array
+        occlusion = []
+        occlusion.append([])
+        i = 0
+        if len(temp_array) < 2:
+            ue.log_warning("not enough occluded frame")
             return False
-        self.params['magic']['tick'] = random.choice(visibility_array)
+        previous_frame = temp_array[0] - 1
+        # distinguish the different occlusion time laps
+        # because we want the second one or the object will be out the screen
+        for frame in temp_array:
+            if frame - 1 != previous_frame:
+                i += 1
+                occlusion.append([])
+            occlusion[i].append(frame)
+            previous_frame = frame
+        # if there is less than 2 distinct occlusion the scene will restart
+        if (len(occlusion) < 2 or
+                len(occlusion[0]) == 0 or
+                len(occlusion[1]) == 0):
+            ue.log_warning("not enough occluded frame")
+            return False
+        self.params['magic']['tick'] = random.choice(occlusion[1])
         return True
 
     def dynamic_2_occluded(self):

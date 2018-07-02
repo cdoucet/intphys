@@ -18,12 +18,9 @@ class Test(Scene):
 
     def generate_parameters(self):
         super().generate_parameters()
-        if '2' in self.movement and self.is_occluded is True:
-            self.params['Camera'].location.x -= 100
+        self.params['Camera'].location.x += 200
         # random number of object
         nobjects = random.randint(1, 3)
-        # TODO remove
-        nobjects = 1
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if '2' not in self.movement else 2
@@ -38,11 +35,8 @@ class Test(Scene):
         random.shuffle(object_names)
         for n in range(nobjects):
             self.params[object_names[n]] = ObjectParams()
-            # random scale between [1.5, 2]
-            scale = 1.5 + random.uniform(0, 0.5)
-            # if object is too big, make occluder bigger
-            if scale - 1.35 > occluder_scale.x:
-                occluder_scale.x = scale - 1.35
+            # random scale between [1, 1.5]
+            scale = 1 + random.uniform(0, 0.5)
             self.params[object_names[n]].scale = FVector(scale, scale, scale)
             self.params[object_names[n]].mass = 1
             # full random yaw rotation (z axis)
@@ -65,7 +59,8 @@ class Test(Scene):
                 # they are more and more far. The more far they are,
                 # the more they are far from the center of the screen
                 location = FVector(1000 + scale * 100 * math.sqrt(3) * n,
-                                   1000 + scale * 100 * math.sqrt(3) * n
+                                   1000 + abs(self.params['Camera'].location.x)
+                                   + scale * 100 * math.sqrt(3) * n
                                    + scale * 100 * math.sqrt(2),
                                    0)
                 if random.choice([0, 1]) == 1:
@@ -80,8 +75,11 @@ class Test(Scene):
                     force.z = 3e4 + (abs(location.y) - 1500) * 4
                 # if at least on object will fly,
                 # the occluder needs to be higher
+                # if object is too big, make occluder bigger
+                if scale / 2 > occluder_scale.x:
+                    occluder_scale.x = scale / 2
                 if force.z != 0:
-                    occluder_scale.z = 2.2
+                    occluder_scale.z = 1.5
             self.params[object_names[n]].location = location
             self.params[object_names[n]].initial_force = force
         # random magic object
@@ -140,6 +138,7 @@ class Test(Scene):
         if self.ticker == 60 or self.ticker == 70 or self.ticker == 80:
             # print(self.actors[self.params['magic']['actor']].initial_force)
             max_name = ""
+            # it just must be a very big big value
             max_x = 10000000
             for name, actor in self.actors.items():
                 if ('object' in name and
@@ -147,8 +146,9 @@ class Test(Scene):
                     if actor.actor.get_actor_location().x < max_x:
                         max_x = actor.actor.get_actor_location().x
                         max_name = name
-            self.actors[max_name].set_force(self.actors[max_name].
-                                            initial_force)
+            if max_x != 10000000:
+                self.actors[max_name].set_force(self.actors[max_name].
+                                                initial_force)
         self.ticker += 1
 
     def checks_time_laps(self, check_array, desired_bool):
