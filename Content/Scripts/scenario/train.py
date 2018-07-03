@@ -75,7 +75,7 @@ class Train(Scene):
     def play_run(self):
         if self.run == 1:
             return
-        ue.log("Run 1/1: Possible run")
+        # ue.log("Run 1/1: Possible run")
         super().play_run()
         for name, actor in self.actors.items():
             if 'object' in name.lower() and random.randint(0, 1) == 0:

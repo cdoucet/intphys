@@ -84,7 +84,7 @@ class Saver:
         json_file = os.path.join(output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
-        ue.log('saved captures to {}'.format(output_dir))
+        # ue.log('saved captures to {}'.format(output_dir))
         return True
 
     def update(self, actors):

@@ -10,8 +10,8 @@ class MirrorTest(Test):
         if self.run == 2:
             return
         super().play_run()
-        ue.log("Run {}/{}: Possible run".format(self.run + 1,
-               4 if self.saver.is_dry_mode is False else 2))
+        # ue.log("Run {}/{}: Possible run".format(self.run + 1,
+        #       4 if self.saver.is_dry_mode is False else 2))
 
     def stop_run(self, scene_index, total):
         if self.run == 1 and self.set_magic_tick() is False:
@@ -38,15 +38,15 @@ class MirrorTest(Test):
         if '2' not in self.movement:
             magic_tick = self.params['magic']['tick'] + 2
             magic_tick2 = 100
-            ue.log("magic tick = {}".format(magic_tick))
+            # ue.log("magic tick = {}".format(magic_tick))
         else:
             magic_tick = self.params['magic']['tick'][0] + 2
             magic_tick2 = self.params['magic']['tick'][1] + 2
-            ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
+            # ue.log("magic ticks = {} and {}".format(magic_tick, magic_tick2))
         # next line is removing the run subdirectory from the path
         subdir = self.get_scene_subdir(scene_index, total)[:-2]
         pic_types = ["scene", "depth", "masks"]
-        ue.log('Run 3/4: Impossible run')
+        # ue.log('Run 3/4: Impossible run')
         for pic_type in pic_types:
             if not os.path.exists("{}/3/{}".format(subdir, pic_type)):
                 os.makedirs("{}/3/{}".format(subdir, pic_type))
@@ -69,8 +69,8 @@ class MirrorTest(Test):
                     src = "{}/1/{}/{}_{}.png".format(subdir, pic_type,
                                                      pic_type, str(i).zfill(3))
                     copyfile(src, dst)
-        ue.log('saved captures to {}/{}'.format(subdir, 3))
-        ue.log('Run 4/4: Impossible run')
+        # ue.log('saved captures to {}/{}'.format(subdir, 3))
+        # ue.log('Run 4/4: Impossible run')
         for pic_type in pic_types:
             if not os.path.exists("{}/4/{}".format(subdir, pic_type)):
                 os.makedirs("{}/4/{}".format(subdir, pic_type))
@@ -93,9 +93,9 @@ class MirrorTest(Test):
                     src = "{}/2/{}/{}_{}.png".format(subdir, pic_type,
                                                      pic_type, str(i).zfill(3))
                     copyfile(src, dst)
-        ue.log('saved captures to {}/{}'.format(subdir, 4))
+        # ue.log('saved captures to {}/{}'.format(subdir, 4))
         self.generate_magic_status(subdir, [magic_tick, magic_tick2])
-        ue.log("generated json files")
+        # ue.log("generated json files")
 
     def generate_magic_status(self, subdir, slice_index):
         # build the status.json, slice_index are magic_tick as a list

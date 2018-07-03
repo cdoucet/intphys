@@ -6,7 +6,7 @@ class FullTest(Test):
     def play_run(self):
         if self.run == 4:
             return
-        ue.log("Run {}/4: Possible run".format(self.run + 1))
+        # ue.log("Run {}/4: Possible run".format(self.run + 1))
         super().play_run()
 
     def stop_run(self, scene_index, total):
