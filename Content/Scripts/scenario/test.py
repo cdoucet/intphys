@@ -66,7 +66,6 @@ class Test(Scene):
                   then we offset the second object (and the third one) because the ifeld of view of the camera is an angle
                   then we offset again every object calculated from the diagonal of a cube mesh
                   (to be sure mesh won't collide)
-                  then we offset them a last time to be sure their shadows won't be visible
                 """
                 location = FVector(1000 +
                                    scale * 100 * math.sqrt(3) * n,

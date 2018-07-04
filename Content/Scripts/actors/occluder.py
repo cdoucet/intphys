@@ -2,7 +2,6 @@
 
 import unreal_engine as ue
 from unreal_engine.classes import Material
-from unreal_engine import FVector
 from actors.base_mesh import BaseMesh
 from actors.parameters import OccluderParams
 
@@ -112,8 +111,7 @@ class Occluder(BaseMesh):
 
     def reset(self, params):
         super().reset(params)
-        self.set_location(FVector(self.location.x, self.location.y -
-                                  (self.scale.x * 200), self.location.z))
+        self.set_location(self.location)
         self.moving = False
         self.count = -1
         self.up = params.start_up
