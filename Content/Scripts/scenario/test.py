@@ -86,8 +86,9 @@ class Test(Scene):
                 # if at least on object will fly,
                 # the occluder needs to be higher
                 # if object is too big, make occluder bigger
-                if scale / 2 > occluder_scale.x:
-                    occluder_scale.x = scale / 2
+                if scale / 4 > occluder_scale.x:
+                    occluder_scale.x = scale / 4
+                # if at least one object flies, the occluder should be taller
                 if force.z != 0:
                     occluder_scale.z = 1.5
             self.params[object_names[n]].location = location
