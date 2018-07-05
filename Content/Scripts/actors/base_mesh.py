@@ -84,7 +84,6 @@ class BaseMesh(BaseActor):
         status['scale'] = as_dict(self.scale)
         status['friction'] = self.friction
         status['restitution'] = self.restitution
-        status['mesh'] = self.mesh_str
         return status
 
     def reset(self, params):
