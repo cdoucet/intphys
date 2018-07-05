@@ -87,11 +87,12 @@ class Object(BaseMesh):
     def set_force(self, force, persistent=False):
         if (persistent):
             self.force = force
-        # teh heavier the object is, the more violent the applied force will be
-        self.get_mesh().add_force(force * self.mesh.GetMass())
+        # the heavier the object is, the more violent the applied force will be
+        self.get_mesh().add_force(force *
+                                  self.mesh.GetMass())
 
     """
-    Apply force to the mesh
+    Apply peristent force to the mesh
     """
     def move(self):
         self.get_mesh().add_force(self.force)
@@ -99,8 +100,10 @@ class Object(BaseMesh):
     def get_status(self):
         status = super().get_status()
         status['material'] = self.material.get_name()
-        status['mass'] = self.mass
-        status['force'] = as_dict(self.force)
+        status['mass'] = self.mesh.GetMass()
+        # status['force'] = as_dict(self.force)
+        status['initial_force'] = as_dict(self.initial_force)
+        status['shape'] = self.mesh_str.split(".")[-1]
         return status
 
     def reset(self, params):

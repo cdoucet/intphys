@@ -5,41 +5,44 @@ from unreal_engine import FVector, FRotator
 from actors.parameters import ObjectParams, OccluderParams
 from tools.materials import get_random_material
 import unreal_engine as ue
+from actors.object import Object
 
 class Train(Scene):
     def __init__(self, world, saver):
         super().__init__(world, saver)
 
-    def random_location(self, index, side=None):
-        if side is None:
-            side = 'left' if random.random() < 0.5 else 'right'
-        return FVector(
-            550 + 150 * float(index - 1),
-            -500 if side == 'left' else 500,
-            70 + 200 * random.random())
-
     def generate_parameters(self):
         super().generate_parameters()
         nobjects = random.randint(1, 3)
         for n in range(nobjects):
-            # scale in [1, 1.5]
-            scale = 1 + random.random() * 0.5
-            # full random rotation (does not matter on spheres, except
-            # for texture variations)
+            force = FVector()
+            vforce = []
+            for i in range(3):
+                vforce.append(random.choice([-4, -3, -2, 2, 3, 4]))
+                vforce.append(random.randint(3, 4))
+            # the vertical force is necessarly positive
+            vforce[4] = abs(vforce[4])
+            force = FVector(vforce[0] * math.pow(10, vforce[1]),
+                            vforce[2] * math.pow(10, vforce[3]),
+                            vforce[4] * math.pow(10, vforce[5]))
+            # scale in [1, 2]
+            scale = 1.5 + random.random() * 0.5
             location = FVector(
                     random.uniform(200, 700),
                     random.uniform(-500, 500),
-                    random.uniform(0, 200))
+                    0)
             rotation = FRotator(
-                360*random.random(), 360*random.random(), 360*random.random())
+                0, 0, 360*random.random())
+            mesh = random.choice([m for m in Object.shape.keys()])
             self.params[f'object_{n+1}'] = ObjectParams(
-                mesh='Sphere',
+                mesh=mesh,
                 material=get_random_material('Object'),
                 location=location,
                 rotation=rotation,
                 scale=FVector(scale, scale, scale),
-                mass=1)
-        noccluders = random.randint(0, 2)
+                mass=1,
+                initial_force=force)
+            noccluders = random.randint(0, 2)
         for n in range(noccluders):
             location = FVector(
                     random.uniform(200, 700),
@@ -58,11 +61,11 @@ class Train(Scene):
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=rotation,
-                scale=FVector(1, 1, 1),
+                scale=FVector(random.uniform(0.5, 1.5), 1, random.uniform(0.5, 1.5)),
                 moves=moves,
-                speed=1,
+                speed=random.uniform(1, 5),
                 warning=True,
-                start_up=False)
+                start_up=random.choice([True, False]))
 
     def stop_run(self, scene_index, total):
         self.del_actors()
@@ -78,14 +81,8 @@ class Train(Scene):
         # ue.log("Run 1/1: Possible run")
         super().play_run()
         for name, actor in self.actors.items():
-            if 'object' in name.lower() and random.randint(0, 1) == 0:
-                force = []
-                for i in range(3):
-                    force.append(random.randint(-1, 1))
-                    force.append(random.randint(4, 6))
-                actor.set_force(FVector(force[0] * math.pow(10, force[1]),
-                                        force[2] * math.pow(10, force[3]),
-                                        force[4] * math.pow(10, force[5])))
+            if 'object' in name.lower() and random.choice([0, 1, 2]) != 0:
+                actor.set_force(actor.initial_force)
 
     def is_possible(self):
         return True

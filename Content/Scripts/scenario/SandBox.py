@@ -9,7 +9,7 @@ from tools.materials import get_random_material
 from actors.object import Object
 import unreal_engine as ue
 from scenario.mirrorTest import MirrorTest
-from scenario.O1 import O1Test
+from scenario.O2 import O2Test
 
 
 class SandBoxBase:
@@ -26,15 +26,15 @@ class SandBoxTrain(SandBoxBase, Train):
     pass
 
 
-class SandBoxTest(SandBoxBase, O1Test):
+class SandBoxTest(SandBoxBase, O2Test):
     def __init__(self, world, saver, is_occluded, movement):
-        super().__init__(world, saver, False, "dynamic_1")
+        super().__init__(world, saver, False, "static")
 
     def generate_parameters(self):
         MirrorTest.generate_parameters(self)
         # random number of object
         nobjects = random.randint(1, 3)
-        nobjects = 3
+        nobjects = 1
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if '2' not in self.movement else 2
@@ -51,6 +51,7 @@ class SandBoxTest(SandBoxBase, O1Test):
             self.params[object_names[n]] = ObjectParams()
             # random scale between [1, 1.5]
             scale = 2 + random.uniform(0, 0.5)
+            scale = 2
             self.params[object_names[n]].scale = FVector(scale, scale, scale)
             self.params[object_names[n]].mass = 1
             # full random yaw rotation (z axis)
@@ -60,15 +61,16 @@ class SandBoxTest(SandBoxBase, O1Test):
             # random mesh
             self.params[object_names[n]].mesh = random.choice(
                 [m for m in Object.shape.keys()])
-            self.params[object_names[n]].mesh = "Cube"
+            self.params[object_names[n]].mesh = "Cone"
             # random material
             self.params[object_names[n]].material = \
                 get_random_material('Object')
             if 'static' in self.movement:
                 # if static, no initial force and differents initial locations
                 # left, middle and right of the screen
-                location = FVector(1000, (n - 1) * (500 + (scale * 50)), 0)
+                location = FVector(1000, 0 * (500 + (scale * 50)), 0)
                 force = FVector(0, 0, 0)
+                force.z = 900.30902788669 * 1000 + 980
             else:
                 """
                 if dynamic, there is an initial force and differents initial locations
@@ -94,12 +96,15 @@ class SandBoxTest(SandBoxBase, O1Test):
                     location.y *= -1
                 # the more far they are, the more force we apply on them
                 # an object has one chance out of two to fly
+                """
                 force = FVector(0, (4e4 + (abs(location.y) - 1500) * 10) *
                                 (-1 if location.y > 0 else 1),
                                 3e4 + (abs(location.y) - 1500) * 4)
+                """
+                force = FVector()
                 # if an object is not a sphere, it will necessarly fly
                 if self.params[object_names[n]].mesh != 'Sphere':
-                    force.z = 3e4 + (abs(location.y) - 1500) * 4
+                    force.z = 10 * 90000000
                 # if at least on object will fly,
                 # the occluder needs to be higher
                 # if object is too big, make occluder bigger
@@ -161,4 +166,17 @@ class SandBoxTest(SandBoxBase, O1Test):
                     FVector(600,
                             -200,
                             0)
+        magic_actor = self.params['magic']['actor']
+        magic_mesh = self.params[magic_actor].mesh
+        new_mesh = random.choice(
+            [m for m in Object.shape.keys() if m != magic_mesh])
+        self.params['magic']['mesh'] = new_mesh
+
+    def tick(self):
+        super().tick()
+        """
+        if (int(round(self.actors['object_1'].actor.get_actor_velocity().z)) == 0):
+            self.actors['object_1'].set_force(self.actors['object_1'].initial_force)
+        """
+        ue.log("{}: {} and {}".format(self.ticker, self.actors['object_1'].actor.get_actor_location().z, self.actors['object_1'].actor.GetVelocity().z))
 

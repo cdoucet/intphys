@@ -34,8 +34,8 @@ class Test(Scene):
         random.shuffle(object_names)
         for n in range(3):
             self.params[object_names[n]] = ObjectParams()
-            # random scale between [1, 1.5]
-            scale = 2 + random.uniform(0, 0.5)
+            # random scale between [1.5, 2]
+            scale = 1.5 + random.uniform(0, 0.5)
             self.params[object_names[n]].scale = FVector(scale, scale, scale)
             self.params[object_names[n]].mass = 1
             # full random yaw rotation (z axis)
@@ -55,16 +55,21 @@ class Test(Scene):
                 force = FVector(0, 0, 0)
             else:
                 """
-                if dynamic, there is an initial force and differents initial locations
+                if dynamic, there is an initial force and differents
+                        initial locations
                 the x axis:
                   the closest object is located at 1000 from the camera
-                  the second object is more far, calculated from the diagonal of a cube mesh
+                  the second object is more far, calculated from the diagonal
+                        of a cube mesh
                   (to be sure mesh won't collide)
                   same for the third object
                 the y axis:
-                  they need to be off the screen at first frame, so we put it at 1000 from the center
-                  then we offset the second object (and the third one) because the ifeld of view of the camera is an angle
-                  then we offset again every object calculated from the diagonal of a cube mesh
+                  they need to be off the screen at first frame, so we put it
+                        at 1000 from the center
+                  then we offset the second object (and the third one) because
+                        the field of view of the camera is an angle
+                  then we offset again every object calculated from the
+                        diagonal of a cube mesh
                   (to be sure mesh won't collide)
                 """
                 location = FVector(1000 +
@@ -78,10 +83,11 @@ class Test(Scene):
                 # the more far they are, the more force we apply on them
                 # an object has one chance out of two to fly
                 force = FVector(0, (4e4 + (abs(location.y) - 1500) * 10) *
-                                (-1 if location.y > 0 else 1),
-                                3e4 + (abs(location.y) - 1500) * 4)
-                # if an object is not a sphere, it will necessarly fly
-                if self.params[object_names[n]].mesh != 'Sphere':
+                                (-1 if location.y > 0 else 1), 0)
+                # if an object is not a sphere, it will necessarly fly,
+                # if not, it has one chance out of two to fly
+                if self.params[object_names[n]].mesh != 'Sphere' or \
+                        random.choice([0, 1]):
                     force.z = 3e4 + (abs(location.y) - 1500) * 4
                 # if at least on object will fly,
                 # the occluder needs to be higher
@@ -90,7 +96,8 @@ class Test(Scene):
                     occluder_scale.x = scale / 4
                 # if at least one object flies, the occluder should be taller
                 if force.z != 0:
-                    occluder_scale.z = 1.5
+                    occluder_scale.z = 2
+                    # move backward the camera if dynamic 2 and tall occluders
             self.params[object_names[n]].location = location
             self.params[object_names[n]].initial_force = force
         # remove object if there should not be 3 objects on the scene
@@ -160,7 +167,8 @@ class Test(Scene):
             max_x = 10000000
             for name, actor in self.actors.items():
                 if ('object' in name and
-                        int(round(actor.actor.get_actor_velocity().y)) == 0):
+                        int(round(actor.actor.get_actor_velocity().y)) == 0 and
+                        int(round(actor.actor.get_actor_velocity().z)) == 0):
                     if actor.actor.get_actor_location().x < max_x:
                         max_x = actor.actor.get_actor_location().x
                         max_name = name

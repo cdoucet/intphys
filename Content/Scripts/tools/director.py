@@ -74,9 +74,17 @@ class Director(object):
             return
 
         if self.scenes[self.scene].run == 0:
-            ue.log("Scene {}/{}: scenario {}".format(
-                self.scene + 1, len(self.scenes),
-                self.scenes[self.scene].name))
+            if hasattr(self.scenes[self.scene], 'movement'):
+                ue.log("Scene {}/{}: Test / scenario {} / {} / {}".format(
+                    self.scene + 1, len(self.scenes),
+                    self.scenes[self.scene].name,
+                    self.scenes[self.scene].movement,
+                    "occluded" if self.scenes[self.scene].is_occluded
+                    is True else "visible"))
+            else:
+                ue.log("Scene {}/{}: Train / scenario {}".format(
+                    self.scene + 1, len(self.scenes),
+                    self.scenes[self.scene].name))
         self.scenes[self.scene].play_run()
 
     def stop_scene(self):

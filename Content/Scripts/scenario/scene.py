@@ -1,10 +1,12 @@
 import random
 import os
 import importlib
+import unreal_engine as ue
 from unreal_engine.classes import Friction
 from unreal_engine import FVector, FRotator
 from actors.parameters import FloorParams, WallsParams, CameraParams
 from tools.materials import get_random_material
+from actors.skysphere import SkySphere
 
 
 class Scene:
@@ -83,6 +85,13 @@ class Scene:
                 elif 'Cone' in self.actors[actor].mesh_str:
                     Friction.SetMassScale(self.actors[actor].get_mesh(),
                                           1.6962973279499)
+        """
+        found_actors = self.world.all_actors()
+        for actors in found_actors:
+            actors.get_name()
+        self.actors["SkySphere"] = \
+            SkySphere(self.world, self.world.find_object("BP_Sky_Sphere"))
+        """
 
     def reset_actors(self):
         if self.actors is None:
