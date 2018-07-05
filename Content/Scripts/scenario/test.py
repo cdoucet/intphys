@@ -97,6 +97,8 @@ class Test(Scene):
                 # if at least one object flies, the occluder should be taller
                 if force.z != 0:
                     occluder_scale.z = 2
+                    if '2' in self.movement:
+                        occluder_scale.z = 2.5
                     # move backward the camera if dynamic 2 and tall occluders
             self.params[object_names[n]].location = location
             self.params[object_names[n]].initial_force = force
@@ -128,7 +130,7 @@ class Test(Scene):
                     FVector(500, 0, 0)
                 #   FVector(800, (n - 1) * (500 + (occluder_scale.x * 200)), 0)
                 # the occluder will rise at first frame and at the 100th one
-                self.params['occluder_{}'.format(n)].moves = [0, 100]
+                self.params['occluder_{}'.format(n)].moves = [0, 125]
                 occluder_names.append('occluder_{}'.format(n))
             # if static, a random occluder will go between the magic
             # actor and the occluder
@@ -146,11 +148,11 @@ class Test(Scene):
             if len(occluder_names) == 2:
                 self.params[occluder_names[0]].location = \
                     FVector(600,
-                            200,
+                            175,
                             0)
                 self.params[occluder_names[1]].location = \
                     FVector(600,
-                            -200,
+                            -175,
                             0)
 
     def play_run(self):

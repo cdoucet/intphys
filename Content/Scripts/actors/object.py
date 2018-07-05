@@ -103,7 +103,7 @@ class Object(BaseMesh):
         status['mass'] = self.mesh.GetMass()
         # status['force'] = as_dict(self.force)
         status['initial_force'] = as_dict(self.initial_force)
-        status['velocity'] = as_dict(self.get_actor_velocity())
+        status['velocity'] = as_dict(self.actor.get_actor_velocity())
         status['shape'] = self.mesh_str.split(".")[-1]
         return status
 
