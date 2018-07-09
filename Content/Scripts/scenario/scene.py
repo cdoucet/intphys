@@ -66,8 +66,6 @@ class Scene:
         for actor, actor_params in self.params.items():
             if ('magic' in actor):
                 continue
-            elif ('skysphere' in actor.lower()):
-                class_name = 'SkySphere'
             else:
                 class_name = actor.split('_')[0].title()
             # dynamically import and instantiate

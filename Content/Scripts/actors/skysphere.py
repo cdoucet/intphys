@@ -11,7 +11,7 @@ You can change the skin to a night sky (with stars and so on)
 """
 
 
-class SkySphere(BaseMesh):
+class Skysphere(BaseMesh):
     def __init__(self, world, params=SkySphereParams()):
         if isinstance(params, SkySphere):
             super().__init__(world.actor_spawn(
