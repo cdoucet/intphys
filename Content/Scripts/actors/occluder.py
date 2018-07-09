@@ -87,8 +87,8 @@ class Occluder(BaseMesh):
             rotation.roll = 0
             self.up = True
             self.moving = False
-
         self.set_rotation(rotation)
+        self.location = self.actor.get_actor_location()
 
     def get_status(self):
         status = super().get_status()

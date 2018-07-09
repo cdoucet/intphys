@@ -46,9 +46,6 @@ class Camera(BaseActor):
         self.projection_mode = projection_mode
         self.camera_component.SetProjectionMode(self.projection_mode)
 
-    def begin_play(self):
-        self.set_actor(self.uobject.get_owner())
-
     def get_status(self):
         status = super().get_status()
         status['field_of_view'] = self.field_of_view

@@ -22,7 +22,7 @@ class BaseActor():
         self.is_valid = True
 
     def actor_destroy(self):
-        self.get_actor().actor_destroy()
+        self.actor.actor_destroy()
         self.actor = None
 
     def get_parameters(self, location, rotation, overlap, warning):
@@ -41,15 +41,6 @@ class BaseActor():
             self.actor.bind_event('OnActorBeginOverlap', self.on_actor_overlap)
         elif self.warning and not self.overlap:
             self.actor.bind_event('OnActorHit', self.on_actor_hit)
-
-    def get_actor(self):
-        # this getter is important : in the recursive instance, it's
-        # an internal unreal engine function called get_actor which is
-        # called so wherever you call get_actor(), it will works
-        return self.actor
-
-    def set_actor(self, actor):
-        self.actor = actor
 
     def set_location(self, location):
         self.location = location

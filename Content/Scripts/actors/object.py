@@ -96,6 +96,8 @@ class Object(BaseMesh):
     """
     def move(self):
         self.get_mesh().add_force(self.force)
+        self.location = self.actor.get_actor_location()
+        self.rotation = self.actor.get_actor_rotation()
 
     def get_status(self):
         status = super().get_status()

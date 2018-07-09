@@ -74,6 +74,6 @@ class OccluderParams:
 
 
 @dataclass
-class SkySphereParams:
+class SkysphereParams:
     material: str = '/Game/Meshes/SkySphere/M_Sky_Panning_Clouds2'
     rotation:FVector = FVector(0, 0, 0)

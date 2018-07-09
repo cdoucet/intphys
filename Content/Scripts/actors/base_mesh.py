@@ -35,17 +35,17 @@ class BaseMesh(BaseActor):
             self.mesh.call('SetCollisionProfileName BlockAll')
 
     """
-    set_mesh sets the mesh, enable collision, set the material
+    set_mesh sets the mesh and set the material
     """
     def set_mesh(self):
-        self.mesh = self.get_actor().get_actor_component_by_type(
+        self.mesh = self.actor.get_actor_component_by_type(
             ue.find_class('StaticMeshComponent'))
         # setup mesh and material
         self.mesh.SetStaticMesh(ue.load_object(StaticMesh, self.mesh_str))
         self.mesh.set_material(0, self.material)
 
     def get_mesh(self):
-        return self.get_actor().get_actor_component_by_type(
+        return self.actor.get_actor_component_by_type(
             ue.find_class('StaticMeshComponent'))
 
     """
@@ -70,14 +70,6 @@ class BaseMesh(BaseActor):
     def set_restitution(self, restitution):
         self.restitution = restitution
         Friction.SetRestitution(self.material, restitution)
-
-    """
-    begin_play is called when actor_spawn is called.
-    It is a kind of second __init__, for the python component
-    """
-    def begin_play(self):
-        self.set_actor(self.uobject.get_owner())
-        # ue.log('begin play {}'.format(self.actor.get_name()))
 
     def get_status(self):
         status = super().get_status()

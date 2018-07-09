@@ -45,9 +45,6 @@ class Light(BaseActor):
         # deactivate the physics (we don't want the light to fall)
         # self.get_mesh().set_simulate_physics(False)
 
-    def begin_play(self):
-        self.set_actor(self.uobject.get_owner())
-
     def get_status(self):
         if self.type != 'SkyLight':
             status = super().get_status()

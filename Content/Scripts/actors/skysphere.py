@@ -3,7 +3,7 @@ from unreal_engine import FVector, FRotator, UObject
 from unreal_engine.classes import Material
 
 from actors.base_mesh import BaseMesh
-from actors.parameters import SkySphereParams
+from actors.parameters import SkysphereParams
 
 """
 It is the sky.
@@ -12,7 +12,7 @@ You can change the skin to a night sky (with stars and so on)
 
 
 class Skysphere(BaseMesh):
-    def __init__(self, world, params=SkySphereParams()):
+    def __init__(self, world, params=SkysphereParams()):
         if isinstance(params, Skysphere):
             super().__init__(world.actor_spawn(
                 ue.load_class("/Game/Meshes/SkySphere/BP_Sky_Sphere1." +

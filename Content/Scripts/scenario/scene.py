@@ -6,7 +6,7 @@ from unreal_engine.classes import Friction
 from unreal_engine import FVector, FRotator
 from actors.parameters import FloorParams, WallsParams, CameraParams
 from tools.materials import get_random_material
-from actors.skysphere import SkySphere
+from actors.skysphere import Skysphere
 
 
 class Scene:
@@ -27,7 +27,7 @@ class Scene:
     def get_status(self):
         """Return the current status of each moving actor in the scene"""
         # TODO change actors appearing in status :
-        # Camera ? Walls ? Floor ? SkySphere ? ect.
+        # Camera ? Walls ? Floor ? Skysphere ? ect.
         if self.actors is not None:
             return {k: v.get_status() for k, v in self.actors.items()}
 
@@ -36,8 +36,8 @@ class Scene:
                 location=FVector(0, 0, 200),
                 rotation=FRotator(0, 0, 0))
         """
-        self.params['SkySphere'] = \
-            SkySphereParams(rotation=FRotator(180, 180, 180))
+        self.params['Skysphere'] = \
+            SkysphereParams(rotation=FRotator(180, 180, 180))
         """
         self.params['Floor'] = FloorParams(
                 material=get_random_material('Floor'))
@@ -87,8 +87,8 @@ class Scene:
         found_actors = self.world.all_actors()
         for actors in found_actors:
             actors.get_name()
-        self.actors["SkySphere"] = \
-            SkySphere(self.world, self.world.find_object("BP_Sky_Sphere"))
+        self.actors["Skysphere"] = \
+            Skysphere(self.world, self.world.find_object("BP_Sky_Sphere"))
         """
 
     def reset_actors(self):
@@ -126,6 +126,4 @@ class Scene:
         if self.actors is not None:
             for actor_name, actor in self.actors.items():
                 if 'object' in actor_name or 'occluder' in actor_name:
-                    actor.move()
-                if 'sky' in actor_name:
                     actor.move()
