@@ -71,7 +71,7 @@ parallel -j $njobs run_intphys ::: $(seq 1 $njsons) || exit 1
 
 
 # merge the output directories
-$(dirname $0)/merge_directories.py $output_dir $output_dir/parallel || exit 1
+$(dirname $0)/merge_directories.py $output_dir/parallel  $output_dir || exit 1
 
 
 exit 0
