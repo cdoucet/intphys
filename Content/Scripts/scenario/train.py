@@ -19,13 +19,13 @@ class Train(Scene):
             vforce = []
             for i in range(3):
                 vforce.append(random.choice([-4, -3, -2, 2, 3, 4]))
-                vforce.append(random.randint(3, 4))
+                vforce.append(random.uniform(3, 4))
             # the vertical force is necessarly positive
             vforce[4] = abs(vforce[4])
             force = FVector(vforce[0] * math.pow(10, vforce[1]),
                             vforce[2] * math.pow(10, vforce[3]),
                             vforce[4] * math.pow(10, vforce[5]))
-            # scale in [1, 2]
+            # scale in [1.5, 2]
             scale = 1.5 + random.random() * 0.5
             location = FVector(
                     random.uniform(200, 700),

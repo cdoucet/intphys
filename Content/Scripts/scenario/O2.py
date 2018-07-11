@@ -3,7 +3,7 @@ import random
 from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
-from unreal_engine.classes import Friction, ScreenshotManager
+from unreal_engine.classes import ScreenshotManager
 from unreal_engine import FVector
 import unreal_engine as ue
 
@@ -40,6 +40,7 @@ class O2Test(O2Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
+        # TODO make object fly (maybe it's not implemented)
         magic_actor = self.params['magic']['actor']
         magic_mesh = self.params[magic_actor].mesh
         new_mesh = random.choice(
@@ -76,11 +77,6 @@ class O2Test(O2Base, MirrorTest):
         new_mesh = (self.params['magic']['mesh'] if is_magic_mesh
                     else self.params[magic_actor_type].mesh)
         magic_actor.set_mesh_str(Object.shape[new_mesh])
-        Friction.SetMassScale(magic_actor.get_mesh(), 1)
-        if 'Cube' in magic_actor.mesh_str:
-            Friction.SetMassScale(magic_actor.get_mesh(), 0.6155297517867)
-        elif 'Cone' in magic_actor.mesh_str:
-            Friction.SetMassScale(magic_actor.get_mesh(), 1.6962973279499)
 
     """
     def apply_magic_trick(self):
@@ -96,15 +92,12 @@ class O2Test(O2Base, MirrorTest):
     def static_visible(self):
         visibility_array = \
             self.checks_time_laps(self.check_array["visibility"], True)
-        try:
-            for frame in range(5):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            pass
-        if len(visibility_array) < 1:
-            ue.log_warning("not enough occluded frame")
+        if len(visibility_array) < 17:
+            ue.log_warning("not enough visible frame")
             return False
+        for frame in range(8):
+            visibility_array.remove(visibility_array[0])
+            visibility_array.remove(visibility_array[-1])
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -116,16 +109,17 @@ class O2Test(O2Base, MirrorTest):
         # check if the actor is visible AND up in the air
         final_array = []
         try:
-            for frame in range(5):
+            for frame in range(8):
                 visibility_array.remove(visibility_array[0])
                 visibility_array.remove(visibility_array[-1])
         except IndexError:
-            pass
+            ue.log_warning("not enough visible frame")
+            return False
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
         if len(final_array) < 1:
-            ue.log_warning("not enough occluded frame")
+            ue.log_warning("not enough visible and flying frame")
             return False
         self.params['magic']['tick'] = random.choice(final_array)
         return True
@@ -138,7 +132,8 @@ class O2Test(O2Base, MirrorTest):
                 visibility_array.remove(visibility_array[0])
                 visibility_array.remove(visibility_array[-1])
         except IndexError:
-            pass
+            ue.log_warning("not enough visible frame")
+            return False
         grounded_array = \
             self.checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
@@ -146,13 +141,22 @@ class O2Test(O2Base, MirrorTest):
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        # if the number of frame where the magic actor is not grounded is less
-        # than 4 time the number of magic tick required, scene will restart
-        if len(final_array) < 8:
+        if len(final_array) < 2:
+            ue.log_warning("not enough visible and flying frame")
             return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(final_array))
-        final_array.remove(self.params['magic']['tick'][0])
+        for frame in range(6):
+            if (final_array.index(self.params['magic']['tick'][0])
+                    - frame in final_array):
+                final_array.remove(final_array.
+                                   index(self.params['magic']['tick'][0])
+                                   - frame)
+            if (final_array.index(self.params['magic']['tick'][0])
+                    + frame in final_array):
+                final_array.remove(final_array.
+                                   index(self.params['magic']['tick'][0])
+                                   + frame)
         self.params['magic']['tick'].append(random.choice(final_array))
         self.params['magic']['tick'].sort()
         return True
@@ -160,9 +164,8 @@ class O2Test(O2Base, MirrorTest):
     def static_occluded(self):
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'], False)
-        # if the number of frame where the magic actor is visible is less than
-        # 4 time the number of magic tick required, scene need to be restarted
         if len(visibility_array) < 1:
+            ue.log_warning("not enough good frame")
             return False
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
@@ -196,8 +199,6 @@ class O2Test(O2Base, MirrorTest):
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        # if the number of frame where the magic actor is not grounded is less
-        # than 4 time the number of magic tick required, scene will restart
         if len(final_array) < 1:
             ue.log_warning("Not enough final choices")
             return False
@@ -245,7 +246,7 @@ class O2Test(O2Base, MirrorTest):
                 occlusion[i].append(frame)
             previous_frame = frame
         # if there is less than 2 distinct occlusion the scene will restart
-        # same if there is less than 2 frame where the actor is not grounded
+        # same if there is less than 1 frame where the actor is not grounded
         # in each occlusion
         if (len(occlusion) < 2 or
                 len(occlusion[0]) == 0 or

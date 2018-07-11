@@ -28,9 +28,6 @@ class Occluder(BaseMesh):
         self.set_parameters()
 
     def get_parameters(self, params):
-        # TODO this thing is a non-sense (we apply to the y location
-        # the x scale...)  maybe it's time to drop out the
-        # normalization
         super().get_parameters(
             params.location,
             params.rotation,

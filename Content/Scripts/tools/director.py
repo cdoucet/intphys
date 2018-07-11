@@ -72,7 +72,6 @@ class Director(object):
     def play_scene(self):
         if self.scene >= len(self.scenes):
             return
-
         if self.scenes[self.scene].run == 0:
             if hasattr(self.scenes[self.scene], 'movement'):
                 ue.log("Scene {}/{}: Test / scenario {} / {} / {}".format(
@@ -129,6 +128,7 @@ class Director(object):
     def tick(self, dt):
         """ this method is called at each game tick by UE """
         if self.pause is True:
+            # TODO
             time.sleep(2)
             self.pause = False
             return

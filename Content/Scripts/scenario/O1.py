@@ -49,15 +49,12 @@ class O1Test(O1Base, MirrorTest):
         # one the magic object is not visible
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'][0], True)
-        try:
-            for frame in range(5):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            pass
-        if len(visibility_array) < 1:
+        if len(visibility_array) < 17:
             ue.log_warning("Not enough visibility")
             return False
+        for i in range(8):
+            visibility_array.remove(visibility_array[-1])
+            visibility_array.remove(visibility_array[0])
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -66,15 +63,12 @@ class O1Test(O1Base, MirrorTest):
         # one the magic object is not visible
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'][0], True)
-        try:
-            for frame in range(5):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            pass
-        if len(visibility_array) < 1:
+        if len(visibility_array) < 17:
             ue.log_warning("Not enough visibility")
             return False
+        for frame in range(8):
+            visibility_array.remove(visibility_array[0])
+            visibility_array.remove(visibility_array[-1])
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -83,18 +77,32 @@ class O1Test(O1Base, MirrorTest):
         # one the magic object is not visible
         visibility_array = \
             self.checks_time_laps(self.check_array['visibility'][0], True)
-        try:
-            for frame in range(5):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            pass
-        if len(visibility_array) < 2:
+        if len(visibility_array) < 17:
             ue.log_warning("Not enough visibility")
             return False
+        for frame in visibility_array:
+            ue.log("1: {}".format(frame))
+        for frame in range(5):
+            visibility_array.remove(visibility_array[0])
+            visibility_array.remove(visibility_array[-1])
+        for frame in visibility_array:
+            ue.log("2: {}".format(frame))
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))
-        visibility_array.remove(self.params['magic']['tick'][0])
+        ue.log("magic tick {}".format(self.params['magic']['tick'][0]))
+        for frame in range(6):
+            if (visibility_array.index(self.params['magic']['tick'][0])
+                    - frame in visibility_array):
+                visibility_array.remove(visibility_array.
+                                        index(self.params['magic']['tick'][0])
+                                        - frame)
+            if (visibility_array.index(self.params['magic']['tick'][0])
+                    + frame in visibility_array):
+                visibility_array.remove(visibility_array.
+                                        index(self.params['magic']['tick'][0])
+                                        + frame)
+        for frame in visibility_array:
+            ue.log("3: {}".format(frame))
         self.params['magic']['tick'].append(random.choice(visibility_array))
         self.params['magic']['tick'].sort()
         return True

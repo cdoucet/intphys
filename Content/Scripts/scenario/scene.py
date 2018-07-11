@@ -74,15 +74,6 @@ class Scene:
             module = importlib.import_module(module_path)
             self.actors[actor] = getattr(module, class_name)(
                 world=self.world, params=actor_params)
-            if 'object' in actor.lower():
-                # if 'Sphere' in self.actors[actor].mesh_str:
-                #    Friction.SetMassScale(self.actors[actor].get_mesh(), 1)
-                if 'Cube' in self.actors[actor].mesh_str:
-                    Friction.SetMassScale(self.actors[actor].get_mesh(),
-                                          0.6155297517867)
-                elif 'Cone' in self.actors[actor].mesh_str:
-                    Friction.SetMassScale(self.actors[actor].get_mesh(),
-                                          1.6962973279499)
         """
         found_actors = self.world.all_actors()
         for actors in found_actors:

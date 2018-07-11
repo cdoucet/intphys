@@ -34,10 +34,3 @@ class Skysphere(BaseMesh):
             'name': self.actor.get_name(),
             'material': self.material.get_name()}
         return status
-
-    def move(self):
-        self.rotation += 10
-        """
-        self.actor.set_actor_rotation(self.rotation)
-        self.actor.DirectionalLight.set_actor_rotation(self.rotation)
-        """

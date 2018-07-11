@@ -1,7 +1,7 @@
 # coding: utf-8
 
 import unreal_engine as ue
-from unreal_engine.classes import Material
+from unreal_engine.classes import Material, Friction
 from unreal_engine import FVector
 
 from actors.base_mesh import BaseMesh
@@ -71,11 +71,11 @@ class Object(BaseMesh):
     set the mass of the mesh
     to be honnest I don't really know what the second line do
     """
-    # TODO we want the mass scaling to occur here, ie don't use 'mass'
-    # but 'mass_factor[shape]*mass' to have a kind of "normalized
-    # mass" accross the shapes
     def set_mass(self, mass):
         self.mass = mass
+        # set the mass scale differently for each shape
+        Friction.SetMassScale(self.mesh,
+                              self.mass_factor[self.mesh_str.split('.')[-1]])
         self.mesh.SetMassScale(
             BoneName='None',
             InMassScale=self.mass / self.mesh.GetMassScale())
