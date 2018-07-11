@@ -96,7 +96,7 @@ class Test(Scene):
                     occluder_scale.x = scale / 4
                 # if at least one object flies, the occluder should be taller
                 if force.z != 0:
-                    occluder_scale.z = 2
+                    occluder_scale.z = 2.3
                     if '2' in self.movement:
                         occluder_scale.z = 2.5
                     # move backward the camera if dynamic 2 and tall occluders
