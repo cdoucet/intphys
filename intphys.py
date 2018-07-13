@@ -371,7 +371,7 @@ def Main():
             if args.force:
                 print('Are you sure you want to ' +
                       'delete {} directory ? y/n'.format(output_dir))
-                if (raw_input() != 'y'):
+                if (input() != 'y'):
                     raise IOError(
                         'Existing output directory {}\n'
                         .format(output_dir))
