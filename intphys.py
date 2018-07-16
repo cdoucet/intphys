@@ -175,6 +175,11 @@ def ParseArgs():
         'by default use the current system time')
 
     parser.add_argument(
+        '-p', '--pause-duration', default=50, metavar='<int>', type=int,
+        help=('duration of the pause at the beginning of each run '
+              '(in number of ticks), default is %(default)s'))
+
+    parser.add_argument(
         '-f', '--force', action='store_true',
         help='overwrite <output-dir>, any existing content is erased')
 
@@ -205,8 +210,8 @@ def ParseArgs():
     return args
 
 
-def _Run(command, log, scenes_file, output_dir, cwd=None,
-         seed=None, resolution=DEFAULT_RESOLUTION, debug=False):
+def _Run(command, log, scenes_file, output_dir, cwd=None, seed=None,
+         pause_duration=50, resolution=DEFAULT_RESOLUTION, debug=False):
     """Run `command` as a subprocess
 
     The `command` stdout and stderr are forwarded to `log`. The
@@ -228,6 +233,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
     environ['INTPHYS_ROOT'] = INTPHYS_ROOT
     environ['INTPHYS_SCENES'] = os.path.abspath(scenes_file)
     environ['INTPHYS_RESOLUTION'] = resolution
+    environ['INTPHYS_PAUSEDURATION'] = str(pause_duration)
 
     if output_dir:
         # get the output directory as absolute path
@@ -275,7 +281,7 @@ def _Run(command, log, scenes_file, output_dir, cwd=None,
 
 def RunBinary(output_dir, scenes_file, seed=None,
               resolution=DEFAULT_RESOLUTION, headless=False,
-              verbose=False, debug=False):
+              pause_duration=50, verbose=False, debug=False):
     """Run the intphys packaged binary as a subprocess"""
     # overload binary if defined in the environment
     if 'INTPHYS_BINARY' in os.environ:
@@ -301,12 +307,13 @@ def RunBinary(output_dir, scenes_file, seed=None,
         '-NullRHI' if headless else '', res[0], res[1]),
          GetLogger(verbose=verbose),
          scenes_file, output_dir, seed=seed,
+         pause_duration=pause_duration,
          resolution=resolution, cwd=cwd, debug=debug)
 
 
 def RunEditor(output_dir, scenes_file, seed=None,
               resolution=DEFAULT_RESOLUTION, verbose=False,
-              standalone_game=False):
+              pause_duration=50, standalone_game=False):
     """Run the intphys project within the UnrealEngine editor"""
     log = GetLogger(verbose=verbose)
 
@@ -325,8 +332,8 @@ def RunEditor(output_dir, scenes_file, seed=None,
         res = resolution.split('x')
         command += ' -game -windowed ResX={} ResY={}'.format(res[0], res[1])
 
-    _Run(command, log, scenes_file, output_dir,
-         seed=seed, resolution=resolution, cwd=editor_dir)
+    _Run(command, log, scenes_file, output_dir, seed=seed,
+         pause_duration=pause_duration, resolution=resolution, cwd=editor_dir)
 
 
 def FindDuplicates(directory):
@@ -371,7 +378,7 @@ def Main():
             if args.force:
                 print('Are you sure you want to ' +
                       'delete {} directory ? y/n'.format(output_dir))
-                if (input() != 'y'):
+                if input() != 'y':
                     raise IOError(
                         'Existing output directory {}\n'
                         .format(output_dir))
@@ -400,17 +407,19 @@ def Main():
         RunEditor(
             output_dir, args.scenes_file,
             seed=args.seed, resolution=args.resolution,
-            verbose=args.verbose)
+            pause_duration=args.pause_duration, verbose=args.verbose)
     elif args.standalone_game:
         RunEditor(
             output_dir, args.scenes_file,
             seed=args.seed, resolution=args.resolution,
-            verbose=args.verbose, standalone_game=True)
+            pause_duration=args.pause_duration, verbose=args.verbose,
+            standalone_game=True)
     else:
         RunBinary(
             output_dir, args.scenes_file, seed=args.seed,
             resolution=args.resolution, headless=args.headless,
-            verbose=args.verbose, debug=args.debug)
+            pause_duration=args.pause_duration, verbose=args.verbose,
+            debug=args.debug)
 
     if output_dir:
         # check for duplicated scenes and warn if founded
