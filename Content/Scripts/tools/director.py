@@ -126,10 +126,10 @@ class Director(object):
         self.scenes[self.scene].capture()
 
     def tick(self, dt):
-        """ this method is called at each game tick by UE """
+        """this method is called at each game tick by UE"""
         if self.pause is True:
             # TODO
-            time.sleep(2)
+            time.sleep(3)
             self.pause = False
             return
 
