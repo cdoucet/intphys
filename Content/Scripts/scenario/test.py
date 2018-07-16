@@ -179,28 +179,6 @@ class Test(Scene):
                                                 initial_force)
         self.ticker += 1
 
-    def checks_time_laps(self, check_array, desired_bool):
-        # check_array can either be an
-        # array of both runs or an array of one run
-        # we are looking for the desired bool in this/these array(s)
-        res = []
-        if len(check_array) == 2:
-            if len(check_array[0]) == len(check_array[1]):
-                nb = len(check_array[0])
-            else:
-                ue.log_warning("run's arrays size don't match")
-                return res
-        else:
-            nb = len(check_array)
-        for frame in range(nb):
-            if (len(check_array) == 2 and check_array[0][frame] ==
-                    check_array[1][frame] and
-                    check_array[1][frame] == desired_bool):
-                res.append(frame)
-            elif len(check_array) > 2 and check_array[frame] == desired_bool:
-                res.append(frame)
-        return res
-
     def magic_actor(self):
         return self.actors[self.params['magic']['actor']]
 
@@ -218,17 +196,20 @@ class Test(Scene):
                  self.check_array['visibility'][1][0] == 1)):
             ue.log_warning("object is not invisible at first tick")
             return False
-        if self.is_occluded is True:
-            if 'static' in self.movement:
-                return self.static_occluded()
-            elif 'dynamic_1' in self.movement:
-                return self.dynamic_1_occluded()
+        try:
+            if self.is_occluded is True:
+                if 'static' in self.movement:
+                    return self.static_occluded()
+                elif 'dynamic_1' in self.movement:
+                    return self.dynamic_1_occluded()
+                else:
+                    return self.dynamic_2_occluded()
             else:
-                return self.dynamic_2_occluded()
-        else:
-            if 'static' in self.movement:
-                return self.static_visible()
-            elif 'dynamic_1' in self.movement:
-                return self.dynamic_1_visible()
-            else:
-                return self.dynamic_2_visible()
+                if 'static' in self.movement:
+                    return self.static_visible()
+                elif 'dynamic_1' in self.movement:
+                    return self.dynamic_1_visible()
+                else:
+                    return self.dynamic_2_visible()
+        except IndexError:
+            return False

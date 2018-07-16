@@ -4,7 +4,11 @@ from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
 from unreal_engine import FVector
-import unreal_engine as ue
+from scenario.checkUtils import checks_time_laps
+from scenario.checkUtils import remove_last_and_first_frames
+from scenario.checkUtils import remove_invisible_frames
+from scenario.checkUtils import separate_period_of_occlusions
+from scenario.checkUtils import store_actors_locations
 
 
 class O1Base:
@@ -35,7 +39,7 @@ class O1Test(O1Base, MirrorTest):
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
-        location = FVector()
+        location = store_actors_locations(self.actors)
         location.x = int(round(magic_actor.get_actor_location().x))
         location.y = int(round(magic_actor.get_actor_location().y))
         location.z = int(round(magic_actor.get_actor_location().z))
@@ -48,13 +52,8 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], True)
-        if len(visibility_array) < 17:
-            ue.log_warning("Not enough visibility")
-            return False
-        for i in range(8):
-            visibility_array.remove(visibility_array[-1])
-            visibility_array.remove(visibility_array[0])
+            checks_time_laps(self.check_array['visibility'][0], True)
+        visibility_array = remove_last_and_first_frames(visibility_array, 8)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -62,13 +61,8 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], True)
-        if len(visibility_array) < 17:
-            ue.log_warning("Not enough visibility")
-            return False
-        for frame in range(8):
-            visibility_array.remove(visibility_array[0])
-            visibility_array.remove(visibility_array[-1])
+            checks_time_laps(self.check_array['visibility'][0], True)
+        visibility_array = remove_last_and_first_frames(visibility_array, 8)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -76,33 +70,11 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], True)
-        if len(visibility_array) < 17:
-            ue.log_warning("Not enough visibility")
-            return False
-        for frame in visibility_array:
-            ue.log("1: {}".format(frame))
-        for frame in range(5):
-            visibility_array.remove(visibility_array[0])
-            visibility_array.remove(visibility_array[-1])
-        for frame in visibility_array:
-            ue.log("2: {}".format(frame))
+            checks_time_laps(self.check_array['visibility'][0], True)
+        visibility_array = remove_last_and_first_frames(visibility_array, 5)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))
-        ue.log("magic tick {}".format(self.params['magic']['tick'][0]))
-        for frame in range(6):
-            if (visibility_array.index(self.params['magic']['tick'][0])
-                    - frame in visibility_array):
-                visibility_array.remove(visibility_array.
-                                        index(self.params['magic']['tick'][0])
-                                        - frame)
-            if (visibility_array.index(self.params['magic']['tick'][0])
-                    + frame in visibility_array):
-                visibility_array.remove(visibility_array.
-                                        index(self.params['magic']['tick'][0])
-                                        + frame)
-        for frame in visibility_array:
-            ue.log("3: {}".format(frame))
+        visibility_array.remove(self.params['magic']['tick'][0])
         self.params['magic']['tick'].append(random.choice(visibility_array))
         self.params['magic']['tick'].sort()
         return True
@@ -111,10 +83,7 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], False)
-        if len(visibility_array) < 1:
-            ue.log_warning("Not enough visibility")
-            return False
+            checks_time_laps(self.check_array['visibility'][0], False)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -122,29 +91,8 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], False)
-        # remove the last occurences of not visible actor if
-        # it is out of the fieldview
-        first = 0
-        last = 99
-        try:
-            while True:
-                quit = False
-                if visibility_array[0] == first:
-                    visibility_array.remove(first)
-                    first += 1
-                else:
-                    quit = True
-                if visibility_array[-1] == last:
-                    visibility_array.remove(last)
-                    last -= 1
-                elif quit is True:
-                    break
-        except IndexError:
-            pass
-        if len(visibility_array) < 1:
-            ue.log_warning("Not enough visibility")
-            return False
+            checks_time_laps(self.check_array['visibility'][0], False)
+        visibility_array = remove_invisible_frames(visibility_array)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
@@ -152,48 +100,9 @@ class O1Test(O1Base, MirrorTest):
         # we only check the visibility of the first run because in the second
         # one the magic object is not visible
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'][0], False)
-        temp_array = visibility_array
-        # remove the first and last occurences of not visible actor if
-        # it is out of the fieldview
-        first = 0
-        last = 99
-        try:
-            while True:
-                quit = False
-                if visibility_array[0] == first:
-                    visibility_array.remove(first)
-                    first += 1
-                else:
-                    quit = True
-                if visibility_array[-1] == last:
-                    visibility_array.remove(last)
-                    last -= 1
-                elif quit is True:
-                    break
-        except IndexError:
-            pass
-        temp_array = visibility_array
-        occlusion = []
-        occlusion.append([])
-        i = 0
-        if len(temp_array) < 2:
-            ue.log_warning("not enough occluded frame")
-            return False
-        previous_frame = temp_array[0] - 1
-        # distinguish the different occlusion time laps
-        for frame in temp_array:
-            if frame - 1 != previous_frame:
-                i += 1
-                occlusion.append([])
-            occlusion[i].append(frame)
-            previous_frame = frame
-        # if there is less than 2 distinct occlusion the scene will restart
-        if (len(occlusion) < 2 or
-                len(occlusion[0]) == 0 or
-                len(occlusion[1]) == 0):
-            ue.log_warning("not enough occluded frame")
-            return False
+            checks_time_laps(self.check_array['visibility'][0], False)
+        visibility_array = remove_invisible_frames(visibility_array)
+        occlusion = separate_period_of_occlusions(visibility_array)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
