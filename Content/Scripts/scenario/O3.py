@@ -38,11 +38,6 @@ class O3Test(O3Base, MirrorTest):
             if 'ccluder' in name:
                 if 'dynamic_1' in self.movement:
                     params.scale.x = 1.5
-            elif name == self.params['magic']['actor']:
-                # the magic object needs to fly because it won't be a
-                # sphere at both run
-                params.initial_force.z = 3e4 + \
-                    (abs(params.location.y) - 1500) * 4
             elif 'bject' in name:
                 pass
 
