@@ -22,7 +22,7 @@ class Test(Scene):
         nobjects = random.randint(1, 3)
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
-        noccluders = 1 if '2' not in self.movement else 2
+        noccluders = 1 if 'dynamic_2' not in self.movement else 2
         # occluder scale
         occluder_scale = FVector(0.5, 1, 1)
         # array that will contains object names

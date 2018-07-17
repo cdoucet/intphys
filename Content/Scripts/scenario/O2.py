@@ -40,6 +40,10 @@ class O2Test(O2Base, MirrorTest):
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
+        if 'dynamic' in self.movement:
+            location = self.params[magic_actor].location
+            self.params[magic_actor].initial_force.z = \
+                3e4 + (abs(location.y) - 1500) * 4
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
