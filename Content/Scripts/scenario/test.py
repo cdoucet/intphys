@@ -115,6 +115,9 @@ class Test(Scene):
             'tick': -1}
         # array that will contain occluders name
         occluder_names = []
+        if 'static' in self.movement:
+            occluder_scale.x *= 1.5
+            occluder_scale.z *= 1.5
         # TODO remove once it is implemented
         if self.is_occluded:
             for n in range(noccluders):

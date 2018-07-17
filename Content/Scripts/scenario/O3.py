@@ -4,7 +4,6 @@ from scenario.train import Train
 from scenario.test import Test
 from unreal_engine import FVector
 from unreal_engine.classes import ScreenshotManager
-import unreal_engine as ue
 from scenario.checkUtils import checks_time_laps
 from scenario.checkUtils import remove_last_and_first_frames
 from scenario.checkUtils import remove_invisible_frames
@@ -34,12 +33,19 @@ class O3Test(O3Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
+        self.params['Camera'].location.x -= 200
         for name, params in self.params.items():
             if 'ccluder' in name:
                 if 'dynamic_1' in self.movement:
                     params.scale.x = 1.5
+                    params.scale.z = 2.6
+                elif 'dynamic_2' in self.movement:
+                    params.scale.x *= 1.5
             elif 'bject' in name:
-                pass
+                if params.location.x < 0:
+                    params.location.x += 200
+                else:
+                    params.location.x -= 200
 
     # We avoid comparing the locations of the magic actor during magic tick
     def set_magic_tick(self):
@@ -47,33 +53,41 @@ class O3Test(O3Base, MirrorTest):
             return False
 
     def setup_magic_actor(self):
+        actor_max_scale = 0
+        for name, actor in self.actors.items():
+            if 'bject' in name and actor.scale.x > actor_max_scale:
+                actor_max_scale = actor.scale.x
         if self.run == 1:
             magic_actor = self.actors[self.params['magic']['actor']]
             current_location = magic_actor.actor.get_actor_location()
             length = 0
             target_location = FVector(0, 0, 0)
-            if 'static' in self.movement:
-                length = random.randint(300, 500)
+            if self.is_occluded is False and 'static' not in self.movement:
+                length = random.uniform(400, 600)
+                target_location = FVector(current_location.x,
+                                          current_location.y + length,
+                                          current_location.z)
+            elif 'static' in self.movement:
+                length = random.uniform(400, 600)
                 target_location = FVector(current_location.x + length,
                                           current_location.y,
                                           current_location.z)
             elif '1' in self.movement:
                 if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(300, 800)
+                    length = random.uniform(300, 600 - actor_max_scale * 100)
                 else:
-                    length = random.randint(-800, -300)
+                    length = random.uniform(-600 + actor_max_scale * 100, -300)
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
             else:
                 if magic_actor.actor.get_actor_location().y > 0:
-                    length = random.randint(200, 350)
+                    length = random.uniform(200, 350)
                 else:
-                    length = random.randint(-350, -200)
+                    length = random.uniform(-350, -200)
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
-            ue.log("jump length = {}".format(length))
             magic_actor.set_location(target_location)
 
     # this function is here so you can put only the attribute that please you
@@ -129,6 +143,10 @@ class O3Test(O3Base, MirrorTest):
         return True
 
     def dynamic_2_occluded(self):
+        self.check_array['visibility'][0] = \
+            checks_time_laps(self.check_array['visibility'][0], False)
+        self.check_array['visibility'][1] = \
+            checks_time_laps(self.check_array['visibility'][1], False)
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], False)
         visibility_array = remove_invisible_frames(visibility_array)
