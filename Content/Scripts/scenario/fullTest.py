@@ -2,6 +2,8 @@ import unreal_engine as ue
 from scenario.test import Test
 
 
+# FullTest is used for blocks O4 and O5
+
 class FullTest(Test):
     def play_run(self):
         if self.run == 4:
@@ -38,3 +40,6 @@ class FullTest(Test):
 
     def is_over(self):
         return True if self.run == 4 else False
+
+    def is_possible(self):
+        return True if self.run < 3 else False

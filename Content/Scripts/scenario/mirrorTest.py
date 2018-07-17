@@ -143,6 +143,11 @@ class MirrorTest(Test):
     def is_over(self):
         return True if self.run == 2 else False
 
+    def is_possible(self):
+        # True for the first 2 runs, then False for runs 3 and 4 (as
+        # implemented in generate_magic_status)
+        return True
+
     def set_magic_tick(self):
         if super().set_magic_tick() is False:
             return False

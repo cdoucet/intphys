@@ -21,7 +21,7 @@ class Scene:
         self.status_header = {
                 'name': self.name,
                 'type': 'train' if 'Train' in type(self).__name__ else 'test',
-                'is_possible': True if 'Train' in type(self).__name__ else False
+                'is_possible': self.is_possible()
                 }
 
     def get_status(self):
@@ -60,6 +60,11 @@ class Scene:
 
     def is_valid(self):
         return all([a.is_valid for a in self.actors.values()])
+
+    def is_possible(self):
+        """Return True if the current run is plausible, False otherwise"""
+        # implementation delegated to Train and Test subclasses
+        raise NotImplementedError
 
     def spawn_actors(self):
         self.actors = {}
