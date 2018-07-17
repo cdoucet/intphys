@@ -8,7 +8,8 @@ from tools.saver import Saver
 
 
 class Director(object):
-    def __init__(self, world, params_file, size, output_dir, tick_interval=2):
+    def __init__(self, world, params_file, size, output_dir,
+                 tick_interval=2, pause_duration=30):
         self.world = world
         self.scenes = []
         self.scene = 0
@@ -27,8 +28,11 @@ class Director(object):
         # self.ticker = Tick(tick_interval=tick_interval)
         # self.ticker.start()
         self.ticker = 0
-        self.pause = False
-        self.was_paused = False
+
+        self.pause_duration = pause_duration
+        self.pause_remaining = 0
+        self.is_paused = False
+
         tools.materials.load()
         self.restarted = 0
 
@@ -126,20 +130,19 @@ class Director(object):
         self.scenes[self.scene].capture()
 
     def tick(self, dt):
-        """ this method is called at each game tick by UE """
-        if self.pause is True:
-            # TODO
-            time.sleep(2)
-            self.pause = False
+        """this method is called at each game tick by UE"""
+        if self.pause_remaining != 0:
+            self.pause_remaining -= 1
             return
+
         # launch new scene every 200 tick except if a pause just finished
-        if self.was_paused is False and self.ticker % 200 == 0:
+        if self.is_paused is False and self.ticker % 200 == 0:
             if self.ticker != 0:
                 self.stop_scene()
             self.play_scene()
             # pause to let textures load
-            self.pause = True
-            self.was_paused = True
+            self.pause_remaining = self.pause_duration
+            self.is_paused = True
             set_game_paused(self.world, True)
             return
 
@@ -153,14 +156,14 @@ class Director(object):
                 self.ticker = 0
                 self.play_scene()
                 # pause to let textures load
-                self.pause = True
-                self.was_paused = True
+                self.pause_remaining = self.pause_duration
+                self.is_paused = True
                 set_game_paused(self.world, True)
                 return
         except IndexError:
             pass
 
-        self.was_paused = False
+        self.is_paused = False
         set_game_paused(self.world, False)
         if self.scene < len(self.scenes):
             self.scenes[self.scene].tick()

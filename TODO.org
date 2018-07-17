@@ -1,51 +1,19 @@
 * for intphys-2.0 release
-  Main objective is to replicate intphys-1.0 with the following
-  scenarii: apparition/disparition, teleportation, changement de
-  texture, changement de forme (en vol ou glissant)
-
-** steps for test O1 [2/4]
-*** DONE static visible
-    CLOSED: [2018-03-24 sam. 19:15]
-- 1 actors
-- then up to 3 actors
-*** TODO static occluded
-- implement check run
-- have working occluders
-*** DONE dynamic visible
-    CLOSED: [2018-04-25 mer. 19:40]
-- implement the corridors and force
-- implement dynamic check
-*** TODO dynamic occluded
-** TODO generate and validate a little database
-* various bugs [0/4]
-** TODO lighting
-   - bug: increasing illumination in some scenes (when walls)
-   - we want 1 skylight and from 0 to 2 (random) directional lights.
-** TODO packaged mode
-*** DONE Segmentation fault when more than 10 scenes to generate
-    CLOSED: [2018-05-23 mer. 16:27]
-Seems to be related to the number of actors spawned but not sure.
-*** TODO Fix the code base to run in packaged mode [1/3]
-- [X] depth and mask capture
-- [ ] capture in headless mode
-- [ ] friction
-*** TODO Unexpected crash at startup with
-Error: appError called: Assertion failed: ( Y*NumCells.X + X ) < Cells.Num()
-[File:Runtime/SlateCore/Public/Input/HittestGrid.h] [Line: 182]
-** TODO occludeurs qui s'enfoncent un peu dans le sol
-solution : inclure un légère translation vers le haut pendant la
-rotation (à base de cosinus, comme fait dans intphys-1.0)
-* desired features
-** TODO reset the sky sphere rotation between scenes
-   - integrate SkySphere as a Pyhton class
-** TODO implement different classes of motion
-   static, sliding, rolling(?), falling, walking (agent)
-** TODO run on a headless cluster
-*** The problem is remote openGl rendering
-- with DISPLAY=:0 that works remotely but corrupt the host's X server!
-- http://www.virtualgl.org can be a solution
-*** alternatively update to UE-4.14
-- https://www.unrealengine.com/blog/unreal-engine-4-14-released
-- New: Added "offscreen" video driver to SDL so the engine can now
-  create GL context on headless machines not running any display
-  servers (EGL is enough).
+** bug: message "Warning: unable to load object /Game/Meshes/M_Basic_Wall.M_Basic_Wall"
+** review status.json
+   Want mask values in header
+** bug from Erwan
+Dans les scenes visible, je vérifie que le magic tick ne se passe pas
+un certain nombre de frame avant que l'acteur devienne visible pour la
+première fois et un certain nombre de frame avant que l'acteur ne
+devienne invisible pour la dernière fois. Le soucis, c'est que si à la
+fin de sa course l'objet s'immobilise tout au bord de l'écran, il est
+stricto sensu "visible", même si il n'y a qu'un seul pixel visible
+(presque invisible pour l'oeil humain) et que le reste est
+hors-champs. Le magic tick pourra alors se passer à ce moment, rendant
+le tour de magie presque impossible à voir pour un oeil humain (et je
+pense plus difficile pour un ordinateur). Je te laisse juger de
+l'urgence
+* question for RR & ED
+** block O4
+hypothèse des 2 sous cas : arrêt et inversion de trajectoire. Leur proposer l'idée.

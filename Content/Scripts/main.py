@@ -48,10 +48,20 @@ class Main:
             output_dir = None
             ue.log_warning('INTPHYS_OUTPUTDIR not defined, capture disabled')
 
+        # setup the pause duration (in number of ticks) at the
+        # beginning of each run (to let time for the texture to be
+        # correctly displayed)
+        try:
+            pause_duration = int(os.environ['INTPHYS_PAUSEDURATION'])
+        except:
+            pause_duration = 50
+
         # setup the director with the list of scenes to generate, 100
         # images per video at the game resolution
         size = (resolution[0], resolution[1], 100)
-        self.director = Director(world, scenes_json, size, output_dir)
+        self.director = Director(
+            world, scenes_json, size, output_dir,
+            pause_duration=pause_duration)
 
     def tick(self, dt):
         # let the director handle the tick

@@ -1,0 +1,17 @@
+{
+    "scenario_O1" :
+    {
+        "test_visible" :
+        {
+            "static" : 1,
+            "dynamic_1" : 0,
+            "dynamic_2" : 0
+        },
+        "test_occluded" :
+        {
+            "static" : 0,
+            "dynamic_1" : 0,
+            "dynamic_2" : 0
+        }
+    }
+}
