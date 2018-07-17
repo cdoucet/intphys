@@ -1,8 +1,19 @@
 * for intphys-2.0 release
 ** bug: message "Warning: unable to load object /Game/Meshes/M_Basic_Wall.M_Basic_Wall"
-** bug : flou quand un acteur disparait
-** bug : pause initiale.
-Virer time.sleep et décompter les ticks. ticks de pause en paramètre
-(dépend de la machine).
 ** review status.json
    Want mask values in header
+** bug from Erwan
+Dans les scenes visible, je vérifie que le magic tick ne se passe pas
+un certain nombre de frame avant que l'acteur devienne visible pour la
+première fois et un certain nombre de frame avant que l'acteur ne
+devienne invisible pour la dernière fois. Le soucis, c'est que si à la
+fin de sa course l'objet s'immobilise tout au bord de l'écran, il est
+stricto sensu "visible", même si il n'y a qu'un seul pixel visible
+(presque invisible pour l'oeil humain) et que le reste est
+hors-champs. Le magic tick pourra alors se passer à ce moment, rendant
+le tour de magie presque impossible à voir pour un oeil humain (et je
+pense plus difficile pour un ordinateur). Je te laisse juger de
+l'urgence
+* question for RR & ED
+** block O4
+hypothèse des 2 sous cas : arrêt et inversion de trajectoire. Leur proposer l'idée.
