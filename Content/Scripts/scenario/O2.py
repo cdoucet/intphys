@@ -4,8 +4,12 @@ from actors.object import Object
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
-from unreal_engine import FVector
-import unreal_engine as ue
+from scenario.checkUtils import checks_time_laps
+from scenario.checkUtils import remove_last_and_first_frames
+from scenario.checkUtils import remove_invisible_frames
+from scenario.checkUtils import separate_period_of_occlusions
+from scenario.checkUtils import remove_frame_after_first_bounce
+from scenario.checkUtils import store_actors_locations
 
 
 class O2Base:
@@ -15,20 +19,11 @@ class O2Base:
 
     @property
     def description(self):
-        return 'bloc O2'
+        return 'shape constancy'
 
 
 class O2Train(O2Base, Train):
-    def __init__(self, world, saver):
-        super().__init__(world, saver)
-
-    def generate_parameters(self):
-        super().generate_parameters()
-
-        for name, params in self.params.items():
-            if 'object' in name:
-                # objects can be of any shapes, not only sphere
-                params.mesh = random.choice(list(Object.shape.keys()))
+    pass
 
 
 class O2Test(O2Base, MirrorTest):
@@ -40,19 +35,19 @@ class O2Test(O2Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
-        # TODO make object fly (maybe it's not implemented)
         magic_actor = self.params['magic']['actor']
         magic_mesh = self.params[magic_actor].mesh
         new_mesh = random.choice(
             [m for m in Object.shape.keys() if m != magic_mesh])
         self.params['magic']['mesh'] = new_mesh
+        if 'dynamic' in self.movement:
+            location = self.params[magic_actor].location
+            self.params[magic_actor].initial_force.z = \
+                3e4 + (abs(location.y) - 1500) * 4
 
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
-        location = FVector()
-        location.x = int(round(magic_actor.get_actor_location().x))
-        location.y = int(round(magic_actor.get_actor_location().y))
-        location.z = int(round(magic_actor.get_actor_location().z))
+        location = store_actors_locations(self.actors)
         self.check_array['location'][self.run].append(location)
         frame = (self.ticker / 2) - 0.5
         IsActorInFrame = ScreenshotManager.IsActorInFrame(magic_actor, frame)
@@ -78,182 +73,82 @@ class O2Test(O2Base, MirrorTest):
                     else self.params[magic_actor_type].mesh)
         magic_actor.set_mesh_str(Object.shape[new_mesh])
 
-    """
-    def apply_magic_trick(self):
-        # swap the mesh of the magic actor
-        magic_actor = self.actors[self.params['magic']['actor']]
-        current_mesh = magic_actor.mesh_str.split('.')[-1]
-        mesh_1 = self.params['magic']['mesh']
-        mesh_2 = self.params[self.params['magic']['actor']].mesh
-        new_mesh = mesh_1 if current_mesh == mesh_2 else mesh_2
-        magic_actor.set_mesh_str(Object.shape[new_mesh])
-    """
-
     def static_visible(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array["visibility"], True)
-        if len(visibility_array) < 17:
-            ue.log_warning("not enough visible frame")
-            return False
-        for frame in range(8):
-            visibility_array.remove(visibility_array[0])
-            visibility_array.remove(visibility_array[-1])
+            checks_time_laps(self.check_array["visibility"], True)
+        visibility_array = remove_last_and_first_frames(visibility_array, 8)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
     def dynamic_1_visible(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array["visibility"], True)
+            checks_time_laps(self.check_array["visibility"], True)
         grounded_array = \
-            self.checks_time_laps(self.check_array["grounded"], False)
+            checks_time_laps(self.check_array["grounded"], False)
         # check if the actor is visible AND up in the air
         final_array = []
-        try:
-            for frame in range(8):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            ue.log_warning("not enough visible frame")
-            return False
+        grounded_array = remove_frame_after_first_bounce(grounded_array)
+        visibility_array = remove_last_and_first_frames(visibility_array, 8)
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        if len(final_array) < 1:
-            ue.log_warning("not enough visible and flying frame")
-            return False
         self.params['magic']['tick'] = random.choice(final_array)
         return True
 
     def dynamic_2_visible(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array["visibility"], True)
-        try:
-            for frame in range(5):
-                visibility_array.remove(visibility_array[0])
-                visibility_array.remove(visibility_array[-1])
-        except IndexError:
-            ue.log_warning("not enough visible frame")
-            return False
+            checks_time_laps(self.check_array["visibility"], True)
         grounded_array = \
-            self.checks_time_laps(self.check_array["grounded"], False)
-        # check if the actor is visible AND up in the air
+            checks_time_laps(self.check_array["grounded"], False)
+        grounded_array = remove_frame_after_first_bounce(grounded_array)
+        visibility_array = remove_last_and_first_frames(visibility_array, 5)
         final_array = []
+        # check if the actor is visible AND up in the air
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        if len(final_array) < 2:
-            ue.log_warning("not enough visible and flying frame")
-            return False
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(final_array))
-        for frame in range(6):
-            if (final_array.index(self.params['magic']['tick'][0])
-                    - frame in final_array):
-                final_array.remove(final_array.
-                                   index(self.params['magic']['tick'][0])
-                                   - frame)
-            if (final_array.index(self.params['magic']['tick'][0])
-                    + frame in final_array):
-                final_array.remove(final_array.
-                                   index(self.params['magic']['tick'][0])
-                                   + frame)
+        final_array.remove(self.params['magic']['tick'][0])
         self.params['magic']['tick'].append(random.choice(final_array))
         self.params['magic']['tick'].sort()
         return True
 
     def static_occluded(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array['visibility'], False)
-        if len(visibility_array) < 1:
-            ue.log_warning("not enough good frame")
-            return False
+            checks_time_laps(self.check_array['visibility'], False)
         self.params['magic']['tick'] = random.choice(visibility_array)
         return True
 
     def dynamic_1_occluded(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array["visibility"], False)
+            checks_time_laps(self.check_array["visibility"], False)
         grounded_array = \
-            self.checks_time_laps(self.check_array["grounded"], False)
-        # remove the last occurences of not visible actor if
-        # it is out of the fieldview
-        first = 0
-        last = 99
-        try:
-            while True:
-                quit = False
-                if visibility_array[0] == first:
-                    visibility_array.remove(first)
-                    first += 1
-                else:
-                    quit = True
-                if visibility_array[-1] == last:
-                    visibility_array.remove(last)
-                    last -= 1
-                elif quit is True:
-                    break
-        except IndexError:
-            pass
+            checks_time_laps(self.check_array["grounded"], False)
+        grounded_array = remove_frame_after_first_bounce(grounded_array)
+        visibility_array = remove_invisible_frames(visibility_array)
         # check if the actor is visible AND up in the air
         final_array = []
         for frame in grounded_array:
             if frame in visibility_array:
                 final_array.append(frame)
-        if len(final_array) < 1:
-            ue.log_warning("Not enough final choices")
-            return False
         self.params['magic']['tick'] = random.choice(final_array)
         return True
 
     def dynamic_2_occluded(self):
         visibility_array = \
-            self.checks_time_laps(self.check_array["visibility"], False)
+            checks_time_laps(self.check_array["visibility"], False)
         grounded_array = \
-            self.checks_time_laps(self.check_array["grounded"], False)
-        # remove the last and the first occurences of not visible actor if
-        # it is out of the fieldview
-        first = 0
-        last = 99
-        try:
-            while True:
-                quit = False
-                if visibility_array[0] == first:
-                    visibility_array.remove(first)
-                    first += 1
-                else:
-                    quit = True
-                if visibility_array[-1] == last:
-                    visibility_array.remove(last)
-                    last -= 1
-                elif quit is True:
-                    break
-        except IndexError:
-            pass
-        occlusion = []
-        occlusion.append([])
-        temp_array = visibility_array
-        if len(temp_array) < 2:
-            ue.log_warning("not enough occluded frame")
-            return False
-        previous_frame = temp_array[0] - 1
-        i = 0
-        # distinguish the different occlusion time laps
-        for frame in temp_array:
-            if frame - 1 != previous_frame:
-                i += 1
-                occlusion.append([])
-            if frame in grounded_array:
-                occlusion[i].append(frame)
-            previous_frame = frame
-        # if there is less than 2 distinct occlusion the scene will restart
-        # same if there is less than 1 frame where the actor is not grounded
-        # in each occlusion
-        if (len(occlusion) < 2 or
-                len(occlusion[0]) == 0 or
-                len(occlusion[1]) == 0):
-            ue.log_warning("not enough occluded frame")
-            return False
+            checks_time_laps(self.check_array["grounded"], False)
+        grounded_array = remove_frame_after_first_bounce(grounded_array)
+        visibility_array = remove_invisible_frames(visibility_array)
+        occlusions = separate_period_of_occlusions(visibility_array)
+        for occlusion in occlusions:
+            temp_array = occlusion
+            for frame in temp_array:
+                if frame not in grounded_array:
+                    occlusion.remove(frame)
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        self.params['magic']['tick'].append(random.choice(occlusions[0]))
+        self.params['magic']['tick'].append(random.choice(occlusions[1]))
         return True
