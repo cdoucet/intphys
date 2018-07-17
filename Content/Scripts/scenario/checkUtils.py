@@ -1,10 +1,11 @@
+from unreal_engine import FVector, FRotator
 import unreal_engine as ue
 
 
+# check_array can either be an
+# array of both runs or an array of one run
+# we are looking for the desired bool in this/these array(s)
 def checks_time_laps(check_array, desired_bool):
-    # check_array can either be an
-    # array of both runs or an array of one run
-    # we are looking for the desired bool in this/these array(s)
     res = []
     if len(check_array) == 2:
         if len(check_array[0]) == len(check_array[1]):
@@ -24,59 +25,67 @@ def checks_time_laps(check_array, desired_bool):
     return res
 
 
-def remove_invisible_frames(array):
-    # remove the last occurences of not visible actor if
-    # it is out of the fieldview
+# currently used in each dynamic scene to
+# make sure the magic tick doesn't happen when the actor is hidden
+# remove the last occurences of not visible actor if
+# it is invisible
+def remove_invisible_frames(visibility_array):
     first = 0
     last = 99
     while True:
         quit = False
-        if array[0] == first:
-            array.remove(first)
+        if visibility_array[0] == first:
+            visibility_array.remove(first)
             first += 1
         else:
             quit = True
-        if array[-1] == last:
-            array.remove(last)
+        if visibility_array[-1] == last:
+            visibility_array.remove(last)
             last -= 1
         elif quit is True:
             break
-    return array
+    return visibility_array
 
 
-def remove_last_and_first_frames(array, nb_frames):
+# used to make sure that the magic tick doesn't happen too soon or
+# too late in the scene, making it hard to see
+def remove_last_and_first_frames(visibility_array, nb_frames):
     for frame in range(nb_frames):
-        array.remove(array[0])
-        array.remove(array[-1])
-    return array
+        visibility_array.remove(visibility_array[0])
+        visibility_array.remove(visibility_array[-1])
+    return visibility_array
 
 
-def separate_period_of_occlusions(array):
+# currently used exclusively in dynamic 2 occluded to make sure
+# each magic tick happen between a different occluder
+def separate_period_of_occlusions(visibility_array):
     i = 0
-    occlusion = []
-    occlusion.append([])
-    previous_frame = array[0] - 1
+    occlusion_periods = []
+    occlusion_periods.append([])
+    previous_frame = visibility_array[0] - 1
     # distinguish the different occlusion time laps
-    for frame in array:
+    for frame in visibility_array:
         if frame - 1 != previous_frame:
             i += 1
-            occlusion.append([])
-        occlusion[i].append(frame)
+            occlusion_periods.append([])
+        occlusion_periods[i].append(frame)
         previous_frame = frame
     # if there is less than 2 distinct occlusion the scene will restart
-    if (len(occlusion) < 2 or
-            len(occlusion[0]) == 0 or
-            len(occlusion[1]) == 0):
+    if (len(occlusion_periods) < 2 or
+            len(occlusion_periods[0]) == 0 or
+            len(occlusion_periods[1]) == 0):
         ue.log_warning("not enough occluded frame")
         raise IndexError()
-    return occlusion
+    return occlusion_periods
 
 
-def remove_frame_after_first_bounce(array):
-    previous = array[0]
+# currently used in O2 exclusively to make the magic tick happen
+# before the object bounce on the ground
+def remove_frame_after_first_bounce(grounded_array):
+    previous = grounded_array[0]
     delete = False
-    temp_array = array
-    for frame in array:
+    temp_array = grounded_array
+    for frame in grounded_array:
         if delete is True:
             temp_array.remove(frame)
             continue
@@ -84,5 +93,20 @@ def remove_frame_after_first_bounce(array):
             delete = True
     return temp_array
 
-def store_actors_locations(actors):
 
+# we check if the location and rotation
+# of each object is the same at each run during the magic tick
+def store_actors_locations(actors):
+    result = []
+    for name, actor in actors.items():
+        result.append([])
+        result[-1].append(FVector())
+        result[-1][0].x = int(round(actor.actor.get_actor_location().x))
+        result[-1][0].y = int(round(actor.actor.get_actor_location().y))
+        result[-1][0].z = int(round(actor.actor.get_actor_location().z))
+        result[-1].append(FRotator())
+        result[-1][1].yaw = int(round(actor.actor.get_actor_rotation().yaw))
+        result[-1][1].roll = int(round(actor.actor.get_actor_rotation().roll))
+        result[-1][1].pitch = \
+            int(round(actor.actor.get_actor_rotation().pitch))
+    return result

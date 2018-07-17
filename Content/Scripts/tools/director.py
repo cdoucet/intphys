@@ -68,6 +68,7 @@ class Director(object):
                 else:
                     raise BufferError("Didn't find 'train' nor 'test' in one" +
                                       "scenario of the json file")
+        self.total_scenes = len(self.scenes)
 
     def play_scene(self):
         if self.scene >= len(self.scenes):
@@ -167,6 +168,8 @@ class Director(object):
             if self.ticker % 2 == 1:
                 self.capture()
         else:
-            ue.log("Restarted {} scenes.".format(self.restarted))
+            if self.restarted != 0:
+                ue.log("Generated {}% more scenes due to restarted scenes".
+                       format((self.restarted / self.total_scenes) * 100))
             exit_ue("The end")
         self.ticker += 1

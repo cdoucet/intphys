@@ -3,7 +3,6 @@ import random
 from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from unreal_engine.classes import ScreenshotManager
-from unreal_engine import FVector
 from scenario.checkUtils import checks_time_laps
 from scenario.checkUtils import remove_last_and_first_frames
 from scenario.checkUtils import remove_invisible_frames
@@ -18,7 +17,7 @@ class O1Base:
 
     @property
     def description(self):
-        return 'bloc O1'
+        return 'object permanence'
 
 
 class O1Train(O1Base, Train):
@@ -40,9 +39,6 @@ class O1Test(O1Base, MirrorTest):
     def fill_check_array(self):
         magic_actor = self.actors[self.params['magic']['actor']].actor
         location = store_actors_locations(self.actors)
-        location.x = int(round(magic_actor.get_actor_location().x))
-        location.y = int(round(magic_actor.get_actor_location().y))
-        location.z = int(round(magic_actor.get_actor_location().z))
         self.check_array['location'][self.run].append(location)
         frame = (self.ticker / 2) - 0.5
         IsActorInFrame = ScreenshotManager.IsActorInFrame(magic_actor, frame)

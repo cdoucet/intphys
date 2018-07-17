@@ -146,19 +146,50 @@ class MirrorTest(Test):
     def set_magic_tick(self):
         if super().set_magic_tick() is False:
             return False
+        magic_tick = self.params['magic']['tick']
         if isinstance(self.params['magic']['tick'], int):
-            magic_tick = self.params['magic']['tick']
-            if self.check_array['location'][0][magic_tick] != \
-                    self.check_array['location'][1][magic_tick]:
-                ue.log_warning("Magic actor location doesn't match" +
-                               " in each possible run")
-                return False
+            for actor in range(len(self.check_array['location'][0][magic_tick])):
+                if (self.check_array['location'][0][magic_tick][actor][0].x !=
+                        self.check_array['location'][1][magic_tick][actor][0].x or
+                        self.check_array['location'][0][magic_tick][actor][0].y !=
+                        self.check_array['location'][1][magic_tick][actor][0].y or
+                        self.check_array['location'][0][magic_tick][actor][0].z !=
+                        self.check_array['location'][1][magic_tick][actor][0].z or
+                        self.check_array['location'][0][magic_tick][actor][1].yaw !=
+                        self.check_array['location'][1][magic_tick][actor][1].yaw or
+                        self.check_array['location'][0][magic_tick][actor][1].roll !=
+                        self.check_array['location'][1][magic_tick][actor][1].roll or
+                        self.check_array['location'][0][magic_tick][actor][1].pitch !=
+                        self.check_array['location'][1][magic_tick][actor][1].pitch):
+                    ue.log_warning("An actor location doesn't match" +
+                                   " in each possible run")
+                    return False
         elif isinstance(self.params['magic']['tick'], list):
-            magic_tick = self.params['magic']['tick']
-            if self.check_array['location'][0][magic_tick[0]] != \
-                    self.check_array['location'][1][magic_tick[0]] or \
-                    self.check_array['location'][0][magic_tick[1]] != \
-                    self.check_array['location'][1][magic_tick[1]]:
-                ue.log_warning("Magic actor location doesn't match " +
-                               " in each possible run")
-                return False
+            for actor in range(len(self.check_array['location'][0][magic_tick[0]])):
+                if (self.check_array['location'][0][magic_tick[0]][actor][0].x !=
+                        self.check_array['location'][1][magic_tick[0]][actor][0].x or
+                        self.check_array['location'][0][magic_tick[0]][actor][0].y !=
+                        self.check_array['location'][1][magic_tick[0]][actor][0].y or
+                        self.check_array['location'][0][magic_tick[0]][actor][0].z !=
+                        self.check_array['location'][1][magic_tick[0]][actor][0].z or
+                        self.check_array['location'][0][magic_tick[0]][actor][1].yaw !=
+                        self.check_array['location'][1][magic_tick[0]][actor][1].yaw or
+                        self.check_array['location'][0][magic_tick[0]][actor][1].roll !=
+                        self.check_array['location'][1][magic_tick[0]][actor][1].roll or
+                        self.check_array['location'][0][magic_tick[0]][actor][1].pitch !=
+                        self.check_array['location'][1][magic_tick[0]][actor][1].pitch or
+                        self.check_array['location'][0][magic_tick[1]][actor][0].x !=
+                        self.check_array['location'][1][magic_tick[1]][actor][0].x or
+                        self.check_array['location'][0][magic_tick[1]][actor][0].y !=
+                        self.check_array['location'][1][magic_tick[1]][actor][0].y or
+                        self.check_array['location'][0][magic_tick[1]][actor][0].z !=
+                        self.check_array['location'][1][magic_tick[1]][actor][0].z or
+                        self.check_array['location'][0][magic_tick[1]][actor][1].yaw !=
+                        self.check_array['location'][1][magic_tick[1]][actor][1].yaw or
+                        self.check_array['location'][0][magic_tick[1]][actor][1].roll !=
+                        self.check_array['location'][1][magic_tick[1]][actor][1].roll or
+                        self.check_array['location'][0][magic_tick[1]][actor][1].pitch !=
+                        self.check_array['location'][1][magic_tick[1]][actor][1].pitch):
+                    ue.log_warning("An actor location doesn't match" +
+                                   " in each possible run")
+                    return False
