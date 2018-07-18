@@ -10,6 +10,7 @@ from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import store_actors_locations
 from scenario.checkUtils import remove_frames_close_to_magic_tick
+import unreal_engine as ue
 
 
 class O3Base:
@@ -41,7 +42,10 @@ class O3Test(O3Base, MirrorTest):
                     params.scale.x = 1.5
                     params.scale.z = 2.6
                 elif 'dynamic_2' in self.movement:
-                    params.scale.x *= 1.5
+                    params.scale.x = 1
+                    params.scale.z = 2.7
+                    params.location.y += (100 if params.location.y > 0
+                                          else -100)
             elif 'bject' in name:
                 if params.location.x < 0:
                     params.location.x += 200
@@ -160,4 +164,6 @@ class O3Test(O3Base, MirrorTest):
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
         self.params['magic']['tick'].append(random.choice(occlusion[1]))
+        ue.log("{} and {}".format(self.params['magic']['tick'][0],
+                                  self.params['magic']['tick'][1]))
         return True
