@@ -16,6 +16,9 @@ class Test(Scene):
         self.ticker = 0
         super().__init__(world, saver)
 
+    def is_test_scene(self):
+        return True
+
     def get_status_header(self):
         header = super().get_status_header()
         header['magic'] = self.params['magic']

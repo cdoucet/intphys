@@ -1,5 +1,6 @@
-import json
 import importlib
+import json
+import shutil
 import time
 import unreal_engine as ue
 import tools.materials
@@ -105,7 +106,16 @@ class Director(object):
     def restart_scene(self):
         ue.log('Restarting scene')
         self.restarted += 1
+
+        # clear the saver from any saved content and delete the output
+        # directory of the failed scene
         self.saver.reset(True)
+        output_dir = self.scenes[self.scene].get_scene_subdir(
+            self.scene, len(self.scenes))
+        if self.scenes[self.scene].is_test_scene():
+            output_dir = '/'.join(output_dir.split('/')[:-1])
+        shutil.rmtree(output_dir)
+
         is_test = True if 'test' in \
             type(self.scenes[self.scene]).__name__.lower() else False
         module = importlib.import_module(

@@ -74,6 +74,11 @@ class Scene:
         # implementation delegated to Train and Test subclasses
         raise NotImplementedError
 
+    def is_test_scene(self):
+        """Return True if this is a Test scene, False for a Train scene"""
+        # implementation delegated to Train and Test subclasses
+        raise NotImplementedError
+
     def spawn_actors(self):
         self.actors = {}
         for actor, actor_params in self.params.items():

@@ -34,7 +34,7 @@ class Train(Scene):
             rotation = FRotator(
                 0, 0, 360*random.random())
             mesh = random.choice([m for m in Object.shape.keys()])
-            self.params[f'object_{n+1}'] = ObjectParams(
+            self.params['object_{}'.format(n+1)] = ObjectParams(
                 mesh=mesh,
                 material=get_random_material('Object'),
                 location=location,
@@ -57,7 +57,7 @@ class Train(Scene):
                     moves.append(random.randint(0, 200))
                 else:
                     moves.append(random.randint(moves[-1], 200))
-            self.params[f'occluder_{n+1}'] = OccluderParams(
+            self.params['occluder_{}'.format(n+1)] = OccluderParams(
                 material=get_random_material('Wall'),
                 location=location,
                 rotation=rotation,
@@ -87,6 +87,9 @@ class Train(Scene):
 
     def is_possible(self):
         return True
+
+    def is_test_scene(self):
+        return False
 
     def capture(self):
         ignored_actors = []
