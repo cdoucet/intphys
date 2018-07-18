@@ -166,6 +166,7 @@ class MirrorTest(Test):
                     ue.log_warning("2 An actor location doesn't match" +
                                    " in each possible run")
                     return False
+        """
         # checking the location and rotation of each actor (except magic one)
         # in the first and last frame of each run
         for actor in \
@@ -174,21 +175,36 @@ class MirrorTest(Test):
                 continue
             if (self.compare_location_in_frame(actor, 0) is False or
                     self.compare_location_in_frame(actor, 99) is False):
-                ue.log_warning("3 An actor location doesn't match" +
+                ue.log_warning("An actor location doesn't match" +
                                " in each possible run")
+                for j in range(100):
+                    ue.log_warning("{}: {} vs {}, {} vs {}, {} vs {} | {} vs {}, {} vs {}, {} vs {}"
+                                   .format(j, self.check_array['location'][0][j][actor][0].x,
+                                           self.check_array['location'][1][j][actor][0].x,
+                                           self.check_array['location'][0][j][actor][0].y,
+                                           self.check_array['location'][1][j][actor][0].y,
+                                           self.check_array['location'][0][j][actor][0].z,
+                                           self.check_array['location'][1][j][actor][0].z,
+                                           self.check_array['location'][0][j][actor][1].yaw,
+                                           self.check_array['location'][1][j][actor][1].yaw,
+                                           self.check_array['location'][0][j][actor][1].roll,
+                                           self.check_array['location'][1][j][actor][1].roll,
+                                           self.check_array['location'][0][j][actor][1].pitch,
+                                           self.check_array['location'][1][j][actor][1].pitch))
                 return False
+        """
 
     def compare_location_in_frame(self, actor, frame):
         return (
             self.check_array['location'][0][frame][actor][0].x ==
-            self.check_array['location'][1][frame][actor][0].x or
+            self.check_array['location'][1][frame][actor][0].x and
             self.check_array['location'][0][frame][actor][0].y ==
-            self.check_array['location'][1][frame][actor][0].y or
+            self.check_array['location'][1][frame][actor][0].y and
             self.check_array['location'][0][frame][actor][0].z ==
-            self.check_array['location'][1][frame][actor][0].z or
+            self.check_array['location'][1][frame][actor][0].z and
             self.check_array['location'][0][frame][actor][1].yaw ==
-            self.check_array['location'][1][frame][actor][1].yaw or
+            self.check_array['location'][1][frame][actor][1].yaw and
             self.check_array['location'][0][frame][actor][1].roll ==
-            self.check_array['location'][1][frame][actor][1].roll or
+            self.check_array['location'][1][frame][actor][1].roll and
             self.check_array['location'][0][frame][actor][1].pitch ==
             self.check_array['location'][1][frame][actor][1].pitch)
