@@ -44,14 +44,12 @@ class Saver:
             int(self.size[0]), int(self.size[1]), int(self.size[2]),
             None, verbose)
 
-    def capture(self, ignored_actors, status_header, status):
+    def set_status_header(self, header):
+        self.status_header = header
+
+    def capture(self, ignored_actors, status):
         """Push the scene's current screenshot and status to memory"""
         if not self.is_dry_mode:
-            # save the header only once
-            if self.status_header == {}:
-                self.status_header = status_header
-                self.status_header['camera'] = self.camera.get_status()
-
             # scene, depth and masks images are stored from C++
             ScreenshotManager.Capture(ignored_actors)
 

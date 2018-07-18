@@ -14,6 +14,7 @@ class MirrorTest(Test):
         #       4 if self.saver.is_dry_mode is False else 2))
 
     def stop_run(self, scene_index, total):
+        super().stop_run()
         if self.run == 1 and self.set_magic_tick() is False:
             self.del_actors()
             return False

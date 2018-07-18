@@ -68,6 +68,7 @@ class Train(Scene):
                 start_up=random.choice([True, False]))
 
     def stop_run(self, scene_index, total):
+        super().stop_run()
         self.del_actors()
         if not self.saver.is_dry_mode:
             self.saver.save(self.get_scene_subdir(scene_index, total))

@@ -12,6 +12,7 @@ class FullTest(Test):
         super().play_run()
 
     def stop_run(self, scene_index, total):
+        super().stop_run()
         self.ticker = 0
         if self.run == 1 and self.set_magic_tick() is False:
             self.del_actors()

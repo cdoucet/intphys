@@ -108,17 +108,15 @@ class Director(object):
         self.saver.reset(True)
         is_test = True if 'test' in \
             type(self.scenes[self.scene]).__name__.lower() else False
-        module = importlib.import_module("scenario.{}".
-                                         format(self.scenes[self.scene].name))
+        module = importlib.import_module(
+            "scenario.{}".format(self.scenes[self.scene].name))
         if is_test is True:
             test_class = getattr(module,
                                  "{}Test".format(self.scenes[self.scene].name))
             is_occluded = self.scenes[self.scene].is_occluded
             movement = self.scenes[self.scene].movement
-            self.scenes.insert(self.scene + 1, test_class(self.world,
-                                                          self.saver,
-                                                          is_occluded,
-                                                          movement))
+            self.scenes.insert(self.scene + 1, test_class(
+                self.world, self.saver, is_occluded, movement))
             self.scenes.pop(0)
         else:
             train_class = \
