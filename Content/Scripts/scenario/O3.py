@@ -137,9 +137,12 @@ class O3Test(O3Base, MirrorTest):
         return True
 
     def dynamic_1_occluded(self):
+        self.check_array['visibility'][0] = \
+            remove_invisible_frames(self.check_array['visibility'][0])
+        self.check_array['visibility'][1] = \
+            remove_invisible_frames(self.check_array['visibility'][1])
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], False)
-        visibility_array = remove_invisible_frames(visibility_array)
         # We need to separate occlusions because in the O3 bloc,
         # The objects are not at the same place at each run
         occlusion = separate_period_of_occlusions(visibility_array)
@@ -148,12 +151,11 @@ class O3Test(O3Base, MirrorTest):
 
     def dynamic_2_occluded(self):
         self.check_array['visibility'][0] = \
-            checks_time_laps(self.check_array['visibility'][0], False)
+            remove_invisible_frames(self.check_array['visibility'][0])
         self.check_array['visibility'][1] = \
-            checks_time_laps(self.check_array['visibility'][1], False)
+            remove_invisible_frames(self.check_array['visibility'][1])
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], False)
-        visibility_array = remove_invisible_frames(visibility_array)
         occlusion = separate_period_of_occlusions(visibility_array)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))
