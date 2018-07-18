@@ -9,6 +9,7 @@ from scenario.checkUtils import remove_last_and_first_frames
 from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import store_actors_locations
+from scenario.checkUtils import remove_frames_close_to_magic_tick
 
 
 class O3Base:
@@ -40,7 +41,10 @@ class O3Test(O3Base, MirrorTest):
                     params.scale.x = 1.5
                     params.scale.z = 2.6
                 elif 'dynamic_2' in self.movement:
-                    params.scale.x *= 1.5
+                    params.scale.x = 1
+                    params.scale.z = 2.7
+                    params.location.y += (100 if params.location.y > 0
+                                          else -100)
             elif 'bject' in name:
                 if params.location.x < 0:
                     params.location.x += 200
@@ -118,10 +122,13 @@ class O3Test(O3Base, MirrorTest):
     def dynamic_2_visible(self):
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], True)
-        visibility_array = remove_last_and_first_frames(visibility_array, 8)
+        visibility_array = remove_last_and_first_frames(visibility_array, 5)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))
-        visibility_array.remove(self.params['magic']['tick'][0])
+        visibility_array = \
+            remove_frames_close_to_magic_tick(visibility_array,
+                                              self.params['magic']['tick'][0],
+                                              5)
         self.params['magic']['tick'].append(random.choice(visibility_array))
         self.params['magic']['tick'].sort()
         return True
@@ -133,9 +140,12 @@ class O3Test(O3Base, MirrorTest):
         return True
 
     def dynamic_1_occluded(self):
+        self.check_array['visibility'][0] = \
+            remove_invisible_frames(self.check_array['visibility'][0])
+        self.check_array['visibility'][1] = \
+            remove_invisible_frames(self.check_array['visibility'][1])
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], False)
-        visibility_array = remove_invisible_frames(visibility_array)
         # We need to separate occlusions because in the O3 bloc,
         # The objects are not at the same place at each run
         occlusion = separate_period_of_occlusions(visibility_array)
@@ -144,12 +154,11 @@ class O3Test(O3Base, MirrorTest):
 
     def dynamic_2_occluded(self):
         self.check_array['visibility'][0] = \
-            checks_time_laps(self.check_array['visibility'][0], False)
+            remove_invisible_frames(self.check_array['visibility'][0])
         self.check_array['visibility'][1] = \
-            checks_time_laps(self.check_array['visibility'][1], False)
+            remove_invisible_frames(self.check_array['visibility'][1])
         visibility_array = \
             checks_time_laps(self.check_array['visibility'], False)
-        visibility_array = remove_invisible_frames(visibility_array)
         occlusion = separate_period_of_occlusions(visibility_array)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(occlusion[0]))

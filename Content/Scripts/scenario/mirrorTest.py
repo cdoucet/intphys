@@ -153,49 +153,64 @@ class MirrorTest(Test):
         if super().set_magic_tick() is False:
             return False
         magic_tick = self.params['magic']['tick']
+        # checking the location and rotation of each actor
+        # during the magic frame(s)
         if isinstance(self.params['magic']['tick'], int):
-            for actor in range(len(self.check_array['location'][0][magic_tick])):
-                if (self.check_array['location'][0][magic_tick][actor][0].x !=
-                        self.check_array['location'][1][magic_tick][actor][0].x or
-                        self.check_array['location'][0][magic_tick][actor][0].y !=
-                        self.check_array['location'][1][magic_tick][actor][0].y or
-                        self.check_array['location'][0][magic_tick][actor][0].z !=
-                        self.check_array['location'][1][magic_tick][actor][0].z or
-                        self.check_array['location'][0][magic_tick][actor][1].yaw !=
-                        self.check_array['location'][1][magic_tick][actor][1].yaw or
-                        self.check_array['location'][0][magic_tick][actor][1].roll !=
-                        self.check_array['location'][1][magic_tick][actor][1].roll or
-                        self.check_array['location'][0][magic_tick][actor][1].pitch !=
-                        self.check_array['location'][1][magic_tick][actor][1].pitch):
+            for actor in \
+                    range(len(self.check_array['location'][0][magic_tick])):
+                if self.compare_location_in_frame(actor, magic_tick) is False:
                     ue.log_warning("An actor location doesn't match" +
                                    " in each possible run")
                     return False
         elif isinstance(self.params['magic']['tick'], list):
-            for actor in range(len(self.check_array['location'][0][magic_tick[0]])):
-                if (self.check_array['location'][0][magic_tick[0]][actor][0].x !=
-                        self.check_array['location'][1][magic_tick[0]][actor][0].x or
-                        self.check_array['location'][0][magic_tick[0]][actor][0].y !=
-                        self.check_array['location'][1][magic_tick[0]][actor][0].y or
-                        self.check_array['location'][0][magic_tick[0]][actor][0].z !=
-                        self.check_array['location'][1][magic_tick[0]][actor][0].z or
-                        self.check_array['location'][0][magic_tick[0]][actor][1].yaw !=
-                        self.check_array['location'][1][magic_tick[0]][actor][1].yaw or
-                        self.check_array['location'][0][magic_tick[0]][actor][1].roll !=
-                        self.check_array['location'][1][magic_tick[0]][actor][1].roll or
-                        self.check_array['location'][0][magic_tick[0]][actor][1].pitch !=
-                        self.check_array['location'][1][magic_tick[0]][actor][1].pitch or
-                        self.check_array['location'][0][magic_tick[1]][actor][0].x !=
-                        self.check_array['location'][1][magic_tick[1]][actor][0].x or
-                        self.check_array['location'][0][magic_tick[1]][actor][0].y !=
-                        self.check_array['location'][1][magic_tick[1]][actor][0].y or
-                        self.check_array['location'][0][magic_tick[1]][actor][0].z !=
-                        self.check_array['location'][1][magic_tick[1]][actor][0].z or
-                        self.check_array['location'][0][magic_tick[1]][actor][1].yaw !=
-                        self.check_array['location'][1][magic_tick[1]][actor][1].yaw or
-                        self.check_array['location'][0][magic_tick[1]][actor][1].roll !=
-                        self.check_array['location'][1][magic_tick[1]][actor][1].roll or
-                        self.check_array['location'][0][magic_tick[1]][actor][1].pitch !=
-                        self.check_array['location'][1][magic_tick[1]][actor][1].pitch):
+            for actor in \
+                    range(len(self.check_array['location'][0][magic_tick[0]])):
+                if (self.compare_location_in_frame(actor, magic_tick[0])
+                        is False or
+                        self.compare_location_in_frame(actor, magic_tick[1])
+                        is False):
                     ue.log_warning("An actor location doesn't match" +
                                    " in each possible run")
                     return False
+        """
+        # checking the location and rotation of each actor (except magic one)
+        # in the first and last frame of each run
+        for actor in \
+                range(len(self.check_array['location'][0][0])):
+            if actor == self.params['magic']['actor']:
+                continue
+            if (self.compare_location_in_frame(actor, 0) is False or
+                    self.compare_location_in_frame(actor, 99) is False):
+                ue.log_warning("An actor location doesn't match" +
+                               " in each possible run")
+                for j in range(100):
+                    ue.log_warning("{}: {} vs {}, {} vs {}, {} vs {} | {} vs {}, {} vs {}, {} vs {}"
+                                   .format(j, self.check_array['location'][0][j][actor][0].x,
+                                           self.check_array['location'][1][j][actor][0].x,
+                                           self.check_array['location'][0][j][actor][0].y,
+                                           self.check_array['location'][1][j][actor][0].y,
+                                           self.check_array['location'][0][j][actor][0].z,
+                                           self.check_array['location'][1][j][actor][0].z,
+                                           self.check_array['location'][0][j][actor][1].yaw,
+                                           self.check_array['location'][1][j][actor][1].yaw,
+                                           self.check_array['location'][0][j][actor][1].roll,
+                                           self.check_array['location'][1][j][actor][1].roll,
+                                           self.check_array['location'][0][j][actor][1].pitch,
+                                           self.check_array['location'][1][j][actor][1].pitch))
+                return False
+        """
+
+    def compare_location_in_frame(self, actor, frame):
+        return (
+            self.check_array['location'][0][frame][actor][0].x ==
+            self.check_array['location'][1][frame][actor][0].x and
+            self.check_array['location'][0][frame][actor][0].y ==
+            self.check_array['location'][1][frame][actor][0].y and
+            self.check_array['location'][0][frame][actor][0].z ==
+            self.check_array['location'][1][frame][actor][0].z and
+            self.check_array['location'][0][frame][actor][1].yaw ==
+            self.check_array['location'][1][frame][actor][1].yaw and
+            self.check_array['location'][0][frame][actor][1].roll ==
+            self.check_array['location'][1][frame][actor][1].roll and
+            self.check_array['location'][0][frame][actor][1].pitch ==
+            self.check_array['location'][1][frame][actor][1].pitch)

@@ -8,6 +8,7 @@ from scenario.checkUtils import remove_last_and_first_frames
 from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import store_actors_locations
+from scenario.checkUtils import remove_frames_close_to_magic_tick
 
 
 class O1Base:
@@ -70,7 +71,10 @@ class O1Test(O1Base, MirrorTest):
         visibility_array = remove_last_and_first_frames(visibility_array, 5)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(visibility_array))
-        visibility_array.remove(self.params['magic']['tick'][0])
+        visibility_array = \
+            remove_frames_close_to_magic_tick(visibility_array,
+                                              self.params['magic']['tick'][0],
+                                              5)
         self.params['magic']['tick'].append(random.choice(visibility_array))
         self.params['magic']['tick'].sort()
         return True
