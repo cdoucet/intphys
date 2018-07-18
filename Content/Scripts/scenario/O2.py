@@ -10,6 +10,8 @@ from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import remove_frame_after_first_bounce
 from scenario.checkUtils import store_actors_locations
+from scenario.checkUtils import remove_frames_close_to_magic_tick
+import unreal_engine as ue
 
 
 class O2Base:
@@ -109,9 +111,13 @@ class O2Test(O2Base, MirrorTest):
                 final_array.append(frame)
         self.params['magic']['tick'] = []
         self.params['magic']['tick'].append(random.choice(final_array))
-        final_array.remove(self.params['magic']['tick'][0])
+        final_array = \
+            remove_frames_close_to_magic_tick(final_array,
+                                              self.params['magic']['tick'][0],
+                                              5)
         self.params['magic']['tick'].append(random.choice(final_array))
         self.params['magic']['tick'].sort()
+        ue.log("magic_tick {} and {}".format(self.params['magic']['tick'][0], self.params['magic']['tick'][1]))
         return True
 
     def static_occluded(self):

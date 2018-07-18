@@ -94,6 +94,26 @@ def remove_frame_after_first_bounce(grounded_array):
     return temp_array
 
 
+def remove_frames_close_to_magic_tick(array, magic_tick_frame, frame_nb):
+    a = 0
+    b = 0
+    array.remove(magic_tick_frame)
+    for i in range(5):
+        try:
+            array.remove(magic_tick_frame - (i + 1) * 2)
+            a += 1
+        except ValueError:
+            pass
+        try:
+            array.remove(magic_tick_frame + (i + 1) * 2)
+            b += 1
+        except ValueError:
+            pass
+    if a != 5 and b != 5:
+        raise IndexError()
+    return array
+
+
 # we check if the location and rotation
 # of each object is the same at each run during the magic tick
 def store_actors_locations(actors):

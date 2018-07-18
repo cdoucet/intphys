@@ -153,7 +153,7 @@ class MirrorTest(Test):
             for actor in \
                     range(len(self.check_array['location'][0][magic_tick])):
                 if self.compare_location_in_frame(actor, magic_tick) is False:
-                    ue.log_warning("1 An actor location doesn't match" +
+                    ue.log_warning("An actor location doesn't match" +
                                    " in each possible run")
                     return False
         elif isinstance(self.params['magic']['tick'], list):
@@ -163,7 +163,7 @@ class MirrorTest(Test):
                         is False or
                         self.compare_location_in_frame(actor, magic_tick[1])
                         is False):
-                    ue.log_warning("2 An actor location doesn't match" +
+                    ue.log_warning("An actor location doesn't match" +
                                    " in each possible run")
                     return False
         """
