@@ -379,6 +379,11 @@ bool FScreenshot::SaveMasks(const FString& Directory, TMap<FString, uint8>& OutA
     // level) mappings
     OutActorsMap.Empty(m_ActorsSet.Num() + 1);
     OutActorsMap.Add(FString(TEXT("Sky")), 0);
+    for (const auto& Elem : m_ActorsMap)
+    {
+        OutActorsMap.Add(Elem.Key, Elem.Value * 255.0 / m_ActorsSet.Num());
+    }
+
     if (m_Verbose)
     {
         FString MasksStr;

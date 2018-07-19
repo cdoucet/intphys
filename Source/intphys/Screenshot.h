@@ -60,7 +60,7 @@ private:
 
     // Map the actors names to int ids
     TSet<FString> m_ActorsSet;
-    TMap<FString, bool> m_ActorsMap;
+    TMap<FString, uint8> m_ActorsMap;
 
     // Take a screenshot of the scene and push it in memory
     bool CaptureScene();
