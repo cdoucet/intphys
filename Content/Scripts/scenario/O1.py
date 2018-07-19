@@ -9,6 +9,7 @@ from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import store_actors_locations
 from scenario.checkUtils import remove_frames_close_to_magic_tick
+import unreal_engine as ue
 
 
 class O1Base:
@@ -76,6 +77,7 @@ class O1Test(O1Base, MirrorTest):
                                               self.params['magic']['tick'][0],
                                               5)
         self.params['magic']['tick'].append(random.choice(visibility_array))
+        ue.log("magic tick 2 = {}".format(self.params['magic']['tick'][1]))
         self.params['magic']['tick'].sort()
         return True
 
