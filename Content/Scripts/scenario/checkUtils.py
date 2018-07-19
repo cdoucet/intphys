@@ -94,6 +94,8 @@ def remove_frame_after_first_bounce(grounded_array):
     return temp_array
 
 
+# used for visible dynamic 2, this function take a (magic_tick_frame) in
+# parameter and remove the (nb_frame) adjacent frames in the (array)
 def remove_frames_close_to_magic_tick(array, magic_tick_frame, frame_nb):
     a = 0
     b = 0

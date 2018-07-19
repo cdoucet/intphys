@@ -1,8 +1,5 @@
-import unreal_engine as ue
 from scenario.test import Test
 
-
-# FullTest is used for blocks O4 and O5
 
 class FullTest(Test):
     def play_run(self):
