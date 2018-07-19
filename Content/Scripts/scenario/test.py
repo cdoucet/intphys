@@ -128,20 +128,20 @@ class Test(Scene):
         # TODO remove once it is implemented
         if self.is_occluded:
             for n in range(noccluders):
-                self.params['occluder_{}'.format(n)] = OccluderParams()
-                self.params['occluder_{}'.format(n)].scale = occluder_scale
-                self.params['occluder_{}'.format(n)].material = \
+                self.params['occluder_{}'.format(n+1)] = OccluderParams()
+                self.params['occluder_{}'.format(n+1)].scale = occluder_scale
+                self.params['occluder_{}'.format(n+1)].material = \
                     get_random_material('Wall')
                 # the occluder start down
-                self.params['occluder_{}'.format(n)].start_up = False
-                self.params['occluder_{}'.format(n)].rotation = \
+                self.params['occluder_{}'.format(n+1)].start_up = False
+                self.params['occluder_{}'.format(n+1)].rotation = \
                     FRotator(0, 0, 90)
-                self.params['occluder_{}'.format(n)].location = \
+                self.params['occluder_{}'.format(n+1)].location = \
                     FVector(500, 0, 0)
                 #   FVector(800, (n - 1) * (500 + (occluder_scale.x * 200)), 0)
                 # the occluder will rise at first frame and at the 100th one
-                self.params['occluder_{}'.format(n)].moves = [0, 125]
-                occluder_names.append('occluder_{}'.format(n))
+                self.params['occluder_{}'.format(n+1)].moves = [0, 125]
+                occluder_names.append('occluder_{}'.format(n+1))
             # if static, a random occluder will go between the magic
             # actor and the occluder
             if 'static' in self.movement:
