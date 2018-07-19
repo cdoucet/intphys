@@ -21,7 +21,6 @@ class Test(Scene):
 
     def get_status_header(self):
         header = super().get_status_header()
-        header['magic'] = self.params['magic']
         return header
 
     def generate_parameters(self):

@@ -103,16 +103,15 @@ class MirrorTest(Test):
         json_1 = json.load(open('{}/1/status.json'.format(subdir), 'r'))
         json_2 = json.load(open('{}/2/status.json'.format(subdir), 'r'))
 
-        # the headers must be the same (excepted the actor names but do
-        # not impact the end user) TODO for now (as of commit e5e2c25) the
-        # 'masks' entry is different in runs 1 and 2 TODO to have same
-        # names, maybe change the runs implementation: spawn actors only
-        # at scene init, and destroy them at scene end but not between 2
-        # runs.
         json_3 = {'header': json_1['header']}
         json_4 = {'header': json_1['header']}
+
+        # for impossible scenes (run 3 and 4), add information on the
+        # magic trick
         json_3['header']['is_possible'] = False
+        json_3['header']['magic'] = self.params['magic']
         json_4['header']['is_possible'] = False
+        json_4['header']['magic'] = self.params['magic']
 
         # update the frames according to the slice index
         f1, f2 = json_1['frames'], json_2['frames']
