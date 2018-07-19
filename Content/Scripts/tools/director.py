@@ -1,7 +1,6 @@
 import importlib
 import json
 import shutil
-import time
 import unreal_engine as ue
 import tools.materials
 from tools.utils import exit_ue, set_game_paused
@@ -66,10 +65,14 @@ class Director(object):
                                               "in one scene of the json file")
                         else:
                             for i in range(nb):
-                                self.scenes.append(test_class(self.world,
-                                                              self.saver,
-                                                              is_occluded,
-                                                              movement))
+                                try:
+                                    self.scenes.append(test_class(self.world,
+                                                                  self.saver,
+                                                                  is_occluded,
+                                                                  movement))
+                                except NotImplementedError:
+                                    continue
+
                 else:
                     raise BufferError("Didn't find 'train' nor 'test' in one" +
                                       "scenario of the json file")
