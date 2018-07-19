@@ -90,8 +90,8 @@ class BaseActor():
 
     def get_status(self):
         status = {
-            'name': self.actor.get_name(),
-            'type': self.actor.get_name().split('_')[0],
+            # 'name': self.actor.get_name(),
+            # 'type': self.actor.get_name().split('_')[0],
             'location': as_dict(self.location),
             'rotation': as_dict(self.rotation)}
         return status

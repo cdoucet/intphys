@@ -18,18 +18,23 @@ class Scene:
         self.actors = None
         self.run = 0
         self.last_locations = []
-        self.status_header = {
-                'name': self.name,
-                'type': 'train' if 'Train' in type(self).__name__ else 'test',
-                'is_possible': True if 'Train' in type(self).__name__ else False
-                }
 
     def get_status(self):
-        """Return the current status of each moving actor in the scene"""
-        # TODO change actors appearing in status :
-        # Camera ? Walls ? Floor ? Skysphere ? ect.
+        """Return the current status of each MOVING actor in the scene"""
         if self.actors is not None:
-            return {k: v.get_status() for k, v in self.actors.items()}
+            return {k: v.get_status() for k, v in self.actors.items()
+                    if 'object' in k or 'occluder' in k}
+
+    def get_status_header(self):
+        """Return the status of each CONSTANT actor in the scene"""
+        header = {
+            'block_name': self.name,
+            'block_type': 'train' if 'Train' in type(self).__name__ else 'test',
+            'is_possible': self.is_possible()}
+        for k, v in self.actors.items():
+            if 'object' not in k and 'occluder' not in k:
+                header[k] = v.get_status()
+        return header
 
     def generate_parameters(self):
         self.params['Camera'] = CameraParams(
@@ -48,18 +53,31 @@ class Scene:
         prob_walls = 0  # TODO no walls to avoid luminosity problems
         if random.uniform(0, 1) <= prob_walls:
             self.params['Walls'] = WallsParams(
-                    material=get_random_material('Wall'),
-                    height=random.uniform(1, 5),
-                    length=random.uniform(3000, 5000),
-                    depth=random.uniform(1500, 3000))
+                material=get_random_material('Wall'),
+                height=random.uniform(1, 5),
+                length=random.uniform(3000, 5000),
+                depth=random.uniform(1500, 3000))
 
     def play_run(self):
         if self.run == 0:
             self.spawn_actors()
             self.saver.update(self.actors)
 
+    def stop_run(self):
+        self.saver.set_status_header(self.get_status_header())
+
     def is_valid(self):
         return all([a.is_valid for a in self.actors.values()])
+
+    def is_possible(self):
+        """Return True if the current run is plausible, False otherwise"""
+        # implementation delegated to Train and Test subclasses
+        raise NotImplementedError
+
+    def is_test_scene(self):
+        """Return True if this is a Test scene, False for a Train scene"""
+        # implementation delegated to Train and Test subclasses
+        raise NotImplementedError
 
     def spawn_actors(self):
         self.actors = {}
@@ -68,6 +86,7 @@ class Scene:
                 continue
             else:
                 class_name = actor.split('_')[0].title()
+
             # dynamically import and instantiate
             # the class corresponding to the actor
             module_path = "actors.{}".format(actor.lower().split('_')[0])

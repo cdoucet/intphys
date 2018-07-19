@@ -16,6 +16,14 @@ class Test(Scene):
         self.ticker = 0
         super().__init__(world, saver)
 
+    def is_test_scene(self):
+        return True
+
+    def get_status_header(self):
+        header = super().get_status_header()
+        header['magic'] = self.params['magic']
+        return header
+
     def generate_parameters(self):
         super().generate_parameters()
         # random number of object
@@ -187,11 +195,9 @@ class Test(Scene):
 
     def capture(self):
         ignored_actors = []
-        if self.actors[self.params['magic']['actor']].hidden is True:
-            ignored_actors.append(self.actors[self.params['magic']['actor']]
-                                  .actor)
-        self.saver.capture(ignored_actors, self.status_header,
-                           self.get_status())
+        if self.magic_actor().hidden is True:
+            ignored_actors.append(self.magic_actor().actor)
+        self.saver.capture(ignored_actors, self.get_status())
 
     def set_magic_tick(self):
         if ('dynamic' in self.movement and
