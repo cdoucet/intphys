@@ -22,7 +22,7 @@ class Scene:
     def get_status(self):
         """Return the current status of each MOVING actor in the scene"""
         if self.actors is not None:
-            return {k: v.get_status() for k, v in self.actors.items()
+            return {k.lower(): v.get_status() for k, v in self.actors.items()
                     if 'object' in k or 'occluder' in k}
 
     def get_status_header(self):
@@ -33,7 +33,7 @@ class Scene:
             'is_possible': self.is_possible()}
         for k, v in self.actors.items():
             if 'object' not in k and 'occluder' not in k:
-                header[k] = v.get_status()
+                header[k.lower()] = v.get_status()
         return header
 
     def generate_parameters(self):

@@ -1,12 +1,6 @@
 * for intphys-2.0 release
 ** bug: message "Warning: unable to load object /Game/Meshes/M_Basic_Wall.M_Basic_Wall"
-** review status.json
-- [X] put constant objects in header (camera, floor, walls)
-- [X] remove name and type (redundant with json label)
-- [ ] mask values in header
-- [ ] bugfix when adding walls (in checkUtils)
-- [ ] have the exact magic ticks, not -1
-- [ ] sort the objects by name and have occluder_[1, 2], not occluder_[0, 1]
+** bug: when adding walls (in checkUtils)
 ** bug from Erwan
 Dans les scenes visible, je vérifie que le magic tick ne se passe pas
 un certain nombre de frame avant que l'acteur devienne visible pour la

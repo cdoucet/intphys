@@ -74,6 +74,22 @@ class Saver:
             ue.log_warning('failed to save images to {}'.format(output_dir))
             return False
 
+        # postprocess actor names in masks to be intphys names, and
+        # not UE names (to be 'object_1' instead of eg
+        # 'Object_C_126'), as well suppress the 'name' field in actor
+        # status
+        names_map = {'Sky': 'sky'}
+        for k, v in self.status_header.items():
+            if isinstance(v, dict) and 'name' in v.keys():
+                names_map[v['name']] = k
+                del self.status_header[k]['name']
+        for i, frame in enumerate(self.status):
+            for k, v in frame.items():
+                if isinstance(v, dict) and 'name' in v.keys():
+                    names_map[v['name']] = k
+                    del self.status[i][k]['name']
+        masks = {names_map[k]: v for k, v in masks.items()}
+
         # save images max depth and actors's masks to status
         self.status_header.update({'max_depth': max_depth, 'masks': masks})
         status = {'header': self.status_header, 'frames': self.status}
@@ -82,6 +98,7 @@ class Saver:
         json_file = os.path.join(output_dir, 'status.json')
         with open(json_file, 'w') as fin:
             fin.write(json.dumps(status, indent=4))
+
         # ue.log('saved captures to {}'.format(output_dir))
         return True
 
