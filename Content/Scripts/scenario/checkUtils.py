@@ -100,15 +100,17 @@ def remove_frames_close_to_magic_tick(array, magic_tick_frame, frame_nb):
     array.remove(magic_tick_frame)
     for i in range(5):
         try:
-            array.remove(magic_tick_frame - (i + 1) * 2)
+            array.remove(magic_tick_frame - (i + 1))
             a += 1
         except ValueError:
-            pass
+            if magic_tick_frame - (i + 1) != array[0]:
+                a += 1
         try:
-            array.remove(magic_tick_frame + (i + 1) * 2)
+            array.remove(magic_tick_frame + (i + 1))
             b += 1
         except ValueError:
-            pass
+            if magic_tick_frame + (i + 1) != array[-1]:
+                b += 1
     if a != 5 and b != 5:
         raise IndexError()
     return array
