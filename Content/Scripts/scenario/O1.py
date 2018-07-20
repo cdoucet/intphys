@@ -31,6 +31,14 @@ class O1Test(O1Base, MirrorTest):
         self.check_array['visibility'] = [[], []]
         self.check_array['location'] = [[], []]
 
+    def get_status(self):
+        # specialization of Scene.get_status, do not report the magic
+        # actor when hidden
+        if self.actors is not None:
+            return {
+                k.lower(): v.get_status() for k, v in self.actors.items()
+                if ('object' in k or 'occluder' in k) and not v.hidden}
+
     def setup_magic_actor(self):
         # magic actor spawn hidden if it is the second possible run
         is_hidden = True if self.run == 1 else False

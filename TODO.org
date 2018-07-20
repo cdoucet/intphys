@@ -1,6 +1,6 @@
 * for intphys-2.0 release
+** bug: offset of 2 between magic_tick in status and real one observed in videos
 ** bug: when adding walls (in checkUtils)
-** bug: status O1 magic actor must be excluded from status when hidden
 ** bug from Erwan
 Dans les scenes visible, je vérifie que le magic tick ne se passe pas
 un certain nombre de frame avant que l'acteur devienne visible pour la
