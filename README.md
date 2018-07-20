@@ -186,7 +186,7 @@ After a system update you may issue an error when running
 In that case remove all the `.gch` files and recompile the engine:
 
     cd $UE_ROOT
-    find Engine/Intermediate -type file -name *.gch -delete
+    find Engine/Intermediate -type f -name *.gch -delete
     ./GenerateProjectFiles.sh && make
 
 ### How to make a new project
