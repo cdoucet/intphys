@@ -107,11 +107,21 @@ class MirrorTest(Test):
         json_4 = {'header': json_1['header']}
 
         # for impossible scenes (run 3 and 4), add information on the
-        # magic trick
+        # magic trick.
         json_3['header']['is_possible'] = False
         json_3['header']['magic'] = self.params['magic']
         json_4['header']['is_possible'] = False
         json_4['header']['magic'] = self.params['magic']
+
+        # TODO here we have a little tweak (magic_tick+1) because the
+        # capture is done one frame after the magic tick is done.
+        for json_ in (json_3, json_4):
+            tick = json_['header']['magic']['tick']
+            if isinstance(tick, list):
+                tick = [elt + 1 for elt in tick]
+            else:
+                tick += 1
+            json_['header']['magic']['tick'] = tick
 
         # update the frames according to the slice index
         f1, f2 = json_1['frames'], json_2['frames']
@@ -135,10 +145,6 @@ class MirrorTest(Test):
             fin.write(json.dumps(json_3, indent=4))
         with open('{}/4/status.json'.format(subdir), 'w') as fin:
             fin.write(json.dumps(json_4, indent=4))
-
-        # print('\n'.join('{} {}'.format(
-        #     f3[magic_object]['material'], f4[magic_object]['material'])
-        #     for f3, f4 in zip(json_3['frames'], json_4['frames'])))
 
     def is_over(self):
         return True if self.run == 2 else False
