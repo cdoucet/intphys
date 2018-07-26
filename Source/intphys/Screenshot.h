@@ -53,6 +53,7 @@ private:
     TArray<FImageScene> m_Scene;
     TArray<FImageDepth> m_Depth;
     TArray<FImageMasks> m_Masks;
+    TArray<TMap<uint8, uint64>> m_Masks2;
 
     // Buffers used in WritePng
     TArray<FColor> m_WriteBuffer;
