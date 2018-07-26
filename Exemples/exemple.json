@@ -22,13 +22,13 @@
         {
             "static" : 0,
             "dynamic_1" : 0,
-            "dynamic_2" : 0
+            "dynamic_2" : 5
         },
         "test_occluded" :
         {
             "static" : 0,
             "dynamic_1" : 0,
-            "dynamic_2" : 5
+            "dynamic_2" : 0
         }
     },
     "scenario_O3" :

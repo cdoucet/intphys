@@ -40,6 +40,8 @@ FScreenshot::FScreenshot(const FIntVector& Size, AActor* OriginActor, bool Verbo
     for (auto& Image : m_Masks)
         Image.SetNum(Size.X * Size.Y);
 
+    m_Masks2.SetNum(Size.Z);
+
     m_WriteBuffer.SetNum(Size.X * Size.Y);
     m_CompressedWriteBuffer.SetNum(Size.X * Size.Y);
 }
@@ -86,6 +88,8 @@ void FScreenshot::Reset(bool delete_actors)
         Image.Init(0.0, Image.Num());
     for (auto& Image : m_Masks)
         Image.Init(0, Image.Num());
+    for (auto& Image : m_Masks2)
+        Image.Reset();
 }
 
 
@@ -147,6 +151,19 @@ bool FScreenshot::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
 	ActorIndex = static_cast<uint8>(m_ActorsSet.Add(Actor->GetName()).AsInteger() + 1);
 	if (ActorIndex <= 0)
 		UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *Actor->GetName());
+    /*
+    bool exists = false;
+    for (auto & elem : m_Masks2[FrameIndex])
+    {
+        if (elem.Key == ActorIndex)
+        {
+            exists = true;
+            UE_LOG(LogTemp, Log, TEXT("%d: %d"), FrameIndex, elem.Value);
+        }
+    }
+    if (exists == false)
+        UE_LOG(LogTemp, Log, TEXT("%d: invisible"), FrameIndex);
+    */
     return m_Masks[FrameIndex].Contains(ActorIndex);
 }
 
@@ -297,6 +314,17 @@ bool FScreenshot::CaptureDepthAndMasks(const TArray<AActor*>& IgnoredActors)
                     UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *ActorName);
                 m_ActorsMap.Add(ActorName, ActorIndex);
                 m_Masks[m_ImageIndex][PixelIndex] = ActorIndex;
+                bool exists = false;
+                for (auto &elem : m_Masks2[m_ImageIndex])
+                {
+                    if (elem.Key == ActorIndex)
+                    {
+                        exists = true;
+                        elem.Value += 1;
+                    }
+                }
+                if (exists == false)
+                    m_Masks2[m_ImageIndex].Add(ActorIndex, 1);
             }
         }
     }
