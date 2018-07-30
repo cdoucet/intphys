@@ -25,11 +25,14 @@ class FullTest(Test):
         self.run += 1
         return True
 
-    def tick(self):
-        super().tick()
+    def capture(self):
+        super().capture()
         if self.run <= 1:
             self.fill_check_array()
-        elif isinstance(self.params['magic']['tick'], int) and \
+
+    def tick(self):
+        super().tick()
+        if isinstance(self.params['magic']['tick'], int) and \
                 self.ticker == self.params['magic']['tick']:
             self.play_magic_trick()
         elif not isinstance(self.params['magic']['tick'], int) and \

@@ -144,25 +144,41 @@ bool FScreenshot::IsActorInFrame(const AActor* Actor, const uint FrameIndex)
 {
     if (FrameIndex >= m_ImageIndex)
     {
+        UE_LOG(LogTemp, Warning, TEXT("%d and %d"), FrameIndex, m_ImageIndex);
      	return false;
     }
-
     int8 ActorIndex = -1;
-	ActorIndex = static_cast<uint8>(m_ActorsSet.Add(Actor->GetName()).AsInteger() + 1);
-	if (ActorIndex <= 0)
-		UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *Actor->GetName());
-    /*
-    bool exists = false;
-    for (auto & elem : m_Masks2[FrameIndex])
+    ActorIndex = static_cast<uint8>(m_ActorsSet.Add(Actor->GetName()).AsInteger() + 1);
+    if (ActorIndex <= 0)
+        UE_LOG(LogTemp, Warning, TEXT("Didn't found %s in actors array"), *Actor->GetName());
+    // it is not really optimized, but anyway
+    int max = 0;
+    int target_nb = -1;
+    for (int i = 0; i != m_Masks2.Num(); i++)
     {
-        if (elem.Key == ActorIndex)
+        for (auto & elem : m_Masks2[i])
         {
-            exists = true;
-            UE_LOG(LogTemp, Log, TEXT("%d: %d"), FrameIndex, elem.Value);
+            if (elem.Key == ActorIndex)
+            {
+                if (elem.Value > max)
+                    max = elem.Value;
+                if (i == FrameIndex)
+                {
+                    target_nb = elem.Value;
+                }
+                // UE_LOG(LogTemp, Log, TEXT("%d: %d"), FrameIndex, elem.Value);
+            }
         }
     }
-    if (exists == false)
-        UE_LOG(LogTemp, Log, TEXT("%d: invisible"), FrameIndex);
+    /*
+    // 60% percent of visibility to return true
+    if (target_nb != -1)
+        UE_LOG(LogTemp, Log, TEXT("target_nb = %d / max: %d"), target_nb, max);
+    if (target_nb != -1 && (target_nb / max) * 100 > 60)
+    {
+        return true;
+    }
+    return false;
     */
     return m_Masks[FrameIndex].Contains(ActorIndex);
 }

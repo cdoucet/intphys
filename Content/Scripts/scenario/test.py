@@ -185,6 +185,7 @@ class Test(Scene):
                         max_x = actor.actor.get_actor_location().x
                         max_name = name
             if max_x != 10000000:
+                ue.log("force")
                 self.actors[max_name].set_force(self.actors[max_name].
                                                 initial_force)
         self.ticker += 1
@@ -199,11 +200,13 @@ class Test(Scene):
         self.saver.capture(ignored_actors, self.get_status())
 
     def set_magic_tick(self):
+        """
         if ('dynamic' in self.movement and
                 (self.check_array['visibility'][0][0] == 1 or
                  self.check_array['visibility'][1][0] == 1)):
             ue.log_warning("object is not invisible at first tick")
             return False
+        """
         try:
             if self.is_occluded is True:
                 if 'static' in self.movement:
