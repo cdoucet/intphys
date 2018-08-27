@@ -68,7 +68,7 @@ if [ $format == "gif" ]; then
 
     # generate a black image to be inserted at the beginning and end
     # of each gif, delete it at exit
-    convert -size $size xc:black black.png
+    convert -size $size xc:gray black.png
     trap "rm -rf black.png" EXIT
 fi
 
