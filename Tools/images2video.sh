@@ -52,16 +52,21 @@ if [ ! -z "$3" ]; then extra_options="$3"; fi
 # display error message if input is not a directory
 [ ! -d "$data_dir" ] && echo "Error: $data_dir is not a directory" && exit 1
 
-# list all subdirectories containing at least one png file
-png_dirs=$(find $data_dir -type f -name "*.png" -exec dirname {} \; | uniq)
+# list all subdirectories containing at least one png file, list can
+# be too long for a command line so put it in a file
+echo -n "Looking for directories containg PNG images..."
+find $data_dir -type f -name "*.png" -exec dirname {} \; | uniq > png_dirs.txt
+trap "rm -f png_dirs.txt" EXIT
+npng_dirs=$(cat  png_dirs.txt | wc -l)
+echo " found $npng_dirs directories"
 
 # display error message if no png found
-[ -z "$png_dirs" ] && echo "Error: no png file in $data_dir" && exit 1
+[ "$npng_dirs" -eq "0" ] && echo "Error: no png file in $data_dir" && exit 1
 
 # insert a black image at first and last positions in gifs
 if [ $format == "gif" ]; then
     # get a png from the directory
-    png=$(ls $(echo $png_dirs | cut -f1 -d' ')/*.png | head -1)
+    png=$(ls $(head -1 png_dirs.txt | cut -f1 -d' ')/*.png | head -1)
 
     # get it's resolution  (assuming it is the same for all images)
     size=$(file $png | sed -r 's/.* ([0-9]+ x [0-9]+),.*/\1/' | tr -d ' ')
@@ -118,6 +123,7 @@ make_video() {
 
 # convert the videos in parallel using all the available CPUs
 export -f make_video
-parallel make_video ::: $png_dirs ::: $format ::: "$extra_options" || exit 1
+echo "Generating $npng_dirs $format videos in parallel..."
+parallel make_video :::: png_dirs.txt ::: $format ::: "$extra_options" || exit 1
 
 exit 0
