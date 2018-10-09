@@ -13,6 +13,11 @@ following tar.gz archives:
 
 """
 
+# TODO the script is not up to data: for the challenge we made the
+# test archives test.O{1, 2, 3, 4}.tar.gz, i.e. by block. Here we need
+# to update the archive creation for test and metadata. Once
+# uncompressed the test directory has 4 subfolders O1, O2, O3 and O4.
+
 import argparse
 import logging
 import numpy
