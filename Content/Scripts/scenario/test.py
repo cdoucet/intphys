@@ -66,7 +66,7 @@ class Test(Scene):
                         initial locations
                 the x axis:
                   the closest object is located at 1000 from the camera
-                  the second object is more far, calculated from the diagonal
+                  the second object is farther, calculated from the diagonal
                         of a cube mesh
                   (to be sure mesh won't collide)
                   same for the third object
