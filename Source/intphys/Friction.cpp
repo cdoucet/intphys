@@ -12,6 +12,8 @@ bool UFriction::SetFriction(UMaterial* Material, float Friction)
     {
         return false;
     }
+    UE_LOG(LogTemp, Warning, TEXT("Friction"));
+
     PhysicalMaterial->Friction = Friction;
     PhysicalMaterial->UpdatePhysXMaterial();
 

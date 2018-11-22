@@ -53,8 +53,8 @@ class O4Test(O4Base, MirrorTest):
                 n.remove(r)
             elif 'loor' in name:
                 # TODO make it work
-                actor.friction = -8000
-                actor.restitution = 1000
+                actor.friction = 0
+                actor.restitution = 1
 
     def setup_magic_actor(self):
         if self.run % 2 == 1:
