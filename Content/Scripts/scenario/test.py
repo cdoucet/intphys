@@ -108,6 +108,7 @@ class Test(Scene):
                         occluder_scale.z = 2.5
                     # move backward the camera if dynamic 2 and tall occluders
             self.params[object_names[n]].location = location
+            print("generate parameters")
             self.params[object_names[n]].initial_force = force
         # remove object if there should not be 3 objects on the scene
         # because we created three objects
@@ -185,7 +186,6 @@ class Test(Scene):
                         max_x = actor.actor.get_actor_location().x
                         max_name = name
             if max_x != 10000000:
-                ue.log("force")
                 self.actors[max_name].set_force(self.actors[max_name].
                                                 initial_force)
         self.ticker += 1
@@ -211,16 +211,13 @@ class Test(Scene):
             if self.is_occluded is True:
                 if 'static' in self.movement:
                     return self.static_occluded()
-                elif 'dynamic_1' in self.movement:
+                if 'dynamic_1' in self.movement:
                     return self.dynamic_1_occluded()
-                else:
-                    return self.dynamic_2_occluded()
-            else:
-                if 'static' in self.movement:
-                    return self.static_visible()
-                elif 'dynamic_1' in self.movement:
-                    return self.dynamic_1_visible()
-                else:
-                    return self.dynamic_2_visible()
+                return self.dynamic_2_occluded()
+            if 'static' in self.movement:
+                return self.static_visible()
+            if 'dynamic_1' in self.movement:
+                return self.dynamic_1_visible()
+            return self.dynamic_2_visible()
         except IndexError:
             return False

@@ -65,11 +65,13 @@ class BaseMesh(BaseActor):
 
     def set_friction(self, friction):
         self.friction = friction
-        Friction.SetFriction(self.material, friction)
+        print(Friction.SetFriction(self.material, friction))
+        print("*********************************")
 
     def set_restitution(self, restitution):
         self.restitution = restitution
         Friction.SetRestitution(self.material, restitution)
+        print("*********************************")
 
     def get_status(self):
         status = super().get_status()

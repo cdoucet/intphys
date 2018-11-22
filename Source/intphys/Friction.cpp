@@ -7,6 +7,7 @@
 bool UFriction::SetFriction(UMaterial* Material, float Friction)
 {
     UPhysicalMaterial *PhysicalMaterial = Material->GetPhysicalMaterial();
+
     if (PhysicalMaterial == nullptr)
     {
         return false;
@@ -39,7 +40,7 @@ void	UFriction::SetMassScale(UStaticMeshComponent* Component, float MassScale)
 		if(!Component) return;
 		FBodyInstance* BodyInst = Component->GetBodyInstance();
 		if(!BodyInst) return;
-		BodyInst->MassScale = MassScale;  
+		BodyInst->MassScale = MassScale;
 		BodyInst->UpdateMassProperties();
 }
 

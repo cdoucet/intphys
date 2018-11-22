@@ -42,15 +42,19 @@ class O4Test(O4Base, MirrorTest):
 
     def generate_parameters(self):
         super().generate_parameters()
-        # self.params['Camera'].location.x = -1000
+        self.params['Camera'].location.x = -1000
         n = [0, 1, 2]
         for name, actor in self.params.items():
             if 'bject' in name:
-                actor.mesh = 'Sphere'
+                actor.mesh = 'Cube'
                 actor.initial_force.z = 0
                 r = random.choice(n)
                 actor.location.x = 1000 + actor.scale.x * 100 * math.sqrt(3) * r
                 n.remove(r)
+            elif 'loor' in name:
+                # TODO make it work
+                actor.friction = -8000
+                actor.restitution = 1000
 
     def setup_magic_actor(self):
         if self.run % 2 == 1:
@@ -59,12 +63,18 @@ class O4Test(O4Base, MirrorTest):
             if 'static' in self.movement:
                 # i must retrieve n from initial declaration in test::generate_parameters()
                 n = (magic_actor.location.x - 1000) / (magic_actor.scale.x * 100 * math.sqrt(3))
-                new_location.y = 1000 + abs(self.params['Camera'].location.x) \
-                    + magic_actor.scale.x * 100 * math.sqrt(3) * n \
+                new_location.y = 1000 + n \
                     + magic_actor.scale.x * 100 * math.sqrt(3) * (n + 1)
                 # TODO look if it works
-                new_location.y *= -1 #  if random.random() < 0.5 else 1
-                magic_actor.initial_force = FVector(0, (4e4 + (abs(magic_actor.location.y) - 1500) * 10) * (-1 if magic_actor.location.y > 0 else 1), 0)
+                new_location.y = -1500
+                # magic_actor.initial_force = FVector(0, (4e4 + (abs(new_location.y) - 1500) * 10) * (-1 if new_location.y > 0 else 1), 0)
+                magic_actor.initial_force = FVector(0, 10000, 0)
+                # magic_actor.mesh.set_physics_linear_velocity(FVector(0, 673.6220553700072, 0));
+                # magic_actor.mesh.set_physics_linear_velocity(FVector(0, 673.6220553700072, 1091.116293091501));
+
+                print("setup magic actor")
+                if new_location.y > 0:
+                    print(magic_actor.initial_force)
             else:
                 new_location.y *= -1
                 magic_actor.initial_force.y *= -1
@@ -79,12 +89,15 @@ class O4Test(O4Base, MirrorTest):
         IsActorInFrame = ScreenshotManager.IsActorInFrame(magic_actor, frame)
         self.check_array['visibility'][self.run].append(IsActorInFrame)
 
+    """
     def play_magic_trick(self):
         ue.log("tick magic {}".format(self.ticker))
         magic_actor = self.actors[self.params['magic']['actor']]
+        print("reset force play magic trick")
         magic_actor.reset_force()
         # if random.choice([0, 1]) == 1:
         # magic_actor.set_force(magic_actor.initial_force, False)
+    """
 
     def static_visible(self):
         res = []
@@ -92,11 +105,16 @@ class O4Test(O4Base, MirrorTest):
         for tick in range(len(self.check_array['location'][0])):
             actor_index = 0
             for actor in self.actors:
-                if (actor == self.params['magic']['actor'] and tick != 0 and
-                        self.check_array['location'][1][tick - 1][actor_index][0].y <=
-                        self.check_array['location'][0][tick][actor_index][0].y <=
-                        self.check_array['location'][1][tick][actor_index][0].y):
-                    res.append(tick)
+                if (actor == self.params['magic']['actor']):
+                    if ((tick != 0 and self.actors[actor].initial_force.y > 0 and
+                         self.check_array['location'][1][tick - 1][actor_index][0].y <=
+                         self.check_array['location'][0][tick][actor_index][0].y <=
+                         self.check_array['location'][1][tick][actor_index][0].y) or
+                        (tick != len(self.check_array['location'][0]) and self.actors[actor].initial_force.y < 0 and
+                         self.check_array['location'][1][tick][actor_index][0].y <=
+                         self.check_array['location'][0][tick][actor_index][0].y <=
+                         self.check_array['location'][1][tick + 1][actor_index][0].y)):
+                        res.append(tick)
                 actor_index += 1
         if not res:
             return False
@@ -104,10 +122,23 @@ class O4Test(O4Base, MirrorTest):
         return True
 
     def dynamic_1_visible(self):
-        visibility_array = \
-            checks_time_laps(self.check_array['visibility'], True)
-        visibility_array = remove_last_and_first_frames(visibility_array, 8)
-        self.params['magic']['tick'] = random.choice(visibility_array)
+        res = []
+        tick = 0
+        for tick in range(len(self.check_array['location'][0])):
+            actor_index = 0
+            for actor in self.actors:
+                if (actor == self.params['magic']['actor'] and tick != 0 and
+                        (self.check_array['location'][1][tick - 1][actor_index][0].y <=
+                         self.check_array['location'][0][tick][actor_index][0].y <=
+                         self.check_array['location'][1][tick][actor_index][0].y or
+                         self.check_array['location'][0][tick - 1][actor_index][0].y <=
+                         self.check_array['location'][1][tick][actor_index][0].y <=
+                         self.check_array['location'][0][tick][actor_index][0].y)):
+                    res.append(tick)
+                actor_index += 1
+        if not res:
+            return False
+        self.params['magic']['tick'] = random.choice(res)
         return True
 
     def dynamic_2_visible(self):

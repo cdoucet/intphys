@@ -58,6 +58,7 @@ class Object(BaseMesh):
             self.shape[params.mesh])
         self.material = ue.load_object(Material, params.material)
         self.mass = params.mass
+        print("actor get parameter")
         self.force = params.force
         self.initial_force = params.initial_force
 
@@ -88,6 +89,7 @@ class Object(BaseMesh):
         if (persistent):
             self.force = force
         # the heavier the object is, the more violent the applied force will be
+        print(force * self.mesh.GetMass())
         self.get_mesh().add_force(force *
                                   self.mesh.GetMass())
 
@@ -127,5 +129,6 @@ class Object(BaseMesh):
         self.get_mesh().set_simulate_physics()
 
     def reset_force(self):
+        print("reset force")
         self.get_mesh().set_simulate_physics(False)
         self.get_mesh().set_simulate_physics()

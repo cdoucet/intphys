@@ -22,7 +22,7 @@
         {
             "static" : 0,
             "dynamic_1" : 0,
-            "dynamic_2" : 5
+            "dynamic_2" : 0
         },
         "test_occluded" :
         {
@@ -52,7 +52,7 @@
         "train" : 0,
         "test_visible" :
         {
-            "static" : 0,
+            "static" : 1,
             "dynamic_1" : 0,
             "dynamic_2" : 0
         },
