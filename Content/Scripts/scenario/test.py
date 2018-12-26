@@ -125,7 +125,7 @@ class Test(Scene):
         if 'static' in self.movement:
             occluder_scale.x *= 1.5
             occluder_scale.z *= 1.5
-        # TODO remove once it is implemented
+        # TODO remove once random number of occluder is implemented
         if self.is_occluded:
             for n in range(noccluders):
                 self.params['occluder_{}'.format(n+1)] = OccluderParams()
@@ -149,6 +149,8 @@ class Test(Scene):
                 occluder_names.remove(first)
                 magic_location_y = \
                     self.params[self.params['magic']['actor']].location.y
+                magic_location_x = \
+                    self.params[self.params['magic']['actor']].location.x
                 self.params[first].location = \
                     FVector(600,
                             magic_location_y / 2 + (50 * occluder_scale.x *
@@ -185,7 +187,6 @@ class Test(Scene):
                         max_x = actor.actor.get_actor_location().x
                         max_name = name
             if max_x != 10000000:
-                ue.log("force")
                 self.actors[max_name].set_force(self.actors[max_name].
                                                 initial_force)
         self.ticker += 1
