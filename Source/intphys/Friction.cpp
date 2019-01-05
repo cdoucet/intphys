@@ -13,7 +13,6 @@ bool UFriction::SetFriction(UMaterial* Material, float Friction)
     }
     PhysicalMaterial->Friction = Friction;
     PhysicalMaterial->UpdatePhysXMaterial();
-
     return true;
 }
 
@@ -25,6 +24,7 @@ bool UFriction::SetRestitution(UMaterial* Material, float Restitution)
         return false;
     }
     PhysicalMaterial->Restitution = Restitution;
+    PhysicalMaterial->RestitutionCombineMode = (TEnumAsByte<EFrictionCombineMode::Type>) 3;
     PhysicalMaterial->UpdatePhysXMaterial();
     return true;
 }
@@ -36,11 +36,11 @@ void    UFriction::ExitEngine(bool force)
 
 void	UFriction::SetMassScale(UStaticMeshComponent* Component, float MassScale)
 {
-		if(!Component) return;
-		FBodyInstance* BodyInst = Component->GetBodyInstance();
-		if(!BodyInst) return;
-		BodyInst->MassScale = MassScale;  
-		BodyInst->UpdateMassProperties();
+    if(!Component) return;
+    FBodyInstance* BodyInst = Component->GetBodyInstance();
+    if(!BodyInst) return;
+    BodyInst->MassScale = MassScale;
+    BodyInst->UpdateMassProperties();
 }
 
 bool UFriction::SetVelocity(AActor *Actor, FVector Velocity)

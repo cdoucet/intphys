@@ -42,7 +42,8 @@ class Train(Scene):
                 scale=FVector(scale, scale, scale),
                 mass=1,
                 initial_force=force)
-            noccluders = random.randint(0, 2)
+            noccluders = random.randint(0, 4)
+            self.is_occluded = True if noccluders != 0 else False
         for n in range(noccluders):
             location = FVector(
                     random.uniform(200, 700),
@@ -69,11 +70,11 @@ class Train(Scene):
 
     def stop_run(self, scene_index, total):
         super().stop_run()
-        self.del_actors()
         if not self.saver.is_dry_mode:
             self.saver.save(self.get_scene_subdir(scene_index, total))
             # reset actors if it is the last run
             self.saver.reset(True)
+        self.del_actors()
         self.run += 1
 
     def play_run(self):
@@ -93,7 +94,7 @@ class Train(Scene):
 
     def capture(self):
         ignored_actors = []
-        self.saver.capture(ignored_actors, self.status_header, self.get_status())
+        self.saver.capture(ignored_actors, self.get_status())
 
     def is_over(self):
         return True if self.run == 1 else False

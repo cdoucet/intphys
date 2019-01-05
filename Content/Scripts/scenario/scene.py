@@ -121,19 +121,22 @@ class Scene:
     def get_scene_subdir(self, scene_index, total):
         # build the scene sub-directory name, for exemple
         # '027_O1_test_visible_static_nobj3/3' or
-        # '028_O1_train_occluded_dynamic_1_nobj1' or
-        # '001_O1_train_occluded_dynamic_2_nobj2'
+        # '028_O1_test_occluded_dynamic_1_nobj1' or
+        # '001_O1_train_nobj2'
         idx = scene_index + 1
         # putting as much zeroes as necessary according
         # to the total number of scenes
         padded_idx = str(idx).zfill(len(str(total)))
-        scene_name = (
-            padded_idx +
-            '_' + self.name +
-            '_' + ('train' if 'Train' in type(self).__name__ else 'test') +
-            '_' + ('occluded' if self.is_occluded else 'visible') +
-            '_' + self.movement +
-            '_nobj' + str(self.get_nobjects()))
+        if 'Train' in type(self).__name__:
+            scene_name = padded_idx + '_' + self.name + "_train_nobj" + str(self.get_nobjects())
+        else:
+            scene_name = (
+                padded_idx +
+                '_' + self.name +
+                '_test' +
+                '_' + ('occluded' if self.is_occluded else 'visible') +
+                '_' + self.movement +
+                '_nobj' + str(self.get_nobjects()))
         out = os.path.join(self.saver.output_dir, scene_name)
 
         if 'Test' in type(self).__name__:
