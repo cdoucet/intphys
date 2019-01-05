@@ -59,6 +59,8 @@ class O3Test(O3Base, MirrorTest):
                 params.start_up = False
                 params.moves = [0, 125]
                 if 'dynamic_1' in self.movement:
+                    params.speed = 2
+                    params.moves[1] = 160
                     params.scale.x = 0.6
                     params.scale.z = 2.7
                 elif 'dynamic_2' in self.movement:
@@ -71,10 +73,10 @@ class O3Test(O3Base, MirrorTest):
                     params.location.y = (400 * params.scale.x * int(name[-1]) * 2) - params.location.x - (400 * params.scale.x / 2)
                     if self.params['Camera'].location.y == params.location.y:
                         raise ValueError('the camera is on the same y axes than an occluder')
-                else:
+                # else:
                     # TODO ask if it is ok to have occluders not straights
-                    params.location.x = 500
-                    params.rotation.yaw += math.degrees(math.atan((params.location.y - (50 * params.scale.x * (-1 if params.location.y < 0 else 1))) / params.location.x))
+                    # params.location.x = 500
+                    # params.rotation.yaw += math.degrees(math.atan((params.location.y - (50 * params.scale.x * (-1 if params.location.y < 0 else 1))) / params.location.x))
             elif 'bject' in name:
                 if 'dynamic_1' in self.movement:
                     params.initial_force.z = 3e4 + (abs(params.location.y) - 1500) * 4
@@ -84,7 +86,7 @@ class O3Test(O3Base, MirrorTest):
                 params.mesh = 'Sphere'
 
     def tick(self):
-        if 'dynamic_2' in self.movement:
+        if 'dynamic' in self.movement and self.is_occluded is True:
             Scene.tick(self)
             if self.ticker == 40 or self.ticker == 50 or self.ticker == 60:
                 # print(self.actors[self.params['magic']['actor']].initial_force)
