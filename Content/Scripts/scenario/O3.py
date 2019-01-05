@@ -1,6 +1,7 @@
 import random
 import math
 from scenario.mirrorTest import MirrorTest
+from scenario.scene import Scene
 from scenario.train import Train
 from scenario.test import Test
 from unreal_engine import FVector, FRotator
@@ -62,6 +63,8 @@ class O3Test(O3Base, MirrorTest):
                     params.scale.z = 2.7
                 elif 'dynamic_2' in self.movement:
                     # occluder x size -> 400
+                    params.speed = 2
+                    params.moves[1] = 160
                     params.location = FVector()
                     params.location.x = 600
                     params.scale = FVector((params.location.x * 2 / 9) / 400, 1, 2)
@@ -79,6 +82,28 @@ class O3Test(O3Base, MirrorTest):
                     params.scale = FVector(1.1, 1.1, 1.1)
                     params.initial_force = FVector(0, (4e4 + (abs(params.location.y) - 1500) * 10) * (-1 if params.location.y > 0 else 1), 2e4)
                 params.mesh = 'Sphere'
+
+    def tick(self):
+        if 'dynamic_2' in self.movement:
+            Scene.tick(self)
+            if self.ticker == 40 or self.ticker == 50 or self.ticker == 60:
+                # print(self.actors[self.params['magic']['actor']].initial_force)
+                max_name = ""
+                # it just must be a very very big value
+                max_x = 10000000
+                for name, actor in self.actors.items():
+                    if ('object' in name and
+                            int(round(actor.actor.get_actor_velocity().y)) == 0 and
+                            int(round(actor.actor.get_actor_velocity().z)) == 0):
+                        if actor.actor.get_actor_location().x < max_x:
+                            max_x = actor.actor.get_actor_location().x
+                            max_name = name
+                if max_x != 10000000:
+                    self.actors[max_name].set_force(self.actors[max_name].
+                                                    initial_force)
+            self.ticker += 1
+        else:
+            super().tick()
 
     # We avoid comparing the locations of the magic actor during magic tick
     def set_magic_tick(self):
