@@ -22,7 +22,7 @@
         {
             "static" : 0,
             "dynamic_1" : 0,
-            "dynamic_2" : 5
+            "dynamic_2" : 0
         },
         "test_occluded" :
         {
@@ -43,7 +43,7 @@
         "test_occluded" :
         {
             "static" : 0,
-            "dynamic_1" : 0,
+            "dynamic_1" : 1,
             "dynamic_2" : 0
         }
     },

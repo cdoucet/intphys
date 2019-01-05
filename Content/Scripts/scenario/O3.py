@@ -1,20 +1,18 @@
 import random
 import math
-from scenario.fullTest import FullTest
+from scenario.mirrorTest import MirrorTest
 from scenario.train import Train
 from scenario.test import Test
 from unreal_engine import FVector, FRotator
 from unreal_engine.classes import ScreenshotManager
-from tools.materials import get_random_material
 from scenario.checkUtils import checks_time_laps
 from scenario.checkUtils import remove_last_and_first_frames
 from scenario.checkUtils import remove_invisible_frames
 from scenario.checkUtils import separate_period_of_occlusions
 from scenario.checkUtils import store_actors_locations
 from scenario.checkUtils import remove_frames_close_to_magic_tick
-from actors.parameters import ObjectParams, OccluderParams
-import unreal_engine as ue
-
+from actors.parameters import OccluderParams
+from tools.materials import get_random_material
 
 class O3Base:
     @property
@@ -30,87 +28,57 @@ class O3Train(O3Base, Train):
     pass
 
 
-class O3Test(O3Base, FullTest):
+class O3Test(O3Base, MirrorTest):
     def __init__(self, world, saver, is_occluded, movement):
         super().__init__(world, saver, is_occluded, movement)
         self.check_array['visibility'] = [[], []]
         self.check_array['location'] = [[], []]
 
-    def spawn_actors(self):
-        super().spawn_actors()
-        self.linear_equations = []
-        self.linear_equations.append([(self.actors['Camera'].location.x - self.actors['occluder_1'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_1'].location.y), 0])
-        self.linear_equations[-1][1] = (self.actors['Camera'].location.y * self.actors['occluder_1'].location.x - self.actors['occluder_1'].location.y * self.actors['Camera'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_1'].location.y)
-        self.linear_equations.append([(self.actors['Camera'].location.x - self.actors['occluder_2'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_2'].location.y), 0])
-        self.linear_equations[-1][1] = (self.actors['Camera'].location.y * self.actors['occluder_2'].location.x - self.actors['occluder_2'].location.y * self.actors['Camera'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_2'].location.y)
-        self.linear_equations.append([(self.actors['Camera'].location.x - self.actors['occluder_3'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_3'].location.y), 0])
-        self.linear_equations[-1][1] = (self.actors['Camera'].location.y * self.actors['occluder_3'].location.x - self.actors['occluder_3'].location.y * self.actors['Camera'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_3'].location.y)
-        self.linear_equations.append([(self.actors['Camera'].location.x - self.actors['occluder_4'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_4'].location.y), 0])
-        self.linear_equations[-1][1] = (self.actors['Camera'].location.y * self.actors['occluder_4'].location.x - self.actors['occluder_4'].location.y * self.actors['Camera'].location.x) / (self.actors['Camera'].location.y - self.actors['occluder_4'].location.y)
-
     def generate_parameters(self):
         super().generate_parameters()
-        self.params['Camera'].location.x = 0
-        self.params['Floor'].restitution = 1
-        if self.is_occluded is True and '2' in self.movement:
-            self.params['occluder_3'] = OccluderParams()
-            self.params['occluder_4'] = OccluderParams()
-            for name, actor in self.params.items():
-                if 'occluder' in name:
+        if self.is_occluded is True:
+            if '2' in self.movement:
+                self.params['occluder_3'] = OccluderParams()
+                self.params['occluder_4'] = OccluderParams()
+            elif '1' in self.movement:
+                # self.params['Camera'].location.x -= 200
+                self.params['occluder_2'] = OccluderParams()
+                self.params['occluder_1'].location = \
+                    FVector(600,
+                            250,
+                            0)
+                self.params['occluder_2'].location = \
+                    FVector(600,
+                            -250,
+                            0)
+        for name, params in self.params.items():
+            if 'ccluder' in name:
+                params.rotation = FRotator(0, 0, 90)
+                params.material = get_random_material('Wall')
+                params.start_up = False
+                params.moves = [0, 125]
+                if 'dynamic_1' in self.movement:
+                    params.scale.x = 0.6
+                    params.scale.z = 2.7
+                elif 'dynamic_2' in self.movement:
                     # occluder x size -> 400
-                    actor.location = FVector()
-                    actor.location.x = 600
-                    actor.scale = FVector((actor.location.x * 2 / 9) / 400, 1, 2)
-                    actor.rotation = FRotator(0, 0, 90)
-                    actor.material = get_random_material('Wall')
-                    actor.start_up = False
-                    actor.moves = [0, 125]
-                    actor.location.y = (400 * actor.scale.x * int(name[-1]) * 2) - actor.location.x - (400 * actor.scale.x / 2)
-                    if self.params['Camera'].location.y == actor.location.y:
+                    params.location = FVector()
+                    params.location.x = 600
+                    params.scale = FVector((params.location.x * 2 / 9) / 400, 1, 2)
+                    params.location.y = (400 * params.scale.x * int(name[-1]) * 2) - params.location.x - (400 * params.scale.x / 2)
+                    if self.params['Camera'].location.y == params.location.y:
                         raise ValueError('the camera is on the same y axes than an occluder')
-                if 'object' in name:
-                    actor.restitution = 1
-                    actor.mesh = "Sphere"
-                    actor.scale = FVector(1, 1, 1)
-                    actor.initial_force = FVector(0, (4e4 + (abs(actor.location.y) - 1500) * 10) * (-1 if actor.location.y > 0 else 1), 2e4)
-                    if '1' in name:
-                        actor.location.x = 700
-                    elif '2' in name:
-                        actor.location.x = 850
-                    elif '3' in name:
-                        actor.location.x = 1000
-
-
-
-    def play_magic_trick(self):
-        pass
-
-        """
-        ue.log("magic tick: {}".format(self.ticker))
-        magic_actor_index = 0
-        for name, actor in self.actors.items():
-            if name in self.params['magic']['actor']:
-                break
-            magic_actor_index += 1
-        location = self.check_array['location'][0][self.params['magic']['tick'][(self.params['magic']['tick'].index(self.ticker) + 2) % len(self.params['magic']['tick'])]][magic_actor_index][0]
-        print("from frame {} to frame {}".format(self.ticker, self.params['magic']['tick'][(self.params['magic']['tick'].index(self.ticker) + 2) % len(self.params['magic']['tick'])]))
-        magic_actor.set_location(location)
-        """
-
-    def tick(self):
-        super().tick()
-        magic_actor = self.actors[self.params['magic']['actor']]
-        temp = self.linear_equations
-        for i in range(len(self.linear_equations)):
-            if math.fabs(magic_actor.actor.get_actor_location().y - (magic_actor.location.x - self.linear_equations[i][1]) / self.linear_equations[i][0]) < 20:
-                print(math.fabs(magic_actor.actor.get_actor_location().y - (magic_actor.location.x - self.linear_equations[i][1]) / self.linear_equations[i][0]))
-            if math.isclose(magic_actor.actor.get_actor_location().y, (magic_actor.location.x - self.linear_equations[i][1]) / self.linear_equations[i][0], abs_tol=20):
-                print("{}: change from {} to {}".format(self.ticker, i, (i + 2) % len(self.linear_equations)))
-                magic_actor.set_location(FVector(magic_actor.location.x, (magic_actor.location.x - self.linear_equations[(i + 2) % len(self.linear_equations)][1]) / self.linear_equations[(i + 2) % len(self.linear_equations)][0], magic_actor.location.z))
-                # del self.linear_equations[(i + 2) % len(self.linear_equations)]
-                # del self.linear_equations[i]
-                break;
-
+                else:
+                    # TODO ask if it is ok to have occluders not straights
+                    params.location.x = 500
+                    params.rotation.yaw += math.degrees(math.atan((params.location.y - (50 * params.scale.x * (-1 if params.location.y < 0 else 1))) / params.location.x))
+            elif 'bject' in name:
+                if 'dynamic_1' in self.movement:
+                    params.initial_force.z = 3e4 + (abs(params.location.y) - 1500) * 4
+                if 'dynamic_2' in self.movement:
+                    params.scale = FVector(1.1, 1.1, 1.1)
+                    params.initial_force = FVector(0, (4e4 + (abs(params.location.y) - 1500) * 10) * (-1 if params.location.y > 0 else 1), 2e4)
+                params.mesh = 'Sphere'
 
     # We avoid comparing the locations of the magic actor during magic tick
     def set_magic_tick(self):
@@ -118,7 +86,47 @@ class O3Test(O3Base, FullTest):
             return False
 
     def setup_magic_actor(self):
-        pass
+        actor_max_scale = 0
+        for name, actor in self.actors.items():
+            if 'bject' in name and actor.scale.x > actor_max_scale:
+                actor_max_scale = actor.scale.x
+        if self.run == 1:
+            magic_actor = self.actors[self.params['magic']['actor']]
+            current_location = magic_actor.actor.get_actor_location()
+            length = 0
+            target_location = FVector(0, 0, 0)
+            if self.is_occluded is False and 'static' not in self.movement:
+                length = random.uniform(400, 600)
+                target_location = FVector(current_location.x,
+                                          current_location.y + length,
+                                          current_location.z)
+            elif 'static' in self.movement:
+                length = random.uniform(400, 600)
+                target_location = FVector(current_location.x + length,
+                                          current_location.y,
+                                          current_location.z)
+            elif '1' in self.movement:
+                # thales theorem
+                if magic_actor.actor.get_actor_location().y > 0:
+                    length = 250 * (self.actors[self.params['magic']['actor']].location.x) / self.actors['occluder_1'].location.y
+                else:
+                    length = -1 * 250 * (self.actors[self.params['magic']['actor']].location.x) / self.actors['occluder_1'].location.y
+                target_location = FVector(current_location.x,
+                                          current_location.y + length,
+                                          current_location.z)
+            else:
+                print("previous location = {}".format(magic_actor.actor.get_actor_location()))
+                # thales theorem
+                if magic_actor.actor.get_actor_location().y > 0:
+                    length = -1 * 133.3333 * (self.actors[self.params['magic']['actor']].location.x) / self.actors['occluder_1'].location.y
+                else:
+                    length = 133.3333 * (self.actors[self.params['magic']['actor']].location.x) / self.actors['occluder_1'].location.y
+                target_location = FVector(current_location.x,
+                                          current_location.y + length,
+                                          current_location.z)
+                print("jump = {}".format(length))
+                print("new location = {}".format(target_location))
+            magic_actor.set_location(target_location)
 
     # this function is here so you can put only the attribute that please you
     # in the check array. It is called every tick
@@ -166,31 +174,27 @@ class O3Test(O3Base, FullTest):
         return True
 
     def dynamic_1_occluded(self):
-        self.check_array['visibility'][0] = \
-            remove_invisible_frames(self.check_array['visibility'][0])
-        self.check_array['visibility'][1] = \
-            remove_invisible_frames(self.check_array['visibility'][1])
-        visibility_array = \
-            checks_time_laps(self.check_array['visibility'], False)
+        visibility_array = checks_time_laps(self.check_array["visibility"], False)
+        visibility_array = remove_invisible_frames(visibility_array)
         # We need to separate occlusions because in the O3 bloc,
         # The objects are not at the same place at each run
         occlusion = separate_period_of_occlusions(visibility_array)
-        self.params['magic']['tick'] = random.choice(occlusion[1])
+        self.params['magic']['tick'] = occlusion[1][int(len(occlusion[1]) / 2)]
         return True
 
     def dynamic_2_occluded(self):
-        self.check_array['visibility'][0] = \
-            remove_invisible_frames(self.check_array['visibility'][0])
-        self.check_array['visibility'][1] = \
-            remove_invisible_frames(self.check_array['visibility'][1])
-        visibility_array = \
-            checks_time_laps(self.check_array['visibility'], False)
+        if self.check_array["visibility"][0][0] or self.check_array["visibility"][1][0]:
+            print('magic object visible at first tick')
+            return False
+        visibility_array = checks_time_laps(self.check_array["visibility"], False)
+        print(visibility_array)
+        visibility_array = remove_invisible_frames(visibility_array)
         occlusion = separate_period_of_occlusions(visibility_array)
-        if (len(occlusion) < 4):
-            return False;
+        print(occlusion)
+        if len(occlusion) < 3:
+            print("Not enough occlusion period")
+            return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(random.choice(occlusion[0]))
-        self.params['magic']['tick'].append(random.choice(occlusion[1]))
-        self.params['magic']['tick'].append(random.choice(occlusion[2]))
-        self.params['magic']['tick'].append(random.choice(occlusion[3]))
+        self.params['magic']['tick'].append(occlusion[1][int(len(occlusion[1]) / 2)])
+        self.params['magic']['tick'].append(occlusion[2][int(len(occlusion[2]) / 2)])
         return True
