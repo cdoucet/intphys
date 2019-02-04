@@ -16,10 +16,10 @@ class INTPHYS_API UFriction : public UBlueprintFunctionLibrary
 
 public:
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static bool SetFriction(UMaterial* Material, float Friction);
+    static bool SetFriction(UMaterial* Material, float &Friction);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
-    static bool SetRestitution(UMaterial* Material, float Restitution);
+    static bool SetRestitution(UMaterial* Material, float &Restitution);
 
     UFUNCTION(BlueprintCallable, Category="IntPhys")
     static void ExitEngine(bool force);

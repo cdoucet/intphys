@@ -26,7 +26,7 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         # random number of object
-        nobjects = random.randint(1, 3)
+        nobjects = 1 # random.randint(1, 3) TODO change
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if 'dynamic_2' not in self.movement else 2
@@ -34,12 +34,12 @@ class Test(Scene):
         occluder_scale = FVector(0.5, 1, 1)
         # array that will contains object names
         object_names = []
-        for n in range(3):
+        for n in range(1):
             object_names.append('object_{}'.format(n+1))
         # shuffle names to make that the "object_1" is
         # not always the closest one on the screen
         random.shuffle(object_names)
-        for n in range(3):
+        for n in range(1):
             self.params[object_names[n]] = ObjectParams()
             # random scale between [1.5, 2]
             scale = 1.5 + random.uniform(0, 0.5)
@@ -111,11 +111,13 @@ class Test(Scene):
             self.params[object_names[n]].initial_force = force
         # remove object if there should not be 3 objects on the scene
         # because we created three objects
+        """
         if nobjects <= 2:
             del self.params['object_3']
             # remove if there should not be 2 objects on the scene
             if nobjects == 1:
                 del self.params['object_2']
+        """
         # random magic object
         self.params['magic'] = {
             'actor': 'object_{}'.format(random.randint(1, nobjects)),
@@ -224,4 +226,5 @@ class Test(Scene):
                 else:
                     return self.dynamic_2_visible()
         except IndexError:
+            print("Index error : test.py set_magic_tick()")
             return False

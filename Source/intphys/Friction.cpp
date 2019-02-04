@@ -4,7 +4,7 @@
 #include "Runtime/Engine/Classes/PhysicalMaterials/PhysicalMaterial.h"
 #include "Runtime/Core/Public/GenericPlatform/GenericPlatformMisc.h"
 
-bool UFriction::SetFriction(UMaterial* Material, float Friction)
+bool UFriction::SetFriction(UMaterial* Material, float &Friction)
 {
     UPhysicalMaterial *PhysicalMaterial = Material->GetPhysicalMaterial();
     if (PhysicalMaterial == nullptr)
@@ -16,7 +16,7 @@ bool UFriction::SetFriction(UMaterial* Material, float Friction)
     return true;
 }
 
-bool UFriction::SetRestitution(UMaterial* Material, float Restitution)
+bool UFriction::SetRestitution(UMaterial* Material, float &Restitution)
 {
     UPhysicalMaterial* PhysicalMaterial = Material->GetPhysicalMaterial();
     if (PhysicalMaterial == nullptr)
@@ -24,7 +24,6 @@ bool UFriction::SetRestitution(UMaterial* Material, float Restitution)
         return false;
     }
     PhysicalMaterial->Restitution = Restitution;
-    PhysicalMaterial->RestitutionCombineMode = (TEnumAsByte<EFrictionCombineMode::Type>) 3;
     PhysicalMaterial->UpdatePhysXMaterial();
     return true;
 }
