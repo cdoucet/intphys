@@ -43,8 +43,8 @@
         "test_occluded" :
         {
             "static" : 0,
-            "dynamic_1" : 1,
-            "dynamic_2" : 0
+            "dynamic_1" : 0,
+            "dynamic_2" : 10
         }
     },
     "scenario_O4" :
