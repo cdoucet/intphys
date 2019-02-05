@@ -26,7 +26,7 @@ class Test(Scene):
     def generate_parameters(self):
         super().generate_parameters()
         # random number of object
-        nobjects = random.randint(1, 3) TODO change
+        nobjects = random.randint(1, 3)
         # random number of occluder if it's not dynamic 2
         # TODO implement random number of occluders
         noccluders = 1 if 'dynamic_2' not in self.movement else 2
