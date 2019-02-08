@@ -71,9 +71,9 @@ this have not been tested.
 * **Install Unreal Engine** as documented
   [here](https://github.com/EpicGames/UnrealEngine/blob/release/Engine/Build/BatchFiles/Linux/README.md).
 
-  * First clone the Engine sources:
+  * First clone the Engine sources, version 4.19:
 
-        git clone https://github.com/EpicGames/UnrealEngine -b release
+        git clone https://github.com/EpicGames/UnrealEngine -b 4.19
         cd UnrealEngine
 
   * If compiling with `clang-3.9` you need to modify a file in the
