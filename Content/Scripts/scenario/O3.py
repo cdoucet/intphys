@@ -218,12 +218,47 @@ class O3Test(O3Base, MirrorTest):
         return True
 
     def dynamic_1_occluded(self):
-        visibility_array = checks_time_laps(self.check_array["visibility"], False)
-        visibility_array = remove_invisible_frames(visibility_array)
-        # We need to separate occlusions because in the O3 bloc,
-        # The objects are not at the same place at each run
-        occlusion = separate_period_of_occlusions(visibility_array)
-        self.params['magic']['tick'] = occlusion[1][int(len(occlusion[1]) / 2)]
+        if self.check_array["visibility"][0][0] or self.check_array["visibility"][1][0]:
+            print('magic object visible at first tick')
+            return False
+        visibility_array_temp = []
+        visibility_array_temp.append(checks_time_laps(self.check_array["visibility"][0], False))
+        visibility_array_temp.append(checks_time_laps(self.check_array["visibility"][1], False))
+        # visibility_array = checks_time_laps(self.check_array["visibility"], False)
+        visibility_array_temp[0] = remove_invisible_frames(visibility_array_temp[0])
+        visibility_array_temp[1] = remove_invisible_frames(visibility_array_temp[1])
+        visibility_array = []
+        #print(visibility_array_temp)
+        i = 0
+        j = 0
+        while True:
+            if visibility_array_temp[0][i] == visibility_array_temp[1][j]:
+                visibility_array.append(visibility_array_temp[0][i])
+                i += 1
+                j += 1
+            elif visibility_array_temp[0][i] < visibility_array_temp[1][j]:
+                i += 1
+            elif visibility_array_temp[0][i] > visibility_array_temp[1][j]:
+                j += 1
+            if i >= len(visibility_array_temp[0]) or j >= len(visibility_array_temp[1]):
+                break
+        print(visibility_array)
+        i = 0
+        occlusion = []
+        occlusion.append([])
+        previous_frame = visibility_array[0] - 1
+        # distinguish the different occlusion time laps
+        for frame in visibility_array:
+            if frame - 1 != previous_frame:
+                i += 1
+                occlusion.append([])
+            occlusion[i].append(frame)
+            previous_frame = frame
+        print(occlusion)
+        if len(occlusion) == 0:
+            print("Not enough occlusion period")
+            return False
+        self.params['magic']['tick'] = occlusion[0][int(len(occlusion[0]) / 2)]
         return True
 
     def dynamic_2_occluded(self):
@@ -258,6 +293,6 @@ class O3Test(O3Base, MirrorTest):
             print("Not enough occlusion period")
             return False
         self.params['magic']['tick'] = []
-        self.params['magic']['tick'].append(occlusion[0][int(len(occlusion[1]) / 2)])
+        self.params['magic']['tick'].append(occlusion[0][int(len(occlusion[0]) / 2)])
         self.params['magic']['tick'].append(occlusion[-1][int(len(occlusion[-1]) / 2)])
         return True
