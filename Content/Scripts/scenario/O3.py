@@ -62,13 +62,15 @@ class O3Test(O3Base, MirrorTest):
                 params.moves = [0, 125]
                 if 'dynamic_1' in self.movement:
                     params.speed = 2
-                    params.moves[1] = 160
+                    params.moves[0] = random.randint(0, 10)
+                    params.moves[1] = random.randint(150, 160)
                     params.scale.x = 0.6
                     params.scale.z = 2.7
                 elif 'dynamic_2' in self.movement:
                     # occluder x size -> 400
                     params.speed = 2
-                    params.moves[1] = 160
+                    params.moves[0] = random.randint(0, 10)
+                    params.moves[1] = random.randint(150, 160)
                     params.location = FVector()
                     params.location.x = 600
                     params.scale = FVector((params.location.x * 2 / 9) / 400, 1, 2)
@@ -85,9 +87,18 @@ class O3Test(O3Base, MirrorTest):
                 if 'dynamic_1' in self.movement:
                     params.initial_force.z = 3e4 + (abs(params.location.y) - 1500) * 4
                 elif 'dynamic_2' in self.movement:
-                    params.scale = FVector(0.9, 0.9, 0.9)
+
+                    n = round((params.location.x - 1000) / (params.scale.x * 100 * math.sqrt(3)), 0)
+                    if n == 0:
+                        scale = random.uniform(0.7, 0.9)
+                    elif n == 1:
+                        scale = random.uniform(0.9, 1.1)
+                    elif n == 2:
+                        scale = random.uniform(1.1, 1.3)
+                    # print(f"n = {round((params.location.x - 1000) / (params.scale.x * 100 * math.sqrt(3)), 0)} | location = {params.location}")
+                    params.scale = FVector(scale, scale, scale)
                     params.initial_force = FVector(0, (4e4 + (abs(params.location.y) - 1500) * 10) * (-1 if params.location.y > 0 else 1), 2e4)
-                    # params.initial_force.z *= random.uniform(0.75, 1)
+                    params.initial_force.z *= random.uniform(0.85, 1)
                 params.mesh = 'Sphere'
 
 
@@ -148,7 +159,7 @@ class O3Test(O3Base, MirrorTest):
                                           current_location.y + length,
                                           current_location.z)
             else:
-                print("previous location = {}".format(magic_actor.actor.get_actor_location()))
+                # print("previous location = {}".format(magic_actor.actor.get_actor_location()))
                 # thales theorem
                 if magic_actor.actor.get_actor_location().y > 0:
                     length = -1 * 133.3333 * (self.actors[self.params['magic']['actor']].location.x) / self.actors['occluder_1'].location.y
@@ -157,8 +168,8 @@ class O3Test(O3Base, MirrorTest):
                 target_location = FVector(current_location.x,
                                           current_location.y + length,
                                           current_location.z)
-                print("jump = {}".format(length))
-                print("new location = {}".format(target_location))
+                #print("jump = {}".format(length))
+                #print("new location = {}".format(target_location))
             magic_actor.set_location(target_location)
 
     # this function is here so you can put only the attribute that please you
@@ -226,7 +237,7 @@ class O3Test(O3Base, MirrorTest):
         visibility_array_temp[0] = remove_invisible_frames(visibility_array_temp[0])
         visibility_array_temp[1] = remove_invisible_frames(visibility_array_temp[1])
         visibility_array = []
-        print(visibility_array_temp)
+        #print(visibility_array_temp)
         i = 0
         j = 0
         while True:
@@ -240,9 +251,9 @@ class O3Test(O3Base, MirrorTest):
                 j += 1
             if i >= len(visibility_array_temp[0]) or j >= len(visibility_array_temp[1]):
                 break
-        print(visibility_array)
+        #print(visibility_array)
         occlusion = separate_period_of_occlusions(visibility_array)
-        print(occlusion)
+        #print(occlusion)
         if len(occlusion) < 2:
             print("Not enough occlusion period")
             return False

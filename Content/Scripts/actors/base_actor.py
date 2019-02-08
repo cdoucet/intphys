@@ -77,12 +77,11 @@ class BaseActor():
         ue.log(message)
 
     def on_actor_hit(self, me, other, *args):
-        if (other.get_name()[:5] == "Floor"):
+        if (other.get_name()[:5] == "Floor" or me == other):
             return
-        # message = '{} hitting {}'.format(
-        #     self.actor.get_name(), other.get_name())
-        # ue.log(message)
-        # ue.log_error(message)
+        message = '{} hitting {}'.format(
+            self.actor.get_name(), other.get_name())
+        ue.log(message)
 
     def set_hidden(self, hidden):
         self.hidden = hidden
