@@ -242,7 +242,6 @@ class O3Test(O3Base, MirrorTest):
                 j += 1
             if i >= len(visibility_array_temp[0]) or j >= len(visibility_array_temp[1]):
                 break
-        print(visibility_array)
         i = 0
         occlusion = []
         occlusion.append([])
@@ -254,7 +253,6 @@ class O3Test(O3Base, MirrorTest):
                 occlusion.append([])
             occlusion[i].append(frame)
             previous_frame = frame
-        print(occlusion)
         if len(occlusion) == 0:
             print("Not enough occlusion period")
             return False
